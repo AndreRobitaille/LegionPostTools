@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_050000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "magic_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "used_at"
+    t.bigint "user_id", null: false
+    t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_magic_links_on_user_id"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -125,6 +136,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
     t.index ["organization_id"], name: "index_position_titles_on_organization_id"
   end
 
+  create_table "sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.datetime "last_seen_at"
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "disabled_at"
@@ -138,10 +159,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"
   add_foreign_key "permission_grants", "users"
   add_foreign_key "position_assignments", "people"
   add_foreign_key "position_assignments", "position_titles"
   add_foreign_key "position_titles", "organizations"
+  add_foreign_key "sessions", "users"
   add_foreign_key "users", "people"
 end

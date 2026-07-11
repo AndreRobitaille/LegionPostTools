@@ -1,0 +1,10 @@
+<h1>Sign in</h1>
+
+<%= form_with url: session_path, method: :post do |form| %>
+  <div>
+    <%= form.label :email_address, "Email address" %>
+    <%= form.email_field :email_address %>
+  </div>
+
+  <%= form.submit "Send login link" %>
+<% end %>
