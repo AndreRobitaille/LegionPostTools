@@ -14,7 +14,7 @@ Use unique names for:
 
 - Kamal service name.
 - Docker image name.
-- PostgreSQL database.
+- PostgreSQL databases.
 - Volumes.
 - Accessory containers.
 - Networks or other shared infrastructure resources.
@@ -42,6 +42,8 @@ Authentication requires these production values:
 
 Rails/Kamal also requires normal production secrets such as `RAILS_MASTER_KEY` and database credentials.
 
+Current production expects `LEGION_POST_TOOLS_DATABASE_PASSWORD` for database access unless you are deliberately documenting a future URL-based alternative.
+
 ## Email
 
 Email provider integration is not finalized.
@@ -60,6 +62,10 @@ AI minutes drafting is planned but not implemented yet.
 OpenAI is expected first. API keys should come from environment variables or Rails credentials, not ordinary database settings.
 
 ## Deployment Checklist Direction
+
+`config/deploy.yml` is currently a scaffold/default and must be completed before any production deploy. The real host, registry, proxy/routing, SSL, and shared-host settings are not finalized yet.
+
+Uploads currently use local-disk Active Storage on a mounted Kamal volume, so that volume must be backed up and preserved. Background jobs currently use Solid Queue and run in-process with the web container for the single-server deployment.
 
 Before production deployment:
 
