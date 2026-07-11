@@ -41,6 +41,16 @@ Authentication is passwordless.
 - Magic links are the fallback.
 - Passwords are intentionally not supported.
 
+The flow is complete end-to-end (registration, sign-in, and passkey management). See
+`docs/superpowers/specs/2026-07-11-authentication-flow-design.md`.
+
+- Each user has a stable, opaque, base64url `webauthn_id` used as the WebAuthn user handle —
+  never the sequential primary key (which is PII/enumerable and not valid base64url).
+- Passkeys require a secure context (HTTPS or `localhost`); they are feature-detected and
+  disabled otherwise, always leaving the magic-link fallback available.
+- Email delivery is swappable behind the `MailDelivery` seam (`MAIL_PROVIDER`); the WebAuthn
+  relying-party origin/id are environment-configured (`WEBAUTHN_*`).
+
 Disabled users must not be able to create new sessions through magic links, passkeys, or existing session cookies.
 
 ## Setup

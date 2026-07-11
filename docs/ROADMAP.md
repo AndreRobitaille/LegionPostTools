@@ -9,9 +9,13 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - First-run setup wizard.
 - American Legion Post preset.
 - People, users, positions, permissions, organizations, and meeting bodies.
-- Passwordless authentication foundation: magic-link email sign-in working; passkey WebAuthn
-  backend endpoints in place (front-end pending — see "Immediate Next" below).
-- Minimal authenticated dashboard.
+- Passwordless authentication (complete, end-to-end): magic-link email sign-in; passkey
+  WebAuthn **registration and sign-in** wired in the browser (feature-detected, with graceful
+  fallback to the email link); a first-login "add a passkey" invitation card; and a
+  Settings › Security page to name, rename, and remove passkeys. Dev email is viewable via
+  `letter_opener_web`; production email runs behind a replaceable delivery boundary (Loops.so).
+  See `docs/superpowers/specs/2026-07-11-authentication-flow-design.md`.
+- Compact authenticated app shell (header) + minimal authenticated dashboard.
 - Visual design system — "The 1919" Art Deco direction with palette, typography, component
   vocabulary, and a readability hard rule (`docs/superpowers/specs/2026-07-11-visual-design-system-design.md`).
 - Styled sign-in and magic-link confirmation screens on a dedicated entry layout, using the
@@ -23,18 +27,10 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - Agent instructions.
 - Purpose, users, architecture, roadmap, and deployment notes.
 
-## Immediate Next: Complete the Authentication Flow
+## Immediate Next: Structured Agendas
 
-The full login/passkey/email flow is the current focus, ahead of the next product slice.
-Magic-link sign-in and the passkey WebAuthn backend work today; still to build are the passkey
-front-end (the login button is a placeholder), a guided "add a passkey" step after first
-login, a styled passkey management (Security) page, and dev + production email delivery
-(no dev mail viewer, and `Procfile.dev` runs no job worker).
-
-Design, current-state assessment, gaps, open decisions, and definition of done:
-`docs/superpowers/specs/2026-07-11-authentication-flow-design.md`.
-
-## Next Product Slice: Structured Agendas
+The authentication flow is complete (see Completed Foundation). The next product slice builds
+the meeting record core.
 
 - Meeting templates.
 - Agenda sections.

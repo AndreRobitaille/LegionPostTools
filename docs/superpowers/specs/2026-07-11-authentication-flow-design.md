@@ -9,6 +9,29 @@ Related: `docs/superpowers/specs/2026-07-11-visual-design-system-design.md` (the
 system and the readability hard rule — every screen below must follow both) and
 `docs/ARCHITECTURE.md` (identity model, passwordless auth, disabled-user rule).
 
+## Implementation Status — COMPLETE (2026-07-11)
+
+The full flow below was built, tested, and verified end-to-end in a real browser (magic-link
+sign-in → first-login passkey invitation → passkey registration → sign out → sign in with the
+passkey → rename/remove on Settings › Security). All items in the Definition of Done are met.
+Notable specifics from implementation:
+
+- **Passkey user handle bug (fixed).** `registration_options` originally sent the sequential
+  DB id as the WebAuthn `user.id`, which is not valid base64url, so the browser `create()`
+  ceremony threw before prompting. Users now carry a stable opaque base64url **`webauthn_id`**
+  (migration `20260711171917`; generated on create) used as the handle, per the gem/spec.
+- **Resolved decisions** were implemented as recorded below (dashboard card, `letter_opener_web`,
+  Settings › Security, `@github/webauthn-json` vendored, Loops.so behind a `MailDelivery` seam).
+- **Passkey rename** was added (`PATCH /passkeys/:id`) with an edit-in-place control on the
+  Security page; flash confirmations render in the app shell.
+- **Dev/testing caveat:** passkeys need a **secure context** — they are disabled over
+  `http://<LAN-IP>` (feature-detection working as designed). Test via `localhost` (e.g. an SSH
+  tunnel to the app host) or HTTPS; production is HTTPS. A scripted virtual-authenticator system
+  test was attempted but deferred due to headless-Chrome friction; the JSON endpoints stay
+  covered by `passkeys_controller_test.rb` and the ceremonies are verified manually.
+
+The remaining sections document the design as built.
+
 ## Goal
 
 A member can sign in with a magic-link email, be guided to add a passkey, and thereafter

@@ -14,8 +14,10 @@ The current application foundation includes:
 - First-run setup wizard.
 - American Legion Post setup preset.
 - People, users, historical position assignments, permissions, organizations, and meeting bodies.
-- Passwordless authentication foundation: passkeys and magic links.
-- Minimal authenticated dashboard.
+- Passwordless authentication (complete): magic-link email sign-in and passkey registration
+  and sign-in, with a first-login "add a passkey" prompt and a Settings › Security page to
+  name, rename, and remove passkeys.
+- Compact authenticated app shell and a minimal authenticated dashboard.
 
 Structured agendas, tracked items, minutes drafting, review/attestation, PDF/export, and email distribution are planned next.
 
