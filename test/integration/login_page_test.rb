@@ -45,4 +45,13 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       assert_select "button", text: /Finish signing in/
     end
   end
+
+  test "sign-in page degrades gracefully when no organization is configured" do
+    Organization.delete_all
+    get new_session_path
+    assert_response :success
+    assert_select "h1.entry-title", text: "LegionPostTools"
+    assert_select ".entry-kick", count: 0
+    assert_select ".entry-loc", count: 0
+  end
 end
