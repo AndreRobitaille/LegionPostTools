@@ -54,6 +54,7 @@ class PasskeysController < ApplicationController
     stored_credential = PasskeyCredential.find_by(external_id: credential.id)
 
     return render json: { error: "credential not found" }, status: :unauthorized if stored_credential.blank?
+    return render json: { error: "invalid passkey authentication" }, status: :unauthorized if stored_credential.user.disabled_at.present?
 
     credential.verify(
       session.delete(:webauthn_authentication_challenge),

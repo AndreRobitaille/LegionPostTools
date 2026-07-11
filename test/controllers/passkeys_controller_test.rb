@@ -35,4 +35,33 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
       WebAuthn::Credential.define_singleton_method(:options_for_create, original)
     end
   end
+
+  test "disabled user cannot authenticate with passkey" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current, disabled_at: Time.current)
+    PasskeyCredential.create!(
+      user: user,
+      external_id: "credential-id",
+      public_key: "public-key",
+      sign_count: 1
+    )
+
+    credential = Struct.new(:id) do
+      def verify(*)
+        raise "should not verify disabled user"
+      end
+    end.new("credential-id")
+
+    original = WebAuthn::Credential.method(:from_get)
+    WebAuthn::Credential.define_singleton_method(:from_get) { |*| credential }
+
+    begin
+      post authentication_passkeys_path, params: { publicKeyCredential: { id: "credential-id" } }
+
+      assert_response :unauthorized
+      assert_equal({ "error" => "invalid passkey authentication" }, JSON.parse(response.body))
+    ensure
+      WebAuthn::Credential.define_singleton_method(:from_get, original)
+    end
+  end
 end
