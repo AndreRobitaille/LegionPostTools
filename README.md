@@ -29,7 +29,7 @@ Most ordinary post members are not expected to log in during early versions. The
 
 ## Documentation
 
-- AGENTS.md and CLAUDE.md — agent and collaboration instructions.
+- `AGENTS.md` and `CLAUDE.md` — general agent instructions and Claude-specific collaboration guidance.
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
 - `docs/ARCHITECTURE.md` — architecture and durable product decisions.

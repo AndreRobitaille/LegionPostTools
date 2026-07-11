@@ -16,7 +16,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 - README for operators and repo visitors.
 - Agent instructions.
-- Purpose, users, architecture, and roadmap docs; deployment notes follow in a later task.
+- Purpose, users, architecture, roadmap, and deployment notes.
 
 ## Next Product Slice: Structured Agendas
 
