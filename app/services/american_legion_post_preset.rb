@@ -1,16 +1,16 @@
 class AmericanLegionPostPreset
   POSITION_TITLES = [
-    ["Commander", true],
-    ["1st Vice Commander", true],
-    ["2nd Vice Commander", true],
-    ["Adjutant", true],
-    ["Finance Officer", true],
-    ["Chaplain", true],
-    ["Sergeant-at-Arms", true],
-    ["Historian", false],
-    ["Service Officer", false],
-    ["Judge Advocate", false],
-    ["Assistant Chaplain", false]
+    [ "Commander", true ],
+    [ "1st Vice Commander", true ],
+    [ "2nd Vice Commander", true ],
+    [ "Adjutant", true ],
+    [ "Finance Officer", true ],
+    [ "Chaplain", true ],
+    [ "Sergeant-at-Arms", true ],
+    [ "Historian", false ],
+    [ "Service Officer", false ],
+    [ "Judge Advocate", false ],
+    [ "Assistant Chaplain", false ]
   ].freeze
 
   MEETING_BODIES = [

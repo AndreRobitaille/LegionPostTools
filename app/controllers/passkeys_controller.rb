@@ -32,7 +32,7 @@ class PasskeysController < ApplicationController
   end
 
   def registration
-    credential = WebAuthn::Credential.from_create(params.require(:publicKeyCredential).permit!.to_h)
+    credential = WebAuthn::Credential.from_create(public_key_credential_params)
     credential.verify(session.delete(:webauthn_registration_challenge), user_verification: true)
 
     current_user.passkey_credentials.create!(
@@ -54,7 +54,7 @@ class PasskeysController < ApplicationController
   end
 
   def authentication
-    credential = WebAuthn::Credential.from_get(params.require(:publicKeyCredential).permit!.to_h)
+    credential = WebAuthn::Credential.from_get(public_key_credential_params)
     stored_credential = PasskeyCredential.find_by(external_id: credential.id)
 
     return render json: { error: "credential not found" }, status: :unauthorized if stored_credential.blank?
@@ -78,5 +78,24 @@ class PasskeysController < ApplicationController
   def destroy
     current_user.passkey_credentials.find(params[:id]).destroy!
     redirect_to passkeys_path, notice: "Passkey removed."
+  end
+
+  private
+
+  def public_key_credential_params
+    params.require(:publicKeyCredential).permit(
+      :id,
+      :rawId,
+      :type,
+      :authenticatorAttachment,
+      response: %i[
+        attestationObject
+        authenticatorData
+        clientDataJSON
+        signature
+        userHandle
+      ],
+      clientExtensionResults: {}
+    ).to_h
   end
 end

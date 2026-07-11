@@ -51,7 +51,7 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
           resident_key: "required",
           user_verification: "required"
         },
-        exclude: [existing_credential.external_id]
+        exclude: [ existing_credential.external_id ]
       }, captured_args)
     ensure
       WebAuthn::Credential.define_singleton_method(:options_for_create, original)

@@ -24,12 +24,12 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       "Assistant Chaplain"
     ], organization.position_titles.order(:display_order).pluck(:name)
 
-    assert_equal [true, true, true, true, true, true, true, false, false, false, false],
+    assert_equal [ true, true, true, true, true, true, true, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:required_by_default)
 
-    assert_equal ["membership", "pec"], organization.meeting_bodies.order(:slug).pluck(:slug)
-    assert_equal ["Membership Meeting", "Post Executive Committee"], organization.meeting_bodies.order(:slug).pluck(:name)
-    assert_equal ["email", "print"], organization.meeting_bodies.order(:slug).pluck(:default_distribution)
+    assert_equal [ "membership", "pec" ], organization.meeting_bodies.order(:slug).pluck(:slug)
+    assert_equal [ "Membership Meeting", "Post Executive Committee" ], organization.meeting_bodies.order(:slug).pluck(:name)
+    assert_equal [ "email", "print" ], organization.meeting_bodies.order(:slug).pluck(:default_distribution)
   end
 
   test "can be applied more than once without duplicates" do
@@ -76,7 +76,7 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       "Assistant Chaplain"
     ], organization.position_titles.order(:display_order).pluck(:name)
 
-    assert_equal [true, true, true, true, true, true, true, false, false, false, false],
+    assert_equal [ true, true, true, true, true, true, true, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:required_by_default)
 
     assert_equal "Post Executive Committee", organization.meeting_bodies.find_by!(slug: "pec").name
