@@ -18,6 +18,13 @@ Open `http://localhost:3000`. On a fresh database, the app shows the first-run s
 
 LegionPostTools is passwordless. Users sign in with passkeys or a magic link sent by email. Passwords are intentionally not supported.
 
+Production auth env vars:
+- `APP_HOST`
+- `MAIL_FROM`
+- `WEBAUTHN_ORIGIN`
+- `WEBAUTHN_RP_ID`
+- `WEBAUTHN_RP_NAME`
+
 ## Current Scope
 
 The current implementation provides the Rails foundation, setup wizard, core people/organization model, and passwordless authentication foundation. Structured agendas and minutes are planned next.

@@ -18,6 +18,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
+    Installation.singleton.update!(setup_completed_at: Time.current)
     magic_link = MagicLink.create_for!(user)
 
     get magic_link_session_path(token: magic_link.token)
@@ -41,6 +42,19 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "LegionPostTools", response.body
     assert_match user.person.full_name, response.body
+  end
+
+  test "HEAD magic link does not consume token or create session" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    magic_link = MagicLink.create_for!(user)
+
+    assert_no_difference -> { Session.count } do
+      head magic_link_session_path(token: magic_link.token)
+    end
+
+    assert_nil magic_link.reload.used_at
   end
 
   test "disabled user after link issuance cannot sign in" do

@@ -39,6 +39,9 @@ class SetupController < ApplicationController
         PermissionGrant.find_or_create_by!(user: user, capability: capability)
       end
 
+      installation = Installation.singleton
+      installation.update!(setup_completed_at: Time.current) if installation.setup_completed_at.blank?
+
       @created_user = user
     end
 

@@ -6,6 +6,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
+    Installation.singleton.update!(setup_completed_at: Time.current)
 
     get root_path
 
@@ -25,6 +26,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     person = Person.create!(first_name: "Andre", last_name: "Robitaille")
     user = User.create!(person: person, email_address: "andre@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
+    Installation.singleton.update!(setup_completed_at: Time.current)
     Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current)
 
     request = ActionDispatch::TestRequest.create

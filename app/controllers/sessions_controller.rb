@@ -16,9 +16,11 @@ class SessionsController < ApplicationController
   end
 
   def magic_link
-    if request.get?
+    if request.get? || request.head?
       return render :magic_link
     end
+
+    return head :method_not_allowed unless request.post?
 
     user = MagicLink.consume!(params[:token])
 

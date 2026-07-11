@@ -38,6 +38,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert user.can?("manage_settings")
     assert_equal 11, organization.position_titles.count
     assert_equal 2, organization.meeting_bodies.count
+    assert_equal 1, Installation.count
+    assert Installation.setup_completed?
     assert_redirected_to root_path
   end
 
@@ -73,6 +75,7 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
 
     get new_setup_path
 
@@ -99,11 +102,26 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Set up LegionPostTools"
   end
 
+  test "disabled admin after setup does not reopen setup" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+
+    user.update!(disabled_at: Time.current)
+    PermissionGrant.where(user: user, capability: "manage_settings").delete_all
+
+    get new_setup_path
+
+    assert_redirected_to root_path
+  end
+
   test "repeated setup post after completion does not create duplicates" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
 
     assert_no_difference -> { Organization.count } do
       assert_no_difference -> { User.count } do
@@ -195,5 +213,29 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert_equal 11, Organization.first.position_titles.count
     assert_equal 2, Organization.first.meeting_bodies.count
     assert_redirected_to root_path
+  end
+
+  test "partial organization only state can still be repaired before completion" do
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+
+    assert_difference -> { User.count }, 1 do
+      post setup_path, params: {
+        organization: {
+          name: "Robert E. Burns Post 165",
+          unit_number: "165",
+          timezone: "America/Chicago",
+          default_location_name: "Manitowoc Rifle & Pistol Club",
+          default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI"
+        },
+        person: {
+          first_name: "Andre",
+          last_name: "Robitaille",
+          email_address: "andre@example.com"
+        },
+        preset: "american_legion_post"
+      }
+    end
+
+    assert Installation.setup_completed?
   end
 end

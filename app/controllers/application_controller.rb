@@ -63,6 +63,6 @@ class ApplicationController < ActionController::Base
   end
 
   def setup_complete?
-    Organization.exists? && User.joins(:permission_grants).where(disabled_at: nil, permission_grants: { capability: "manage_settings" }).exists?
+    Installation.setup_completed?
   end
 end
