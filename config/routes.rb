@@ -5,6 +5,14 @@ Rails.application.routes.draw do
     get :magic_link, on: :collection
     post :magic_link, on: :collection
   end
+  resources :passkeys, only: %i[index destroy] do
+    collection do
+      post :registration_options
+      post :registration
+      post :authentication_options
+      post :authentication
+    end
+  end
   resource :dashboard, only: %i[show], controller: "dashboard"
   root "dashboard#show"
 end

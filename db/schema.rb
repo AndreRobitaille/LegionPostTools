@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_050000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "passkey_credentials", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "external_id", null: false
+    t.datetime "last_used_at"
+    t.string "nickname"
+    t.text "public_key", null: false
+    t.integer "sign_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["external_id"], name: "index_passkey_credentials_on_external_id", unique: true
+    t.index ["user_id"], name: "index_passkey_credentials_on_user_id"
+  end
+
   create_table "people", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address"
@@ -161,6 +174,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_050000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"
+  add_foreign_key "passkey_credentials", "users"
   add_foreign_key "permission_grants", "users"
   add_foreign_key "position_assignments", "people"
   add_foreign_key "position_assignments", "position_titles"
