@@ -1,1 +1,69 @@
 @import "tailwindcss";
+
+@theme {
+  --color-navy: #0A2240;
+  --color-navy-2: #0d2c54;
+  --color-navy-deep: #081a34;
+  --color-gold: #C6A15B;
+  --color-gold-hi: #E6CD8B;
+  --color-cream: #F4EEDD;
+  --color-paper: #FBF7EC;
+  --color-ivory: #FCFAF1;
+  --color-legionred: #8C1622;
+  --color-ink: #1b222b;
+  --color-muted: #6b7684;
+  --font-serif: Georgia, "Times New Roman", serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Entry screens (sign-in / magic-link confirm): the reserved monumental hero.
+   Deco: sunburst rays, stepped gold, tracked capitals, warm cream sign-in card.
+   --------------------------------------------------------------------------- */
+.entry {
+  min-height: 100vh;
+  background: var(--color-navy-deep);
+  font-family: system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.entry-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 40px 20px;
+  background: radial-gradient(120% 100% at 50% 0%, #123059, var(--color-navy-deep));
+}
+.entry-rays {
+  position: absolute;
+  inset: -60% -20% auto -20%;
+  height: 190%;
+  background: repeating-conic-gradient(from 0deg at 50% 0%, rgba(198,161,91,.14) 0deg 2.5deg, transparent 2.5deg 10deg);
+  pointer-events: none;
+}
+.entry-fade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 50% 0%, transparent 34%, var(--color-navy-deep) 78%);
+  pointer-events: none;
+}
+.entry-col { position: relative; width: 100%; max-width: 430px; text-align: center; }
+.entry-emb { width: 132px; height: 132px; margin: 0 auto 10px; display: block; filter: drop-shadow(0 8px 16px rgba(0,0,0,.55)); }
+.entry-kick { color: var(--color-gold-hi); font-size: 11px; letter-spacing: .42em; text-transform: uppercase; }
+.entry-title { margin: 8px 0 0; color: #fff; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 22px; line-height: 1.25; }
+.entry-diamonds { color: var(--color-gold); letter-spacing: .5em; font-size: 9px; margin: 10px 0 6px; }
+.entry-loc { color: #9fb0c6; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; }
+.entry-card { background: var(--color-cream); border-top: 3px solid var(--color-gold); border-radius: 6px; margin-top: 24px; padding: 22px; text-align: left; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
+.entry-card-title { margin: 0 0 3px; color: var(--color-navy); font-size: 17px; }
+.entry-lead { color: #5b6b7e; font-size: 12.5px; margin: 0 0 16px; line-height: 1.5; }
+.entry-field { margin-bottom: 4px; }
+.entry-field label { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #6a5320; margin-bottom: 6px; }
+.entry-field input { width: 100%; font-size: 16px; padding: 13px 14px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); }
+.entry-btn { width: 100%; margin-top: 14px; background: var(--color-navy); color: #fff; border: 0; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.entry-reassure { font-size: 12px; color: #6b7684; margin: 12px 2px 0; line-height: 1.5; text-align: center; }
+.entry-orline { display: flex; align-items: center; gap: 12px; color: #9a8a63; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; margin: 18px 0; }
+.entry-orline::before, .entry-orline::after { content: ""; flex: 1; height: 1px; background: #d8caa2; }
+.entry-passkey { width: 100%; background: #fff; border: 1.5px solid var(--color-navy); color: var(--color-navy); padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.entry-flash { border-radius: 6px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+.entry-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
+.entry-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
