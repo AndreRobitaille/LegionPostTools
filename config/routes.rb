@@ -17,6 +17,9 @@ Rails.application.routes.draw do
       post :authentication
     end
   end
+  namespace :settings do
+    resource :security, only: %i[show]
+  end
   resource :dashboard, only: %i[show], controller: "dashboard"
   root "dashboard#show"
 end

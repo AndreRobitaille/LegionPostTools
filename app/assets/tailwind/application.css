@@ -73,3 +73,23 @@
 .entry-flash { border-radius: 6px; padding: 12px 14px; font-size: 15px; margin-bottom: 16px; }
 .entry-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
 .entry-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
+
+/* ---------------------------------------------------------------------------
+   Authenticated app shell: compact navy header + bounded cream working area.
+   Working screens never use the monumental hero. Type obeys the readability
+   floors (name/links >= 16px, small caps labels >= 13px).
+   --------------------------------------------------------------------------- */
+.app-body { margin: 0; background: var(--color-cream); min-height: 100vh; font-family: system-ui, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--color-ink); }
+.app-header { background: var(--color-navy); border-bottom: 3px solid var(--color-gold); }
+.app-header-inner { max-width: 1060px; margin: 0 auto; padding: 9px 20px; min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.app-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.app-brand-mark { width: 34px; height: 34px; display: block; }
+.app-brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.app-brand-name { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: .04em; }
+.app-brand-loc { color: var(--color-gold-hi); font-size: 13px; letter-spacing: .16em; text-transform: uppercase; }
+.app-user { display: flex; align-items: center; gap: 14px; }
+.app-user-name { color: #dfe6ef; font-size: 16px; }
+.app-user-link { color: var(--color-gold-hi); font-size: 16px; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
+.app-user-link:hover { text-decoration: underline; }
+.app-user-signout { color: #cdd6e2; }
+.app-main { max-width: 1060px; margin: 0 auto; padding: 26px 20px 60px; }

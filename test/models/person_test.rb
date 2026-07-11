@@ -14,4 +14,30 @@ class PersonTest < ActiveSupport::TestCase
     assert_includes person.errors[:first_name], "can't be blank"
     assert_includes person.errors[:last_name], "can't be blank"
   end
+
+  test "current_role_label returns the active title with the lowest display_order" do
+    org = Organization.create!(name: "Post 1", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "John", last_name: "Doe")
+    commander = PositionTitle.create!(organization: org, name: "Commander", display_order: 1)
+    adjutant = PositionTitle.create!(organization: org, name: "Adjutant", display_order: 2)
+    PositionAssignment.create!(person: person, position_title: adjutant, starts_on: Date.current)
+    PositionAssignment.create!(person: person, position_title: commander, starts_on: Date.current)
+
+    assert_equal "Commander", person.current_role_label
+  end
+
+  test "current_role_label is nil without an active assignment" do
+    person = Person.create!(first_name: "Jane", last_name: "Roe")
+    assert_nil person.current_role_label
+  end
+
+  test "current_role_label ignores ended assignments" do
+    org = Organization.create!(name: "Post 2", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Past", last_name: "Officer")
+    title = PositionTitle.create!(organization: org, name: "Historian", display_order: 5)
+    PositionAssignment.create!(person: person, position_title: title,
+      starts_on: Date.current - 400, ends_on: Date.current - 30)
+
+    assert_nil person.current_role_label
+  end
 end
