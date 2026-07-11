@@ -68,10 +68,6 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
       sign_count: 3
     )
 
-    session = Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current)
-    request = ActionDispatch::TestRequest.create
-    request.cookie_jar.signed[:session_id] = session.id
-
     credential = Object.new
     credential.define_singleton_method(:id) { "credential-id" }
     credential.define_singleton_method(:sign_count) { 4 }
@@ -80,31 +76,44 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     end
     credential.define_singleton_method(:verified_args) { @verified_args }
 
-    original = WebAuthn::Credential.method(:from_get)
+    options = Struct.new(:challenge) do
+      def as_json(*)
+        { challenge: challenge }
+      end
+    end.new("auth-challenge-token")
+
+    original_from_get = WebAuthn::Credential.method(:from_get)
+    original_options_for_get = WebAuthn::Credential.method(:options_for_get)
     WebAuthn::Credential.singleton_class.send(:define_method, :from_get) do |*_args|
       credential
     end
+    WebAuthn::Credential.singleton_class.send(:define_method, :options_for_get) do |**_kwargs|
+      options
+    end
 
     begin
+      post authentication_options_passkeys_path
+
+      assert_response :success
+      assert_equal({ "challenge" => "auth-challenge-token" }, JSON.parse(response.body))
+
       post authentication_passkeys_path,
-        headers: {
-          "Cookie" => request.cookie_jar.to_header,
-        },
         params: { publicKeyCredential: { id: "credential-id" } }
 
       assert_response :success
       assert_equal({ "status" => "authenticated" }, JSON.parse(response.body))
       assert_equal({
-        challenge: nil,
+        challenge: "auth-challenge-token",
         public_key: "public-key",
         sign_count: 3,
         user_verification: true
       }, credential.verified_args)
-      assert Session.exists?(user: user)
+      assert_equal 1, Session.where(user: user).count
       assert_equal 4, stored_credential.reload.sign_count
       assert stored_credential.reload.last_used_at.present?
     ensure
-      WebAuthn::Credential.define_singleton_method(:from_get, original)
+      WebAuthn::Credential.define_singleton_method(:from_get, original_from_get)
+      WebAuthn::Credential.define_singleton_method(:options_for_get, original_options_for_get)
     end
   end
 
