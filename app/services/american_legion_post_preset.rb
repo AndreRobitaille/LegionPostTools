@@ -39,19 +39,19 @@ class AmericanLegionPostPreset
 
   def create_position_titles
     POSITION_TITLES.each_with_index do |(name, required_by_default), index|
-      organization.position_titles.find_or_create_by!(name: name) do |position_title|
-        position_title.display_order = index + 1
-        position_title.required_by_default = required_by_default
-      end
+      position_title = organization.position_titles.find_or_initialize_by(name: name)
+      position_title.display_order = index + 1
+      position_title.required_by_default = required_by_default
+      position_title.save!
     end
   end
 
   def create_meeting_bodies
     MEETING_BODIES.each do |attributes|
-      organization.meeting_bodies.find_or_create_by!(slug: attributes[:slug]) do |meeting_body|
-        meeting_body.name = attributes[:name]
-        meeting_body.default_distribution = attributes[:default_distribution]
-      end
+      meeting_body = organization.meeting_bodies.find_or_initialize_by(slug: attributes[:slug])
+      meeting_body.name = attributes[:name]
+      meeting_body.default_distribution = attributes[:default_distribution]
+      meeting_body.save!
     end
   end
 end
