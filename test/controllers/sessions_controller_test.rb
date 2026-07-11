@@ -33,6 +33,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     assert Session.exists?(user: user)
+
+    follow_redirect!
+
+    assert_response :success
+    assert_match "LegionPostTools", response.body
+    assert_match user.person.full_name, response.body
   end
 
   test "disabled user after link issuance cannot sign in" do

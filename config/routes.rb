@@ -5,6 +5,6 @@ Rails.application.routes.draw do
     get :magic_link, on: :collection
     post :magic_link, on: :collection
   end
-  resource :dashboard, only: %i[show]
+  resource :dashboard, only: %i[show], controller: "dashboard"
   root "dashboard#show"
 end
