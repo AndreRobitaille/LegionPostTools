@@ -16,7 +16,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 - README for operators and repo visitors.
 - Agent instructions.
-- Purpose, users, architecture, roadmap, and deployment docs.
+- Purpose, users, architecture, and roadmap docs; deployment notes follow in a later task.
 
 ## Next Product Slice: Structured Agendas
 
@@ -25,7 +25,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - Structured agenda items.
 - Item-level rich notes.
 - Reordering and moving agenda items.
-- Printable agenda rendering.
+- Browser/HTML printable agenda rendering.
 
 ## Tracked Items
 
@@ -37,17 +37,17 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 ## Minutes Lifecycle
 
 - Transcript paste/upload.
-- AI-generated minutes draft.
+- Draft/review/approval/attestation/acceptance workflow.
+- AI-assisted transcript-to-minutes drafting within that workflow.
 - Adjutant review.
 - Commander approval.
 - Adjutant attestation.
-- Distribution.
 - Acceptance by motion at the next same-body meeting.
 - Immutable official archive after acceptance.
 
 ## Export and Distribution
 
-- Printable agendas and minutes.
+- PDF export.
 - PDF generation.
 - Email distribution.
 - Delivery records for sent documents.
