@@ -1,6 +1,7 @@
 class SetupController < ApplicationController
   skip_before_action :redirect_to_setup_if_needed
   before_action :redirect_if_already_configured
+  before_action :redirect_if_setup_recovery_required
 
   SETUP_ADVISORY_LOCK_KEY = 7_106_206
 
@@ -59,6 +60,13 @@ class SetupController < ApplicationController
     return unless setup_complete?
 
     redirect_to root_path
+  end
+
+  def redirect_if_setup_recovery_required
+    return if setup_complete?
+    return unless Organization.exists? && User.exists?
+
+    redirect_to new_session_path, alert: "Setup recovery requires operator help."
   end
 
   def organization_params

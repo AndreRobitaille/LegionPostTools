@@ -7,6 +7,14 @@ module ActiveSupport
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
 
+    setup do
+      Rails.cache.clear
+    end
+
+    teardown do
+      Rails.cache.clear
+    end
+
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 

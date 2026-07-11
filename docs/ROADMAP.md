@@ -69,6 +69,13 @@ the meeting record core.
 - Configure production host, WebAuthn, mail, storage, and background jobs.
 - Deploy as a separate service on the shared Hetzner VPS.
 
+## Security and Account Continuity
+
+- Full session/device management system: list signed-in browsers/devices in Settings ›
+  Security, show last seen/browser/IP context, revoke one session, sign out all other
+  sessions, clean up sessions after 180 days of inactivity, revoke sessions on risk
+  events, and later support step-up authentication for sensitive actions.
+
 ## Later Possibilities
 
 - Document archive.

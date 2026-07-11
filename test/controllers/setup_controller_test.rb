@@ -102,6 +102,46 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Set up LegionPostTools"
   end
 
+  test "both organization and user without setup completion redirects new setup to session sign in" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+
+    get new_setup_path
+
+    assert_redirected_to new_session_path
+    assert_equal "Setup recovery requires operator help.", flash[:alert]
+  end
+
+  test "both organization and user without setup completion blocks setup post" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+
+    assert_no_difference -> { PermissionGrant.count } do
+      assert_no_difference -> { Session.count } do
+        post setup_path, params: {
+          organization: {
+            name: "Robert E. Burns Post 165",
+            unit_number: "165",
+            timezone: "America/Chicago",
+            default_location_name: "Manitowoc Rifle & Pistol Club",
+            default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI"
+          },
+          person: {
+            first_name: "Andre",
+            last_name: "Robitaille",
+            email_address: "andre@example.com"
+          },
+          preset: "american_legion_post"
+        }
+      end
+    end
+
+    assert_redirected_to new_session_path
+    assert_equal "Setup recovery requires operator help.", flash[:alert]
+  end
+
   test "disabled admin after setup does not reopen setup" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)

@@ -211,4 +211,67 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
       WebAuthn::Credential.define_singleton_method(:from_get, original)
     end
   end
+
+  test "unknown passkey credential ids return generic unauthorized response" do
+    credential = Struct.new(:id).new("missing-credential")
+
+    original = WebAuthn::Credential.method(:from_get)
+    WebAuthn::Credential.singleton_class.send(:define_method, :from_get) do |*_args|
+      credential
+    end
+
+    begin
+      post authentication_passkeys_path, params: { publicKeyCredential: { id: "missing-credential" } }
+
+      assert_response :unauthorized
+      assert_equal({ "error" => "invalid passkey authentication" }, JSON.parse(response.body))
+    ensure
+      WebAuthn::Credential.define_singleton_method(:from_get, original)
+    end
+  end
+
+  test "passkey authentication options are rate limited by requester" do
+    20.times do
+      post authentication_options_passkeys_path
+
+      assert_response :success
+    end
+
+    post authentication_options_passkeys_path
+
+    assert_response :too_many_requests
+    assert_equal({ "error" => "Please wait a few minutes and try again." }, JSON.parse(response.body))
+  end
+
+  test "passkey authentication submissions are rate limited by requester" do
+    credential = Struct.new(:id)
+      .new("invalid")
+
+    original = WebAuthn::Credential.method(:from_get)
+    WebAuthn::Credential.singleton_class.send(:define_method, :from_get) do |*_args|
+      credential
+    end
+
+    begin
+      invalid_credential = {
+        publicKeyCredential: {
+          id: "invalid"
+        }
+      }
+
+      20.times do
+        post authentication_passkeys_path, params: invalid_credential
+
+        assert_response :unauthorized
+        assert_equal({ "error" => "invalid passkey authentication" }, JSON.parse(response.body))
+      end
+
+      post authentication_passkeys_path, params: invalid_credential
+
+      assert_response :too_many_requests
+      assert_equal({ "error" => "Please wait a few minutes and try again." }, JSON.parse(response.body))
+    ensure
+      WebAuthn::Credential.define_singleton_method(:from_get, original)
+    end
+  end
 end

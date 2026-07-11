@@ -1,4 +1,7 @@
 class ApplicationController < ActionController::Base
+  SESSION_INACTIVITY_LIMIT = 180.days
+  SESSION_TOUCH_INTERVAL = 15.minutes
+
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
@@ -39,6 +42,7 @@ class ApplicationController < ActionController::Base
   def redirect_to_setup_if_needed
     return if controller_name == "setup"
     return if setup_complete?
+    return if setup_recovery_installed?
 
     redirect_to new_setup_path
   end
@@ -50,19 +54,47 @@ class ApplicationController < ActionController::Base
     return if session_id.blank?
 
     session = Session.find_by(id: session_id)
-    return if session.blank?
+    return clear_session_cookie if session.blank?
 
     if session.user.disabled_at.present?
       session.destroy!
-      cookies.delete(:session_id)
-      Current.session = nil
+      clear_session_cookie
       return
     end
 
+    if session_inactive_too_long?(session)
+      session.destroy!
+      clear_session_cookie
+      return
+    end
+
+    touch_session_if_needed(session)
     Current.session = session
   end
 
+  private
+
   def setup_complete?
     Installation.setup_completed?
+  end
+
+  def setup_recovery_installed?
+    Organization.exists? && User.exists?
+  end
+
+  def session_inactive_too_long?(session)
+    session.last_seen_at.present? && session.last_seen_at < SESSION_INACTIVITY_LIMIT.ago
+  end
+
+  def touch_session_if_needed(session)
+    return if session.last_seen_at.present? && session.last_seen_at > SESSION_TOUCH_INTERVAL.ago
+
+    current_time = Time.current
+    session.update_columns(last_seen_at: current_time, updated_at: current_time)
+  end
+
+  def clear_session_cookie
+    cookies.delete(:session_id)
+    Current.session = nil
   end
 end

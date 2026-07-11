@@ -2,6 +2,21 @@ class SessionsController < ApplicationController
   layout "entry", only: %i[new create magic_link]
   skip_before_action :redirect_to_setup_if_needed, only: %i[new create magic_link]
 
+  rate_limit to: 10,
+    within: 5.minutes,
+    only: :create,
+    name: :magic_link_request,
+    by: -> { request.remote_ip },
+    with: :redirect_after_auth_throttle
+
+  rate_limit to: 10,
+    within: 5.minutes,
+    only: :magic_link,
+    name: :magic_link_consumption,
+    by: -> { request.remote_ip },
+    if: -> { request.post? },
+    with: :redirect_after_auth_throttle
+
   def new
     @organization = Organization.first
   end
@@ -40,5 +55,11 @@ class SessionsController < ApplicationController
   def destroy
     terminate_current_session
     redirect_to new_session_path, notice: "You are signed out."
+  end
+
+  private
+
+  def redirect_after_auth_throttle
+    redirect_to new_session_path, alert: "Please wait a few minutes and try again."
   end
 end

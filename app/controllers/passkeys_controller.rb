@@ -2,6 +2,20 @@ class PasskeysController < ApplicationController
   skip_before_action :redirect_to_setup_if_needed
   before_action :require_authentication, except: %i[authentication_options authentication]
 
+  rate_limit to: 20,
+    within: 5.minutes,
+    only: :authentication_options,
+    name: :passkey_authentication_options,
+    by: -> { request.remote_ip },
+    with: :render_auth_throttle
+
+  rate_limit to: 20,
+    within: 5.minutes,
+    only: :authentication,
+    name: :passkey_authentication_submission,
+    by: -> { request.remote_ip },
+    with: :render_auth_throttle
+
   def index
     render json: current_user.passkey_credentials.order(:created_at).map { |credential|
       {
@@ -57,7 +71,7 @@ class PasskeysController < ApplicationController
     credential = WebAuthn::Credential.from_get(public_key_credential_params)
     stored_credential = PasskeyCredential.find_by(external_id: credential.id)
 
-    return render json: { error: "credential not found" }, status: :unauthorized if stored_credential.blank?
+    return render json: { error: "invalid passkey authentication" }, status: :unauthorized if stored_credential.blank?
     return render json: { error: "invalid passkey authentication" }, status: :unauthorized if stored_credential.user.disabled_at.present?
 
     credential.verify(
@@ -103,5 +117,9 @@ class PasskeysController < ApplicationController
       ],
       clientExtensionResults: {}
     ).to_h
+  end
+
+  def render_auth_throttle
+    render json: { error: "Please wait a few minutes and try again." }, status: :too_many_requests
   end
 end

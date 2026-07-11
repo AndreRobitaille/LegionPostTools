@@ -13,6 +13,28 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Check your email for a login link.", flash[:notice]
   end
 
+  test "magic link requests are rate limited by requester" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Installation.singleton.update!(setup_completed_at: Time.current)
+
+    10.times do
+      assert_emails 1 do
+        post session_path, params: { email_address: user.email_address }
+      end
+
+      assert_redirected_to new_session_path
+      assert_equal "Check your email for a login link.", flash[:notice]
+    end
+
+    assert_no_emails do
+      post session_path, params: { email_address: user.email_address }
+    end
+
+    assert_redirected_to new_session_path
+    assert_equal "Please wait a few minutes and try again.", flash[:alert]
+  end
+
   test "magic link callback signs in" do
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     person = Person.create!(first_name: "Jane", last_name: "Doe")
@@ -42,6 +64,36 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "LegionPostTools", response.body
     assert_match user.person.full_name, response.body
+  end
+
+  test "magic link consumption is rate limited by requester" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Installation.singleton.update!(setup_completed_at: Time.current)
+
+    10.times do
+      post magic_link_session_path, params: { token: "invalid-token" }
+      assert_redirected_to new_session_path
+      assert_equal "That login link is invalid or expired.", flash[:alert]
+    end
+
+    post magic_link_session_path, params: { token: "invalid-token" }
+
+    assert_redirected_to new_session_path
+    assert_equal "Please wait a few minutes and try again.", flash[:alert]
+  end
+
+  test "magic link display is not rate limited" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    magic_link = MagicLink.create_for!(user)
+
+    11.times do
+      get magic_link_session_path(token: magic_link.token)
+
+      assert_response :success
+    end
   end
 
   test "HEAD magic link does not consume token or create session" do
