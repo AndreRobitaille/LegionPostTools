@@ -38,6 +38,10 @@ Committees and active volunteers may need to track ongoing items, add agenda con
 
 Some important post work is done by members who are not formal officers. The app should not assume only elected officers matter.
 
+### Technical Helpers / Installation Operators
+
+Some users may install, administer, or support the app without holding a Legion office. An official Legion role is not the same as system administration or application permission.
+
 ## General Members
 
 Most post members may not log into early versions. They may receive agendas, minutes, announcements, or records produced by the app.
