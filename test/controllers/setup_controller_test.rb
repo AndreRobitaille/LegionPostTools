@@ -126,4 +126,74 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
   end
+
+  test "partial organization only post reuses organization and creates first user" do
+    organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+
+    assert_no_difference -> { Organization.count } do
+      assert_difference -> { User.count }, 1 do
+        assert_difference -> { Session.count }, 1 do
+          post setup_path, params: {
+            organization: {
+              name: "Robert E. Burns Post 165",
+              unit_number: "165",
+              timezone: "America/Chicago",
+              default_location_name: "Manitowoc Rifle & Pistol Club",
+              default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI"
+            },
+            person: {
+              first_name: "Andre",
+              last_name: "Robitaille",
+              email_address: "andre@example.com"
+            },
+            preset: "american_legion_post"
+          }
+        end
+      end
+    end
+
+    assert_equal organization.id, Organization.first.id
+    user = User.first
+    assert_equal "andre@example.com", user.email_address
+    assert_equal "Andre", user.person.first_name
+    assert user.can?("manage_settings")
+    assert_equal 11, organization.reload.position_titles.count
+    assert_equal 2, organization.meeting_bodies.count
+    assert_redirected_to root_path
+  end
+
+  test "partial user only post reuses user and creates organization" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe", email_address: "jane@example.com")
+    user = User.create!(person: person, email_address: "jane@example.com")
+
+    assert_difference -> { Organization.count }, 1 do
+      assert_no_difference -> { User.count } do
+        assert_difference -> { Session.count }, 1 do
+          post setup_path, params: {
+            organization: {
+              name: "Robert E. Burns Post 165",
+              unit_number: "165",
+              timezone: "America/Chicago",
+              default_location_name: "Manitowoc Rifle & Pistol Club",
+              default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI"
+            },
+            person: {
+              first_name: "Jane",
+              last_name: "Doe",
+              email_address: "jane@example.com"
+            },
+            preset: "american_legion_post"
+          }
+        end
+      end
+    end
+
+    assert_equal user.id, User.first.id
+    assert_equal "jane@example.com", user.reload.email_address
+    assert_equal "Jane", user.person.first_name
+    assert user.can?("manage_settings")
+    assert_equal 11, Organization.first.position_titles.count
+    assert_equal 2, Organization.first.meeting_bodies.count
+    assert_redirected_to root_path
+  end
 end

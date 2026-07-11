@@ -16,14 +16,27 @@ class SetupController < ApplicationController
         return
       end
 
-      organization = Organization.create!(organization_params.merge(unit_type: "american_legion_post"))
+      organization = Organization.first || Organization.new
+      organization.assign_attributes(organization_params.merge(unit_type: "american_legion_post"))
+      organization.save!
       AmericanLegionPostPreset.apply_to(organization) if params[:preset] == "american_legion_post"
 
-      person = Person.create!(normalized_person_params)
-      user = User.create!(person: person, email_address: person.email_address, email_verified_at: Time.current)
+      person_attrs = normalized_person_params
+      email_address = person_attrs[:email_address]
+      user = User.find_by(email_address: email_address)
+
+      if user
+        person = user.person
+        person.assign_attributes(person_attrs)
+        person.save!
+        user.update!(email_address: email_address, email_verified_at: user.email_verified_at || Time.current)
+      else
+        person = Person.create!(person_attrs)
+        user = User.create!(person: person, email_address: email_address, email_verified_at: Time.current)
+      end
 
       PermissionGrant::CAPABILITIES.each do |capability|
-        PermissionGrant.create!(user: user, capability: capability)
+        PermissionGrant.find_or_create_by!(user: user, capability: capability)
       end
 
       @created_user = user
