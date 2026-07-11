@@ -68,6 +68,10 @@ the meeting record core.
 - Harden Kamal production deployment.
 - Configure production host, WebAuthn, mail, storage, and background jobs.
 - Deploy as a separate service on the shared Hetzner VPS.
+- After deploying behind the Kamal proxy, verify that `request.remote_ip` resolves to real
+  client IPs (not the proxy). The auth rate limits key on it; if it resolves to the proxy, all
+  clients share one throttle bucket and sign-in could be throttled globally. Configure
+  `trusted_proxies` if needed.
 
 ## Security and Account Continuity
 

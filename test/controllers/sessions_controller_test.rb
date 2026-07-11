@@ -35,6 +35,23 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Please wait a few minutes and try again.", flash[:alert]
   end
 
+  test "magic link requests for different accounts from one requester are throttled independently" do
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    first = User.create!(person: Person.create!(first_name: "First", last_name: "Officer"), email_address: "first@example.com", email_verified_at: Time.current)
+    second = User.create!(person: Person.create!(first_name: "Second", last_name: "Officer"), email_address: "second@example.com", email_verified_at: Time.current)
+
+    # Exhaust the first account's bucket (same requester IP).
+    10.times { post session_path, params: { email_address: first.email_address } }
+    post session_path, params: { email_address: first.email_address }
+    assert_equal "Please wait a few minutes and try again.", flash[:alert]
+
+    # A different account from the same IP still gets through.
+    assert_emails 1 do
+      post session_path, params: { email_address: second.email_address }
+    end
+    assert_equal "Check your email for a login link.", flash[:notice]
+  end
+
   test "magic link callback signs in" do
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     person = Person.create!(first_name: "Jane", last_name: "Doe")
@@ -71,7 +88,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     Installation.singleton.update!(setup_completed_at: Time.current)
 
-    10.times do
+    30.times do
       post magic_link_session_path, params: { token: "invalid-token" }
       assert_redirected_to new_session_path
       assert_equal "That login link is invalid or expired.", flash[:alert]

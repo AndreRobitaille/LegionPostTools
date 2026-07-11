@@ -2,14 +2,20 @@ class SessionsController < ApplicationController
   layout "entry", only: %i[new create magic_link]
   skip_before_action :redirect_to_setup_if_needed, only: %i[new create magic_link]
 
+  # Request throttle is keyed on account + IP so officers sharing one network
+  # (e.g. a post hall) don't throttle each other; it still caps one account
+  # being hammered from a single IP.
   rate_limit to: 10,
     within: 5.minutes,
     only: :create,
     name: :magic_link_request,
-    by: -> { request.remote_ip },
+    by: -> { "#{params[:email_address].to_s.strip.downcase}:#{request.remote_ip}" },
     with: :redirect_after_auth_throttle
 
-  rate_limit to: 10,
+  # Consumption carries only a token (no account), so it stays per-IP. The limit
+  # is generous enough for a whole post clicking their links from one network,
+  # while still capping token guessing from a single IP (tokens are 256-bit).
+  rate_limit to: 30,
     within: 5.minutes,
     only: :magic_link,
     name: :magic_link_consumption,

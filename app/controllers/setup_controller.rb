@@ -64,7 +64,7 @@ class SetupController < ApplicationController
 
   def redirect_if_setup_recovery_required
     return if setup_complete?
-    return unless Organization.exists? && User.exists?
+    return unless setup_recovery_installed?
 
     redirect_to new_session_path, alert: "Setup recovery requires operator help."
   end
