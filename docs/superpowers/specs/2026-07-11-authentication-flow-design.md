@@ -81,10 +81,11 @@ be viewed, named, and removed. Disabled users can never sign in by any method.
 
 ## Screens to Design/Build (in the visual system; obey the readability hard rule)
 
-- **First-login passkey invitation** — entry-style screen or a dashboard card. Plain language,
-  large primary "Add a passkey" button, secondary "Not now."
-- **Passkey management / Security page** — app shell, a list of passkeys with add/remove,
-  remove confirmation. Lives under Settings › Security (or a Security nav item).
+- **First-login passkey invitation** — a **dismissible dashboard card** (resolved). Plain
+  language, large primary "Add a passkey" button, quiet "×" dismiss. Shown while the user has no
+  passkeys; dismiss is session-scoped.
+- **Passkey management / Security page** — app shell, **Settings › Security tab** (resolved): a
+  list of passkeys with add/remove and a remove confirmation.
 - **Magic-link email template** — branded, big button, expiry note, plain fallback URL.
 - **Login passkey button, wired** — with progress and graceful error states ("That didn't
   work — try the email link instead"), and feature-detection (hide/disable when the browser
@@ -99,31 +100,54 @@ be viewed, named, and removed. Disabled users can never sign in by any method.
     `navigator.credentials.get({publicKey})` → `POST /passkeys/authentication` → on success,
     `Turbo.visit("/")` (or full redirect).
   - Send `X-CSRF-Token` (from the meta tag) and `Accept: application/json` on every request.
-  - Handle base64url ⇄ ArrayBuffer conversion. **Recommended:** pin `@github/webauthn-json`
-    via importmap and use its `create`/`get` wrappers (they consume the exact JSON the backend
-    already emits via `WebAuthn::Credential.options_for_*`). Alternative: hand-rolled helpers.
+  - Handle base64url ⇄ ArrayBuffer conversion via **`@github/webauthn-json`** (resolved),
+    vendored locally through importmap; use its `create`/`get` wrappers (they consume the exact
+    JSON the backend already emits via `WebAuthn::Credential.options_for_*`).
   - Feature-detect `window.PublicKeyCredential`; disable the passkey button when absent.
-- **Post-login routing:** after `#magic_link` consume, if `current_user.passkey_credentials.empty?`,
-  send the user to the passkey invitation instead of `root` (decision below).
-- **Passkey management route:** make `PasskeysController#index` respond to HTML (list) as well
-  as JSON, or add a small `SecurityController`; give `#destroy` an HTML confirm. Keep the JSON
-  responses for the JS ceremonies.
-- **Dev email visibility:** add `letter_opener_web` (or `letter_opener`) and set the dev
-  `delivery_method`; AND make the email actually send in dev — either add a `jobs:` line to
-  `Procfile.dev` (run Solid Queue), or use an inline/async Active Job adapter in development,
-  or `deliver_now` in development. Pick one and document it.
-- **Production email:** configure the provider (Loops.so preferred) behind a service boundary;
-  set `MAIL_FROM` and the `WEBAUTHN_*` env vars. Record these in `docs/DEPLOYMENT.md`.
+- **Post-login routing:** unchanged — after `#magic_link` consume the user still lands on `root`.
+  The passkey invitation is a **dashboard card** rendered when `current_user.passkey_credentials.empty?`
+  (resolved), not a routing redirect.
+- **Passkey management route:** `PasskeysController#index` gains an **HTML** response that renders
+  the **Settings › Security** tab body (list of passkeys), keeping the JSON response for the JS
+  ceremonies; `#destroy` gets an HTML confirm. A minimal `SettingsController`/Settings shell hosts
+  the Security tab.
+- **Dev email visibility:** add **`letter_opener_web`** and set the dev `delivery_method` to
+  `:letter_opener_web`, mounting its inbox at `/letter_opener` (resolved). No `Procfile.dev`
+  change is needed: dev's unset `queue_adapter` means Active Job runs `:async` in-process, so
+  `deliver_later` already delivers. (Verify the adapter empirically during the build.)
+- **Production email:** wire **Loops.so** behind a **replaceable delivery service boundary**
+  (resolved) so the provider is swappable without touching mailer callers; set `MAIL_FROM` and
+  the `WEBAUTHN_*` env vars. Record all of it in `docs/DEPLOYMENT.md`. Deliverability is validated
+  by the operator on the real host.
 
-## Open Decisions (resolve at the start of the next session)
+## Resolved Decisions (2026-07-11)
 
-- **WebAuthn JSON helper:** `@github/webauthn-json` (recommended) vs. hand-rolled base64url.
-- **Passkey invitation placement:** dedicated full screen on first login (recommended) vs. a
-  dismissible dashboard card vs. both (screen first time, card if skipped).
-- **Dev email mechanism:** `letter_opener_web` + a dev job process (recommended) vs. mailer
-  previews + reading the token from the record.
-- **Where passkey management lives:** Settings › Security tab vs. a standalone Security page.
-- **Production provider:** Loops.so vs. SMTP — validate transactional deliverability first.
+These were the open decisions; resolved at the start of the implementation session.
+
+- **WebAuthn JSON helper:** **`@github/webauthn-json`**, pinned via importmap and **vendored
+  locally** (`bin/importmap pin @github/webauthn-json --download`) so there is no runtime CDN
+  dependency. Its `create()` / `get()` consume exactly the JSON the backend already emits via
+  `WebAuthn::Credential.options_for_*` and handle all base64url ⇄ ArrayBuffer conversion.
+- **Passkey invitation placement:** a **dismissible dashboard card** (no dedicated full-screen
+  step). After the magic-link consume the user lands on `root` (dashboard) as today. The card
+  shows whenever `current_user.passkey_credentials.empty?`. Its "×" dismiss is **session-scoped**:
+  it reappears on the next login until the user actually adds a passkey, gently re-nudging
+  adoption without a persisted "never show again." This adds **one** well-formed card to the
+  existing dashboard placeholder — it is **not** the deferred full dashboard redesign.
+- **Dev email mechanism:** **`letter_opener_web`**. Development's `queue_adapter` is unset, so it
+  uses Rails' default **`:async`** adapter — `deliver_later` already runs in-process in dev, so
+  **no `jobs:` line in `Procfile.dev` is required**. The real dev blocker was that
+  `delivery_method` was unset (defaulting to `:smtp`) while `raise_delivery_errors=false`
+  swallowed the failure. Fix: set the dev `delivery_method` to `:letter_opener_web` and mount its
+  inbox at `/letter_opener`, reachable off-box at `http://192.168.37.41:3000/letter_opener`.
+- **Where passkey management lives:** **Settings › Security tab.** Build a minimal Settings shell
+  now (page bar + tab strip) with **Security** as its only tab (Organization/People tabs later).
+  `PasskeysController#index` gains an HTML response (the Security tab body); JSON stays for the JS
+  ceremonies. `#destroy` gets an HTML confirm.
+- **Production provider:** **Loops.so**, wired behind a **replaceable delivery service boundary**
+  so the provider can be swapped without touching mailer callers. Set `MAIL_FROM` and the
+  `WEBAUTHN_*` env vars; document all of it in `docs/DEPLOYMENT.md`. Transactional deliverability
+  is validated by the operator on the real host (out of scope for this session's automated tests).
 
 ## Definition of Done
 
