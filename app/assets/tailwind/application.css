@@ -122,15 +122,15 @@
 .panel-head { color: #6a5320; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
 .panel-lead { margin: 0 0 18px; color: #4f5f72; font-size: 16px; line-height: 1.55; }
 .pk-list { list-style: none; margin: 0 0 20px; padding: 0; }
-.pk-row { display: flex; flex-direction: column; gap: 6px; padding: 14px 0; border-top: 1px solid #eadfbf; }
+.pk-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 0; border-top: 1px solid #eadfbf; }
 .pk-row:last-child { border-bottom: 1px solid #eadfbf; }
-.pk-row-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.pk-rename { display: flex; align-items: flex-end; gap: 10px; margin: 0; flex: 1; }
-.pk-rename-label { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #6a5320; padding-bottom: 12px; }
-.pk-rename-input { flex: 1; min-width: 160px; max-width: 320px; font-size: 16px; padding: 11px 13px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); }
-/* JS edit-in-place: read-only state looks like plain text until "Edit" is clicked. */
-.pk-rename-input[readonly] { border-color: transparent; background: transparent; padding-left: 2px; cursor: default; font-weight: 600; }
-.pk-row-meta { font-size: 14px; color: var(--color-muted); }
+.pk-row-info { flex: 1; min-width: 0; }
+/* Name reads as a heading; the same field becomes a boxed input once "Rename" is clicked. */
+.pk-name-field { display: block; width: 100%; max-width: 360px; font-family: inherit; font-size: 17px; font-weight: 700; color: var(--color-ink); border: 1.5px solid transparent; border-radius: 6px; background: transparent; padding: 8px 2px; margin: 0 0 2px; }
+.pk-name-field::placeholder { font-weight: 400; color: var(--color-muted); }
+.pk-name-field:not([readonly]) { border-color: #cbb98c; background: #fff; font-weight: 400; padding: 8px 12px; }
+.pk-row-meta { font-size: 14px; color: var(--color-muted); margin: 0; }
+.pk-row-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .pk-row-remove { margin: 0; }
 .btn-secondary { background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }

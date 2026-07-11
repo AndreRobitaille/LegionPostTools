@@ -10,7 +10,7 @@ export default class extends Controller {
   connect() {
     this.editing = false
     this.fieldTarget.readOnly = true
-    this.buttonTarget.textContent = "Edit"
+    this.buttonTarget.textContent = "Rename"
   }
 
   toggle(event) {

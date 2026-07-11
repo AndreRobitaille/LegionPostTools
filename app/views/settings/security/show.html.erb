@@ -20,24 +20,24 @@
   <% if @passkey_credentials.any? %>
     <ul class="pk-list">
       <% @passkey_credentials.each do |credential| %>
-        <li class="pk-row">
-          <div class="pk-row-top">
-            <%= form_with url: passkey_path(credential), method: :patch, class: "pk-rename",
-                  data: { controller: "rename" } do |form| %>
-              <label class="pk-rename-label" for="pk-name-<%= credential.id %>">Name</label>
+        <li class="pk-row" data-controller="rename">
+          <div class="pk-row-info">
+            <%= form_with url: passkey_path(credential), method: :patch, id: "rename-#{credential.id}" do |form| %>
               <%= form.text_field :nickname, value: credential.nickname, id: "pk-name-#{credential.id}",
-                    class: "pk-rename-input", autocomplete: "off", placeholder: "Name this device",
-                    data: { rename_target: "field" } %>
-              <button type="submit" class="btn-secondary"
-                      data-rename-target="button" data-action="rename#toggle">Save</button>
+                    class: "pk-name-field", autocomplete: "off", placeholder: "Unnamed passkey",
+                    aria: { label: "Passkey name" }, data: { rename_target: "field" } %>
             <% end %>
+            <p class="pk-row-meta">
+              Added <%= credential.created_at.to_date.strftime("%b %-d, %Y") %><% if credential.last_used_at %> &middot; last used <%= credential.last_used_at.to_date.strftime("%b %-d, %Y") %><% end %>
+            </p>
+          </div>
+          <div class="pk-row-actions">
+            <button type="submit" form="rename-<%= credential.id %>" class="btn-secondary"
+                    data-rename-target="button" data-action="rename#toggle">Rename</button>
             <%= button_to "Remove", passkey_path(credential), method: :delete,
                   class: "btn-return", form: { class: "pk-row-remove" },
                   data: { turbo_confirm: "Remove this passkey? You'll need the email link or another passkey to sign in on this device." } %>
           </div>
-          <p class="pk-row-meta">
-            Added <%= credential.created_at.to_date.strftime("%b %-d, %Y") %><% if credential.last_used_at %> &middot; last used <%= credential.last_used_at.to_date.strftime("%b %-d, %Y") %><% end %>
-          </p>
         </li>
       <% end %>
     </ul>
