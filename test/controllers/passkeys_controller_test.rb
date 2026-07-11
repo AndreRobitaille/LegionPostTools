@@ -7,6 +7,19 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
+  test "registration options expose a base64url user handle (webauthn-json atob-decodes it)" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    sign_in_as(user)
+
+    post registration_options_passkeys_path
+
+    assert_response :success
+    handle = JSON.parse(response.body).dig("user", "id")
+    assert_equal user.webauthn_id, handle
+    assert_nothing_raised { Base64.urlsafe_decode64(handle) }
+  end
+
   test "authenticated user can request registration options" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
@@ -43,7 +56,7 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
       assert_equal({ "id" => "1", "name" => "jane@example.com", "display_name" => "Jane Doe" }, payload["user"])
       assert_equal({
         user: {
-          id: user.id.to_s,
+          id: user.webauthn_id,
           name: user.email_address,
           display_name: user.person.full_name
         },
@@ -115,6 +128,43 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
       WebAuthn::Credential.define_singleton_method(:from_get, original_from_get)
       WebAuthn::Credential.define_singleton_method(:options_for_get, original_options_for_get)
     end
+  end
+
+  test "authenticated user renames their own passkey and returns to Security" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    credential = PasskeyCredential.create!(user: user, external_id: "cid", public_key: "pk", sign_count: 0, nickname: "Passkey")
+    sign_in_as(user)
+
+    patch passkey_path(credential), params: { nickname: "  Kitchen iPad  " }
+
+    assert_redirected_to settings_security_path
+    assert_equal "Passkey name updated.", flash[:notice]
+    assert_equal "Kitchen iPad", credential.reload.nickname
+  end
+
+  test "renaming with a blank name clears the nickname" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    credential = PasskeyCredential.create!(user: user, external_id: "cid", public_key: "pk", sign_count: 0, nickname: "Old")
+    sign_in_as(user)
+
+    patch passkey_path(credential), params: { nickname: "   " }
+
+    assert_redirected_to settings_security_path
+    assert_nil credential.reload.nickname
+  end
+
+  test "cannot rename another user's passkey" do
+    owner = User.create!(person: Person.create!(first_name: "Owner", last_name: "One"), email_address: "owner@example.com", email_verified_at: Time.current)
+    credential = PasskeyCredential.create!(user: owner, external_id: "cid", public_key: "pk", sign_count: 0, nickname: "Owner Key")
+    attacker = User.create!(person: Person.create!(first_name: "Mal", last_name: "Ory"), email_address: "mal@example.com", email_verified_at: Time.current)
+    sign_in_as(attacker)
+
+    patch passkey_path(credential), params: { nickname: "Hijacked" }
+
+    assert_response :not_found
+    assert_equal "Owner Key", credential.reload.nickname
   end
 
   test "authenticated user removes their own passkey and returns to Security" do

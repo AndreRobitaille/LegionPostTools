@@ -10,37 +10,49 @@
   <span class="tabstrip-tab is-active">Security</span>
 </div>
 
-<section class="panel" data-controller="passkey" data-passkey-redirect-value="/settings/security">
-  <div class="panel-head">&#9670; Passkeys</div>
+<section class="panel">
+  <div class="panel-head">&#9670; Your passkeys</div>
   <p class="panel-lead">
     Passkeys let you sign in with your fingerprint, face, or device PIN instead of an email link.
-    Add one for each device you use.
+    Give each one a name so you can tell your devices apart.
   </p>
 
   <% if @passkey_credentials.any? %>
     <ul class="pk-list">
       <% @passkey_credentials.each do |credential| %>
         <li class="pk-row">
-          <div class="pk-row-main">
-            <span class="pk-row-name"><%= credential.nickname.presence || "Passkey" %></span>
-            <span class="pk-row-meta">
-              Added <%= credential.created_at.to_date.strftime("%b %-d, %Y") %><% if credential.last_used_at %> &middot; last used <%= credential.last_used_at.to_date.strftime("%b %-d, %Y") %><% end %>
-            </span>
+          <div class="pk-row-top">
+            <%= form_with url: passkey_path(credential), method: :patch, class: "pk-rename",
+                  data: { controller: "rename" } do |form| %>
+              <label class="pk-rename-label" for="pk-name-<%= credential.id %>">Name</label>
+              <%= form.text_field :nickname, value: credential.nickname, id: "pk-name-#{credential.id}",
+                    class: "pk-rename-input", autocomplete: "off", placeholder: "Name this device",
+                    data: { rename_target: "field" } %>
+              <button type="submit" class="btn-secondary"
+                      data-rename-target="button" data-action="rename#toggle">Save</button>
+            <% end %>
+            <%= button_to "Remove", passkey_path(credential), method: :delete,
+                  class: "btn-return", form: { class: "pk-row-remove" },
+                  data: { turbo_confirm: "Remove this passkey? You'll need the email link or another passkey to sign in on this device." } %>
           </div>
-          <%= button_to "Remove", passkey_path(credential), method: :delete,
-                class: "btn-return", form: { class: "pk-row-remove" },
-                data: { turbo_confirm: "Remove this passkey? You'll need the email link or another passkey to sign in on this device." } %>
+          <p class="pk-row-meta">
+            Added <%= credential.created_at.to_date.strftime("%b %-d, %Y") %><% if credential.last_used_at %> &middot; last used <%= credential.last_used_at.to_date.strftime("%b %-d, %Y") %><% end %>
+          </p>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="pk-empty">You have no passkeys yet. Add one to sign in faster next time.</p>
+    <p class="pk-empty">You have no passkeys yet. Add one below to sign in faster next time.</p>
   <% end %>
 
-  <div class="pk-add">
-    <label class="pk-add-label" for="passkey-nickname">Name this device (optional)</label>
-    <input class="pk-add-input" id="passkey-nickname" type="text" data-passkey-nickname
-           placeholder="e.g. My phone" autocomplete="off">
+  <div class="pk-add-block" data-controller="passkey" data-passkey-redirect-value="/settings/security">
+    <div class="panel-head panel-head--add">&#9670; Add a new passkey</div>
+    <p class="panel-lead pk-add-lead">
+      Register the device you're using right now — you'll be asked for your fingerprint, face, or device PIN.
+    </p>
+    <label class="pk-add-label" for="new-passkey-nickname">Name for this new passkey (optional)</label>
+    <input class="pk-add-input" id="new-passkey-nickname" type="text" data-passkey-nickname
+           placeholder="e.g. My iPhone or Office laptop" autocomplete="off">
     <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
       Add a passkey
     </button>

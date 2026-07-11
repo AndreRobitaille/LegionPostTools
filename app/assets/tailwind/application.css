@@ -122,14 +122,28 @@
 .panel-head { color: #6a5320; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
 .panel-lead { margin: 0 0 18px; color: #4f5f72; font-size: 16px; line-height: 1.55; }
 .pk-list { list-style: none; margin: 0 0 20px; padding: 0; }
-.pk-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid #eadfbf; }
+.pk-row { display: flex; flex-direction: column; gap: 6px; padding: 14px 0; border-top: 1px solid #eadfbf; }
 .pk-row:last-child { border-bottom: 1px solid #eadfbf; }
-.pk-row-main { display: flex; flex-direction: column; gap: 3px; }
-.pk-row-name { font-size: 16px; font-weight: 600; color: var(--color-ink); }
+.pk-row-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.pk-rename { display: flex; align-items: flex-end; gap: 10px; margin: 0; flex: 1; }
+.pk-rename-label { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #6a5320; padding-bottom: 12px; }
+.pk-rename-input { flex: 1; min-width: 160px; max-width: 320px; font-size: 16px; padding: 11px 13px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); }
+/* JS edit-in-place: read-only state looks like plain text until "Edit" is clicked. */
+.pk-rename-input[readonly] { border-color: transparent; background: transparent; padding-left: 2px; cursor: default; font-weight: 600; }
 .pk-row-meta { font-size: 14px; color: var(--color-muted); }
 .pk-row-remove { margin: 0; }
+.btn-secondary { background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.pk-empty { color: #4f5f72; font-size: 16px; line-height: 1.55; margin: 0 0 20px; }
-.pk-add { border-top: 1px solid #eadfbf; padding-top: 18px; }
+.pk-empty { color: #4f5f72; font-size: 16px; line-height: 1.55; margin: 0 0 24px; }
+
+/* Distinct "add a new passkey" block, set apart from the existing list ------- */
+.pk-add-block { margin-top: 24px; border: 1.5px solid #e0d3ab; border-radius: 8px; background: #fdfaf0; padding: 20px 22px; }
+.panel-head--add { margin-bottom: 8px; }
+.pk-add-lead { margin-top: 0; }
 .pk-add-label { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #6a5320; margin-bottom: 7px; }
 .pk-add-input { width: 100%; max-width: 340px; display: block; font-size: 16px; padding: 12px 14px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); margin-bottom: 14px; }
+
+/* Flash notices on authenticated (app-shell) pages -------------------------- */
+.app-flash { border-radius: 6px; padding: 12px 16px; font-size: 16px; line-height: 1.5; margin: 0 0 20px; }
+.app-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
+.app-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }

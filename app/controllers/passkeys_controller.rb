@@ -16,7 +16,7 @@ class PasskeysController < ApplicationController
   def registration_options
     options = WebAuthn::Credential.options_for_create(
       user: {
-        id: current_user.id.to_s,
+        id: current_user.webauthn_id,
         name: current_user.email_address,
         display_name: current_user.person.full_name
       },
@@ -73,6 +73,12 @@ class PasskeysController < ApplicationController
     render json: { status: "authenticated" }
   rescue WebAuthn::Error
     render json: { error: "invalid passkey authentication" }, status: :unauthorized
+  end
+
+  def update
+    credential = current_user.passkey_credentials.find(params[:id])
+    credential.update!(nickname: params[:nickname].to_s.strip.presence)
+    redirect_to settings_security_path, notice: "Passkey name updated."
   end
 
   def destroy

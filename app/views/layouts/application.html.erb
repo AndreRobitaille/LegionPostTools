@@ -25,6 +25,12 @@
       <%= render "shared/app_header" %>
     <% end %>
     <main class="app-main">
+      <% if notice.present? %>
+        <p class="app-flash app-flash-notice" role="status"><%= notice %></p>
+      <% end %>
+      <% if alert.present? %>
+        <p class="app-flash app-flash-alert" role="alert"><%= alert %></p>
+      <% end %>
       <%= yield %>
     </main>
   </body>

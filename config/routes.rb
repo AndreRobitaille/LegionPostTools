@@ -9,7 +9,7 @@ Rails.application.routes.draw do
     get :magic_link, on: :collection
     post :magic_link, on: :collection
   end
-  resources :passkeys, only: %i[index destroy] do
+  resources :passkeys, only: %i[index update destroy] do
     collection do
       post :registration_options
       post :registration

@@ -32,4 +32,23 @@ class Settings::SecurityControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "no passkeys yet", response.body
   end
+
+  test "existing passkeys are renameable and the add-new section is distinct" do
+    credential = PasskeyCredential.create!(user: @user, external_id: "cid1", public_key: "pk",
+      sign_count: 0, nickname: "MacBook")
+    sign_in_as(@user)
+
+    get settings_security_path
+
+    assert_response :success
+    # An editable name field bound to a PATCH rename form for the existing passkey.
+    assert_select "form[action=?]", passkey_path(credential) do
+      assert_select "input[type=hidden][name=_method][value=patch]"
+      assert_select "input[name=nickname][value=?]", "MacBook"
+    end
+    # A clearly separate "add new" section whose field is about the new passkey.
+    assert_match "Your passkeys", response.body
+    assert_match "Add a new passkey", response.body
+    assert_match "Name for this new passkey", response.body
+  end
 end
