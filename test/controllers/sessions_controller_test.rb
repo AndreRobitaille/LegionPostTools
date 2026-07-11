@@ -14,8 +14,10 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "magic link callback signs in" do
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
     magic_link = MagicLink.create_for!(user)
 
     get magic_link_session_path(token: magic_link.token)

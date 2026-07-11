@@ -3,16 +3,28 @@ require "test_helper"
 class DashboardControllerTest < ActionDispatch::IntegrationTest
   test "requires authentication after setup" do
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
 
     get root_path
 
     assert_redirected_to new_session_path
   end
 
+  test "partial setup state still redirects to setup" do
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+
+    get root_path
+
+    assert_redirected_to new_setup_path
+  end
+
   test "authenticated user sees dashboard" do
     organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     person = Person.create!(first_name: "Andre", last_name: "Robitaille")
     user = User.create!(person: person, email_address: "andre@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
     Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current)
 
     request = ActionDispatch::TestRequest.create

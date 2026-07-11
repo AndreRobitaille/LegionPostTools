@@ -2,11 +2,20 @@ class SetupController < ApplicationController
   skip_before_action :redirect_to_setup_if_needed
   before_action :redirect_if_already_configured
 
+  SETUP_ADVISORY_LOCK_KEY = 7_106_206
+
   def new
   end
 
   def create
     ApplicationRecord.transaction do
+      ApplicationRecord.connection.execute("SELECT pg_advisory_xact_lock(#{SETUP_ADVISORY_LOCK_KEY})")
+
+      if setup_complete?
+        redirect_to root_path, notice: "LegionPostTools is ready."
+        return
+      end
+
       organization = Organization.create!(organization_params.merge(unit_type: "american_legion_post"))
       AmericanLegionPostPreset.apply_to(organization) if params[:preset] == "american_legion_post"
 
@@ -17,8 +26,10 @@ class SetupController < ApplicationController
         PermissionGrant.create!(user: user, capability: capability)
       end
 
-      start_new_session_for(user)
+      @created_user = user
     end
+
+    start_new_session_for(@created_user)
 
     redirect_to root_path, notice: "LegionPostTools is ready."
   rescue ActiveRecord::RecordInvalid => e
@@ -29,7 +40,7 @@ class SetupController < ApplicationController
   private
 
   def redirect_if_already_configured
-    return unless Organization.exists? || User.exists?
+    return unless setup_complete?
 
     redirect_to root_path
   end

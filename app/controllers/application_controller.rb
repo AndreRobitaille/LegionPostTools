@@ -38,7 +38,7 @@ class ApplicationController < ActionController::Base
 
   def redirect_to_setup_if_needed
     return if controller_name == "setup"
-    return if Organization.exists? || User.exists?
+    return if setup_complete?
 
     redirect_to new_setup_path
   end
@@ -60,5 +60,9 @@ class ApplicationController < ActionController::Base
     end
 
     Current.session = session
+  end
+
+  def setup_complete?
+    Organization.exists? && User.joins(:permission_grants).where(disabled_at: nil, permission_grants: { capability: "manage_settings" }).exists?
   end
 end
