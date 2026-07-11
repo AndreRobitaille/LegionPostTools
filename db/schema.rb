@@ -90,7 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_060000) do
 
   create_table "passkey_credentials", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "external_id", null: false
+    t.text "external_id", null: false
     t.datetime "last_used_at"
     t.string "nickname"
     t.text "public_key", null: false

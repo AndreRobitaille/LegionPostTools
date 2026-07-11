@@ -20,6 +20,10 @@ class PasskeysController < ApplicationController
         name: current_user.email_address,
         display_name: current_user.person.full_name
       },
+      authenticator_selection: {
+        resident_key: "required",
+        user_verification: "required"
+      },
       exclude: current_user.passkey_credentials.pluck(:external_id)
     )
 
