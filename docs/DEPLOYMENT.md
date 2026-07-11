@@ -37,10 +37,16 @@ Production uses three PostgreSQL databases: primary, cache, and queue. All three
 Authentication requires these production values:
 
 - `APP_HOST` — public hostname, for example `legion.tworiversmatters.com`.
-- `MAIL_FROM` — sender address for application email.
+- `MAIL_PROVIDER` — `loops` (preferred) or `action_mailer` (SMTP). See the Email section.
+- `MAIL_FROM` — sender address (used by the Action Mailer backend).
+- `LOOPS_API_KEY` / `LOOPS_MAGIC_LINK_TEMPLATE_ID` — required when `MAIL_PROVIDER=loops`.
 - `WEBAUTHN_ORIGIN` — full origin, for example `https://legion.tworiversmatters.com`.
-- `WEBAUTHN_RP_ID` — relying party ID, usually the hostname.
+- `WEBAUTHN_RP_ID` — relying party ID: the registrable domain, no scheme or port (e.g.
+  `legion.tworiversmatters.com`). A mismatch with the browser origin makes passkeys fail silently.
 - `WEBAUTHN_RP_NAME` — display name, usually `LegionPostTools` or the post name.
+
+Passkeys require a secure context (HTTPS). They do not work over plain HTTP or when the app is
+reached by IP address, so passkey sign-in only functions once TLS is terminated for `APP_HOST`.
 
 Rails/Kamal also requires normal production secrets such as `RAILS_MASTER_KEY` and database credentials.
 
@@ -48,14 +54,28 @@ Current production expects `LEGION_POST_TOOLS_DATABASE_PASSWORD` for database ac
 
 ## Email
 
-Email provider integration is not finalized.
+Email delivery is behind a replaceable boundary: the `MailDelivery` seam
+(`app/services/mail_delivery.rb`). Callers use `MailDelivery.deliver_magic_link(user:, login_url:)`;
+the backend is chosen at boot by `MAIL_PROVIDER` (see `config/initializers/mail_delivery.rb`).
 
-Likely options:
+| `MAIL_PROVIDER` | Backend | Notes |
+|-----------------|---------|-------|
+| `action_mailer` (default) | `MailDelivery::ActionMailerBackend` | Normal Action Mailer pipeline; configure SMTP in `config/environments/production.rb` and set `MAIL_FROM`. Renders the branded ERB template. |
+| `loops` | `MailDelivery::LoopsBackend` | Posts to the Loops.so transactional API. The email body is rendered by a **Loops template**, not the ERB template. |
 
-- Loops.so if it works well for transactional auth messages and document distribution.
-- SMTP or another transactional email provider if Loops.so is not suitable.
+For **Loops.so** (`MAIL_PROVIDER=loops`), also set:
 
-Keep email behind a replaceable boundary. Do not scatter provider-specific assumptions through the domain model.
+- `LOOPS_API_KEY` — Loops transactional API key.
+- `LOOPS_MAGIC_LINK_TEMPLATE_ID` — id of the Loops transactional template for the sign-in email.
+  Create a transactional template in the Loops dashboard that references `{{login_url}}` and
+  `{{name}}`, then set this to its id.
+
+**Validate deliverability first:** whichever provider, send yourself a real sign-in link on the
+host and confirm inbox placement (SPF/DKIM/DMARC aligned) before onboarding members. This is an
+operator step; it is not covered by automated tests.
+
+Do not scatter provider-specific assumptions through the domain model — add a new backend under
+`app/services/mail_delivery/` rather than branching in callers.
 
 ## AI Provider
 

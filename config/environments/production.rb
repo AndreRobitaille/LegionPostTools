@@ -63,7 +63,10 @@ Rails.application.configure do
     protocol: ENV.fetch("APP_PROTOCOL", "https")
   }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
+  # Email delivery goes through the MailDelivery seam (app/services/mail_delivery.rb),
+  # selected by MAIL_PROVIDER (default "action_mailer"; set "loops" for Loops.so).
+  # When MAIL_PROVIDER=action_mailer, configure SMTP here. See docs/DEPLOYMENT.md.
+  #
   # config.action_mailer.smtp_settings = {
   #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
   #   password: Rails.application.credentials.dig(:smtp, :password),

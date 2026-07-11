@@ -33,4 +33,23 @@ class MailDeliveryTest < ActiveSupport::TestCase
       )
     end
   end
+
+  test "loops backend posts email, template id, and data variables" do
+    ENV["LOOPS_API_KEY"] = "test-key"
+    ENV["LOOPS_MAGIC_LINK_TEMPLATE_ID"] = "tmpl_123"
+
+    backend = MailDelivery::LoopsBackend.new
+    captured = nil
+    backend.define_singleton_method(:post) { |payload| captured = payload }
+
+    backend.deliver_magic_link(user: @user, login_url: "https://x.test/l?token=abc")
+
+    assert_equal "tmpl_123", captured[:transactionalId]
+    assert_equal "jane@example.com", captured[:email]
+    assert_equal "https://x.test/l?token=abc", captured[:dataVariables][:login_url]
+    assert_equal "Jane Doe", captured[:dataVariables][:name]
+  ensure
+    ENV.delete("LOOPS_API_KEY")
+    ENV.delete("LOOPS_MAGIC_LINK_TEMPLATE_ID")
+  end
 end
