@@ -8,16 +8,20 @@ This document summarizes current architecture and durable product decisions.
 - PostgreSQL.
 - Hotwire/Turbo with importmap.
 - Tailwind CSS.
-- Action Text for rich text.
-- Active Storage for files and generated artifacts.
+- Action Text is installed and present for planned rich text workflows.
+- Active Storage is installed and present for planned file and artifact workflows.
 - Solid Queue for background jobs.
 - Docker and Kamal for deployment.
 
 ## Installation Model
 
-LegionPostTools is a single-installation application. It is not a SaaS or multi-tenant platform today.
+LegionPostTools is currently configured for one organization at a time. It is not a SaaS or multi-tenant platform today.
 
-The app should support configurable organizations or units inside an installation so a local American Legion Family may eventually share one deployment. Do not deeply model every legal relationship between Post, Auxiliary, Sons, and Riders yet.
+The schema leaves room for future configurable organizations or units so an American Legion Family deployment could eventually share one installation. Do not deeply model every legal relationship between Post, Auxiliary, Sons, and Riders yet.
+
+## Runtime / Data Topology
+
+Production uses a primary PostgreSQL database plus database-backed cache and queue storage. Rails defaults are used for Solid Queue and Solid Cache, and background jobs run against the database-backed Rails infrastructure.
 
 ## Identity Model
 
