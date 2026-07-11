@@ -110,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
     t.index ["person_id", "position_title_id", "starts_on"], name: "idx_position_assignments_identity"
     t.index ["person_id"], name: "index_position_assignments_on_person_id"
     t.index ["position_title_id"], name: "index_position_assignments_on_position_title_id"
+    t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "position_assignments_date_order_check"
   end
 
   create_table "position_titles", force: :cascade do |t|
@@ -132,7 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
     t.bigint "person_id", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
-    t.index ["person_id"], name: "index_users_on_person_id"
+    t.index ["person_id"], name: "index_users_on_person_id", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

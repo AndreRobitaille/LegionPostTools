@@ -12,4 +12,11 @@ class PositionAssignmentTest < ActiveSupport::TestCase
 
     assert_not assignment.active_on?(Date.new(2024, 6, 2))
   end
+
+  test "rejects end date before start date" do
+    assignment = PositionAssignment.new(starts_on: Date.new(2024, 6, 1), ends_on: Date.new(2024, 5, 31))
+
+    assert_not assignment.valid?
+    assert_includes assignment.errors[:ends_on], "must be on or after starts on"
+  end
 end

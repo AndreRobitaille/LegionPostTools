@@ -13,7 +13,7 @@ class CreateCoreIdentityAndOrganizationModels < ActiveRecord::Migration[8.1]
     add_index :people, :member_number
 
     create_table :users do |t|
-      t.references :person, null: false, foreign_key: true
+      t.references :person, null: false, foreign_key: true, index: { unique: true }
       t.string :email_address, null: false
       t.datetime :email_verified_at
       t.datetime :disabled_at
@@ -49,6 +49,7 @@ class CreateCoreIdentityAndOrganizationModels < ActiveRecord::Migration[8.1]
       t.timestamps
     end
     add_index :position_assignments, %i[person_id position_title_id starts_on], name: "idx_position_assignments_identity"
+    add_check_constraint :position_assignments, "ends_on IS NULL OR ends_on >= starts_on", name: "position_assignments_date_order_check"
 
     create_table :permission_grants do |t|
       t.references :user, null: false, foreign_key: true
