@@ -1,5 +1,30 @@
-<p>Hello <%= @user.person.full_name %>,</p>
+<div style="background:#F4EEDD; padding:28px 16px; font-family:system-ui,'Segoe UI',Helvetica,Arial,sans-serif; color:#1b222b;">
+  <div style="max-width:520px; margin:0 auto; background:#FBF7EC; border-top:4px solid #C6A15B; border-radius:6px; padding:28px 26px;">
+    <div style="text-align:center; color:#0A2240; font-size:13px; letter-spacing:.32em; text-transform:uppercase; font-weight:700;">
+      The American Legion
+    </div>
+    <div style="text-align:center; color:#C6A15B; letter-spacing:.5em; font-size:12px; margin:10px 0 18px;">&#9670; &#9670; &#9670;</div>
 
-<p><%= link_to "Sign in to LegionPostTools", @login_url %></p>
+    <p style="font-size:16px; line-height:1.55; margin:0 0 14px;">Hello <%= @user.person.full_name %>,</p>
+    <p style="font-size:16px; line-height:1.55; margin:0 0 22px;">
+      Use the button below to sign in to LegionPostTools. There's no password to remember.
+    </p>
 
-<p>This single-use link expires in 15 minutes.</p>
+    <div style="text-align:center; margin:0 0 22px;">
+      <a href="<%= @login_url %>"
+         style="display:inline-block; background:#0A2240; color:#ffffff; font-size:18px; font-weight:700; text-decoration:none; padding:15px 30px; border-radius:6px;">
+        Sign in to LegionPostTools
+      </a>
+    </div>
+
+    <p style="font-size:14px; line-height:1.55; color:#5b6b7e; margin:0 0 6px;">
+      This link works once and expires in 15 minutes.
+    </p>
+    <p style="font-size:14px; line-height:1.55; color:#5b6b7e; margin:0 0 4px;">
+      If the button doesn't work, copy and paste this address into your browser:
+    </p>
+    <p style="font-size:14px; line-height:1.5; word-break:break-all;">
+      <a href="<%= @login_url %>" style="color:#0A2240;"><%= @login_url %></a>
+    </p>
+  </div>
+</div>
