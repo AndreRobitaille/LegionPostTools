@@ -1,13 +1,15 @@
 class SessionsController < ApplicationController
+  layout "entry", only: %i[new create magic_link]
   skip_before_action :redirect_to_setup_if_needed, only: %i[new create magic_link]
 
   def new
+    @organization = Organization.first
   end
 
   def create
     user = User.find_by(email_address: params[:email_address].to_s.strip.downcase)
 
-    if user&.disabled_at.blank?
+    if user && user.disabled_at.blank?
       magic_link = MagicLink.create_for!(user)
       MagicLinksMailer.login(user, magic_link.token).deliver_later
     end
@@ -16,6 +18,8 @@ class SessionsController < ApplicationController
   end
 
   def magic_link
+    @organization = Organization.first
+
     if request.get? || request.head?
       return render :magic_link
     end

@@ -1,10 +1,46 @@
-<h1>Sign in</h1>
+<% content_for :title, "Sign in" %>
 
-<%= form_with url: session_path, method: :post do |form| %>
-  <div>
-    <%= form.label :email_address, "Email address" %>
-    <%= form.email_field :email_address %>
+<div class="entry">
+  <div class="entry-hero">
+    <div class="entry-rays"></div>
+    <div class="entry-fade"></div>
+
+    <div class="entry-col">
+      <%= image_tag "al-emblem.png", alt: "The American Legion emblem", class: "entry-emb" %>
+      <% if @organization&.unit_type.present? %>
+        <div class="entry-kick"><%= @organization.unit_type.titleize %></div>
+      <% end %>
+      <h1 class="entry-title"><%= @organization&.name || "LegionPostTools" %></h1>
+      <div class="entry-diamonds">&#9670; &#9670; &#9670;</div>
+      <% if @organization&.default_location_name.present? %>
+        <div class="entry-loc"><%= @organization.default_location_name %></div>
+      <% end %>
+
+      <div class="entry-card">
+        <% if flash[:notice] %>
+          <div class="entry-flash entry-flash-notice"><%= flash[:notice] %></div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="entry-flash entry-flash-alert"><%= flash[:alert] %></div>
+        <% end %>
+
+        <h2 class="entry-card-title">Sign in</h2>
+        <p class="entry-lead">Enter your email and we'll send you a secure sign-in link. There's no password to remember.</p>
+
+        <%= form_with url: session_path, method: :post do |form| %>
+          <div class="entry-field">
+            <%= form.label :email_address, "Email address" %>
+            <%= form.email_field :email_address, autocomplete: "email", placeholder: "you@example.com", required: true %>
+          </div>
+          <%= form.button "Send my sign-in link", class: "entry-btn" %>
+        <% end %>
+
+        <p class="entry-reassure">The link works once and expires shortly. Check your inbox after you tap the button.</p>
+
+        <div class="entry-orline">Already set up a passkey?</div>
+        <%# TODO: passkey sign-in JS is not wired yet. This is a designed placeholder; behavior to follow. %>
+        <button type="button" class="entry-passkey" data-passkey-signin>&#128273; Sign in with a passkey</button>
+      </div>
+    </div>
   </div>
-
-  <%= form.submit "Send login link" %>
-<% end %>
+</div>
