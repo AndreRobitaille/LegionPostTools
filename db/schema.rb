@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_030200) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,6 +52,95 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_030200) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "meeting_bodies", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "default_distribution", default: "print", null: false
+    t.text "default_location_address"
+    t.string "default_location_name"
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "slug"], name: "index_meeting_bodies_on_organization_id_and_slug", unique: true
+    t.index ["organization_id"], name: "index_meeting_bodies_on_organization_id"
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "default_location_address"
+    t.string "default_location_name"
+    t.string "name", null: false
+    t.string "timezone", default: "America/Chicago", null: false
+    t.string "unit_number"
+    t.string "unit_type", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "people", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email_address"
+    t.string "first_name", null: false
+    t.string "last_name", null: false
+    t.string "member_number"
+    t.text "notes"
+    t.string "phone_number"
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_people_on_email_address"
+    t.index ["member_number"], name: "index_people_on_member_number"
+  end
+
+  create_table "permission_grants", force: :cascade do |t|
+    t.string "capability", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "capability"], name: "index_permission_grants_on_user_id_and_capability", unique: true
+    t.index ["user_id"], name: "index_permission_grants_on_user_id"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_acceptance_motions'::character varying, 'view_internal_records'::character varying]::text[])", name: "permission_grants_capability_check"
+  end
+
+  create_table "position_assignments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ends_on"
+    t.bigint "person_id", null: false
+    t.bigint "position_title_id", null: false
+    t.date "starts_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id", "position_title_id", "starts_on"], name: "idx_position_assignments_identity"
+    t.index ["person_id"], name: "index_position_assignments_on_person_id"
+    t.index ["position_title_id"], name: "index_position_assignments_on_position_title_id"
+  end
+
+  create_table "position_titles", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.integer "display_order", default: 0, null: false
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.boolean "required_by_default", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "name"], name: "index_position_titles_on_organization_id_and_name", unique: true
+    t.index ["organization_id"], name: "index_position_titles_on_organization_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "disabled_at"
+    t.string "email_address", null: false
+    t.datetime "email_verified_at"
+    t.bigint "person_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["person_id"], name: "index_users_on_person_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "meeting_bodies", "organizations"
+  add_foreign_key "permission_grants", "users"
+  add_foreign_key "position_assignments", "people"
+  add_foreign_key "position_assignments", "position_titles"
+  add_foreign_key "position_titles", "organizations"
+  add_foreign_key "users", "people"
 end
