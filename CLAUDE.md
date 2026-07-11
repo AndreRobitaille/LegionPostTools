@@ -24,3 +24,7 @@ When design and implementation trade off, preserve the design intent and simplif
 ## Documentation
 
 When writing docs, preserve context for future agents. Be concise, specific, and explicit about American Legion realities. Avoid vague “users may want” language when the project already has known context.
+
+## Local Development Servers
+
+Andre works from a different machine than the one this app runs on. Any development server you start (Rails, Vite/Tailwind watchers, the brainstorming visual companion, or any preview server) MUST bind to `0.0.0.0`, not `127.0.0.1`/`localhost`, so it is reachable off-box. For `bin/rails server`, use `-b 0.0.0.0`.

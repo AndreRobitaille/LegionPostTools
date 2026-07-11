@@ -44,6 +44,10 @@ For meaningful product changes, write or update a design/spec before implementat
 
 Do not jump directly from idea to code when the change affects product behavior or long-term architecture.
 
+## Local Development Servers
+
+The developer typically works from a different machine than the one running the app. Bind any development server to `0.0.0.0` (not `127.0.0.1`/`localhost`) so it is reachable off-box. For `bin/rails server`, use `-b 0.0.0.0`. This applies to Tailwind/asset watchers, preview servers, and any tooling that serves over HTTP.
+
 ## Verification
 
 Before claiming work is complete, run relevant checks and report exact results.
