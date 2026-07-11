@@ -1,7 +1,7 @@
 class MagicLinksMailer < ApplicationMailer
-  def login(user, token)
+  def login(user, login_url)
     @user = user
-    @login_url = magic_link_session_url(token: token)
+    @login_url = login_url
 
     mail to: user.email_address, subject: "Sign in to LegionPostTools"
   end

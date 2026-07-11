@@ -11,7 +11,8 @@ class SessionsController < ApplicationController
 
     if user && user.disabled_at.blank?
       magic_link = MagicLink.create_for!(user)
-      MagicLinksMailer.login(user, magic_link.token).deliver_later
+      login_url = magic_link_session_url(token: magic_link.token)
+      MailDelivery.deliver_magic_link(user: user, login_url: login_url)
     end
 
     redirect_to new_session_path, notice: "Check your email for a login link."

@@ -13,3 +13,16 @@ module ActiveSupport
     # Add more helper methods to be used by all tests here...
   end
 end
+
+class ActionDispatch::IntegrationTest
+  # Forge an authenticated session (auth is passwordless; there is no password login to POST).
+  def sign_in_as(user)
+    session_record = Session.create!(
+      user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current
+    )
+    jar = ActionDispatch::TestRequest.create.cookie_jar
+    jar.signed[:session_id] = session_record.id
+    cookies[:session_id] = jar["session_id"]
+    session_record
+  end
+end
