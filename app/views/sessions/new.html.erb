@@ -38,8 +38,13 @@
         <p class="entry-reassure">The link works once and expires shortly. Check your inbox after you tap the button.</p>
 
         <div class="entry-orline">Already set up a passkey?</div>
-        <%# TODO: passkey sign-in JS is not wired yet. This is a designed placeholder; behavior to follow. %>
-        <button type="button" class="entry-passkey" data-passkey-signin>&#128273; Sign in with a passkey</button>
+        <div data-controller="passkey" data-passkey-redirect-value="/">
+          <button type="button" class="entry-passkey"
+                  data-action="passkey#authenticate" data-passkey-target="submit">
+            &#128273; Sign in with a passkey
+          </button>
+          <p class="entry-passkey-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+        </div>
       </div>
     </div>
   </div>

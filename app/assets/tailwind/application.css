@@ -67,6 +67,9 @@
 .entry-orline { display: flex; align-items: center; gap: 12px; color: #8a7a53; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; margin: 20px 0; }
 .entry-orline::before, .entry-orline::after { content: ""; flex: 1; height: 1px; background: #d8caa2; }
 .entry-passkey { width: 100%; background: #fff; border: 1.5px solid var(--color-navy); color: var(--color-navy); padding: 14px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; }
+.entry-passkey:disabled { opacity: .55; cursor: default; }
+.entry-passkey-status { font-size: 14px; line-height: 1.5; color: #5b6b7e; margin: 10px 2px 0; text-align: center; min-height: 1px; }
+.entry-passkey-status[data-state="error"] { color: var(--color-legionred); }
 .entry-flash { border-radius: 6px; padding: 12px 14px; font-size: 15px; margin-bottom: 16px; }
 .entry-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
 .entry-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
