@@ -14,12 +14,14 @@ Use unique names for:
 
 - Kamal service name.
 - Docker image name.
-- PostgreSQL databases.
+- PostgreSQL databases: primary, cache, and queue.
 - Volumes.
 - Accessory containers.
 - Networks or other shared infrastructure resources.
 
 Avoid names that could conflict with existing applications on the VPS.
+
+Production uses three PostgreSQL databases: primary, cache, and queue. All three must have unique, non-conflicting names on the shared host.
 
 ## Current Stack
 
@@ -69,11 +71,11 @@ Uploads currently use local-disk Active Storage on a mounted Kamal volume, so th
 
 Before production deployment:
 
-- Confirm unique Kamal service/image/database/volume names.
+- Confirm unique Kamal service/image/primary-cache-queue database/volume names.
 - Configure production host and WebAuthn env vars.
 - Configure email delivery.
 - Confirm SSL/HTTPS behavior.
-- Confirm database backup plan.
+- Confirm primary/cache/queue database backup plan.
 - Confirm Active Storage persistence.
 - Confirm background jobs run.
 - Run `bin/rails test`, `bin/brakeman`, `bin/rubocop`, and `bin/bundler-audit`.
