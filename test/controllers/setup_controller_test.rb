@@ -39,6 +39,33 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "rejects invalid setup params" do
+    assert_no_difference -> { Organization.count } do
+      assert_no_difference -> { User.count } do
+        assert_no_difference -> { Session.count } do
+          post setup_path, params: {
+            organization: {
+              name: "",
+              unit_number: "165",
+              timezone: "America/Chicago",
+              default_location_name: "Manitowoc Rifle & Pistol Club",
+              default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI"
+            },
+            person: {
+              first_name: "",
+              last_name: "",
+              email_address: ""
+            },
+            preset: "american_legion_post"
+          }
+        end
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "h1", "Set up LegionPostTools"
+  end
+
   test "setup cannot be reopened after setup exists" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)

@@ -6,13 +6,13 @@
   <fieldset>
     <legend>Organization</legend>
     <%= label_tag "organization_name", "Organization name" %>
-    <%= text_field_tag "organization[name]" %>
+    <%= text_field_tag "organization[name]", nil, required: true %>
 
     <%= label_tag "organization_unit_number", "Unit number" %>
     <%= text_field_tag "organization[unit_number]" %>
 
     <%= label_tag "organization_timezone", "Timezone" %>
-    <%= text_field_tag "organization[timezone]", "America/Chicago" %>
+    <%= text_field_tag "organization[timezone]", "America/Chicago", required: true %>
 
     <%= label_tag "organization_default_location_name", "Default location name" %>
     <%= text_field_tag "organization[default_location_name]" %>
@@ -24,13 +24,13 @@
   <fieldset>
     <legend>First person</legend>
     <%= label_tag "person_first_name", "First name" %>
-    <%= text_field_tag "person[first_name]" %>
+    <%= text_field_tag "person[first_name]", nil, required: true %>
 
     <%= label_tag "person_last_name", "Last name" %>
-    <%= text_field_tag "person[last_name]" %>
+    <%= text_field_tag "person[last_name]", nil, required: true %>
 
     <%= label_tag "person_email_address", "Email address" %>
-    <%= email_field_tag "person[email_address]" %>
+    <%= email_field_tag "person[email_address]", nil, required: true %>
   </fieldset>
 
   <%= submit_tag "Create organization" %>
