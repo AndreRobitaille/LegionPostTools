@@ -8,7 +8,7 @@ class MagicLinksMailerTest < ActionMailer::TestCase
 
     email = MagicLinksMailer.login(user, url)
 
-    assert_equal ["jane@example.com"], email.to
+    assert_equal [ "jane@example.com" ], email.to
     assert_equal "Sign in to LegionPostTools", email.subject
 
     html = email.html_part.body.to_s
