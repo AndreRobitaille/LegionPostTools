@@ -97,7 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_040000) do
     t.bigint "user_id", null: false
     t.index ["user_id", "capability"], name: "index_permission_grants_on_user_id_and_capability", unique: true
     t.index ["user_id"], name: "index_permission_grants_on_user_id"
-    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_acceptance_motions'::character varying, 'view_internal_records'::character varying]::text[])", name: "permission_grants_capability_check"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying::text, 'manage_people'::character varying::text, 'manage_meeting_bodies'::character varying::text, 'manage_agendas'::character varying::text, 'manage_minutes'::character varying::text, 'approve_minutes'::character varying::text, 'attest_minutes'::character varying::text, 'record_acceptance_motions'::character varying::text, 'view_internal_records'::character varying::text])", name: "permission_grants_capability_check"
   end
 
   create_table "position_assignments", force: :cascade do |t|
