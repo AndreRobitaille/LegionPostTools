@@ -77,7 +77,7 @@ class PasskeysController < ApplicationController
 
   def destroy
     current_user.passkey_credentials.find(params[:id]).destroy!
-    redirect_to passkeys_path, notice: "Passkey removed."
+    redirect_to settings_security_path, notice: "Passkey removed."
   end
 
   private

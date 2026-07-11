@@ -111,3 +111,25 @@
 .pk-card-dismiss-form { position: absolute; top: 8px; right: 8px; margin: 0; }
 .pk-card-dismiss { background: none; border: 0; color: var(--color-muted); font-size: 22px; line-height: 1; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
 .pk-card-dismiss:hover { color: var(--color-ink); }
+
+/* Settings page bar + tab strip + panel + passkey list ---------------------- */
+.page-bar { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--color-muted); margin-bottom: 10px; }
+.page-bar-here { color: var(--color-ink); font-weight: 600; }
+.page-bar-sep { color: #c9bd9c; }
+.tabstrip { border-bottom: 2px solid #e3d8b8; margin-bottom: 22px; }
+.tabstrip-tab { display: inline-block; padding: 8px 2px; margin-right: 22px; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--color-navy); border-bottom: 3px solid var(--color-gold); margin-bottom: -2px; }
+.panel { max-width: 720px; background: var(--color-paper); border: 1px solid #e3d8b8; border-radius: 8px; padding: 22px 24px; }
+.panel-head { color: #6a5320; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+.panel-lead { margin: 0 0 18px; color: #4f5f72; font-size: 16px; line-height: 1.55; }
+.pk-list { list-style: none; margin: 0 0 20px; padding: 0; }
+.pk-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid #eadfbf; }
+.pk-row:last-child { border-bottom: 1px solid #eadfbf; }
+.pk-row-main { display: flex; flex-direction: column; gap: 3px; }
+.pk-row-name { font-size: 16px; font-weight: 600; color: var(--color-ink); }
+.pk-row-meta { font-size: 14px; color: var(--color-muted); }
+.pk-row-remove { margin: 0; }
+.btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.pk-empty { color: #4f5f72; font-size: 16px; line-height: 1.55; margin: 0 0 20px; }
+.pk-add { border-top: 1px solid #eadfbf; padding-top: 18px; }
+.pk-add-label { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #6a5320; margin-bottom: 7px; }
+.pk-add-input { width: 100%; max-width: 340px; display: block; font-size: 16px; padding: 12px 14px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); margin-bottom: 14px; }

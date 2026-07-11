@@ -117,6 +117,20 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "authenticated user removes their own passkey and returns to Security" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    credential = PasskeyCredential.create!(user: user, external_id: "cid", public_key: "pk", sign_count: 0)
+    sign_in_as(user)
+
+    assert_difference -> { PasskeyCredential.count }, -1 do
+      delete passkey_path(credential)
+    end
+
+    assert_redirected_to settings_security_path
+    assert_equal "Passkey removed.", flash[:notice]
+  end
+
   test "disabled user cannot authenticate with passkey" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current, disabled_at: Time.current)

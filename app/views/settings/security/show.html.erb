@@ -1,0 +1,49 @@
+<% content_for :title, "Security" %>
+
+<nav class="page-bar" aria-label="Breadcrumb">
+  <span class="page-bar-crumb">Settings</span>
+  <span class="page-bar-sep">&rsaquo;</span>
+  <span class="page-bar-here">Security</span>
+</nav>
+
+<div class="tabstrip">
+  <span class="tabstrip-tab is-active">Security</span>
+</div>
+
+<section class="panel" data-controller="passkey" data-passkey-redirect-value="/settings/security">
+  <div class="panel-head">&#9670; Passkeys</div>
+  <p class="panel-lead">
+    Passkeys let you sign in with your fingerprint, face, or device PIN instead of an email link.
+    Add one for each device you use.
+  </p>
+
+  <% if @passkey_credentials.any? %>
+    <ul class="pk-list">
+      <% @passkey_credentials.each do |credential| %>
+        <li class="pk-row">
+          <div class="pk-row-main">
+            <span class="pk-row-name"><%= credential.nickname.presence || "Passkey" %></span>
+            <span class="pk-row-meta">
+              Added <%= credential.created_at.to_date.strftime("%b %-d, %Y") %><% if credential.last_used_at %> &middot; last used <%= credential.last_used_at.to_date.strftime("%b %-d, %Y") %><% end %>
+            </span>
+          </div>
+          <%= button_to "Remove", passkey_path(credential), method: :delete,
+                class: "btn-return", form: { class: "pk-row-remove" },
+                data: { turbo_confirm: "Remove this passkey? You'll need the email link or another passkey to sign in on this device." } %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="pk-empty">You have no passkeys yet. Add one to sign in faster next time.</p>
+  <% end %>
+
+  <div class="pk-add">
+    <label class="pk-add-label" for="passkey-nickname">Name this device (optional)</label>
+    <input class="pk-add-input" id="passkey-nickname" type="text" data-passkey-nickname
+           placeholder="e.g. My phone" autocomplete="off">
+    <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
+      Add a passkey
+    </button>
+    <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+  </div>
+</section>
