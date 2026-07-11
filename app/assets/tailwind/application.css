@@ -49,21 +49,24 @@
 }
 .entry-col { position: relative; width: 100%; max-width: 430px; text-align: center; }
 .entry-emb { width: 132px; height: 132px; margin: 0 auto 10px; display: block; filter: drop-shadow(0 8px 16px rgba(0,0,0,.55)); }
-.entry-kick { color: var(--color-gold-hi); font-size: 11px; letter-spacing: .42em; text-transform: uppercase; }
-.entry-title { margin: 8px 0 0; color: #fff; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 22px; line-height: 1.25; }
-.entry-diamonds { color: var(--color-gold); letter-spacing: .5em; font-size: 9px; margin: 10px 0 6px; }
-.entry-loc { color: #9fb0c6; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; }
-.entry-card { background: var(--color-cream); border-top: 3px solid var(--color-gold); border-radius: 6px; margin-top: 24px; padding: 22px; text-align: left; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
-.entry-card-title { margin: 0 0 3px; color: var(--color-navy); font-size: 17px; }
-.entry-lead { color: #5b6b7e; font-size: 12.5px; margin: 0 0 16px; line-height: 1.5; }
+/* Type sizes tuned for readability: primary audience is members in their 70s.
+   Minimums here — body/interactive >= 16px, secondary >= 14px, labels >= 13px.
+   See docs/superpowers/specs/2026-07-11-visual-design-system-design.md (Readability). */
+.entry-kick { color: var(--color-gold-hi); font-size: 13px; letter-spacing: .38em; text-transform: uppercase; }
+.entry-title { margin: 8px 0 0; color: #fff; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: 26px; line-height: 1.25; }
+.entry-diamonds { color: var(--color-gold); letter-spacing: .5em; font-size: 10px; margin: 12px 0 6px; }
+.entry-loc { color: #b3c1d4; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; }
+.entry-card { background: var(--color-cream); border-top: 3px solid var(--color-gold); border-radius: 6px; margin-top: 26px; padding: 26px 24px; text-align: left; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
+.entry-card-title { margin: 0 0 4px; color: var(--color-navy); font-size: 22px; }
+.entry-lead { color: #4f5f72; font-size: 16px; margin: 0 0 18px; line-height: 1.55; }
 .entry-field { margin-bottom: 4px; }
-.entry-field label { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #6a5320; margin-bottom: 6px; }
-.entry-field input { width: 100%; font-size: 16px; padding: 13px 14px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); }
-.entry-btn { width: 100%; margin-top: 14px; background: var(--color-navy); color: #fff; border: 0; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; }
-.entry-reassure { font-size: 12px; color: #6b7684; margin: 12px 2px 0; line-height: 1.5; text-align: center; }
-.entry-orline { display: flex; align-items: center; gap: 12px; color: #9a8a63; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; margin: 18px 0; }
+.entry-field label { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #6a5320; margin-bottom: 7px; }
+.entry-field input { width: 100%; font-size: 17px; padding: 15px 15px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); }
+.entry-btn { width: 100%; margin-top: 16px; background: var(--color-navy); color: #fff; border: 0; padding: 16px; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
+.entry-reassure { font-size: 14px; color: #5b6b7e; margin: 14px 2px 0; line-height: 1.55; text-align: center; }
+.entry-orline { display: flex; align-items: center; gap: 12px; color: #8a7a53; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; margin: 20px 0; }
 .entry-orline::before, .entry-orline::after { content: ""; flex: 1; height: 1px; background: #d8caa2; }
-.entry-passkey { width: 100%; background: #fff; border: 1.5px solid var(--color-navy); color: var(--color-navy); padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
-.entry-flash { border-radius: 6px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+.entry-passkey { width: 100%; background: #fff; border: 1.5px solid var(--color-navy); color: var(--color-navy); padding: 14px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; }
+.entry-flash { border-radius: 6px; padding: 12px 14px; font-size: 15px; margin-bottom: 16px; }
 .entry-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
 .entry-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }

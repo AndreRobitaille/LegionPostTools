@@ -7,7 +7,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       unit_type: "american_legion_post",
       unit_number: "165",
       timezone: "America/Chicago",
-      default_location_name: "Two Rivers, Wisconsin"
+      locality: "Two Rivers, WI"
     )
   end
 
@@ -17,7 +17,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_select ".entry-hero", count: 1
     assert_select "img.entry-emb[src*=?]", "al-emblem"
     assert_select "h1.entry-title", text: /Robert E\. Burns Post 165/
-    assert_select ".entry-loc", text: /Two Rivers, Wisconsin/
+    assert_select ".entry-loc", text: /Two Rivers, WI/
   end
 
   test "sign-in page has the magic-link form and passkey placeholder" do

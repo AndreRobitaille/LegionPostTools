@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,6 +52,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_070000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "installations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "setup_completed_at"
+    t.string "singleton_key", null: false
+    t.datetime "updated_at", null: false
+    t.index ["singleton_key"], name: "index_installations_on_singleton_key", unique: true
+  end
+
   create_table "magic_links", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at", null: false
@@ -61,14 +69,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_070000) do
     t.bigint "user_id", null: false
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
-  end
-
-  create_table "installations", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "setup_completed_at"
-    t.string "singleton_key", null: false
-    t.datetime "updated_at", null: false
-    t.index ["singleton_key"], name: "index_installations_on_singleton_key", unique: true
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -89,6 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_070000) do
     t.datetime "created_at", null: false
     t.text "default_location_address"
     t.string "default_location_name"
+    t.string "locality"
     t.string "name", null: false
     t.string "timezone", default: "America/Chicago", null: false
     t.string "unit_number"

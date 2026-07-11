@@ -12,6 +12,13 @@ Use strong product and UX judgment. The app serves American Legion officers, adj
 
 When design and implementation trade off, preserve the design intent and simplify implementation only where it does not flatten the user experience.
 
+### Readability (hard rule)
+
+Members are often in their 70s, so type must be large: body and interactive text ≥ 16px,
+secondary text ≥ 14px, labels ≥ 13px, nothing meaningful below 13px. Err larger; never
+tighten type for density. Full rules and the visual system live in
+`docs/superpowers/specs/2026-07-11-visual-design-system-design.md`.
+
 ## Implementation Discipline
 
 - Do not overbuild.

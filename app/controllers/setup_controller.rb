@@ -62,7 +62,7 @@ class SetupController < ApplicationController
   end
 
   def organization_params
-    params.require(:organization).permit(:name, :unit_number, :timezone, :default_location_name, :default_location_address)
+    params.require(:organization).permit(:name, :unit_number, :timezone, :locality, :default_location_name, :default_location_address)
   end
 
   def person_params

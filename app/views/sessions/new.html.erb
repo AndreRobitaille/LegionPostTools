@@ -12,8 +12,8 @@
       <% end %>
       <h1 class="entry-title"><%= @organization&.name || "LegionPostTools" %></h1>
       <div class="entry-diamonds">&#9670; &#9670; &#9670;</div>
-      <% if @organization&.default_location_name.present? %>
-        <div class="entry-loc"><%= @organization.default_location_name %></div>
+      <% if @organization&.locality.present? %>
+        <div class="entry-loc"><%= @organization.locality %></div>
       <% end %>
 
       <div class="entry-card">

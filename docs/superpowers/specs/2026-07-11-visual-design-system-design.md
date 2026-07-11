@@ -67,6 +67,22 @@ required** (attention/edit) or on a destructive/return action. Everything else s
 - A dedicated geometric/Deco display webfont may be adopted later; the system stack is the
   starting point.
 
+### Minimum readable sizes (hard rule)
+
+The primary audience is members in their 70s, many with low computer confidence, so type
+must be large. These are floors, not targets — prefer erring larger, and never tighten type
+for density:
+
+- Body and interactive text (inputs, buttons, links, list rows): **≥ 16px**.
+- Secondary / helper / caption text: **≥ 14px**.
+- Field labels and small uppercase labels: **≥ 13px**.
+- Nothing meaningful below **13px**; only purely decorative marks (e.g. the ◆ dividers) may
+  be smaller.
+- Page and section titles scale up from the body baseline (e.g. login title ~26px).
+
+This rule overrides any mock or earlier screen that used smaller sizes. When adding a new
+screen, check every font-size against these floors before shipping.
+
 ## The Emblem
 
 Use the **official American Legion emblem** (downloaded from
@@ -188,6 +204,8 @@ like carving a name into the wall.
 ## Audience and Accessibility
 
 - Larger, legible inputs and big primary buttons; plain language; few choices at once.
+- Honor the minimum readable sizes above (audience is members in their 70s) — this is a hard
+  rule, not a preference.
 - Guided, forgiving draft/review states before records become immutable.
 - Cream backgrounds over glaring white; high-contrast navy/gold.
 - Serif reserved for documents; sans for the working UI (scannability).

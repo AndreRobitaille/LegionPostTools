@@ -11,6 +11,9 @@
     <%= label_tag "organization_unit_number", "Unit number" %>
     <%= text_field_tag "organization[unit_number]" %>
 
+    <%= label_tag "organization_locality", "City and state" %>
+    <%= text_field_tag "organization[locality]", nil, placeholder: "Two Rivers, WI" %>
+
     <%= label_tag "organization_timezone", "Timezone" %>
     <%= text_field_tag "organization[timezone]", "America/Chicago", required: true %>
 
