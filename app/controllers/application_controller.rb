@@ -26,7 +26,7 @@ class ApplicationController < ActionController::Base
 
   def start_new_session_for(user)
     session = Session.create!(user: user, ip_address: request.remote_ip, user_agent: request.user_agent, last_seen_at: Time.current)
-    cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax }
+    cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax, secure: Rails.env.production? }
     Current.session = session
   end
 
@@ -47,6 +47,18 @@ class ApplicationController < ActionController::Base
     return if Current.session.present?
 
     session_id = cookies.signed[:session_id]
-    Current.session = Session.find_by(id: session_id) if session_id.present?
+    return if session_id.blank?
+
+    session = Session.find_by(id: session_id)
+    return if session.blank?
+
+    if session.user.disabled_at.present?
+      session.destroy!
+      cookies.delete(:session_id)
+      Current.session = nil
+      return
+    end
+
+    Current.session = session
   end
 end

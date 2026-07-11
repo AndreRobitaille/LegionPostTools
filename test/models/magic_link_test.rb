@@ -17,4 +17,13 @@ class MagicLinkTest < ActiveSupport::TestCase
 
     assert_nil MagicLink.consume!(magic_link.token)
   end
+
+  test "disabled user cannot consume token" do
+    user = User.create!(person: Person.create!(first_name: "Jane", last_name: "Doe"), email_address: "jane@example.com")
+    magic_link = MagicLink.create_for!(user)
+    user.update!(disabled_at: Time.current)
+
+    assert_nil MagicLink.consume!(magic_link.token)
+    assert_nil magic_link.reload.used_at
+  end
 end

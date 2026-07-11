@@ -16,6 +16,10 @@ class SessionsController < ApplicationController
   end
 
   def magic_link
+    if request.get?
+      return render :magic_link
+    end
+
     user = MagicLink.consume!(params[:token])
 
     if user

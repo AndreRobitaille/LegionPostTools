@@ -17,12 +17,17 @@ class MagicLink < ApplicationRecord
   def self.consume!(token)
     return nil if token.blank?
 
-    magic_link = find_by(token_digest: digest(token))
-    return nil if magic_link.blank? || magic_link.used_at.present? || magic_link.expires_at.past?
+    transaction do
+      magic_link = lock.find_by(token_digest: digest(token))
+      return nil if magic_link.blank? || magic_link.used_at.present? || magic_link.expires_at.past?
 
-    magic_link.update!(used_at: Time.current)
-    magic_link.user.update!(email_verified_at: Time.current) if magic_link.user.email_verified_at.blank?
-    magic_link.user
+      user = magic_link.user
+      return nil if user.disabled_at.present?
+
+      magic_link.update!(used_at: Time.current)
+      user.update!(email_verified_at: Time.current) if user.email_verified_at.blank?
+      user
+    end
   end
 
   def self.digest(token)

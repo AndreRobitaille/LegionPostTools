@@ -1,0 +1,8 @@
+<h1>Confirm sign in</h1>
+
+<p>Click the button below to finish signing in.</p>
+
+<%= form_with url: magic_link_session_path, method: :post do |form| %>
+  <%= hidden_field_tag :token, params[:token] %>
+  <%= form.submit "Sign in" %>
+<% end %>

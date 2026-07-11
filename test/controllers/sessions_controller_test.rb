@@ -20,7 +20,46 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     get magic_link_session_path(token: magic_link.token)
 
+    assert_response :success
+    assert_no_difference -> { Session.count } do
+      get magic_link_session_path(token: magic_link.token)
+    end
+
+    assert_nil magic_link.reload.used_at
+
+    assert_difference -> { Session.count }, 1 do
+      post magic_link_session_path, params: { token: magic_link.token }
+    end
+
     assert_redirected_to root_path
     assert Session.exists?(user: user)
+  end
+
+  test "disabled user after link issuance cannot sign in" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    magic_link = MagicLink.create_for!(user)
+    user.update!(disabled_at: Time.current)
+
+    assert_no_difference -> { Session.count } do
+      post magic_link_session_path, params: { token: magic_link.token }
+    end
+
+    assert_redirected_to new_session_path
+  end
+
+  test "disabled user session is destroyed on resume" do
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    session = Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current)
+    user.update!(disabled_at: Time.current)
+
+    request = ActionDispatch::TestRequest.create
+    request.cookie_jar.signed[:session_id] = session.id
+
+    get new_session_path, headers: { "Cookie" => request.cookie_jar.to_header }
+
+    assert_nil Current.session
+    assert_not Session.exists?(session.id)
   end
 end
