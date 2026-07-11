@@ -69,3 +69,10 @@ yarn-debug.log*
 /public/uploads
 .superpowers/
 .worktrees/
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
