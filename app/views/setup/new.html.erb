@@ -1,0 +1,37 @@
+<h1>Set up LegionPostTools</h1>
+
+<%= form_with url: setup_path, method: :post do %>
+  <%= hidden_field_tag :preset, "american_legion_post" %>
+
+  <fieldset>
+    <legend>Organization</legend>
+    <%= label_tag "organization_name", "Organization name" %>
+    <%= text_field_tag "organization[name]" %>
+
+    <%= label_tag "organization_unit_number", "Unit number" %>
+    <%= text_field_tag "organization[unit_number]" %>
+
+    <%= label_tag "organization_timezone", "Timezone" %>
+    <%= text_field_tag "organization[timezone]", "America/Chicago" %>
+
+    <%= label_tag "organization_default_location_name", "Default location name" %>
+    <%= text_field_tag "organization[default_location_name]" %>
+
+    <%= label_tag "organization_default_location_address", "Default location address" %>
+    <%= text_area_tag "organization[default_location_address]" %>
+  </fieldset>
+
+  <fieldset>
+    <legend>First person</legend>
+    <%= label_tag "person_first_name", "First name" %>
+    <%= text_field_tag "person[first_name]" %>
+
+    <%= label_tag "person_last_name", "Last name" %>
+    <%= text_field_tag "person[last_name]" %>
+
+    <%= label_tag "person_email_address", "Email address" %>
+    <%= email_field_tag "person[email_address]" %>
+  </fieldset>
+
+  <%= submit_tag "Create organization" %>
+<% end %>
