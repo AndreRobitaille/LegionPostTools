@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
+
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
   resource :setup, only: %i[new create], controller: "setup"
   resource :session, only: %i[new create destroy] do
     get :magic_link, on: :collection
