@@ -1,6 +1,6 @@
 # Purpose
 
-LegionPostTools exists to help American Legion posts run meeting records, agendas, minutes, and committee/business continuity with better continuity, clearer records, and less manual document handling.
+LegionPostTools exists to help American Legion posts run meeting records, agendas, minutes, and committee work with better continuity, clearer records, and less manual document handling.
 
 The first real installation is Robert E. Burns Post 165 in Two Rivers, Wisconsin. Post 165 currently relies on Word documents, PDFs, email threads, phone recordings, transcripts, and manual officer follow-up for work that should be easier to preserve and continue.
 

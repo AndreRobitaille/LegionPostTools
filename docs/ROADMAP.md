@@ -25,7 +25,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - Structured agenda items.
 - Item-level rich notes.
 - Reordering and moving agenda items.
-- Browser/HTML printable agenda rendering.
+- Browser/HTML printable agenda rendering for on-screen review and printing.
 
 ## Tracked Items
 
@@ -47,9 +47,8 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 ## Export and Distribution
 
-- PDF export.
-- PDF generation.
-- Email distribution.
+- PDF generation for finalized records.
+- Email distribution of finalized documents.
 - Delivery records for sent documents.
 
 ## Deployment
