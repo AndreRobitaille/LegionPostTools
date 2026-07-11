@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   namespace :settings do
     resource :security, only: %i[show]
   end
+  resource :passkey_invitation, only: %i[destroy]
   resource :dashboard, only: %i[show], controller: "dashboard"
   root "dashboard#show"
 end

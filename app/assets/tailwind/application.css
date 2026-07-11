@@ -93,3 +93,21 @@
 .app-user-link:hover { text-decoration: underline; }
 .app-user-signout { color: #cdd6e2; }
 .app-main { max-width: 1060px; margin: 0 auto; padding: 26px 20px 60px; }
+
+/* Shared working-screen primitives ------------------------------------------ */
+.page-lead { margin-top: 8px; }
+.page-title { margin: 0 0 4px; color: var(--color-navy); font-size: 24px; font-weight: 800; letter-spacing: .02em; }
+.page-sub { margin: 0; color: var(--color-muted); font-size: 16px; }
+.btn-primary { background: var(--color-navy); color: #fff; border: 0; padding: 14px 22px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-primary:disabled { opacity: .6; cursor: default; }
+
+/* First-login passkey invitation card --------------------------------------- */
+.pk-card { position: relative; max-width: 620px; background: var(--color-paper); border: 1px solid #e3d8b8; border-left: 4px solid var(--color-gold); border-radius: 8px; padding: 22px 24px; margin: 0 0 26px; }
+.pk-card-label { color: #6a5320; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; }
+.pk-card-title { margin: 8px 0 6px; color: var(--color-navy); font-size: 20px; font-weight: 800; }
+.pk-card-lead { margin: 0 0 18px; color: #4f5f72; font-size: 16px; line-height: 1.55; }
+.pk-card-status { font-size: 14px; line-height: 1.5; color: #5b6b7e; margin: 12px 2px 0; min-height: 1px; }
+.pk-card-status[data-state="error"] { color: var(--color-legionred); }
+.pk-card-dismiss-form { position: absolute; top: 8px; right: 8px; margin: 0; }
+.pk-card-dismiss { background: none; border: 0; color: var(--color-muted); font-size: 22px; line-height: 1; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
+.pk-card-dismiss:hover { color: var(--color-ink); }

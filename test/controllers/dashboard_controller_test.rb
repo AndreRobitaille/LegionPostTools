@@ -27,16 +27,49 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     user = User.create!(person: person, email_address: "andre@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
     Installation.singleton.update!(setup_completed_at: Time.current)
-    Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current)
+    sign_in_as(user)
 
-    request = ActionDispatch::TestRequest.create
-    request.cookie_jar.signed[:session_id] = Session.last.id
-
-    get root_path, headers: { "Cookie" => request.cookie_jar.to_header }
+    get root_path
 
     assert_response :success
-    assert_select "h1", "LegionPostTools"
-    assert_select "p", organization.name
-    assert_select "p", person.full_name
+    assert_select "h1", organization.name
+    assert_match "Signed in as #{person.full_name}", response.body
+  end
+
+  test "shows the passkey invite when the user has no passkeys" do
+    user = signed_in_member
+    get root_path
+    assert_response :success
+    assert_match "Add a passkey", response.body
+  end
+
+  test "hides the passkey invite when the user already has a passkey" do
+    user = signed_in_member
+    PasskeyCredential.create!(user: user, external_id: "cid", public_key: "pk", sign_count: 0)
+    get root_path
+    assert_response :success
+    assert_no_match "Add a passkey", response.body
+  end
+
+  test "invite stays hidden after dismissal within the session" do
+    signed_in_member
+    delete passkey_invitation_path
+    assert_redirected_to root_path
+
+    get root_path
+    assert_response :success
+    assert_no_match "Add a passkey", response.body
+  end
+
+  private
+
+  # A fully set-up, signed-in member with no passkeys yet.
+  def signed_in_member
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Jane", last_name: "Doe")
+    user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    sign_in_as(user)
+    user
   end
 end

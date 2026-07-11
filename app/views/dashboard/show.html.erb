@@ -1,4 +1,22 @@
-<h1>LegionPostTools</h1>
+<% if @show_passkey_invite %>
+  <div class="pk-card" data-controller="passkey" data-passkey-redirect-value="/">
+    <%= button_to "×", passkey_invitation_path, method: :delete,
+          class: "pk-card-dismiss", form: { class: "pk-card-dismiss-form" },
+          aria: { label: "Dismiss" } %>
+    <div class="pk-card-label">&#9670; Add a passkey</div>
+    <h2 class="pk-card-title">Sign in faster next time</h2>
+    <p class="pk-card-lead">
+      Add a passkey to this device and you can sign in with your fingerprint, face, or
+      device PIN — no email link needed. You can still use the email link any time.
+    </p>
+    <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
+      Add a passkey
+    </button>
+    <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+  </div>
+<% end %>
 
-<p><%= @organization&.name %></p>
-<p><%= current_user.person.full_name %></p>
+<div class="page-lead">
+  <h1 class="page-title"><%= @organization&.name || "LegionPostTools" %></h1>
+  <p class="page-sub">Signed in as <%= current_user.person.full_name %>.</p>
+</div>
