@@ -1,8 +1,27 @@
-<h1>Confirm sign in</h1>
+<% content_for :title, "Confirm sign in" %>
 
-<p>Click the button below to finish signing in.</p>
+<div class="entry">
+  <div class="entry-hero">
+    <div class="entry-rays"></div>
+    <div class="entry-fade"></div>
 
-<%= form_with url: magic_link_session_path, method: :post do |form| %>
-  <%= hidden_field_tag :token, params[:token] %>
-  <%= form.submit "Sign in" %>
-<% end %>
+    <div class="entry-col">
+      <%= image_tag "al-emblem.png", alt: "The American Legion emblem", class: "entry-emb" %>
+      <% if @organization&.unit_type.present? %>
+        <div class="entry-kick"><%= @organization.unit_type.titleize %></div>
+      <% end %>
+      <h1 class="entry-title"><%= @organization&.name || "LegionPostTools" %></h1>
+      <div class="entry-diamonds">&#9670; &#9670; &#9670;</div>
+
+      <div class="entry-card">
+        <h2 class="entry-card-title">Confirm sign in</h2>
+        <p class="entry-lead">You're almost in. Tap the button below to finish signing in on this device.</p>
+
+        <%= form_with url: magic_link_session_path, method: :post do |form| %>
+          <%= hidden_field_tag :token, params[:token] %>
+          <%= form.button "Finish signing in", class: "entry-btn" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

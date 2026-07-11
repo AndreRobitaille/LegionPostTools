@@ -35,4 +35,14 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select ".entry-flash-notice", text: /Check your email/
   end
+
+  test "magic-link confirmation renders in the entry hero" do
+    get magic_link_session_path(token: "sometoken")
+    assert_response :success
+    assert_select ".entry-hero", count: 1
+    assert_select "form[action=?][method=post]", magic_link_session_path do
+      assert_select "input[type=hidden][name=token]"
+      assert_select "button", text: /Finish signing in/
+    end
+  end
 end
