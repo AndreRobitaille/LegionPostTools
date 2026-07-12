@@ -35,3 +35,7 @@ When writing docs, preserve context for future agents. Be concise, specific, and
 ## Local Development Servers
 
 Andre works from a different machine than the one this app runs on. Any development server you start (Rails, Vite/Tailwind watchers, the brainstorming visual companion, or any preview server) MUST bind to `0.0.0.0`, not `127.0.0.1`/`localhost`, so it is reachable off-box. For `bin/rails server`, use `-b 0.0.0.0`.
+
+## Production SSH Discipline
+
+The Hetzner production VPS throttles repeated SSH connections heavily. Before running Kamal or any SSH-heavy production operation against that server, set up a persistent SSH connection/tunnel/control master and route the work through it. Tear it down when production work is finished. Do not run repeated fresh SSH/Kamal commands directly against the production box.

@@ -69,6 +69,8 @@ Production is expected to run on a Hetzner Cloud VPS that already hosts another 
 
 Use unique names for Kamal service names, Docker image names, databases, volumes, and other shared infrastructure resources.
 
+The Hetzner VPS throttles repeated SSH connections heavily. Before running Kamal or other SSH-heavy production operations against that server, set up a persistent SSH connection/tunnel/control master and route the work through it. Tear the persistent connection down when the production work is finished. Do not run repeated fresh SSH/Kamal commands directly against the production box.
+
 ## Documentation Map
 
 - `README.md` — overview for operators and repo visitors.

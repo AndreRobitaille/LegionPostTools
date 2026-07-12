@@ -1,3 +1,6 @@
+<% production_config = ENV.fetch("RAILS_ENV", ENV.fetch("RACK_ENV", "development")) == "production" %>
+<% required_production_env = ->(name, fallback) { ENV.fetch(name) { production_config ? raise(KeyError, "key not found: #{name}") : fallback } } %>
+
 # PostgreSQL. Versions 9.5 and up are supported.
 #
 # Install the pg driver:
@@ -87,14 +90,15 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: legion_post_tools_production
+    database: <%= required_production_env.call("POSTGRES_DB", "legion_post_tools_production") %>
     username: legion_post_tools
     password: <%= ENV["LEGION_POST_TOOLS_DATABASE_PASSWORD"] %>
+    host: <%= required_production_env.call("DB_HOST", "localhost") %>
   cache:
     <<: *primary_production
-    database: legion_post_tools_production_cache
+    database: <%= required_production_env.call("POSTGRES_CACHE_DB", "legion_post_tools_production_cache") %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: legion_post_tools_production_queue
+    database: <%= required_production_env.call("POSTGRES_QUEUE_DB", "legion_post_tools_production_queue") %>
     migrations_paths: db/queue_migrate

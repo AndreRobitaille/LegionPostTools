@@ -1,101 +1,143 @@
 # Deployment
 
-This document records deployment constraints and operator notes.
+Operator guide for Post 165 and repeat maintainer-hosted installs.
 
-## Production Target
+## Production model
 
-Production is expected to run on a Hetzner Cloud VPS.
+LegionPostTools is deployed one app/database set per post or unit. Do not combine multiple posts into one Rails database.
 
-That server already hosts another Rails application deployed with Kamal. LegionPostTools must be deployed as a separate Kamal service and must not assume it is the only application on the server.
+The app is not a SaaS or multi-tenant platform. Each installation gets its own Kamal service, image, databases, and storage.
 
-## Naming Rules
+## First production host
 
-Use unique names for:
+- Hostname: `members.wipost165.org`
+- Server: shared Hetzner VPS `178.156.250.235`
+- Co-hosted app: `TwoRiversReporter`
 
-- Kamal service name.
-- Docker image name.
-- PostgreSQL databases: primary, cache, and queue.
-- Volumes.
-- Accessory containers.
-- Networks or other shared infrastructure resources.
+Primary deployment flow is from the local repo with `bin/kamal deploy`. Use `bin/kamal setup` for the First install only, when provisioning a new deployment target. Do not use a server-side git clone or web UI as the primary flow.
 
-Avoid names that could conflict with existing applications on the VPS.
+## Naming convention
 
-Production uses three PostgreSQL databases: primary, cache, and queue. All three must have unique, non-conflicting names on the shared host.
+Use install-specific names in the form:
 
-## Current Stack
+`legion_<unit_type>_<unit_number>_<department_abbreviation>_tools_<purpose>`
 
-- Rails 8.1.
-- PostgreSQL.
-- Docker.
-- Kamal.
-- Active Storage.
-- Solid Queue.
+Example: Post 165 in Wisconsin uses `legion_post_165_wi_tools`.
 
-## Required Production Environment
+For department abbreviations, use the American Legion state-level Department abbreviation, such as `wi`.
 
-Authentication requires these production values:
+Post 165 concrete names:
 
-- `APP_HOST` — public hostname, for example `legion.tworiversmatters.com`.
-- `MAIL_PROVIDER` — `loops` (preferred) or `action_mailer` (SMTP). See the Email section.
-- `MAIL_FROM` — sender address (used by the Action Mailer backend).
-- `LOOPS_API_KEY` / `LOOPS_MAGIC_LINK_TEMPLATE_ID` — required when `MAIL_PROVIDER=loops`.
-- `WEBAUTHN_ORIGIN` — full origin, for example `https://legion.tworiversmatters.com`.
-- `WEBAUTHN_RP_ID` — relying party ID: the registrable domain, no scheme or port (e.g.
-  `legion.tworiversmatters.com`). A mismatch with the browser origin makes passkeys fail silently.
-- `WEBAUTHN_RP_NAME` — display name, usually `LegionPostTools` or the post name.
+- Service: `legion_post_165_wi_tools`
+- Image: `andrerobitaille/legion-post-165-wi-tools`
+- Primary DB: `legion_post_165_wi_tools_production`
+- Cache DB: `legion_post_165_wi_tools_production_cache`
+- Queue DB: `legion_post_165_wi_tools_production_queue`
+- Postgres persistent directory: `legion_post_165_wi_tools_pgdata`
+- Active Storage volume: `legion_post_165_wi_tools_storage`
 
-Passkeys require a secure context (HTTPS). They do not work over plain HTTP or when the app is
-reached by IP address, so passkey sign-in only functions once TLS is terminated for `APP_HOST`.
+## Required environment and secrets
 
-Rails/Kamal also requires normal production secrets such as `RAILS_MASTER_KEY` and database credentials.
+Required Kamal secrets:
 
-Current production expects `LEGION_POST_TOOLS_DATABASE_PASSWORD` for database access unless you are deliberately documenting a future URL-based alternative.
+- `RAILS_MASTER_KEY`
+- `KAMAL_REGISTRY_PASSWORD`
+- `LEGION_POST_TOOLS_DATABASE_PASSWORD`
+- `LOOPS_API_KEY`
+- `LOOPS_MAGIC_LINK_TEMPLATE_ID`
 
-## Email
+Kamal aliases `LEGION_POST_TOOLS_DATABASE_PASSWORD` to the container's `POSTGRES_PASSWORD`; do not list `POSTGRES_PASSWORD` as a separate required secret.
 
-Email delivery is behind a replaceable boundary: the `MailDelivery` seam
-(`app/services/mail_delivery.rb`). Callers use `MailDelivery.deliver_magic_link(user:, login_url:)`;
-the backend is chosen at boot by `MAIL_PROVIDER` (see `config/initializers/mail_delivery.rb`).
+Required clear env values:
 
-| `MAIL_PROVIDER` | Backend | Notes |
-|-----------------|---------|-------|
-| `action_mailer` (default) | `MailDelivery::ActionMailerBackend` | Normal Action Mailer pipeline; configure SMTP in `config/environments/production.rb` and set `MAIL_FROM`. Renders the branded ERB template. |
-| `loops` | `MailDelivery::LoopsBackend` | Posts to the Loops.so transactional API. The email body is rendered by a **Loops template**, not the ERB template. |
+- `APP_HOST`
+- `MAIL_PROVIDER=loops` (preferred/default for Post 165)
+- `MAIL_FROM`
+- `WEBAUTHN_ORIGIN`
+- `WEBAUTHN_RP_ID`
+- `WEBAUTHN_RP_NAME`
+- `DB_HOST`
+- `SOLID_QUEUE_IN_PUMA`
+- `POSTGRES_DB`
+- `POSTGRES_CACHE_DB`
+- `POSTGRES_QUEUE_DB`
 
-For **Loops.so** (`MAIL_PROVIDER=loops`), also set:
+If an install is not using Loops, `MAIL_PROVIDER=action_mailer` is the SMTP/Action Mailer alternative. Configure the usual SMTP delivery settings for that install.
 
-- `LOOPS_API_KEY` — Loops transactional API key.
-- `LOOPS_MAGIC_LINK_TEMPLATE_ID` — id of the Loops transactional template for the sign-in email.
-  Create a transactional template in the Loops dashboard that references `{{login_url}}` and
-  `{{name}}`, then set this to its id.
+For Post 165, `DB_HOST` should point at the Kamal Postgres accessory hostname on the Docker network.
 
-**Validate deliverability first:** whichever provider, send yourself a real sign-in link on the
-host and confirm inbox placement (SPF/DKIM/DMARC aligned) before onboarding members. This is an
-operator step; it is not covered by automated tests.
+## Persistent SSH control master
 
-Do not scatter provider-specific assumptions through the domain model — add a new backend under
-`app/services/mail_delivery/` rather than branching in callers.
+Before any Kamal or SSH-heavy operation, establish a persistent SSH control master. Route the deployment work through that connection and tear it down afterward.
 
-## AI Provider
+Do not run repeated fresh SSH/Kamal commands directly against the Hetzner host.
 
-AI minutes drafting is planned but not implemented yet.
+## Postgres accessory
 
-OpenAI is expected first. API keys should come from environment variables or Rails credentials, not ordinary database settings.
+The Postgres accessory uses `config/postgres/init.sh`, not `init.sql`, to create the cache and queue databases from environment variables.
 
-## Deployment Checklist Direction
+The database data is persisted through the Kamal accessory `directories:` entry:
 
-`config/deploy.yml` is currently a scaffold/default and must be completed before any production deploy. The real host, registry, proxy/routing, SSL, and shared-host settings are not finalized yet.
+`legion_post_165_wi_tools_pgdata:/var/lib/postgresql/data`
 
-Uploads currently use local-disk Active Storage on a mounted Kamal volume, so that volume must be backed up and preserved. Background jobs currently use Solid Queue and run in-process with the web container for the single-server deployment.
+Treat this as the accessory's persistent directory. Active Storage uses the Docker volume `legion_post_165_wi_tools_storage`.
 
-Before production deployment:
+## Email and WebAuthn
 
-- Confirm unique Kamal service/image/primary-cache-queue database/volume names.
-- Configure production host and WebAuthn env vars.
-- Configure email delivery.
-- Confirm SSL/HTTPS behavior.
-- Confirm primary/cache/queue database backup plan.
-- Confirm Active Storage persistence.
-- Confirm background jobs run.
-- Run `bin/rails test`, `bin/brakeman`, `bin/rubocop`, and `bin/bundler-audit`.
+- `MAIL_PROVIDER=loops` uses the Loops transactional API and is the preferred/default Post 165 path.
+- Set `LOOPS_API_KEY` and `LOOPS_MAGIC_LINK_TEMPLATE_ID` when using Loops.
+- `MAIL_PROVIDER=action_mailer` uses Action Mailer/SMTP for production email.
+- `WEBAUTHN_ORIGIN` must be the HTTPS origin, such as `https://members.wipost165.org`.
+- `WEBAUTHN_RP_ID` must be the exact host for this deployment, such as `members.wipost165.org`, without scheme or port. Future operators may choose a parent registrable domain only if they deliberately want credentials to work across subdomains.
+- `WEBAUTHN_RP_NAME` should be the post or app display name.
+
+Passkeys require HTTPS and do not work by IP address.
+
+## First deploy checklist: Post 165
+
+1. Confirm DNS for `members.wipost165.org` points at `178.156.250.235`.
+2. Establish the persistent SSH control master.
+3. Set all required Kamal secrets.
+4. Set clear env values, especially `APP_HOST`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names.
+5. Confirm the Kamal service name, image name, and storage names match the Post 165 convention.
+6. Run `bin/kamal setup` from the local repo for the First install only.
+7. Run `bin/kamal deploy` from the local repo.
+8. Verify the app, sign-in email, passkeys, and persistence.
+9. Tear down the SSH control master.
+
+## Repeat hosted install checklist
+
+1. Choose a unique install-specific service, image, database, and volume set.
+2. Follow the naming convention above.
+3. Keep the one-app-one-database-set rule.
+4. Set host, email, WebAuthn, and database env values for the new install.
+5. Use the same local `bin/kamal setup` and `bin/kamal deploy` flow, with `setup` reserved for First install only.
+6. Keep storage and database backups scoped to that install only.
+
+## Backups and restore expectations
+
+- Back up the Postgres accessory data and the Active Storage volume separately.
+- Preserve the install-specific database names for restores.
+- Rehearse restores before depending on them in production; record a restore rehearsal for each install.
+- A restore should bring back the primary database first, then cache/queue if needed, then Active Storage files.
+- Do not assume another post's backup can be mixed into this install.
+
+## Verification commands
+
+Run the usual app checks before production deploys:
+
+```bash
+bin/rails test
+bin/brakeman
+bin/rubocop
+bin/bundler-audit
+```
+
+For deployment-specific checks, also confirm:
+
+- Only run `bin/kamal setup` for initial provisioning or a new install.
+- `bin/kamal deploy` for routine production deploy verification.
+- a real sign-in email reaches inbox
+- a passkey sign-in works at `APP_HOST`
+- storage survives a container restart
+- restore rehearsal evidence exists for the install

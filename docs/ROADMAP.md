@@ -32,6 +32,18 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - Agent instructions.
 - Purpose, users, architecture, roadmap, and deployment notes.
 
+## Production Readiness Side-Roadmap
+
+As a bounded operational track, prepare the first real production installation for Robert E. Burns Post 165. This does not replace Structured Agendas as the next core product workflow.
+
+- Configure `members.wipost165.org` on the shared Hetzner VPS as a separate Kamal service.
+- Use install-specific names such as `legion_post_165_wi_tools` for service, databases, and volumes.
+- Use a dedicated PostgreSQL accessory and Active Storage volume for this install.
+- Follow persistent SSH control-master discipline before any Kamal or SSH-heavy production work.
+- Rehearse production on the real hostname before inviting members.
+- Verify HTTPS, WebAuthn/passkeys, magic links, roster import, admin access control, backups, restore, and storage persistence.
+- Update deployment documentation so the same pattern can later be repeated for another hosted American Legion post or unit without creating a SaaS/multi-tenant app.
+
 ## Immediate Next: Structured Agendas
 
 With authentication and roster-backed administration in place, build the meeting record core.
@@ -69,9 +81,9 @@ With authentication and roster-backed administration in place, build the meeting
 
 ## Deployment
 
-- Harden Kamal production deployment.
-- Configure production host, WebAuthn, mail, storage, and background jobs.
-- Deploy as a separate service on the shared Hetzner VPS.
+- Longer-term deployment hardening beyond the Production Readiness Side-Roadmap.
+- Harden Kamal production deployment for repeatable future installs.
+- Expand deployment automation and operational checks for additional American Legion posts or units.
 - After deploying behind the Kamal proxy, verify that `request.remote_ip` resolves to real
   client IPs (not the proxy). The auth rate limits key on it; if it resolves to the proxy, all
   clients share one throttle bucket and sign-in could be throttled globally. Configure
