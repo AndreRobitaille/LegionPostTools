@@ -23,7 +23,6 @@ Rails.application.routes.draw do
   resources :people, only: %i[index show]
   namespace :admin do
     root "dashboard#show"
-    resources :people, only: %i[index show]
     resources :people, only: [] do
       resource :user_account, only: %i[create destroy]
       resources :position_assignments, only: %i[create update]

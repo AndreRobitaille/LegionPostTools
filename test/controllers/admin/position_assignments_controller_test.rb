@@ -121,7 +121,7 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Selected post role is not available.", flash[:alert]
   end
 

@@ -5,7 +5,7 @@ module Admin
       email_address = params.dig(:user, :email_address).presence || @person.roster_email_address
 
       if email_address.blank?
-        redirect_to admin_person_path(@person), alert: "Enter a login email address before creating the account."
+        redirect_to person_path(@person), alert: "Enter a login email address before creating the account."
         return
       end
 
@@ -15,9 +15,9 @@ module Admin
         User.create!(person: @person, email_address: email_address, email_verified_at: Time.current)
       end
 
-      redirect_to admin_person_path(@person), notice: "Login account is enabled."
+      redirect_to person_path(@person), notice: "Login account is enabled."
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to admin_person_path(@person), alert: e.record.errors.full_messages.to_sentence
+      redirect_to person_path(@person), alert: e.record.errors.full_messages.to_sentence
     end
 
     def destroy
@@ -25,13 +25,13 @@ module Admin
       user = @person.user
 
       if user&.disabled_at.blank? && user.can?("manage_settings") && !another_enabled_manage_settings_user_exists?(user)
-        redirect_to admin_person_path(@person), alert: "At least one enabled administrator account is required."
+        redirect_to person_path(@person), alert: "At least one enabled administrator account is required."
         return
       end
 
       user&.update!(disabled_at: Time.current)
 
-      redirect_to admin_person_path(@person), notice: "Login account is disabled."
+      redirect_to person_path(@person), notice: "Login account is disabled."
     end
 
     private

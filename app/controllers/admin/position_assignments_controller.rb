@@ -7,7 +7,7 @@ module Admin
       @position_title = PositionTitle.where(active: true).order(:display_order, :name).find_by(id: position_assignment_params[:position_title_id])
 
       unless @position_title
-        redirect_to admin_person_path(@person), alert: "Selected post role is not available."
+        redirect_to person_path(@person), alert: "Selected post role is not available."
         return
       end
 

@@ -2,7 +2,7 @@
 
 <p>Manage the roster import, accounts, permissions, and post roles.</p>
 
-<p><%= link_to "People", admin_people_path, class: "button" %></p>
+<p><%= link_to "People", people_path, class: "button" %></p>
 <p><%= link_to "Upload roster", new_admin_roster_import_path, class: "button" %></p>
 
 <% if @latest_roster_import.present? %>

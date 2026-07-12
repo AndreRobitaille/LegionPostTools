@@ -5,9 +5,7 @@
     <span class="nav-tab nav-tab--soon">Meetings<span class="nav-soon">Soon</span></span>
     <span class="nav-tab nav-tab--soon">Records<span class="nav-soon">Soon</span></span>
     <span class="nav-tab nav-tab--soon">Tracked Items<span class="nav-soon">Soon</span></span>
-    <% if current_user.can?("manage_settings") %>
-      <%= link_to "People", admin_people_path, class: nav_tab_class(:people) %>
-    <% end %>
+    <%= link_to "People", people_path, class: nav_tab_class(:people) %>
     <%= link_to "Settings", settings_security_path, class: nav_tab_class(:settings) %>
     <span class="nav-spacer"></span>
     <% if current_user.can?("manage_settings") %>

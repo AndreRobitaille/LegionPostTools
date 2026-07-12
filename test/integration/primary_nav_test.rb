@@ -42,18 +42,18 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_select "nav.nav-bar a.nav-tab--admin", text: /Admin/
   end
 
-  test "plain member does not see People or Admin tabs" do
+  test "plain member sees People but not Admin tab" do
     prepare_setup_complete_state
     sign_in_plain_member
     get root_path
     assert_select "nav.nav-bar a.nav-tab--admin", count: 0
-    assert_select "nav.nav-bar a.nav-tab", text: "People", count: 0
+    assert_select "nav.nav-bar a.nav-tab", text: "People"
   end
 
   test "active tab reflects the current section" do
     prepare_setup_complete_state
     sign_in_admin
-    get admin_people_path
+    get people_path
     assert_select "nav.nav-bar a.nav-tab--active", text: "People"
   end
 end

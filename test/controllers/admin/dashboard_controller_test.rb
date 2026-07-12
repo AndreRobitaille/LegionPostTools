@@ -37,7 +37,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Administration"
     assert_select "p", "Manage the roster import, accounts, permissions, and post roles."
-    assert_select "a[href=?]", admin_people_path, text: "People"
+    assert_select "a[href=?]", people_path, text: "People"
     assert_select "p", /Latest successful roster import: /
     assert_select "p[role='alert']", 0
     assert_select "p", { count: 0, text: /roster-2026\.csv/ }

@@ -6,7 +6,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     post admin_person_user_account_path(person)
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Login account is enabled.", flash[:notice]
     assert_equal "vincent@example.com", person.reload.user.email_address
     assert person.user.email_verified_at.present?
@@ -18,7 +18,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     post admin_person_user_account_path(person), params: { user: { email_address: "admin@example.com" } }
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Login account is enabled.", flash[:notice]
     assert_equal "admin@example.com", person.reload.user.email_address
   end
@@ -29,7 +29,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     post admin_person_user_account_path(person), params: { user: { email_address: "new@example.com" } }
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Login account is enabled.", flash[:notice]
     assert_equal user.id, person.reload.user.id
     assert_equal "new@example.com", person.user.email_address
@@ -42,7 +42,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     delete admin_person_user_account_path(person)
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Login account is disabled.", flash[:notice]
     assert person.reload.user.disabled_at.present?
     assert_equal user.id, person.user.id
@@ -53,7 +53,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     delete admin_person_user_account_path(person)
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "At least one enabled administrator account is required.", flash[:alert]
     assert_nil person.reload.user.disabled_at
   end
@@ -67,7 +67,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     delete admin_person_user_account_path(person)
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Login account is disabled.", flash[:notice]
     assert person.reload.user.disabled_at.present?
   end
@@ -77,7 +77,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     post admin_person_user_account_path(person), params: { user: { email_address: "" } }
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Enter a login email address before creating the account.", flash[:alert]
     assert_nil person.reload.user
   end
