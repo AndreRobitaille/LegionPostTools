@@ -51,6 +51,18 @@ class User < ApplicationRecord
     )
   end
 
+  def self.another_enabled_manage_settings_user_exists?(user)
+    where(disabled_at: nil)
+      .where.not(id: user.id)
+      .joins(:permission_grants)
+      .where(permission_grants: { capability: "manage_settings" })
+      .exists?
+  end
+
+  def only_enabled_administrator?
+    disabled_at.blank? && can?("manage_settings") && !self.class.another_enabled_manage_settings_user_exists?(self)
+  end
+
   private
 
   # WebAuthn requires an opaque, non-PII, base64url user handle (not the DB id).
