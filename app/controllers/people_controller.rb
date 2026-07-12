@@ -23,6 +23,20 @@ class PeopleController < ApplicationController
     @members = people - @officers
   end
 
+  def show
+    @person = Person.includes(:user, position_assignments: :position_title).find(params[:id])
+    @user = @person.user
+    @can_manage = current_user.can?("manage_settings")
+
+    if officer?
+      # Built directly (not via @person.position_assignments.new) so the already-preloaded
+      # position_assignments association is not mutated with an in-memory unsaved record —
+      # that would leak into Person#active_role_labels and the Post Roles list below.
+      @position_assignment = PositionAssignment.new(person: @person)
+      @position_titles = PositionTitle.where(active: true).order(:display_order, :name)
+    end
+  end
+
   private
 
   SORT_OPTIONS = {

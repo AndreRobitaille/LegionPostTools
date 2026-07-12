@@ -244,3 +244,73 @@
 .datefield-input { font-size: 16px; padding: 10px 44px 10px 12px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); width: 170px; letter-spacing: .06em; text-transform: uppercase; }
 .datefield-native { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; right: 40px; }
 .datefield-cal { position: absolute; right: 5px; width: 32px; height: 32px; border: none; background: #efe5cb; border-radius: 5px; cursor: pointer; font-size: 16px; line-height: 1; }
+
+/* Person page: identity header, back link ---------------------------------- */
+.back { font-size: 16px; color: var(--color-navy); text-decoration: none; display: inline-block; margin-bottom: 10px; }
+.back:hover { text-decoration: underline; }
+.idhead { margin: 12px 0 22px; }
+.pname { font-size: 27px; color: var(--color-navy); font-weight: 700; line-height: 1.1; margin: 0; }
+.idmeta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 9px; }
+/* Mockup used 12.5px for .office; readability floor requires >= 13px for labels. */
+.office { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; }
+.idsub { font-size: 15px; color: var(--color-muted); margin-top: 8px; }
+
+/* Person page: read-only key/value grid (Roster Record, Service) ----------- */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 34px; }
+.kv .k { display: block; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 3px; }
+.kv .v { font-size: 16px; color: var(--color-ink); margin: 0; }
+.kv a.v { color: var(--color-navy); text-decoration: none; border-bottom: 1px solid #cbb877; }
+.kv a.v:hover { border-bottom-color: var(--color-navy); }
+.kv .v.pufl { color: var(--color-gold-ink); font-weight: 600; }
+.kv--full { grid-column: 1 / -1; }
+.readonly-tip { margin-top: 16px; font-size: 14px; color: var(--color-muted); border-top: 1px dashed #e0d5b4; padding-top: 12px; }
+.lock { color: var(--color-bronze); }
+
+/* Person page: Login Account panel ------------------------------------------ */
+.acct-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 16px; }
+.acct-line .em { font-weight: 600; color: var(--color-navy); }
+.badge-on { font-size: 13px; font-weight: 700; color: var(--color-green); background: #e7efe4; border: 1px solid #bcd3b6; border-radius: 20px; padding: 3px 11px; }
+.btnrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+.btn-sm { padding: 8px 14px; font-size: 16px; }
+.helper { font-size: 14px; color: var(--color-muted); }
+
+/* Person page: grouped permission checklist (no disclosure, always visible) - */
+.permwrap { margin-top: 18px; border-top: 1px solid #e6dcbe; padding-top: 14px; }
+.permhead { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
+.permsub { font-size: 13.5px; color: var(--color-muted); margin-top: 2px; margin-bottom: 6px; }
+.pg { margin-top: 12px; }
+/* Mockup used 12px for .gname; readability floor requires >= 13px for labels. */
+.pg .gname { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; margin: 0 0 2px; }
+.perm { display: flex; align-items: center; gap: 11px; font-size: 16px; padding: 8px 0; border-bottom: 1px solid #f0e7cf; }
+.perm:last-child { border-bottom: none; }
+.perm input { width: 18px; height: 18px; accent-color: var(--color-navy); }
+.perm .desc { color: var(--color-muted); font-size: 13.5px; margin-left: auto; }
+
+/* Person page: Post Roles list + date-correction / assignment forms -------- */
+.role { padding: 12px 0; border-bottom: 1px solid #ece0bd; }
+.role:last-child { border-bottom: none; }
+.role-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.role .rn { font-size: 16px; color: var(--color-navy); font-weight: 600; }
+.role .rd { font-size: 14px; color: var(--color-muted); margin-top: 2px; }
+.role .present { color: var(--color-green); font-weight: 600; }
+.role-actions { display: flex; gap: 14px; white-space: nowrap; }
+/* Mockup used 14px for .lnk; readability floor requires >= 16px for interactive links. */
+.lnk { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.lnk.warnlnk { color: var(--color-legionred); }
+.editbox { margin-top: 12px; background: #fdfaf0; border: 1px solid #e6dcbe; border-radius: 8px; padding: 12px 14px; }
+.editrow { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; }
+.assign { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 14px; border-top: 1px dashed #e0d5b4; padding-top: 16px; }
+
+/* Person page (member view): Contact panel tap-to-reach rows ---------------- */
+.contact { display: flex; flex-direction: column; gap: 14px; }
+.crow { display: flex; align-items: center; gap: 13px; }
+.cic { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 9px; background: #efe5cb; border: 1px solid #ddcfa4; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+/* Mockup used 12px for .crow .k; readability floor requires >= 13px for labels. */
+.crow .k { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+.crow a { font-size: 17px; color: var(--color-navy); font-weight: 600; text-decoration: none; }
+.crow a:hover { text-decoration: underline; }
+
+/* Person page: continuous-membership honor callout -------------------------- */
+.honor { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; background: #fbf3dd; border: 1px solid #e7d6a6; border-radius: 8px; padding: 12px 14px; }
+.honor .num { font-size: 24px; font-weight: 700; color: var(--color-gold-ink); line-height: 1; }
+.honor .txt { font-size: 15px; color: #5c4a24; }

@@ -1,0 +1,11 @@
+<%# app/views/people/show.html.erb
+    Locals (from PeopleController#show): @person, @user, @can_manage, and (officer only) @position_assignment, @position_titles %>
+
+<% content_for :title, @person.roster_display_name %>
+<a class="back" href="<%= people_path %>">&larr; People</a>
+
+<% if officer? %>
+  <%= render "officer_person" %>
+<% else %>
+  <%= render "member_person" %>
+<% end %>
