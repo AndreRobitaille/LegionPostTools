@@ -1,5 +1,8 @@
 module Admin
   class RosterImportsController < BaseController
+    # Notices about sign-in access, shown apart from row-level CSV problems on the result page.
+    ACCESS_NOTICE_KINDS = %w[last_admin unsupported_member_status].freeze
+
     def index
       @roster_imports = RosterImport.history
     end
@@ -36,6 +39,10 @@ module Admin
       @roster_import = RosterImport.find(params[:id])
       @problems = @roster_import.problems
       @removed_members = @roster_import.removed_members
+      @superseded = @roster_import.status == "pending_confirmation" && @roster_import.superseded?
+      # Governance notices (last-admin protection, unsupported status) are shown apart from
+      # row-level CSV problems so an important account notice isn't buried among data-entry typos.
+      @access_notices, @row_problems = @problems.partition { |p| ACCESS_NOTICE_KINDS.include?(p["kind"]) }
     end
 
     def confirm
@@ -45,7 +52,7 @@ module Admin
       alert = nil
 
       roster_import.with_lock do
-        unless roster_import.status == "pending_confirmation" && roster_import.pending_csv.attached? && !roster_import_superseded?(roster_import)
+        unless roster_import.status == "pending_confirmation" && roster_import.pending_csv.attached? && !roster_import.superseded?
           alert = "That roster import can no longer be confirmed."
           next
         end
@@ -75,8 +82,17 @@ module Admin
       end
     end
 
-    def roster_import_superseded?(roster_import)
-      RosterImport.where("id > ?", roster_import.id).where(status: %w[pending_confirmation completed]).exists?
+    def discard
+      roster_import = RosterImport.find(params[:id])
+
+      roster_import.with_lock do
+        next unless roster_import.status == "pending_confirmation"
+
+        roster_import.pending_csv.purge_later
+        roster_import.update!(status: "discarded")
+      end
+
+      redirect_to admin_roster_import_path(roster_import), notice: "Import discarded. No members were removed."
     end
   end
 end

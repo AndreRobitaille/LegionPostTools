@@ -52,8 +52,22 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     get person_path(person)
 
     assert_response :success
-    assert_includes response.body, "Imports will not change this account's sign-in state."
+    assert_includes response.body, "Sign-in is set manually."
+    assert_select "input[type=submit], button", text: /Switch back to following the roster/
     assert_select "form[action=?]", roster_control_admin_person_user_account_path(person)
+  end
+
+  test "officer login panel shows roster-controlled state for a default account" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    User.create!(person: person, email_address: "roster-controlled@example.com", email_verified_at: Time.current)
+
+    get person_path(person)
+
+    assert_response :success
+    assert_includes response.body, "Sign-in follows the National roster."
+    assert_select "input[type=submit], button", text: /Switch back to following the roster/, count: 0
   end
 
   test "member sees contact, service, and roles but no record or controls" do

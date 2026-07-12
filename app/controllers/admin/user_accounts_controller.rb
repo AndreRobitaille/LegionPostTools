@@ -22,7 +22,7 @@ module Admin
         )
       end
 
-      redirect_to person_path(@person), notice: "Login account is enabled as an admin exception."
+      redirect_to person_path(@person), notice: "Sign-in is on. It's now set manually, so roster imports won't change it."
     rescue ActiveRecord::RecordInvalid => e
       redirect_to person_path(@person), alert: e.record.errors.full_messages.to_sentence
     end
@@ -38,7 +38,7 @@ module Admin
         return
       end
 
-      redirect_to person_path(@person), notice: "Login account is disabled as an admin exception."
+      redirect_to person_path(@person), notice: "Sign-in is off. It's now set manually, so roster imports won't change it."
     end
 
     def roster_control
@@ -46,7 +46,7 @@ module Admin
       user = @person.user
 
       if user.blank?
-        redirect_to person_path(@person), alert: "There is no login account to return to roster control."
+        redirect_to person_path(@person), alert: "There is no login account to switch to roster-controlled sign-in."
         return
       end
 
@@ -56,7 +56,7 @@ module Admin
       elsif result == :unsupported_status
         redirect_to person_path(@person), alert: "Roster status cannot be applied automatically."
       else
-        redirect_to person_path(@person), notice: "Login account now follows roster status."
+        redirect_to person_path(@person), notice: "Sign-in now follows the National roster."
       end
     end
   end

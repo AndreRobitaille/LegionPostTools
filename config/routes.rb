@@ -34,6 +34,7 @@ Rails.application.routes.draw do
     end
     resources :roster_imports, only: %i[index new create show] do
       post :confirm, on: :member
+      delete :discard, on: :member
     end
     resources :position_titles, only: %i[create update]
   end

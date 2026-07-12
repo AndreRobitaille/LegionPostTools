@@ -1,5 +1,5 @@
 class RosterImport < ApplicationRecord
-  STATUSES = %w[completed failed pending_confirmation].freeze
+  STATUSES = %w[completed failed pending_confirmation discarded].freeze
   STALE_AFTER = 30.days
 
   has_one_attached :pending_csv
@@ -30,12 +30,25 @@ class RosterImport < ApplicationRecord
     Array(summary&.fetch("removed_members", nil))
   end
 
+  # The first problem's message, tolerant of older imports whose summary stored problems as
+  # plain strings rather than {message:, ...} hashes.
+  def first_problem_message
+    first = problems.first
+    first.is_a?(Hash) ? first["message"] : first
+  end
+
   def access_effects
     summary&.fetch("access_effects", {}) || {}
   end
 
   def sign_in_exceptions
     User.where(login_access_override: true).includes(:person).order("people.last_name", "people.first_name")
+  end
+
+  # A pending import is superseded once any newer import has itself gone pending or completed —
+  # confirming the older one would apply a stale CSV over newer roster state.
+  def superseded?
+    self.class.where("id > ?", id).where(status: %w[pending_confirmation completed]).exists?
   end
 
   private

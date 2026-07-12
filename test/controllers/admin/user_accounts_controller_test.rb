@@ -7,7 +7,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     post admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "Login account is enabled as an admin exception.", flash[:notice]
+    assert_equal "Sign-in is on. It's now set manually, so roster imports won't change it.", flash[:notice]
     assert_equal "vincent@example.com", person.reload.user.email_address
     assert person.user.email_verified_at.present?
     assert_nil person.user.disabled_at
@@ -19,7 +19,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     post admin_person_user_account_path(person), params: { user: { email_address: "admin@example.com" } }
 
     assert_redirected_to person_path(person)
-    assert_equal "Login account is enabled as an admin exception.", flash[:notice]
+    assert_equal "Sign-in is on. It's now set manually, so roster imports won't change it.", flash[:notice]
     assert_equal "admin@example.com", person.reload.user.email_address
   end
 
@@ -42,7 +42,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     post admin_person_user_account_path(person), params: { user: { email_address: "new@example.com" } }
 
     assert_redirected_to person_path(person)
-    assert_equal "Login account is enabled as an admin exception.", flash[:notice]
+    assert_equal "Sign-in is on. It's now set manually, so roster imports won't change it.", flash[:notice]
     assert_equal user.id, person.reload.user.id
     assert_equal "new@example.com", person.user.email_address
     assert_nil person.user.disabled_at
@@ -55,7 +55,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     delete admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "Login account is disabled as an admin exception.", flash[:notice]
+    assert_equal "Sign-in is off. It's now set manually, so roster imports won't change it.", flash[:notice]
     assert person.reload.user.disabled_at.present?
     assert_equal user.id, person.user.id
   end
@@ -95,7 +95,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     delete admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "Login account is disabled as an admin exception.", flash[:notice]
+    assert_equal "Sign-in is off. It's now set manually, so roster imports won't change it.", flash[:notice]
     assert person.reload.user.disabled_at.present?
   end
 
@@ -134,7 +134,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     patch roster_control_admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "There is no login account to return to roster control.", flash[:alert]
+    assert_equal "There is no login account to switch to roster-controlled sign-in.", flash[:alert]
   end
 
   test "blank email with no roster email redirects with the blank-email alert" do

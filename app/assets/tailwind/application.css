@@ -251,6 +251,21 @@
 .done-sub b { color: #26401f; }
 .done--fail .done-sub b { color: #4a2020; }
 
+/* Decision-required header (e.g. confirm a large removal): a calm, official gold prompt,
+   deliberately distinct from the red failure header so "we need your decision" never reads
+   as "it broke." The loud red is reserved for the actual confirm control below. */
+.done--confirm { background: linear-gradient(180deg, #f6efdd, #efe6cd); border-color: #e0cfa0; border-left-color: var(--color-gold-ink); }
+.done--confirm .done-seal { background: var(--color-gold-ink); }
+.done--confirm .done-title { color: #5a4718; }
+.done--confirm .done-sub { color: #6a5622; }
+.done--confirm .done-sub b { color: #4a3a12; }
+
+/* Inert header for replaced or discarded imports: neutral, no alarm. */
+.done--muted { background: linear-gradient(180deg, #eef0f2, #e7eaee); border-color: #d3d9df; border-left-color: var(--color-muted); }
+.done--muted .done-seal { background: var(--color-muted); }
+.done--muted .done-title { color: #45505c; }
+.done--muted .done-sub { color: #5b6672; }
+
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .card--alert { border-color: #e2b6b6; background: #fbefef; }
 .card--alert .card-dia { color: var(--color-legionred); }
@@ -276,6 +291,8 @@
 .imp .status { font-size: 13px; font-weight: 700; }
 .imp .status.ok { color: var(--color-green); }
 .imp .status.fail { color: var(--color-legionred); }
+.imp .status.warn { color: var(--color-gold-ink); }
+.imp .status.muted { color: var(--color-muted); }
 .imp .l2 { font-size: 14px; color: var(--color-muted); margin-top: 3px; }
 .imp .c { font-weight: 600; }
 .imp .c.cr { color: var(--color-green); }
@@ -368,6 +385,15 @@
 .acct-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 16px; }
 .acct-line .em { font-weight: 600; color: var(--color-navy); }
 .badge-on { font-size: 13px; font-weight: 700; color: var(--color-green); background: #e7efe4; border: 1px solid #bcd3b6; border-radius: 20px; padding: 3px 11px; }
+
+/* Whether sign-in follows the roster or is set manually. The manual (exception) state changes
+   what the buttons below do, so it gets a real callout — not a footnote. The default follows
+   quietly. */
+.acct-mode { display: flex; align-items: flex-start; gap: 9px; font-size: 15px; line-height: 1.5; border-radius: 8px; padding: 11px 14px; margin: 6px 0 14px; }
+.acct-mode-dot { font-size: 10px; line-height: 1.7; }
+.acct-mode--manual { background: #eef2f7; border: 1px solid #cbd7e6; color: var(--color-navy); }
+.acct-mode--manual .acct-mode-dot { color: var(--color-navy); }
+.acct-mode-note { font-size: 14px; color: var(--color-muted); margin: 6px 0 14px; }
 .btnrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
 .btn-sm { padding: 8px 14px; font-size: 16px; }
 .helper { font-size: 14px; color: var(--color-muted); }

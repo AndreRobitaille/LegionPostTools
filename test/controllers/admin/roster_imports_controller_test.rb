@@ -323,12 +323,77 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "body", /Sign-in access/
-    assert_select "body", /Enabled by roster status: 2/
-    assert_select "body", /Disabled by roster status or removal: 3/
-    assert_select "body", /Skipped for admin exception: 1/
-    assert_select "body", /Skipped to protect the last administrator: 1/
+    assert_select "body", /Turned on by roster status: 2/
+    assert_select "body", /Turned off by roster status or removal: 3/
+    assert_select "body", /Left as set manually: 1/
+    assert_select "body", /Left on to protect the last administrator: 1/
     assert_select "body", /Sign-in exceptions/
     assert_select "body", /Exception Member/
+  end
+
+  test "pending show does not render the completed-style change tiles and offers a discard" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0)
+    roster_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "pending.csv", content_type: "text/csv")
+    roster_import.save!
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select ".tiles", count: 0
+    assert_select "input[type=checkbox][name=confirm_large_removal]"
+    assert_select "form[action=?]", discard_admin_roster_import_path(roster_import)
+  end
+
+  test "discard turns a pending import inert without removing anyone" do
+    prepare_setup_complete_state
+    sign_in_admin
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("D%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "discard#{index}@example.com")
+    end
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0)
+    roster_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "pending.csv", content_type: "text/csv")
+    roster_import.save!
+
+    delete discard_admin_roster_import_path(roster_import)
+
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "Import discarded. No members were removed.", flash[:notice]
+    assert_equal "discarded", roster_import.reload.status
+    assert_equal 0, Person.where.not(roster_removed_at: nil).count
+
+    get admin_roster_import_path(roster_import)
+    assert_response :success
+    assert_select "h1", /Import discarded/
+    assert_select "input[type=checkbox][name=confirm_large_removal]", count: 0
+  end
+
+  test "discard leaves a completed import unchanged" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "done.csv", created_count: 0, updated_count: 0, unchanged_count: 0, removed_count: 0, problem_count: 0)
+
+    delete discard_admin_roster_import_path(roster_import)
+
+    assert_equal "completed", roster_import.reload.status
+  end
+
+  test "superseded pending show replaces the confirm form with a discard" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "old.csv", removed_count: 11, problem_count: 0)
+    roster_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "old.csv", content_type: "text/csv")
+    roster_import.save!
+    RosterImport.create!(status: "completed", imported_at: 1.minute.from_now, uploaded_filename: "newer.csv")
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select "h1", /This import has been replaced/
+    assert_select "input[type=checkbox][name=confirm_large_removal]", count: 0
+    assert_select "form[action=?]", discard_admin_roster_import_path(roster_import)
   end
 
   private

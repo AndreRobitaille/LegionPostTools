@@ -11,13 +11,16 @@
     <% end %>
   </div>
 
-  <div class="ownernote">
-    <% if @user.login_access_override? %>
-      <b>Admin override.</b> Imports will not change this account's sign-in state.
-    <% else %>
-      <b>Roster-controlled.</b> Sign-in follows National roster status.
-    <% end %>
-  </div>
+  <% if @user.login_access_override? %>
+    <div class="acct-mode acct-mode--manual">
+      <span class="acct-mode-dot" aria-hidden="true">&#9679;</span>
+      <span>
+        <b>Sign-in is set manually.</b> Roster imports won't change it<% if @user.login_access_override_at.present? %> — set on <%= legion_date(@user.login_access_override_at) %><% end %>.
+      </span>
+    </div>
+  <% else %>
+    <p class="acct-mode-note">Sign-in follows the National roster.</p>
+  <% end %>
 
   <% if @user.roster_email_mismatch? && @user == current_user %>
     <div class="pk-card">
@@ -32,34 +35,38 @@
   <% end %>
 
   <% if @can_manage %>
-    <%= render "permission_groups" %>
-
     <% if @user.disabled_at.present? %>
       <div class="btnrow">
         <%= form_with url: admin_person_user_account_path(@person), scope: :user do |form| %>
           <%= form.label :email_address, "Login email" %>
           <%= form.email_field :email_address, value: @user.email_address %>
-          <%= form.submit "Re-enable sign-in as an admin exception", class: "btn-primary" %>
+          <%= form.submit "Enable sign-in", class: "btn-primary" %>
         <% end %>
       </div>
+      <p class="helper">Turning sign-in on here sets it manually, so roster imports won't change it until you switch back.</p>
     <% else %>
       <div class="btnrow">
-        <%= button_to "Disable sign-in as an admin exception", admin_person_user_account_path(@person), method: :delete, class: "btn-return" %>
-        <span class="helper">Keeps their record and roles — they just can't sign in until re-enabled as an admin exception.</span>
+        <%= button_to "Disable sign-in", admin_person_user_account_path(@person), method: :delete, class: "btn-return" %>
+        <span class="helper">Keeps their record and roles — they just can't sign in. This sets sign-in manually, so imports won't change it until you switch back.</span>
       </div>
     <% end %>
 
     <% if @user.login_access_override? %>
-      <%= button_to "Return to roster-controlled access", roster_control_admin_person_user_account_path(@person), method: :patch, class: "btn-secondary" %>
-      <p class="ownernote">This immediately applies the current roster status to sign-in.</p>
+      <div class="btnrow">
+        <%= button_to "Switch back to following the roster", roster_control_admin_person_user_account_path(@person), method: :patch, class: "btn-secondary" %>
+        <span class="helper">Sign-in will immediately match this member's current roster status.</span>
+      </div>
     <% end %>
+
+    <%= render "permission_groups" %>
   <% end %>
 <% elsif @can_manage %>
   <%= form_with url: admin_person_user_account_path(@person), scope: :user do |form| %>
     <%= form.label :email_address, "Login email" %>
     <%= form.email_field :email_address, value: @person.roster_email_address %>
-    <%= form.submit "Enable sign-in as an admin exception", class: "btn-primary" %>
+    <%= form.submit "Enable sign-in", class: "btn-primary" %>
   <% end %>
+  <p class="helper">Turning sign-in on sets it manually, so roster imports won't change it until you switch back.</p>
 <% else %>
   <p class="page-sub">This member does not have a login account.</p>
 <% end %>

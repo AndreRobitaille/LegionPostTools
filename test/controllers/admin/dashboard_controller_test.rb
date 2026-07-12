@@ -56,6 +56,34 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_roster_imports_path, text: /View all imports/
   end
 
+  test "recent imports render pending and discarded statuses without treating them as failures" do
+    prepare_setup_complete_state
+    sign_in_admin
+    pending = RosterImport.new(status: "pending_confirmation", imported_at: 1.hour.ago, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0)
+    pending.pending_csv.attach(io: StringIO.new("x"), filename: "pending.csv", content_type: "text/csv")
+    pending.save!
+    RosterImport.create!(status: "discarded", imported_at: 2.hours.ago, uploaded_filename: "discarded.csv")
+
+    get admin_root_path
+
+    assert_response :success
+    assert_select ".imp .status.warn", text: /Needs confirmation/
+    assert_select ".imp .status.muted", text: /Discarded/
+  end
+
+  test "recent imports tolerate an older failed import whose problems are plain strings" do
+    prepare_setup_complete_state
+    sign_in_admin
+    legacy = RosterImport.new(status: "failed", imported_at: 1.hour.ago, uploaded_filename: "legacy.csv", problem_count: 1)
+    legacy.summary = { "problems" => [ "Illegal quoting in line 1." ] }
+    legacy.save!(validate: false)
+
+    get admin_root_path
+
+    assert_response :success
+    assert_select ".imp .l2", text: /Illegal quoting in line 1\./
+  end
+
   test "roster panel shows stale warning when no import exists" do
     prepare_setup_complete_state
     sign_in_admin

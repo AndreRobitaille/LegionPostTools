@@ -1,20 +1,40 @@
 <%# app/views/admin/roster_imports/show.html.erb
-    Locals (from Admin::RosterImportsController#show): @roster_import, @problems, @removed_members
+    Locals (from Admin::RosterImportsController#show): @roster_import, @row_problems, @access_notices,
+    @removed_members, @superseded.
     "Importer" (who ran the import) isn't tracked on RosterImport yet, so it's omitted here. %>
 
 <% content_for :title, "Roster import result" %>
 <a class="back" href="<%= admin_roster_imports_path %>">&larr; Import history</a>
 
-<% if @roster_import.status == "pending_confirmation" %>
+<% status = @roster_import.status %>
+<% pending = status == "pending_confirmation" %>
+
+<% if pending && !@superseded %>
   <% confirmation = @roster_import.summary.fetch("removal_confirmation", {}) %>
-  <div class="done done--fail">
-    <div class="done-seal" aria-hidden="true">!</div>
+  <div class="done done--confirm">
+    <div class="done-seal" aria-hidden="true">?</div>
     <div>
       <h1 class="done-title">Confirm roster import</h1>
-      <div class="done-sub">This would remove <b><%= confirmation["removed_count"] || @roster_import.removed_count %> members</b> and turn off sign-in for <b><%= confirmation["sign_in_disable_count"] || 0 %></b> roster-controlled accounts.</div>
+      <div class="done-sub">This would remove <b><%= confirmation["removed_count"] || @roster_import.removed_count %> members</b> and turn off sign-in for <b><%= confirmation["sign_in_disable_count"] || 0 %></b> roster-controlled accounts. Nothing has changed yet.</div>
     </div>
   </div>
-<% elsif @roster_import.status == "completed" %>
+<% elsif pending && @superseded %>
+  <div class="done done--muted">
+    <div class="done-seal" aria-hidden="true">&#8635;</div>
+    <div>
+      <h1 class="done-title">This import has been replaced</h1>
+      <div class="done-sub">A newer roster import has arrived, so this one can no longer be confirmed. No members were removed.</div>
+    </div>
+  </div>
+<% elsif status == "discarded" %>
+  <div class="done done--muted">
+    <div class="done-seal" aria-hidden="true">&times;</div>
+    <div>
+      <h1 class="done-title">Import discarded</h1>
+      <div class="done-sub">No members were removed and no sign-in access changed.</div>
+    </div>
+  </div>
+<% elsif status == "completed" %>
   <div class="done">
     <div class="done-seal" aria-hidden="true">&check;</div>
     <div>
@@ -32,89 +52,118 @@
   </div>
 <% end %>
 
-<div class="sec-head">
-  <span class="sec-head-dia" aria-hidden="true">&#9670;</span>
-  <span class="sec-head-label">What changed</span>
-  <span class="sec-head-rule"></span>
-</div>
-<div class="tiles">
-  <%= render "shared/stat_tile", count: @roster_import.created_count, label: "Created", variant: "created" %>
-  <%= render "shared/stat_tile", count: @roster_import.updated_count, label: "Updated", variant: "updated" %>
-  <%= render "shared/stat_tile", count: @roster_import.removed_count, label: "Removed", variant: "removed" %>
-  <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: @roster_import.problem_count.positive? ? "problems" : "neutral" %>
-</div>
-
-<% effects = @roster_import.access_effects %>
-<% if effects.present? %>
-  <%= render "shared/section_panel", label: "Sign-in access" do %>
-    <div class="item">Enabled by roster status: <b><%= effects["enabled_by_roster_status"] || 0 %></b></div>
-    <div class="item">Disabled by roster status or removal: <b><%= effects["disabled_by_roster_status"] || 0 %></b></div>
-    <div class="item">Skipped for admin exception: <b><%= effects["skipped_admin_override"] || 0 %></b></div>
-    <div class="item">Skipped to protect the last administrator: <b><%= effects["skipped_last_admin"] || 0 %></b></div>
+<% unless status == "discarded" %>
+  <% if status == "completed" %>
+    <div class="sec-head">
+      <span class="sec-head-dia" aria-hidden="true">&#9670;</span>
+      <span class="sec-head-label">What changed</span>
+      <span class="sec-head-rule"></span>
+    </div>
+    <div class="tiles">
+      <%= render "shared/stat_tile", count: @roster_import.created_count, label: "Created", variant: "created" %>
+      <%= render "shared/stat_tile", count: @roster_import.updated_count, label: "Updated", variant: "updated" %>
+      <%= render "shared/stat_tile", count: @roster_import.removed_count, label: "Removed", variant: "removed" %>
+      <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: @roster_import.problem_count.positive? ? "problems" : "neutral" %>
+    </div>
   <% end %>
-<% end %>
 
-<% exceptions = @roster_import.sign_in_exceptions %>
-<% if exceptions.any? %>
-  <%= render "shared/section_panel", label: "Sign-in exceptions" do %>
-    <% exceptions.each do |user| %>
-      <div class="item">
-        <span class="who"><%= user.person.full_name %></span>
-        <span class="meta">· Sign-in: <%= user.disabled_at.present? ? "No" : "Yes" %></span>
-        <div class="fix">Imports will not change this account. <%= link_to "Review", person_path(user.person), class: "go" %></div>
-      </div>
+  <% effect_lines = [
+       [ "Turned on by roster status", @roster_import.access_effects["enabled_by_roster_status"] ],
+       [ "Turned off by roster status or removal", @roster_import.access_effects["disabled_by_roster_status"] ],
+       [ "Left as set manually", @roster_import.access_effects["skipped_admin_override"] ],
+       [ "Left on to protect the last administrator", @roster_import.access_effects["skipped_last_admin"] ]
+     ].select { |_label, count| count.to_i.positive? } %>
+  <% if effect_lines.any? %>
+    <%= render "shared/section_panel", label: "Sign-in access" do %>
+      <% effect_lines.each do |label, count| %>
+        <div class="item"><%= label %>: <b><%= count %></b></div>
+      <% end %>
     <% end %>
   <% end %>
-<% end %>
 
-<% if @removed_members.present? %>
-  <%= render "shared/section_panel", label: "Removed from the roster — #{@removed_members.size}" do %>
-    <% @removed_members.each do |removed| %>
-      <% person = removed["member_number"].present? ? Person.find_by(member_number: removed["member_number"]) : nil %>
-      <div class="item">
-        <span class="who"><%= removed["name"] %></span>
-        <% if removed["member_number"].present? %>
-          <span class="meta">· #<%= removed["member_number"] %></span>
-        <% end %>
-        <div class="fix">
-          No longer on the National roster.
-          <% if @roster_import.status == "pending_confirmation" && removed["would_disable_sign_in"] %>
-            Sign-in would be <b>turned off</b>.
-          <% elsif @roster_import.status == "completed" && removed["user_disabled"] %>
-            Sign-in was <b>turned off</b>.
-          <% end %>
-          <% if person %>
-            <%= link_to "View record", person_path(person), class: "go" %>
-          <% end %>
+  <% exceptions = @roster_import.sign_in_exceptions %>
+  <% if exceptions.any? %>
+    <%= render "shared/section_panel", label: "Sign-in exceptions" do %>
+      <p class="ownernote">These accounts are set manually. Roster imports never change them — review each one to return it to roster-controlled sign-in.</p>
+      <% exceptions.each do |user| %>
+        <div class="item">
+          <span class="who"><%= user.person.full_name %></span>
+          <span class="meta">· <%= signin_line(user.person) %></span>
+          <div class="fix"><%= link_to "Review", person_path(user.person), class: "go" %></div>
         </div>
-      </div>
+      <% end %>
     <% end %>
-    <p class="ownernote">If someone was removed by mistake, they'll return on the next import once National has them again — their record and roles are kept in the meantime.</p>
+  <% end %>
+
+  <% if @removed_members.present? %>
+    <%= render "shared/section_panel", label: "Removed from the roster — #{@removed_members.size}" do %>
+      <% @removed_members.each do |removed| %>
+        <% person = removed["member_number"].present? ? Person.find_by(member_number: removed["member_number"]) : nil %>
+        <div class="item">
+          <span class="who"><%= removed["name"] %></span>
+          <% if removed["member_number"].present? %>
+            <span class="meta">· #<%= removed["member_number"] %></span>
+          <% end %>
+          <div class="fix">
+            No longer on the National roster.
+            <% if pending && removed["would_disable_sign_in"] %>
+              Sign-in would be <b>turned off</b>.
+            <% elsif status == "completed" && removed["user_disabled"] %>
+              Sign-in was <b>turned off</b>.
+            <% end %>
+            <% if person %>
+              <%= link_to "View record", person_path(person), class: "go" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      <p class="ownernote">If someone was removed by mistake, they'll return on the next import once National has them again — their record and roles are kept in the meantime.</p>
+    <% end %>
+  <% end %>
+
+  <% if @access_notices.present? %>
+    <%= render "shared/section_panel", label: "Sign-in needs your review" do %>
+      <% @access_notices.each do |notice| %>
+        <div class="item"><%= notice["message"] %></div>
+      <% end %>
+      <p class="ownernote">These accounts were left as they are so no one is locked out by accident. Change sign-in on the person's page if needed.</p>
+    <% end %>
+  <% end %>
+
+  <% if @row_problems.present? %>
+    <%= render "shared/section_panel", label: "#{pluralize(@row_problems.size, 'row')} #{@row_problems.size == 1 ? 'needs' : 'need'} attention", class: "card--alert" do %>
+      <% @row_problems.each do |problem| %>
+        <div class="item">
+          <% if problem["row"].present? %>
+            <span class="rowid">Row <%= problem["row"] %></span>
+          <% end %>
+          <%= problem["message"] %>
+        </div>
+      <% end %>
+      <p class="ownernote">Roster data is owned by National — most fixes are made there and picked up on the next import.</p>
+    <% end %>
   <% end %>
 <% end %>
 
-<% if @problems.present? %>
-  <%= render "shared/section_panel", label: "#{pluralize(@problems.size, 'row')} #{@problems.size == 1 ? 'needs' : 'need'} attention", class: "card--alert" do %>
-    <% @problems.each do |problem| %>
-      <div class="item">
-        <% if problem["row"].present? %>
-          <span class="rowid">Row <%= problem["row"] %></span>
-        <% end %>
-        <%= problem["message"] %>
-      </div>
+<% if pending && !@superseded %>
+  <%= render "shared/section_panel", label: "Confirm this import", class: "card--alert" do %>
+    <%= form_with url: confirm_admin_roster_import_path(@roster_import), method: :post do %>
+      <label class="perm">
+        <%= check_box_tag :confirm_large_removal, "1", false %>
+        Yes, remove <%= @roster_import.removed_count %> members and turn off sign-in where roster-controlled.
+      </label>
+      <div class="btnrow"><%= submit_tag "Confirm and import", class: "btn-primary" %></div>
     <% end %>
-    <p class="ownernote">Roster data is owned by National — most fixes are made there and picked up on the next import.</p>
+    <div class="btnrow">
+      <%= button_to "Discard this import", discard_admin_roster_import_path(@roster_import), method: :delete, class: "btn-return" %>
+      <span class="helper">Throws this import away. No members are removed and nothing changes.</span>
+    </div>
   <% end %>
-<% end %>
-
-<% if @roster_import.status == "pending_confirmation" %>
-  <%= form_with url: confirm_admin_roster_import_path(@roster_import), method: :post do %>
-    <label class="perm">
-      <%= check_box_tag :confirm_large_removal, "1", false %>
-      Yes, remove <%= @roster_import.removed_count %> members and turn off sign-in where roster-controlled.
-    </label>
-    <div class="btnrow"><%= submit_tag "Confirm and import", class: "btn-primary" %></div>
-  <% end %>
+<% elsif pending && @superseded %>
+  <div class="btnrow">
+    <%= button_to "Discard this replaced import", discard_admin_roster_import_path(@roster_import), method: :delete, class: "btn-return" %>
+    <span class="helper">Clears it from your import history. No members are removed.</span>
+  </div>
 <% end %>
 
 <div class="btnrow">

@@ -32,16 +32,21 @@
     <div class="subttl">Recent imports</div>
     <% @recent_imports.each do |roster_import| %>
       <%= link_to admin_roster_import_path(roster_import), class: "imp" do %>
+        <% pill = case roster_import.status
+                  when "completed" then [ "ok", "Complete" ]
+                  when "pending_confirmation" then [ "warn", "Needs confirmation" ]
+                  when "discarded" then [ "muted", "Discarded" ]
+                  else [ "fail", "Failed" ]
+                  end %>
         <div class="l1">
           <span class="when"><%= legion_datetime(roster_import.imported_at) %></span>
-          <span class="status <%= roster_import.status == "completed" ? "ok" : "fail" %>">
-            <%= roster_import.status == "completed" ? "Complete" : "Failed" %>
-          </span>
+          <span class="status <%= pill[0] %>"><%= pill[1] %></span>
         </div>
         <div class="l2">
           <%= roster_import.uploaded_filename %>
           <span class="sep">&middot;</span>
-          <% if roster_import.status == "completed" %>
+          <% case roster_import.status %>
+          <% when "completed" %>
             <span class="c cr">+<%= roster_import.created_count %></span>
             <span class="c up"><%= roster_import.updated_count %> updated</span>
             <span class="c rm"><%= roster_import.removed_count %> removed</span>
@@ -50,8 +55,12 @@
             <% else %>
               no problems
             <% end %>
+          <% when "pending_confirmation" %>
+            <%= roster_import.removed_count %> members would be removed — needs your confirmation
+          <% when "discarded" %>
+            Discarded — nothing changed
           <% else %>
-            <%= roster_import.problems.first&.dig("message").presence || "Import failed" %> — nothing changed
+            <%= roster_import.first_problem_message.presence || "Import failed" %> — nothing changed
           <% end %>
         </div>
       <% end %>
