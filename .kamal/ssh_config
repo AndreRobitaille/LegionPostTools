@@ -1,5 +1,0 @@
-Host 178.156.250.235
-  User root
-  ControlMaster auto
-  ControlPersist 30m
-  ControlPath ~/.ssh/controlmasters/%r@%h:%p
