@@ -7,6 +7,9 @@ servers:
   web:
     - 178.156.250.235
 
+ssh:
+  config: .kamal/ssh_config
+
 proxy:
   ssl: true
   host: members.wipost165.org
