@@ -3,7 +3,7 @@ require "test_helper"
 class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
   test "creates position assignment for person" do
     prepare_setup_complete_state
-    user = sign_in_manage_settings_admin
+    user = sign_in_admin
     person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
     commander = PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
 
@@ -17,14 +17,14 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Post role assigned.", flash[:notice]
     assert_equal commander, person.position_assignments.first.position_title
   end
 
   test "ends position assignment" do
     prepare_setup_complete_state
-    sign_in_manage_settings_admin
+    sign_in_admin
     person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
     commander = PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
     assignment = person.position_assignments.create!(position_title: commander, starts_on: Date.new(2026, 7, 1))
@@ -33,14 +33,14 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
       position_assignment: { ends_on: "2026-12-31" }
     }
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Post role updated.", flash[:notice]
     assert_equal Date.new(2026, 12, 31), assignment.reload.ends_on
   end
 
   test "update cannot modify someone else's assignment via nested person route" do
     prepare_setup_complete_state
-    sign_in_manage_settings_admin
+    sign_in_admin
     person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
     other_person = Person.create!(first_name: "Jane", last_name: "Roe", member_number: "000204540638")
     commander = PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
@@ -56,7 +56,7 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
 
   test "invalid date order redirects with alert and does not create invalid assignment" do
     prepare_setup_complete_state
-    sign_in_manage_settings_admin
+    sign_in_admin
     person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
     commander = PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
 
@@ -70,13 +70,13 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Ends on must be on or after starts on", flash[:alert]
   end
 
   test "invalid date order redirects with alert and does not update invalid assignment" do
     prepare_setup_complete_state
-    sign_in_manage_settings_admin
+    sign_in_admin
     person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
     commander = PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
     assignment = person.position_assignments.create!(position_title: commander, starts_on: Date.new(2026, 7, 1))
@@ -85,14 +85,29 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
       position_assignment: { ends_on: "2026-06-01" }
     }
 
-    assert_redirected_to admin_person_path(person)
+    assert_redirected_to person_path(person)
     assert_equal "Ends on must be on or after starts on", flash[:alert]
     assert_nil assignment.reload.ends_on
   end
 
+  test "update corrects both start and end dates from DD MMM YYYY text" do
+    prepare_setup_complete_state
+    sign_in_admin
+    person = Person.create!(first_name: "V", last_name: "A")
+    title = PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
+    assignment = person.position_assignments.create!(position_title: title, starts_on: Date.new(2026, 1, 1))
+
+    patch admin_person_position_assignment_path(person, assignment),
+      params: { position_assignment: { starts_on: "02 FEB 2023", ends_on: "31 DEC 2025" } }
+
+    assignment.reload
+    assert_equal Date.new(2023, 2, 2), assignment.starts_on
+    assert_equal Date.new(2025, 12, 31), assignment.ends_on
+  end
+
   test "inactive position title redirects with alert and does not create assignment" do
     prepare_setup_complete_state
-    sign_in_manage_settings_admin
+    sign_in_admin
     person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
     inactive_title = PositionTitle.create!(organization: Organization.first, name: "Inactive Role", display_order: 1, active: false)
 
@@ -117,7 +132,7 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
     Installation.singleton.update!(setup_completed_at: Time.current)
   end
 
-  def sign_in_manage_settings_admin
+  def sign_in_admin
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
