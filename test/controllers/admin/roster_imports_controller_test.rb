@@ -17,10 +17,19 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     get new_admin_roster_import_path
 
     assert_response :success
-    assert_select "h1", "Upload National roster"
+    assert_select "h1", "Import roster"
     assert_select "p", /Latest successful roster import: /
     assert_select "p[role='alert']", "The roster is more than 30 days old or has not been imported yet. Upload a current National roster export."
     assert_select "form[action=?][method=?]", admin_roster_imports_path, "post"
+  end
+
+  test "new upload page states the removal consequence" do
+    prepare_setup_complete_state
+    sign_in_admin
+    get new_admin_roster_import_path
+    assert_response :success
+    assert_select "h1", text: /Import roster/
+    assert_select "body", text: /sign-in is turned off/
   end
 
   test "blank upload redirects back with alert" do

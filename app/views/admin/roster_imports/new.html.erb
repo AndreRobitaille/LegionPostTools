@@ -1,22 +1,57 @@
-<h1>Upload National roster</h1>
+<%# app/views/admin/roster_imports/new.html.erb
+    Locals (from Admin::RosterImportsController#new): @latest_roster_import (RosterImport, optional), @roster_stale (Boolean) %>
+
+<% content_for :title, "Import roster" %>
+<a class="back" href="<%= admin_root_path %>">&larr; Administration</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Import roster</h1>
+  <p class="page-sub">Upload the current member roster exported from National.</p>
+</div>
 
 <% if @latest_roster_import.present? %>
-  <p>Latest successful roster import: <%= l(@latest_roster_import.imported_at, format: :long) %></p>
+  <p class="page-sub">Latest successful roster import: <%= legion_datetime(@latest_roster_import.imported_at) %></p>
 <% else %>
-  <p>No roster has been imported yet.</p>
+  <p class="page-sub">No roster has been imported yet.</p>
 <% end %>
 
 <% if @roster_stale %>
-  <p role="alert">The roster is more than 30 days old or has not been imported yet. Upload a current National roster export.</p>
+  <p role="alert" class="app-flash app-flash-alert">The roster is more than 30 days old or has not been imported yet. Upload a current National roster export.</p>
 <% end %>
 
-<%= form_with scope: :roster_import, url: admin_roster_imports_path, multipart: true do |form| %>
-  <div>
-    <%= form.label :file, "Roster CSV file" %>
-    <%= form.file_field :file, accept: ".csv,text/csv" %>
+<div class="steps">
+  <div class="step">
+    <div class="num" aria-hidden="true">1</div>
+    <div class="t">Export the roster from <b>National</b> as a CSV file.</div>
+  </div>
+  <div class="step">
+    <div class="num" aria-hidden="true">2</div>
+    <div class="t">Choose that file below.</div>
+  </div>
+  <div class="step">
+    <div class="num" aria-hidden="true">3</div>
+    <div class="t">Upload &mdash; you'll see a summary of what changed.</div>
+  </div>
+</div>
+
+<%= form_with url: admin_roster_imports_path, method: :post, multipart: true do %>
+  <div class="drop">
+    <div class="ic" aria-hidden="true">&#8593;</div>
+    <div class="big"><%= label_tag "roster_import_file", "Choose the roster CSV file" %></div>
+    <%= file_field_tag "roster_import[file]", accept: ".csv,text/csv", class: "drop-input", id: "roster_import_file" %>
+    <div class="hint">Accepts the standard National roster export (.csv).</div>
   </div>
 
-  <div>
-    <%= form.submit "Upload roster" %>
+  <div class="whatnext">
+    <b>When you upload, this roster becomes the source of truth:</b>
+    <ul>
+      <li>Members are matched by <b>Member ID</b> &mdash; new ones added, existing ones updated.</li>
+      <li>Anyone <b>not in this file</b> is marked removed, and their sign-in is turned off.</li>
+      <li>Imported fields stay read-only; corrections are made at National and re-imported.</li>
+    </ul>
+  </div>
+
+  <div class="btnrow">
+    <%= submit_tag "Upload and import", class: "btn-primary" %>
   </div>
 <% end %>
