@@ -179,3 +179,13 @@
 .sec-head-dia { color: var(--color-gold); font-size: 14px; }
 .sec-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; white-space: nowrap; }
 .sec-head-rule { flex: 1; height: 2px; background: linear-gradient(90deg, var(--color-gold), rgba(198,161,91,.15)); }
+
+/* Membership status word (calm colored word + dot, never a boxed pill) ---- */
+.st { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.st-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+.st--active { color: var(--color-green); }
+.st--active .st-dot { background: var(--color-green); }
+.st--expired { color: var(--color-legionred); }
+.st--expired .st-dot { background: transparent; border: 2px solid var(--color-legionred); width: 6px; height: 6px; }
+.st--other { color: var(--color-muted); }
+.st--other .st-dot { background: var(--color-muted); }
