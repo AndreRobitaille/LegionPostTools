@@ -21,4 +21,20 @@ class RosterImportTest < ActiveSupport::TestCase
 
     assert_not RosterImport.roster_stale?
   end
+
+  test "problems and removed_members read from summary safely" do
+    ri = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "x.csv",
+      summary: { "problems" => [ { "row" => 4, "message" => "m" } ], "removed_members" => [ { "name" => "N" } ] })
+    assert_equal 1, ri.problems.size
+    assert_equal "N", ri.removed_members.first["name"]
+    blank = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "y.csv")
+    assert_equal [], blank.problems
+    assert_equal [], blank.removed_members
+  end
+
+  test "history orders newest first" do
+    older = RosterImport.create!(status: "completed", imported_at: 2.days.ago, uploaded_filename: "old.csv")
+    newer = RosterImport.create!(status: "completed", imported_at: 1.hour.ago, uploaded_filename: "new.csv")
+    assert_equal [ newer, older ], RosterImport.history.to_a.first(2)
+  end
 end
