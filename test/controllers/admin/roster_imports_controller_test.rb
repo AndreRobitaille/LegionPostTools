@@ -86,6 +86,24 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".stat-tile--created .stat-n", "2"
   end
 
+  test "large removal upload returns pending confirmation notice" do
+    prepare_setup_complete_state
+    sign_in_admin
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("H%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "controller-pending#{index}@example.com")
+    end
+
+    post admin_roster_imports_path, params: {
+      roster_import: { file: fixture_file_upload("test/fixtures/files/roster_valid.csv", "text/csv") }
+    }
+
+    roster_import = RosterImport.order(:id).last
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "Roster import requires confirmation before continuing.", flash[:alert]
+    assert_equal "pending_confirmation", roster_import.status
+  end
+
   test "upload with a missing member id row completes with a problem shown, no person created" do
     prepare_setup_complete_state
     sign_in_admin
@@ -119,6 +137,198 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".imp", minimum: 2
+  end
+
+  test "large removal upload shows pending confirmation and does not mutate records" do
+    prepare_setup_complete_state
+    sign_in_admin
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("G%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "controller-gone#{index}@example.com")
+    end
+
+    post admin_roster_imports_path, params: {
+      roster_import: { file: fixture_file_upload("test/fixtures/files/roster_valid.csv", "text/csv") }
+    }
+
+    roster_import = RosterImport.order(:id).last
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "pending_confirmation", roster_import.status
+    assert_equal 0, Person.where.not(roster_removed_at: nil).count
+
+    get admin_roster_import_path(roster_import)
+    assert_response :success
+    assert_select "h1", /Confirm roster import/
+    assert_select "body", /This would remove 11 members/
+    assert_select "input[type=checkbox][name=confirm_large_removal]"
+  end
+
+  test "confirming pending import requires checkbox" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", removed_count: 11)
+    roster_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "pending.csv", content_type: "text/csv")
+    roster_import.save!
+
+    post confirm_admin_roster_import_path(roster_import)
+
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "Confirm the large removal before applying this import.", flash[:alert]
+    assert_equal "pending_confirmation", roster_import.reload.status
+  end
+
+  test "confirm rejects completed imports without failing" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "done.csv", created_count: 0, updated_count: 0, unchanged_count: 0, removed_count: 0, problem_count: 0)
+
+    post confirm_admin_roster_import_path(roster_import), params: { confirm_large_removal: "1" }
+
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "That roster import can no longer be confirmed.", flash[:alert]
+  end
+
+  test "confirm rejects failed imports without failing" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.create!(status: "failed", imported_at: Time.current, uploaded_filename: "bad.csv", created_count: 0, updated_count: 0, unchanged_count: 0, removed_count: 0, problem_count: 1)
+
+    post confirm_admin_roster_import_path(roster_import), params: { confirm_large_removal: "1" }
+
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "That roster import can no longer be confirmed.", flash[:alert]
+  end
+
+  test "confirm rejects pending imports missing attachment without failing" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", created_count: 0, updated_count: 0, unchanged_count: 0, removed_count: 11, problem_count: 0)
+    roster_import.save!(validate: false)
+
+    post confirm_admin_roster_import_path(roster_import), params: { confirm_large_removal: "1" }
+
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "That roster import can no longer be confirmed.", flash[:alert]
+  end
+
+  test "confirm rejects superseded pending imports and leaves them pending" do
+    prepare_setup_complete_state
+    sign_in_admin
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("S%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "superseded#{index}@example.com")
+    end
+
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0)
+    roster_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "pending.csv", content_type: "text/csv")
+    roster_import.save!
+    RosterImport.create!(status: "completed", imported_at: 1.minute.from_now, uploaded_filename: "newer.csv")
+
+    post confirm_admin_roster_import_path(roster_import), params: { confirm_large_removal: "1" }
+
+    assert_redirected_to admin_roster_import_path(roster_import)
+    assert_equal "That roster import can no longer be confirmed.", flash[:alert]
+    assert_equal "pending_confirmation", roster_import.reload.status
+    assert_equal 12, Person.where(roster_removed_at: nil).count
+  end
+
+  test "newer pending_confirmation import blocks old pending confirmation" do
+    prepare_setup_complete_state
+    sign_in_admin
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("U%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "supersede-pending#{index}@example.com")
+    end
+
+    old_import = RosterImport.new(status: "pending_confirmation", imported_at: 2.days.ago, uploaded_filename: "old.csv", removed_count: 11, problem_count: 0)
+    old_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "old.csv", content_type: "text/csv")
+    old_import.save!
+
+    newer_import = RosterImport.new(status: "pending_confirmation", imported_at: 1.day.ago, uploaded_filename: "newer.csv", removed_count: 11, problem_count: 0)
+    newer_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "newer.csv", content_type: "text/csv")
+    newer_import.save!
+    assert_operator newer_import.id, :>, old_import.id
+
+    post confirm_admin_roster_import_path(old_import), params: { confirm_large_removal: "1" }
+
+    assert_redirected_to admin_roster_import_path(old_import)
+    assert_equal "That roster import can no longer be confirmed.", flash[:alert]
+    assert_equal "pending_confirmation", old_import.reload.status
+  end
+
+  test "second confirm after success is rejected and leaves completed import unchanged" do
+    prepare_setup_complete_state
+    sign_in_admin
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("T%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "repeat#{index}@example.com")
+    end
+
+    pending = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0)
+    pending.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "pending.csv", content_type: "text/csv")
+    pending.save!
+
+    post confirm_admin_roster_import_path(pending), params: { confirm_large_removal: "1" }
+    assert_equal "completed", pending.reload.status
+
+    post confirm_admin_roster_import_path(pending), params: { confirm_large_removal: "1" }
+
+    assert_redirected_to admin_roster_import_path(pending)
+    assert_equal "That roster import can no longer be confirmed.", flash[:alert]
+    assert_equal "completed", pending.reload.status
+  end
+
+  test "pending show uses future tense for sign-in changes" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.new(status: "pending_confirmation", imported_at: Time.current, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0,
+      summary: { "removal_confirmation" => { "removed_count" => 11, "sign_in_disable_count" => 1 }, "removed_members" => [ { "name" => "Gone Member", "member_number" => "000000000001", "would_disable_sign_in" => true } ] })
+    roster_import.pending_csv.attach(io: StringIO.new(file_fixture("roster_valid.csv").read), filename: "pending.csv", content_type: "text/csv")
+    roster_import.save!
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select "body", text: /Sign-in would be turned off/
+    assert_select "body", text: /Sign-in was turned off/, count: 0
+  end
+
+  test "completed show uses past tense for sign-in changes" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.new(status: "completed", imported_at: Time.current, uploaded_filename: "done.csv", removed_count: 1, problem_count: 0,
+      summary: { "removed_members" => [ { "name" => "Gone Member", "member_number" => "000000000001", "user_disabled" => true } ] })
+    roster_import.save!
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select "body", text: /Sign-in was turned off/
+    assert_select "body", text: /Sign-in would be turned off/, count: 0
+  end
+
+  test "show lists access effects and sign-in exceptions" do
+    prepare_setup_complete_state
+    sign_in_admin
+    person = Person.create!(first_name: "Exception", last_name: "Member")
+    User.create!(person: person, email_address: "exception@example.com", login_access_override: true, login_access_override_at: Time.current)
+    roster_import = RosterImport.create!(
+      status: "completed",
+      imported_at: Time.current,
+      uploaded_filename: "effects.csv",
+      summary: { access_effects: { enabled_by_roster_status: 2, disabled_by_roster_status: 3, skipped_admin_override: 1, skipped_last_admin: 1 } }
+    )
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select "body", /Sign-in access/
+    assert_select "body", /Enabled by roster status: 2/
+    assert_select "body", /Disabled by roster status or removal: 3/
+    assert_select "body", /Skipped for admin exception: 1/
+    assert_select "body", /Skipped to protect the last administrator: 1/
+    assert_select "body", /Sign-in exceptions/
+    assert_select "body", /Exception Member/
   end
 
   private

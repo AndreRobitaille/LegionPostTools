@@ -37,4 +37,25 @@ class RosterImportTest < ActiveSupport::TestCase
     newer = RosterImport.create!(status: "completed", imported_at: 1.hour.ago, uploaded_filename: "new.csv")
     assert_equal [ newer, older ], RosterImport.history.to_a.first(2)
   end
+
+  test "pending confirmation requires an attached csv" do
+    roster_import = RosterImport.new(
+      status: "pending_confirmation",
+      imported_at: Time.current,
+      uploaded_filename: "large-removal.csv",
+      summary: { removal_confirmation_required: true }
+    )
+
+    assert_not roster_import.valid?
+    assert_includes roster_import.errors[:pending_csv], "must be attached"
+
+    roster_import.pending_csv.attach(
+      io: StringIO.new("Member ID,Name\n0001,Example\n"),
+      filename: "large-removal.csv",
+      content_type: "text/csv"
+    )
+
+    assert roster_import.valid?
+    assert roster_import.pending_csv.attached?
+  end
 end

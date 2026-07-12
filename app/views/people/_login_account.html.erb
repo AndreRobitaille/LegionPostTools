@@ -11,6 +11,14 @@
     <% end %>
   </div>
 
+  <div class="ownernote">
+    <% if @user.login_access_override? %>
+      <b>Admin override.</b> Imports will not change this account's sign-in state.
+    <% else %>
+      <b>Roster-controlled.</b> Sign-in follows National roster status.
+    <% end %>
+  </div>
+
   <% if @user.roster_email_mismatch? && @user == current_user %>
     <div class="pk-card">
       <div class="pk-card-label">&#9888; Roster email doesn't match login email</div>
@@ -31,21 +39,26 @@
         <%= form_with url: admin_person_user_account_path(@person), scope: :user do |form| %>
           <%= form.label :email_address, "Login email" %>
           <%= form.email_field :email_address, value: @user.email_address %>
-          <%= form.submit "Re-enable sign-in", class: "btn-primary" %>
+          <%= form.submit "Re-enable sign-in as an admin exception", class: "btn-primary" %>
         <% end %>
       </div>
     <% else %>
       <div class="btnrow">
-        <%= button_to "Disable sign-in", admin_person_user_account_path(@person), method: :delete, class: "btn-return" %>
-        <span class="helper">Keeps their record and roles — they just can't sign in until re-enabled.</span>
+        <%= button_to "Disable sign-in as an admin exception", admin_person_user_account_path(@person), method: :delete, class: "btn-return" %>
+        <span class="helper">Keeps their record and roles — they just can't sign in until re-enabled as an admin exception.</span>
       </div>
+    <% end %>
+
+    <% if @user.login_access_override? %>
+      <%= button_to "Return to roster-controlled access", roster_control_admin_person_user_account_path(@person), method: :patch, class: "btn-secondary" %>
+      <p class="ownernote">This immediately applies the current roster status to sign-in.</p>
     <% end %>
   <% end %>
 <% elsif @can_manage %>
   <%= form_with url: admin_person_user_account_path(@person), scope: :user do |form| %>
     <%= form.label :email_address, "Login email" %>
     <%= form.email_field :email_address, value: @person.roster_email_address %>
-    <%= form.submit "Enable sign-in", class: "btn-primary" %>
+    <%= form.submit "Enable sign-in as an admin exception", class: "btn-primary" %>
   <% end %>
 <% else %>
   <p class="page-sub">This member does not have a login account.</p>

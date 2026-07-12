@@ -1,6 +1,6 @@
 module NavigationHelper
   def nav_section_for(path)
-    return :people if path == "/people" || path.start_with?("/people/", "/admin/people")
+    return :people if path == "/people" || path.start_with?("/people/")
     return :admin if path.start_with?("/admin")
     return :settings if path.start_with?("/settings")
 

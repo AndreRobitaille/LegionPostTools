@@ -5,7 +5,16 @@
 <% content_for :title, "Roster import result" %>
 <a class="back" href="<%= admin_roster_imports_path %>">&larr; Import history</a>
 
-<% if @roster_import.status == "completed" %>
+<% if @roster_import.status == "pending_confirmation" %>
+  <% confirmation = @roster_import.summary.fetch("removal_confirmation", {}) %>
+  <div class="done done--fail">
+    <div class="done-seal" aria-hidden="true">!</div>
+    <div>
+      <h1 class="done-title">Confirm roster import</h1>
+      <div class="done-sub">This would remove <b><%= confirmation["removed_count"] || @roster_import.removed_count %> members</b> and turn off sign-in for <b><%= confirmation["sign_in_disable_count"] || 0 %></b> roster-controlled accounts.</div>
+    </div>
+  </div>
+<% elsif @roster_import.status == "completed" %>
   <div class="done">
     <div class="done-seal" aria-hidden="true">&check;</div>
     <div>
@@ -35,6 +44,29 @@
   <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: @roster_import.problem_count.positive? ? "problems" : "neutral" %>
 </div>
 
+<% effects = @roster_import.access_effects %>
+<% if effects.present? %>
+  <%= render "shared/section_panel", label: "Sign-in access" do %>
+    <div class="item">Enabled by roster status: <b><%= effects["enabled_by_roster_status"] || 0 %></b></div>
+    <div class="item">Disabled by roster status or removal: <b><%= effects["disabled_by_roster_status"] || 0 %></b></div>
+    <div class="item">Skipped for admin exception: <b><%= effects["skipped_admin_override"] || 0 %></b></div>
+    <div class="item">Skipped to protect the last administrator: <b><%= effects["skipped_last_admin"] || 0 %></b></div>
+  <% end %>
+<% end %>
+
+<% exceptions = @roster_import.sign_in_exceptions %>
+<% if exceptions.any? %>
+  <%= render "shared/section_panel", label: "Sign-in exceptions" do %>
+    <% exceptions.each do |user| %>
+      <div class="item">
+        <span class="who"><%= user.person.full_name %></span>
+        <span class="meta">· Sign-in: <%= user.disabled_at.present? ? "No" : "Yes" %></span>
+        <div class="fix">Imports will not change this account. <%= link_to "Review", person_path(user.person), class: "go" %></div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
 <% if @removed_members.present? %>
   <%= render "shared/section_panel", label: "Removed from the roster — #{@removed_members.size}" do %>
     <% @removed_members.each do |removed| %>
@@ -46,7 +78,9 @@
         <% end %>
         <div class="fix">
           No longer on the National roster.
-          <% if removed["user_disabled"] %>
+          <% if @roster_import.status == "pending_confirmation" && removed["would_disable_sign_in"] %>
+            Sign-in would be <b>turned off</b>.
+          <% elsif @roster_import.status == "completed" && removed["user_disabled"] %>
             Sign-in was <b>turned off</b>.
           <% end %>
           <% if person %>
@@ -60,7 +94,7 @@
 <% end %>
 
 <% if @problems.present? %>
-  <%= render "shared/section_panel", label: "#{pluralize(@problems.size, 'row')} #{@problems.size == 1 ? 'needs' : 'need'} attention" do %>
+  <%= render "shared/section_panel", label: "#{pluralize(@problems.size, 'row')} #{@problems.size == 1 ? 'needs' : 'need'} attention", class: "card--alert" do %>
     <% @problems.each do |problem| %>
       <div class="item">
         <% if problem["row"].present? %>
@@ -70,6 +104,16 @@
       </div>
     <% end %>
     <p class="ownernote">Roster data is owned by National — most fixes are made there and picked up on the next import.</p>
+  <% end %>
+<% end %>
+
+<% if @roster_import.status == "pending_confirmation" %>
+  <%= form_with url: confirm_admin_roster_import_path(@roster_import), method: :post do %>
+    <label class="perm">
+      <%= check_box_tag :confirm_large_removal, "1", false %>
+      Yes, remove <%= @roster_import.removed_count %> members and turn off sign-in where roster-controlled.
+    </label>
+    <div class="btnrow"><%= submit_tag "Confirm and import", class: "btn-primary" %></div>
   <% end %>
 <% end %>
 

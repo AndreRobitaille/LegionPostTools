@@ -252,7 +252,10 @@
 .done--fail .done-sub b { color: #4a2020; }
 
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.tiles-total { font-size: 14px; color: var(--color-muted); text-align: right; margin-top: 8px; }
+.card--alert { border-color: #e2b6b6; background: #fbefef; }
+.card--alert .card-dia { color: var(--color-legionred); }
+.card--alert .card-head-label { color: #6f2328; }
+.card--alert .ownernote { background: #f8e9e9; border-color: #ddb0b0; color: #6b3d3d; }
 
 /* Result panel rows: a removed member or a problem row, with explanatory note - */
 .item { padding: 12px 0; border-bottom: 1px solid #ece0bd; font-size: 16px; line-height: 1.5; }

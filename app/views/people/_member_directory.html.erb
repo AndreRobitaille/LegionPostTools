@@ -2,6 +2,7 @@
     Locals (from PeopleController#index): @officers, @members %>
 
 <%= form_with url: people_path, method: :get do |form| %>
+  <%= form.hidden_field :sort, value: params[:sort] %>
   <div class="search">
     <%= form.search_field :q, value: params[:q], placeholder: "Search by name…", aria: { label: "Search by name" } %>
     <%= form.submit "Search", class: "btn-primary" %>

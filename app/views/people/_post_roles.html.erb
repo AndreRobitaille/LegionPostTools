@@ -1,6 +1,6 @@
 <%# app/views/people/_post_roles.html.erb
     Locals (from PeopleController#show, via _officer_person.html.erb and _member_person.html.erb):
-    @person, @can_manage, and (officer only) @position_assignment, @position_titles.
+    @person, @can_manage, and (officer only) @position_titles.
     Read-only for members: mutation forms below only render when @can_manage. %>
 
 <% roles = @person.position_assignments.sort_by { |assignment| [ assignment.ends_on.present? ? 1 : 0, assignment.starts_on ] }.reverse %>

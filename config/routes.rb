@@ -24,13 +24,17 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#show"
     resources :people, only: [] do
-      resource :user_account, only: %i[create destroy]
+      resource :user_account, only: %i[create destroy] do
+        patch :roster_control, on: :member
+      end
       resources :position_assignments, only: %i[create update]
     end
     resources :users, only: [] do
       resource :permission_grants, only: %i[update]
     end
-    resources :roster_imports, only: %i[index new create show]
+    resources :roster_imports, only: %i[index new create show] do
+      post :confirm, on: :member
+    end
     resources :position_titles, only: %i[create update]
   end
   resource :passkey_invitation, only: %i[destroy]

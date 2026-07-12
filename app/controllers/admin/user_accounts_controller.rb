@@ -10,12 +10,19 @@ module Admin
       end
 
       if (user = @person.user)
-        user.update!(email_address: email_address, disabled_at: nil)
+        user.update!(email_address: email_address)
+        user.set_login_access_override!(disabled: false)
       else
-        User.create!(person: @person, email_address: email_address, email_verified_at: Time.current)
+        User.create!(
+          person: @person,
+          email_address: email_address,
+          email_verified_at: Time.current,
+          login_access_override: true,
+          login_access_override_at: Time.current
+        )
       end
 
-      redirect_to person_path(@person), notice: "Login account is enabled."
+      redirect_to person_path(@person), notice: "Login account is enabled as an admin exception."
     rescue ActiveRecord::RecordInvalid => e
       redirect_to person_path(@person), alert: e.record.errors.full_messages.to_sentence
     end
@@ -24,24 +31,33 @@ module Admin
       @person = Person.find(params[:person_id])
       user = @person.user
 
-      if user&.disabled_at.blank? && user.can?("manage_settings") && !another_enabled_manage_settings_user_exists?(user)
+      result = user&.set_login_access_override!(disabled: true)
+
+      if result == :skipped_last_admin
         redirect_to person_path(@person), alert: "At least one enabled administrator account is required."
         return
       end
 
-      user&.update!(disabled_at: Time.current)
-
-      redirect_to person_path(@person), notice: "Login account is disabled."
+      redirect_to person_path(@person), notice: "Login account is disabled as an admin exception."
     end
 
-    private
+    def roster_control
+      @person = Person.find(params[:person_id])
+      user = @person.user
 
-    def another_enabled_manage_settings_user_exists?(user)
-      User.where(disabled_at: nil)
-        .where.not(id: user.id)
-        .joins(:permission_grants)
-        .where(permission_grants: { capability: "manage_settings" })
-        .exists?
+      if user.blank?
+        redirect_to person_path(@person), alert: "There is no login account to return to roster control."
+        return
+      end
+
+      result = user.return_to_roster_control!
+      if result == :skipped_last_admin
+        redirect_to person_path(@person), alert: "At least one enabled administrator account is required."
+      elsif result == :unsupported_status
+        redirect_to person_path(@person), alert: "Roster status cannot be applied automatically."
+      else
+        redirect_to person_path(@person), notice: "Login account now follows roster status."
+      end
     end
   end
 end

@@ -4,7 +4,7 @@ module Admin
 
     def create
       @person = Person.find(params[:person_id])
-      @position_title = PositionTitle.where(active: true).order(:display_order, :name).find_by(id: position_assignment_params[:position_title_id])
+      @position_title = PositionTitle.where(organization: Organization.first, active: true).order(:display_order, :name).find_by(id: position_assignment_params[:position_title_id])
 
       unless @position_title
         redirect_to person_path(@person), alert: "Selected post role is not available."

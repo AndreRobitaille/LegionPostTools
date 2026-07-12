@@ -5,10 +5,7 @@ class PeopleController < ApplicationController
     scope = Person.left_outer_joins(:user).includes(:user, position_assignments: :position_title)
 
     if params[:q].present?
-      scope = scope.where(
-        "first_name ILIKE :q OR last_name ILIKE :q OR roster_name ILIKE :q OR member_number ILIKE :q",
-        q: "%#{params[:q]}%"
-      )
+      scope = apply_search(scope)
     end
 
     if officer?
@@ -29,7 +26,7 @@ class PeopleController < ApplicationController
     @can_manage = current_user.can?("manage_settings")
 
     if officer?
-      @position_titles = PositionTitle.where(active: true).order(:display_order, :name)
+      @position_titles = PositionTitle.where(organization: Organization.first, active: true).order(:display_order, :name)
     end
   end
 
@@ -43,8 +40,18 @@ class PeopleController < ApplicationController
     "branch" => [ :roster_branch, :last_name ]
   }.freeze
 
+  MEMBER_SORT_OPTIONS = SORT_OPTIONS.slice("name", "branch").freeze
+
+  def apply_search(scope)
+    search_columns = [ "first_name ILIKE :q", "last_name ILIKE :q", "roster_name ILIKE :q" ]
+    search_columns << "member_number ILIKE :q" if officer?
+
+    scope.where(search_columns.join(" OR "), q: "%#{params[:q]}%")
+  end
+
   def apply_sort(scope)
-    order_columns = SORT_OPTIONS.fetch(params[:sort], SORT_OPTIONS["name"])
+    sort_options = officer? ? SORT_OPTIONS : MEMBER_SORT_OPTIONS
+    order_columns = sort_options.fetch(params[:sort], sort_options["name"])
     scope.order(*order_columns)
   end
 

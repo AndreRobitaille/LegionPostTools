@@ -2,9 +2,8 @@ require "test_helper"
 
 class NavigationHelperTest < ActionView::TestCase
   test "nav_section_for maps people paths" do
-    assert_equal :people, nav_section_for("/admin/people")
-    assert_equal :people, nav_section_for("/admin/people/42")
     assert_equal :people, nav_section_for("/people")
+    assert_equal :people, nav_section_for("/people/42")
   end
 
   test "nav_section_for maps admin paths that are not people" do

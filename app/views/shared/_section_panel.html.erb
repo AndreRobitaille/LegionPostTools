@@ -1,6 +1,6 @@
 <%# app/views/shared/_section_panel.html.erb
-    Locals: label: (String), provenance: (String, optional). Yields the body. %>
-<section class="card">
+    Locals: label: (String), provenance: (String, optional), class: (String, optional). Yields the body. %>
+<section class="card<%= " #{local_assigns[:class]}" if local_assigns[:class].present? %>">
   <div class="card-head">
     <span class="card-dia" aria-hidden="true">&#9670;</span>
     <span class="card-head-label"><%= label %></span>

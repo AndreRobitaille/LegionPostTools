@@ -206,6 +206,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_12_141403) do
     t.datetime "disabled_at"
     t.string "email_address", null: false
     t.datetime "email_verified_at"
+    t.boolean "login_access_override", default: false, null: false
+    t.datetime "login_access_override_at"
     t.bigint "person_id", null: false
     t.string "roster_email_review_decision"
     t.string "roster_email_reviewed_address"
@@ -213,6 +215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_12_141403) do
     t.datetime "updated_at", null: false
     t.string "webauthn_id", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["login_access_override"], name: "index_users_on_login_access_override"
     t.index ["person_id"], name: "index_users_on_person_id", unique: true
     t.index ["webauthn_id"], name: "index_users_on_webauthn_id", unique: true
   end

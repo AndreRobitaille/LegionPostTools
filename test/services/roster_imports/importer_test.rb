@@ -104,6 +104,21 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal "000000000001", result.roster_import.summary["removed_members"].first["member_number"]
   end
 
+  test "removed already-disabled member is not marked as newly disabled in removed_members" do
+    gone = Person.create!(first_name: "Gone", last_name: "Member", member_number: "000000000010", roster_imported_at: 10.days.ago)
+    gone_user = User.create!(person: gone, email_address: "gone-disabled@x.com", disabled_at: 1.day.ago)
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540637,"Ok, Person",165,Member,2 B St,,b@x.com,555,Navy,Korea,6,2026,Active
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "removal-disabled.csv").import
+
+    assert result.success?
+    assert gone_user.reload.disabled_at.present?
+    assert_equal false, result.roster_import.summary["removed_members"].first["user_disabled"]
+  end
+
   test "the last enabled administrator is not disabled on removal; a problem is recorded" do
     admin_person = Person.create!(first_name: "Sole", last_name: "Admin", member_number: "000000000009", roster_imported_at: 10.days.ago)
     admin_user = User.create!(person: admin_person, email_address: "admin@x.com", email_verified_at: Time.current)
@@ -115,10 +130,109 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     result = RosterImports::Importer.new(csv_text: csv, filename: "last-admin.csv").import
     admin_user.reload
     assert_nil admin_user.disabled_at
+    assert_equal false, result.roster_import.summary["removed_members"].first["user_disabled"]
+    assert admin_person.reload.roster_removed_at.present?
     assert(result.roster_import.summary["problems"].any? { |p| p["kind"] == "last_admin" })
   end
 
-  test "returning member clears roster_removed_at but does not re-enable sign-in" do
+  test "unsupported roster status for a person with a user records a problem and leaves sign-in unchanged" do
+    person = Person.create!(first_name: "Unknown", last_name: "Member", member_number: "000204540646", roster_imported_at: 1.day.ago)
+    user = User.create!(person: person, email_address: "unknown@example.com")
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540646,"Member, Unknown",165,Member,1 A St,,unknown@example.com,555,Army,Vietnam,5,2026,Suspended
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "unsupported-status.csv").import
+
+    assert result.success?
+    assert_equal 1, result.roster_import.summary["access_effects"]["unsupported_status"]
+    assert_equal "unsupported_member_status", result.roster_import.summary["problems"].first["kind"]
+    assert_nil user.reload.disabled_at
+  end
+
+  test "last enabled administrator present in the CSV with expired status is not disabled and records a skipped last admin problem" do
+    person = Person.create!(first_name: "Sole", last_name: "Admin", member_number: "000204540647", roster_imported_at: 1.day.ago)
+    admin_user = User.create!(person: person, email_address: "sole-admin@example.com")
+    PermissionGrant.create!(user: admin_user, capability: "manage_settings")
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540647,"Admin, Sole",165,Member,1 A St,,sole-admin@example.com,555,Army,Vietnam,5,2026,Expired
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "last-admin-row.csv").import
+
+    assert result.success?
+    assert_equal 1, result.roster_import.summary["access_effects"]["skipped_last_admin"]
+    assert_equal "last_admin", result.roster_import.summary["problems"].first["kind"]
+    assert_nil admin_user.reload.disabled_at
+  end
+
+  test "active and grace roster statuses re-enable roster-controlled existing accounts" do
+    active = Person.create!(first_name: "Active", last_name: "Member", member_number: "000204540640", roster_imported_at: 1.day.ago)
+    grace = Person.create!(first_name: "Grace", last_name: "Member", member_number: "000204540641", roster_imported_at: 1.day.ago)
+    active_user = User.create!(person: active, email_address: "active@example.com", disabled_at: 1.day.ago)
+    grace_user = User.create!(person: grace, email_address: "grace@example.com", disabled_at: 1.day.ago)
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540640,"Member, Active",165,Member,1 A St,,active@example.com,555,Army,Vietnam,5,2026,Active
+      000204540641,"Member, Grace",165,Member,2 A St,,grace@example.com,555,Army,Vietnam,5,2026,Grace
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "statuses.csv").import
+
+    assert result.success?
+    assert_nil active_user.reload.disabled_at
+    assert_nil grace_user.reload.disabled_at
+    assert_equal 2, result.roster_import.access_effects["enabled_by_roster_status"]
+  end
+
+  test "expired and deceased roster statuses disable roster-controlled existing accounts" do
+    expired = Person.create!(first_name: "Expired", last_name: "Member", member_number: "000204540642", roster_imported_at: 1.day.ago)
+    deceased = Person.create!(first_name: "Deceased", last_name: "Member", member_number: "000204540643", roster_imported_at: 1.day.ago)
+    expired_user = User.create!(person: expired, email_address: "expired-status@example.com")
+    deceased_user = User.create!(person: deceased, email_address: "deceased-status@example.com")
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540642,"Member, Expired",165,Member,1 A St,,expired@example.com,555,Army,Vietnam,5,2026,Expired
+      000204540643,"Member, Deceased",165,Member,2 A St,,deceased@example.com,555,Army,Vietnam,5,2026,Deceased
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "statuses.csv").import
+
+    assert result.success?
+    assert expired_user.reload.disabled_at.present?
+    assert deceased_user.reload.disabled_at.present?
+    assert_equal 2, result.roster_import.access_effects["disabled_by_roster_status"]
+  end
+
+  test "imports skip admin override accounts" do
+    person = Person.create!(first_name: "Override", last_name: "Member", member_number: "000204540644", roster_imported_at: 1.day.ago)
+    user = User.create!(person: person, email_address: "override-import@example.com", login_access_override: true, login_access_override_at: Time.current)
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540644,"Member, Override",165,Member,1 A St,,override@example.com,555,Army,Vietnam,5,2026,Expired
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "override.csv").import
+
+    assert result.success?
+    assert_nil user.reload.disabled_at
+    assert_equal 1, result.roster_import.access_effects["skipped_admin_override"]
+  end
+
+  test "imports do not create login accounts" do
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540645,"Member, New",165,Member,1 A St,,new@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+
+    assert_no_difference -> { User.count } do
+      RosterImports::Importer.new(csv_text: csv, filename: "new.csv").import
+    end
+  end
+
+  test "returning active member clears roster_removed_at and re-enables roster-controlled sign-in" do
     back = Person.create!(first_name: "Back", last_name: "Again", member_number: "000204540637",
       roster_imported_at: 20.days.ago, roster_removed_at: 5.days.ago)
     back_user = User.create!(person: back, email_address: "back@x.com", email_verified_at: Time.current, disabled_at: 5.days.ago)
@@ -129,7 +243,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     RosterImports::Importer.new(csv_text: csv, filename: "return.csv").import
     back.reload; back_user.reload
     assert_nil back.roster_removed_at
-    assert back_user.disabled_at.present?, "sign-in stays off until an officer re-enables it"
+    assert_nil back_user.disabled_at
   end
 
   test "a file with zero valid rows never mass-removes" do
@@ -142,6 +256,108 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal 0, result.removed_count
     keep.reload
     assert_nil keep.roster_removed_at
+  end
+
+  test "more than ten removals creates pending confirmation without mutating people or users" do
+    people = []
+    users = []
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("G%03d", index), roster_imported_at: 1.day.ago)
+      people << person
+      users << User.create!(person: person, email_address: "gone#{index}@example.com")
+    end
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540637,"Still, Here",165,Member,1 A St,,still@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "large-removal.csv").import
+
+    assert_not result.success?
+    assert_equal "pending_confirmation", result.roster_import.status
+    assert_equal 11, result.roster_import.removed_count
+    assert_equal [ "confirmation_required" ], result.errors
+    assert_equal 11, result.removed_count
+    assert people.all? { |person| person.reload.roster_removed_at.nil? }
+    assert users.all? { |user| user.reload.disabled_at.nil? }
+    assert result.roster_import.pending_csv.attached?
+    assert_equal 11, result.roster_import.summary["removal_confirmation"]["removed_count"]
+    assert_equal 11, result.roster_import.summary["removal_confirmation"]["sign_in_disable_count"]
+    assert_equal true, result.roster_import.summary["removed_members"].all? { |member| member["would_disable_sign_in"] }
+  end
+
+  test "pending removal preview excludes the last enabled administrator from sign-in disable count" do
+    keep = Person.create!(first_name: "Keep", last_name: "Admin", member_number: "000000000020", roster_imported_at: 1.day.ago)
+    keep_user = User.create!(person: keep, email_address: "keep-admin@example.com")
+    PermissionGrant.create!(user: keep_user, capability: "manage_settings")
+    10.times do |index|
+      person = Person.create!(first_name: "Remove", last_name: index.to_s, member_number: format("P%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "remove#{index}@example.com")
+    end
+
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540637,"Still, Here",165,Member,1 A St,,still@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "pending-admin.csv").import
+
+    assert_equal "pending_confirmation", result.roster_import.status
+    assert_equal 10, result.roster_import.summary["removal_confirmation"]["sign_in_disable_count"]
+    removed_members = result.roster_import.summary["removed_members"]
+    assert_equal false, removed_members.find { |member| member["member_number"] == "000000000020" }["would_disable_sign_in"]
+    assert_equal true, removed_members.find { |member| member["member_number"] == "P000" }["would_disable_sign_in"]
+  end
+
+  test "pending removal preview reserves one removed admin when all enabled admins are being removed" do
+    admin_a = Person.create!(first_name: "Admin", last_name: "A", member_number: "000000000030", roster_imported_at: 1.day.ago)
+    admin_b = Person.create!(first_name: "Admin", last_name: "B", member_number: "000000000031", roster_imported_at: 1.day.ago)
+    user_a = User.create!(person: admin_a, email_address: "admin-a@example.com")
+    user_b = User.create!(person: admin_b, email_address: "admin-b@example.com")
+    PermissionGrant.create!(user: user_a, capability: "manage_settings")
+    PermissionGrant.create!(user: user_b, capability: "manage_settings")
+    9.times do |index|
+      person = Person.create!(first_name: "Remove", last_name: index.to_s, member_number: format("Q%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "remove-q#{index}@example.com")
+    end
+
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540637,"Still, Here",165,Member,1 A St,,still@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "pending-two-admins.csv").import
+
+    assert_equal "pending_confirmation", result.roster_import.status
+    assert_equal 10, result.roster_import.summary["removal_confirmation"]["sign_in_disable_count"]
+    removed_members = result.roster_import.summary["removed_members"]
+    admin_flags = removed_members.select { |member| %w[000000000030 000000000031].include?(member["member_number"]) }.map { |member| member["would_disable_sign_in"] }
+    assert_equal 1, admin_flags.count(false)
+    assert_equal 1, admin_flags.count(true)
+  end
+
+  test "confirmed large removal applies the stored import" do
+    11.times do |index|
+      person = Person.create!(first_name: "Gone", last_name: index.to_s, member_number: format("H%03d", index), roster_imported_at: 1.day.ago)
+      User.create!(person: person, email_address: "confirm-gone#{index}@example.com")
+    end
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540637,"Still, Here",165,Member,1 A St,,still@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+    pending = RosterImports::Importer.new(csv_text: csv, filename: "large-removal.csv").import.roster_import
+
+    result = RosterImports::Importer.new(
+      csv_text: pending.pending_csv.download,
+      filename: pending.uploaded_filename,
+      roster_import: pending,
+      confirm_large_removal: true
+    ).import
+
+    assert result.success?
+    assert_equal "completed", pending.reload.status
+    assert_equal 11, Person.where.not(roster_removed_at: nil).count
+    assert_equal 11, User.where.not(disabled_at: nil).count
   end
 
   test "missing required headers creates failed roster import without persisting people" do

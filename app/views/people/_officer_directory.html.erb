@@ -1,7 +1,8 @@
 <%# app/views/people/_officer_directory.html.erb
     Locals (from PeopleController#index): @officers, @members, @filter_options %>
 
-<%= form_with url: people_path, method: :get do |form| %>
+<%= form_with url: people_path, method: :get, class: "people-filters" do |form| %>
+  <%= form.hidden_field :sort, value: params[:sort] %>
   <div class="search">
     <%= form.search_field :q, value: params[:q], placeholder: "Search by name or member ID…", aria: { label: "Search by name or member ID" } %>
     <%= form.submit "Search", class: "btn-primary" %>
@@ -28,7 +29,7 @@
     </div>
     <%= form.submit "Apply filters", class: "btn-secondary" %>
     <% if params[:roster_member_status].present? || params[:roster_paid_through_year].present? || params[:login_status].present? %>
-      <%= link_to "Clear filters", people_path(q: params[:q]), class: "clear" %>
+      <%= link_to "Clear filters", people_path(q: params[:q], sort: params[:sort]), class: "clear" %>
     <% end %>
   </div>
 <% end %>

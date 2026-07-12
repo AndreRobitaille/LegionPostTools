@@ -43,6 +43,19 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_select "input[type=submit], button", text: /Disable sign-in/
   end
 
+  test "officer login panel identifies admin override and revert action" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    User.create!(person: person, email_address: "override-panel@example.com", email_verified_at: Time.current, login_access_override: true, login_access_override_at: Time.current)
+
+    get person_path(person)
+
+    assert_response :success
+    assert_includes response.body, "Imports will not change this account's sign-in state."
+    assert_select "form[action=?]", roster_control_admin_person_user_account_path(person)
+  end
+
   test "member sees contact, service, and roles but no record or controls" do
     prepare_setup_complete_state
     sign_in_plain_member
@@ -76,5 +89,17 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".card-head-label", text: /Roster Record/
     assert_select "input[type=submit], button", text: /Disable sign-in/, count: 0
+  end
+
+  test "officer show loads position titles for the current organization" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    PositionTitle.create!(organization: Organization.first, name: "Commander", display_order: 1)
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select "option", text: "Commander"
   end
 end

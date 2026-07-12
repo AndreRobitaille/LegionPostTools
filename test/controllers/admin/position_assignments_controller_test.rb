@@ -125,6 +125,23 @@ class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Selected post role is not available.", flash[:alert]
   end
 
+  test "position title lookup stays within the current organization" do
+    prepare_setup_complete_state
+    sign_in_admin
+    person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637")
+    other_org = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign_title = PositionTitle.create!(organization: other_org, name: "Commander", display_order: 1)
+
+    assert_no_difference -> { person.position_assignments.count } do
+      post admin_person_position_assignments_path(person), params: {
+        position_assignment: { position_title_id: foreign_title.id, starts_on: "2026-07-01" }
+      }
+    end
+
+    assert_redirected_to person_path(person)
+    assert_equal "Selected post role is not available.", flash[:alert]
+  end
+
   private
 
   def prepare_setup_complete_state

@@ -21,4 +21,14 @@ class StatusDisplayHelperTest < ActionView::TestCase
     assert_equal "", membership_status_tag(nil)
     assert_equal "", membership_status_tag("")
   end
+
+  test "status matching is case insensitive" do
+    html = membership_status_tag("ACTIVE")
+    assert_includes html, "st--active"
+  end
+
+  test "status text is escaped" do
+    html = membership_status_tag("<script>")
+    assert_includes html, "&lt;script&gt;"
+  end
 end

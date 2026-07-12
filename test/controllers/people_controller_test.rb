@@ -52,6 +52,32 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_select ".mrow-name", text: /Roe, Jane/, count: 0
   end
 
+  test "plain member search does not match hidden member numbers" do
+    prepare_setup_complete_state
+    sign_in_plain_member
+    Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637", roster_name: "Alber, Vincent")
+
+    get people_path, params: { q: "000204540637" }
+
+    assert_response :success
+    assert_select ".mrow-name", text: /Alber/, count: 0
+  end
+
+  test "plain member sort ignores officer-only membership fields" do
+    prepare_setup_complete_state
+    sign_in_plain_member
+    Person.create!(first_name: "Zed", last_name: "Zephyr", member_number: "001", roster_paid_through_year: 2027, roster_member_status: "Active")
+    Person.create!(first_name: "Amy", last_name: "Adams", member_number: "002", roster_paid_through_year: 2024, roster_member_status: "Expired")
+
+    get people_path, params: { sort: "paid_through" }
+
+    assert_response :success
+    names = css_select(".mrow-name").map(&:text)
+    adams_index = names.index { |n| n.include?("Adams") }
+    zephyr_index = names.index { |n| n.include?("Zephyr") }
+    assert_operator adams_index, :<, zephyr_index
+  end
+
   test "officer index sorts by member number when requested" do
     prepare_setup_complete_state
     sign_in_officer
@@ -93,5 +119,16 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     get people_path, params: { login_status: "no_login" }
     assert_select ".mrow-name", text: /Two/
     assert_select ".mrow-name", text: /One/, count: 0
+  end
+
+  test "index preserves sort when search and filters submit" do
+    prepare_setup_complete_state
+    sign_in_officer
+
+    get people_path, params: { sort: "member_id", q: "Vincent", roster_member_status: "Active", roster_paid_through_year: 2027, login_status: "enabled" }
+
+    assert_response :success
+    assert_select "form.people-filters[action='#{people_path}'][method='get'] input[type=hidden][name=sort][value=member_id]", 1
+    assert_select "a.clear[href=?]", people_path(q: "Vincent", sort: "member_id")
   end
 end
