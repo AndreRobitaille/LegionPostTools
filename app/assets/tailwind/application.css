@@ -218,7 +218,7 @@
 .fl label { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
 /* Mockup used 15px for these selects; readability floor requires >= 16px for interactive text. */
 .fl .f { font-size: 16px; padding: 8px 10px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); min-width: 150px; }
-.clear { font-size: 14px; color: var(--color-navy); text-decoration: underline; cursor: pointer; margin-left: auto; align-self: center; background: none; border: 0; padding: 0; font-family: inherit; }
+.clear { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; margin-left: auto; align-self: center; background: none; border: 0; padding: 0; font-family: inherit; }
 .sec-head-row { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
 .sec-head-row .sec-head { flex: 1; margin: 0; }
 .sort { display: flex; align-items: center; gap: 7px; white-space: nowrap; }

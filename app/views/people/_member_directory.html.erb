@@ -26,13 +26,17 @@
 
 <div class="sec-head-row" style="margin-top: 22px">
   <%= render "shared/section_header", label: "All Members" %>
-  <div class="sort">
-    <label for="people-sort">Sort</label>
-    <select id="people-sort" name="sort">
-      <option>Name (A–Z)</option>
-      <option>Branch</option>
-    </select>
-  </div>
+  <%= form_with url: people_path, method: :get, class: "sort" do |form| %>
+    <%= form.hidden_field :q, value: params[:q] %>
+    <%= form.label :sort, "Sort" %>
+    <%= form.select :sort,
+          options_for_select(
+            [ [ "Name (A–Z)", "name" ], [ "Branch", "branch" ] ],
+            params[:sort]
+          ),
+          {}, onchange: "this.form.requestSubmit()" %>
+    <%= form.submit "Sort", class: "btn-secondary" %>
+  <% end %>
 </div>
 <% if @members.any? %>
   <div class="mrow-list">

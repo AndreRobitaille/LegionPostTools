@@ -50,6 +50,32 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_select ".mrow-name", text: /Roe, Jane/, count: 0
   end
 
+  test "officer index sorts by member number when requested" do
+    prepare_setup_complete_state
+    sign_in_officer
+    Person.create!(first_name: "Zed", last_name: "Zephyr", member_number: "001")
+    Person.create!(first_name: "Amy", last_name: "Adams", member_number: "002")
+    get people_path, params: { sort: "member_id" }
+    assert_response :success
+    names = css_select(".mrow-name").map(&:text)
+    zephyr_index = names.index { |n| n.include?("Zephyr") }
+    adams_index = names.index { |n| n.include?("Adams") }
+    assert_operator zephyr_index, :<, adams_index
+  end
+
+  test "officer index sorts by paid-through year descending when requested" do
+    prepare_setup_complete_state
+    sign_in_officer
+    Person.create!(first_name: "Amy", last_name: "Adams", member_number: "1", roster_paid_through_year: 2024)
+    Person.create!(first_name: "Zed", last_name: "Zephyr", member_number: "2", roster_paid_through_year: 2027)
+    get people_path, params: { sort: "paid_through" }
+    assert_response :success
+    names = css_select(".mrow-name").map(&:text)
+    zephyr_index = names.index { |n| n.include?("Zephyr") }
+    adams_index = names.index { |n| n.include?("Adams") }
+    assert_operator zephyr_index, :<, adams_index
+  end
+
   test "officer index filters by member status, paid year, and sign-in" do
     prepare_setup_complete_state
     sign_in_officer

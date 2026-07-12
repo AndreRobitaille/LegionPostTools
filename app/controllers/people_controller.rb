@@ -3,7 +3,6 @@ class PeopleController < ApplicationController
 
   def index
     scope = Person.left_outer_joins(:user).includes(:user, position_assignments: :position_title)
-                  .order(:last_name, :first_name)
 
     if params[:q].present?
       scope = scope.where(
@@ -17,14 +16,27 @@ class PeopleController < ApplicationController
       @filter_options = build_filter_options
     end
 
+    scope = apply_sort(scope)
+
     people = scope.limit(500).to_a
     @officers = people.select { |person| person.active_role_labels.any? }
     @members = people - @officers
-
-    render officer? ? :index : :index
   end
 
   private
+
+  SORT_OPTIONS = {
+    "name" => [ :last_name, :first_name ],
+    "member_id" => [ :member_number ],
+    "paid_through" => [ Arel.sql("roster_paid_through_year DESC NULLS LAST"), :last_name ],
+    "status" => [ :roster_member_status, :last_name ],
+    "branch" => [ :roster_branch, :last_name ]
+  }.freeze
+
+  def apply_sort(scope)
+    order_columns = SORT_OPTIONS.fetch(params[:sort], SORT_OPTIONS["name"])
+    scope.order(*order_columns)
+  end
 
   def apply_officer_filters(scope)
     scope = scope.where(roster_member_status: params[:roster_member_status]) if params[:roster_member_status].present?

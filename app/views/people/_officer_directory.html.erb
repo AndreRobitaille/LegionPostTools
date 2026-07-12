@@ -41,7 +41,7 @@
             name: person.roster_display_name,
             office: person.active_role_labels.first,
             path: person_path(person),
-            subline: "Member ##{person.member_number} · #{person.service_summary}",
+            subline: [ person.member_number.present? ? "Member ##{person.member_number}" : nil, person.service_summary.presence ].compact.join(" · "),
             membership: true,
             status_tag: membership_status_tag(person.roster_member_status),
             status_lines: [ person.roster_paid_through_display.presence || "Paid through: —", signin_line(person) ] %>
@@ -51,15 +51,20 @@
 
 <div class="sec-head-row" style="margin-top: 22px">
   <%= render "shared/section_header", label: "All Members" %>
-  <div class="sort">
-    <label for="people-sort">Sort</label>
-    <select id="people-sort" name="sort">
-      <option>Name (A–Z)</option>
-      <option>Member ID</option>
-      <option>Paid through</option>
-      <option>Status</option>
-    </select>
-  </div>
+  <%= form_with url: people_path, method: :get, class: "sort" do |form| %>
+    <%= form.hidden_field :q, value: params[:q] %>
+    <%= form.hidden_field :roster_member_status, value: params[:roster_member_status] %>
+    <%= form.hidden_field :roster_paid_through_year, value: params[:roster_paid_through_year] %>
+    <%= form.hidden_field :login_status, value: params[:login_status] %>
+    <%= form.label :sort, "Sort" %>
+    <%= form.select :sort,
+          options_for_select(
+            [ [ "Name (A–Z)", "name" ], [ "Member ID", "member_id" ], [ "Paid through", "paid_through" ], [ "Status", "status" ] ],
+            params[:sort]
+          ),
+          {}, onchange: "this.form.requestSubmit()" %>
+    <%= form.submit "Sort", class: "btn-secondary" %>
+  <% end %>
 </div>
 <% if @members.any? %>
   <div class="mrow-list">
@@ -68,7 +73,7 @@
             name: person.roster_display_name,
             office: person.active_role_labels.first,
             path: person_path(person),
-            subline: "Member ##{person.member_number} · #{person.service_summary}",
+            subline: [ person.member_number.present? ? "Member ##{person.member_number}" : nil, person.service_summary.presence ].compact.join(" · "),
             membership: true,
             status_tag: membership_status_tag(person.roster_member_status),
             status_lines: [ person.roster_paid_through_display.presence || "Paid through: —", signin_line(person) ] %>
