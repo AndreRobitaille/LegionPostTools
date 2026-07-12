@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_190002) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_12_141403) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -129,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_190002) do
     t.integer "roster_paid_through_year"
     t.string "roster_phone_number"
     t.string "roster_post"
+    t.datetime "roster_removed_at"
     t.boolean "roster_undeliverable", default: false, null: false
     t.string "roster_war_era"
     t.datetime "updated_at", null: false
@@ -137,6 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_190002) do
     t.index ["roster_email_address"], name: "index_people_on_roster_email_address"
     t.index ["roster_member_status"], name: "index_people_on_roster_member_status"
     t.index ["roster_paid_through_year"], name: "index_people_on_roster_paid_through_year"
+    t.index ["roster_removed_at"], name: "index_people_on_roster_removed_at"
   end
 
   create_table "permission_grants", force: :cascade do |t|
@@ -179,6 +181,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_190002) do
     t.integer "created_count", default: 0, null: false
     t.datetime "imported_at", null: false
     t.integer "problem_count", default: 0, null: false
+    t.integer "removed_count", default: 0, null: false
     t.string "status", default: "completed", null: false
     t.jsonb "summary", default: {}, null: false
     t.integer "unchanged_count", default: 0, null: false
