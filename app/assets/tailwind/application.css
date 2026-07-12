@@ -159,7 +159,7 @@
 .nav-tab--active { color: var(--color-gold-hi); border-bottom-color: var(--color-gold); font-weight: 600; }
 .nav-tab--soon { color: #5f6f88; cursor: default; }
 .nav-tab--soon:hover { color: #5f6f88; }
-.nav-soon { font-size: 11px; letter-spacing: .12em; color: var(--color-navy); background: #6b7a97; border-radius: 3px; padding: 2px 6px; margin-left: 8px; }
+.nav-soon { font-size: 13px; letter-spacing: .10em; color: var(--color-navy); background: #6b7a97; border-radius: 3px; padding: 2px 6px; margin-left: 8px; }
 .nav-spacer { flex: 1; }
 .nav-tab--admin { color: var(--color-gold); border-left: 1px solid rgba(198,161,91,.28); }
 .nav-tab--admin:hover { color: var(--color-gold-hi); }
