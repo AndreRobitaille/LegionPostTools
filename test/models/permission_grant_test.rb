@@ -9,4 +9,11 @@ class PermissionGrantTest < ActiveSupport::TestCase
     assert user.can?(:manage_people)
     assert_not user.can?(:manage_minutes)
   end
+
+  test "GROUPS covers every capability exactly once in order" do
+    grouped = PermissionGrant::GROUPS.flat_map { |(_label, caps)| caps }
+    assert_equal PermissionGrant::CAPABILITIES.sort, grouped.sort
+    assert_equal grouped, grouped.uniq
+    assert_equal "Administration", PermissionGrant::GROUPS.first.first
+  end
 end
