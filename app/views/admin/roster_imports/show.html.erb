@@ -32,7 +32,7 @@
   <%= render "shared/stat_tile", count: @roster_import.created_count, label: "Created", variant: "created" %>
   <%= render "shared/stat_tile", count: @roster_import.updated_count, label: "Updated", variant: "updated" %>
   <%= render "shared/stat_tile", count: @roster_import.removed_count, label: "Removed", variant: "removed" %>
-  <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: "problems" %>
+  <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: @roster_import.problem_count.positive? ? "problems" : "neutral" %>
 </div>
 
 <% if @removed_members.present? %>
