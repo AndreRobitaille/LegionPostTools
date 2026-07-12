@@ -165,3 +165,11 @@
 .nav-tab--admin:hover { color: var(--color-gold-hi); }
 .nav-dia { font-size: 13px; }
 .app-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(160deg, var(--color-gold-hi), var(--color-gold)); color: var(--color-navy); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-gold-hi); }
+
+/* Section panel: boxed unit with a tinted header strip -------------------- */
+.card { border: 1px solid #d3c391; border-radius: 11px; background: var(--color-paper); overflow: hidden; margin-bottom: 22px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.card-head { display: flex; align-items: center; gap: 11px; padding: 12px 18px; background: #efe5cb; border-bottom: 1px solid #ddcfa4; }
+.card-dia { color: var(--color-gold); font-size: 14px; }
+.card-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
+.card-head-prov { margin-left: auto; font-size: 13px; color: var(--color-bronze); display: flex; align-items: center; gap: 6px; }
+.card-body { padding: 18px 20px; }
