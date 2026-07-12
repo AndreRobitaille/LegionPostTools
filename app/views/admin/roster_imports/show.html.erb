@@ -11,7 +11,7 @@
 <% if @problems.present? %>
   <ul>
     <% @problems.each do |problem| %>
-      <li><%= problem %></li>
+      <li><%= problem.is_a?(Hash) ? problem["message"] : problem %></li>
     <% end %>
   </ul>
 <% end %>

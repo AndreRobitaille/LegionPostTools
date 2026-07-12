@@ -4,7 +4,7 @@ class RosterImport < ApplicationRecord
 
   validates :uploaded_filename, :status, :imported_at, presence: true
   validates :status, inclusion: { in: STATUSES }
-  validates :created_count, :updated_count, :unchanged_count, :problem_count,
+  validates :created_count, :updated_count, :unchanged_count, :removed_count, :problem_count,
     numericality: { greater_than_or_equal_to: 0 }
 
   scope :successful, -> { where(status: "completed") }

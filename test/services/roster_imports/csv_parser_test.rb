@@ -1,6 +1,8 @@
 require "test_helper"
 
 class RosterImports::CsvParserTest < ActiveSupport::TestCase
+  HEADERS = "Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status"
+
   test "parses valid fixture" do
     result = RosterImports::CsvParser.new(file_fixture("roster_valid.csv").read).parse
 
@@ -24,7 +26,7 @@ class RosterImports::CsvParserTest < ActiveSupport::TestCase
 
   test "parses valid csv with utf-8 bom" do
     csv = file_fixture("roster_valid.csv").read
-    result = RosterImports::CsvParser.new("\uFEFF#{csv}").parse
+    result = RosterImports::CsvParser.new("﻿#{csv}").parse
 
     assert result.valid?
     assert_equal 2, result.rows.size
@@ -32,47 +34,44 @@ class RosterImports::CsvParserTest < ActiveSupport::TestCase
 
   test "parses binary csv with utf-8 bom" do
     csv = file_fixture("roster_valid.csv").read.b
-    result = RosterImports::CsvParser.new("\uFEFF#{csv}").parse
+    result = RosterImports::CsvParser.new("﻿#{csv}").parse
 
     assert result.valid?
     assert_equal 2, result.rows.size
   end
 
-  test "rejects duplicate member id" do
-    result = RosterImports::CsvParser.new(file_fixture("roster_duplicate_member_id.csv").read).parse
-
-    assert_not result.valid?
-    assert_includes result.errors, "Duplicate Member ID 000204540637 in uploaded roster"
-  end
-
-  test "rejects missing member id" do
-    result = RosterImports::CsvParser.new(file_fixture("roster_missing_member_id.csv").read).parse
-
-    assert_not result.valid?
-    assert_includes result.errors, "Row 2 is missing Member ID"
-  end
-
-  test "rejects missing required headers as invalid parser result" do
-    csv = <<~CSV
-      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year
-      000204540637,"Smith, John",165,Member,123 Main St,Y,john.smith@example.com,555-1111,Army,Vietnam,12,2026
-    CSV
-
+  test "missing member id becomes a problem, not fatal; other rows still parse" do
+    csv = "#{HEADERS}\n,\"No, Id\",165,Member,1 A St,,a@x.com,555,Army,Vietnam,5,2026,Active\n000204540637,\"Ok, Person\",165,Member,2 B St,,b@x.com,555,Navy,Korea,6,2026,Active\n"
     result = RosterImports::CsvParser.new(csv).parse
-
-    assert_not result.valid?
-    assert_includes result.errors, "Missing required columns: Member Status"
+    assert result.valid?
+    assert_equal 1, result.rows.size
+    assert_equal "000204540637", result.rows.first.member_number
+    assert_equal 1, result.problems.size
+    assert_equal "missing_member_id", result.problems.first.kind
+    assert_equal 2, result.problems.first.row
   end
 
-  test "rejects malformed csv as invalid parser result" do
-    csv = <<~CSV
-      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
-      000204540637,"Smith, John,165,Member,123 Main St,Y,john.smith@example.com,555-1111,Army,Vietnam,12,2026,Active
-    CSV
-
+  test "duplicate member id keeps the first row and problems the rest" do
+    csv = "#{HEADERS}\n000204540637,\"A, One\",165,Member,1 A St,,a@x.com,555,Army,Vietnam,5,2026,Active\n000204540637,\"A, Dup\",165,Member,2 B St,,b@x.com,555,Navy,Korea,6,2026,Active\n"
     result = RosterImports::CsvParser.new(csv).parse
+    assert result.valid?
+    assert_equal 1, result.rows.size
+    assert_equal 1, result.problems.size
+    assert_equal "duplicate_member_id", result.problems.first.kind
+  end
 
+  test "missing required headers is fatal" do
+    csv = "Member ID,Name\n000204540637,\"A, One\"\n"
+    result = RosterImports::CsvParser.new(csv).parse
     assert_not result.valid?
-    assert_not_empty result.errors
+    assert_equal [], result.rows
+    assert_match(/Missing required columns/, result.fatal_errors.first)
+  end
+
+  test "malformed csv is fatal" do
+    csv = "#{HEADERS}\n000204540637,\"Smith, John,165,Member\n"
+    result = RosterImports::CsvParser.new(csv).parse
+    assert_not result.valid?
+    assert_not_empty result.fatal_errors
   end
 end

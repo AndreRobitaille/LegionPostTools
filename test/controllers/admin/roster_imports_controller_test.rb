@@ -77,7 +77,7 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", /Status: completed/
   end
 
-  test "failed upload creates no people and redirects to result" do
+  test "upload with a missing member id row completes with a problem shown, no person created" do
     prepare_setup_complete_state
     sign_in_member
 
@@ -91,12 +91,12 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
 
     roster_import = RosterImport.order(:id).last
     assert_redirected_to admin_roster_import_path(roster_import)
-    assert_equal "Roster import could not be completed.", flash[:alert]
+    assert_equal "Roster import completed.", flash[:notice]
 
     get admin_roster_import_path(roster_import)
 
     assert_response :success
-    assert_select "p", /Status: failed/
+    assert_select "p", /Status: completed/
     assert_select "li", /Member ID/
   end
 
