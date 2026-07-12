@@ -8,7 +8,9 @@ servers:
     - 178.156.250.235
 
 ssh:
-  config: .kamal/ssh_config
+  config:
+    - ~/.ssh/config
+    - .kamal/ssh_config
 
 proxy:
   ssl: true
