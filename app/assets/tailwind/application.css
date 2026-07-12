@@ -171,7 +171,7 @@
 .card-head { display: flex; align-items: center; gap: 11px; padding: 12px 18px; background: #efe5cb; border-bottom: 1px solid #ddcfa4; }
 .card-dia { color: var(--color-gold); font-size: 14px; }
 .card-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
-.card-head-prov { margin-left: auto; font-size: 13px; color: var(--color-bronze); display: flex; align-items: center; gap: 6px; }
+.card-head-prov { margin-left: auto; font-size: 14px; color: var(--color-bronze); display: flex; align-items: center; gap: 6px; }
 .card-body { padding: 18px 20px; }
 
 /* Inline section header: diamond + tracked label + gold gradient rule ----- */
