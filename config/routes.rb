@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   namespace :settings do
     resource :security, only: %i[show], controller: "security"
   end
+  resources :people, only: %i[index show]
   namespace :admin do
     root "dashboard#show"
     resources :people, only: %i[index show]

@@ -205,6 +205,28 @@
 .mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
 .mrow-kv .k { color: var(--color-muted); }
 
+/* Boxed list of member rows (People directory sections) ------------------- */
+.mrow-list { border: 1px solid #eadfbf; border-radius: 10px; overflow: hidden; background: var(--color-ivory); margin-bottom: 22px; }
+.mrow-list .mrow:first-child { border-top: none; }
+
+/* People directory toolbar: search field, filter bar, sort control -------- */
+.search { display: flex; gap: 10px; margin-bottom: 10px; }
+.search input { flex: 1; font-size: 17px; padding: 12px 14px; border: 1px solid #cdbf98; border-radius: 8px; background: #fff; color: var(--color-ink); }
+.filterbar { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 8px; padding: 11px 14px; margin-bottom: 20px; }
+.fl { display: flex; flex-direction: column; gap: 4px; }
+/* Mockup used 12px uppercase labels here; readability floor requires >= 13px for labels. */
+.fl label { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+/* Mockup used 15px for these selects; readability floor requires >= 16px for interactive text. */
+.fl .f { font-size: 16px; padding: 8px 10px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); min-width: 150px; }
+.clear { font-size: 14px; color: var(--color-navy); text-decoration: underline; cursor: pointer; margin-left: auto; align-self: center; background: none; border: 0; padding: 0; font-family: inherit; }
+.sec-head-row { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
+.sec-head-row .sec-head { flex: 1; margin: 0; }
+.sort { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+/* Mockup used 12px uppercase label here; readability floor requires >= 13px for labels. */
+.sort label { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+/* Mockup used 14px for this select; readability floor requires >= 16px for interactive text. */
+.sort select { font-size: 16px; padding: 5px 8px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); }
+
 /* Stat tile (import summary counts) --------------------------------------- */
 .stat-tile { background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 11px; padding: 16px 14px; text-align: center; }
 .stat-n { font-size: 34px; font-weight: 700; line-height: 1; }
