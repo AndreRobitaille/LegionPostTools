@@ -31,6 +31,7 @@ Rails.application.routes.draw do
       resource :permission_grants, only: %i[update]
     end
     resources :roster_imports, only: %i[index new create show]
+    resources :position_titles, only: %i[create update]
   end
   resource :passkey_invitation, only: %i[destroy]
   resource :roster_email_review, only: %i[update]
