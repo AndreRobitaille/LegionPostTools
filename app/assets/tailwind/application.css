@@ -281,6 +281,40 @@
 .imp .c.pr { color: var(--color-legionred); }
 .imp .sep { color: #cabd97; margin: 0 6px; }
 
+/* Admin landing: roster freshness banner ------------------------------------ */
+.fresh { display: flex; align-items: center; gap: 12px; background: #eef4ea; border: 1px solid #bcd3b6; border-radius: 9px; padding: 13px 16px; margin-bottom: 14px; }
+.fresh .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-green); flex: 0 0 10px; }
+.fresh .txt { font-size: 15px; color: #33502f; }
+.fresh .txt b { color: #22401d; }
+.fresh.stale { background: #f8efe0; border-color: #e6cf9c; }
+.fresh.stale .dot { background: var(--color-gold-ink); }
+.fresh.stale .txt { color: #5c4a24; }
+/* Mockup used 12.5px for .subttl; readability floor requires >= 13px for labels. */
+.subttl { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-muted); font-weight: 700; margin: 18px 0 6px; }
+/* Mockup used 15px for .viewall; readability floor requires >= 16px for interactive links. */
+.viewall { display: inline-block; margin-top: 12px; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
+
+/* Admin landing: Post Positions list ---------------------------------------- */
+.pos { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #ece0bd; }
+.pos:last-of-type { border-bottom: none; }
+.pos .pn { font-size: 16px; color: var(--color-navy); font-weight: 600; flex: 1; }
+.pos .state { font-size: 13px; font-weight: 600; }
+.pos .state.on { color: var(--color-green); }
+.pos .state.off { color: var(--color-muted); }
+/* Mockup used a 14px "Edit" link; the active toggle is a submit button here and must be >= 16px (interactive). */
+.pos .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.addrow { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 14px; border-top: 1px dashed #e0d5b4; padding-top: 14px; }
+
+/* Admin landing: Administrators list ----------------------------------------- */
+.admrow { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #ece0bd; }
+.admrow:last-of-type { border-bottom: none; }
+.admrow .an { font-size: 16px; color: var(--color-navy); font-weight: 600; }
+.admrow .ao { font-size: 13px; color: var(--color-gold-ink); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+/* Mockup used a 14px "Manage on their page" link; readability floor requires >= 16px for interactive links. */
+.admrow .go { margin-left: auto; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
+/* Mockup used 13.5px for .safe; readability floor requires >= 14px for secondary/caption text. */
+.safe { font-size: 14px; color: var(--color-bronze); background: #f6efe0; border: 1px dashed #ddcfa4; border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+
 /* Roster import upload: guided steps, file-choose area, "what happens" note - */
 .steps { display: flex; gap: 12px; margin: 18px 0 22px; flex-wrap: wrap; }
 .step { flex: 1 1 200px; background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 10px; padding: 14px 16px; }

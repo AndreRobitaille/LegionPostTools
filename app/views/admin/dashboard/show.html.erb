@@ -1,16 +1,105 @@
-<h1>Administration</h1>
+<%# app/views/admin/dashboard/show.html.erb
+    Locals (from Admin::DashboardController#show): @latest_roster_import, @roster_stale, @recent_imports,
+    @position_titles, @administrators
+    Mockup put "Import roster" in the panel header; it's rendered in the body here instead so the
+    shared/section_panel "provenance" slot keeps its documented meaning (source attribution, not actions). %>
 
-<p>Manage the roster import, accounts, permissions, and post roles.</p>
+<% content_for :title, "Administration" %>
 
-<p><%= link_to "People", people_path, class: "button" %></p>
-<p><%= link_to "Upload roster", new_admin_roster_import_path, class: "button" %></p>
+<div class="page-lead">
+  <h1 class="page-title">Administration</h1>
+  <p class="page-sub">Roster import, post positions, and who can administer the app.</p>
+</div>
 
-<% if @latest_roster_import.present? %>
-  <p>Latest successful roster import: <%= l(@latest_roster_import.imported_at, format: :long) %></p>
-<% else %>
-  <p>No roster has been imported yet.</p>
+<%= render "shared/section_panel", label: "Roster" do %>
+  <div class="fresh<%= " stale" if @roster_stale %>">
+    <span class="dot" aria-hidden="true"></span>
+    <% if @latest_roster_import.present? %>
+      <span class="txt">
+        <b><%= @roster_stale ? "Roster import is due." : "Roster is current." %></b>
+        Last imported <%= legion_date(@latest_roster_import.imported_at) %>.
+      </span>
+    <% else %>
+      <span class="txt"><b>No roster has been imported yet.</b> Upload a National roster export to get started.</span>
+    <% end %>
+  </div>
+
+  <div class="btnrow">
+    <%= link_to "Import roster", new_admin_roster_import_path, class: "btn-primary" %>
+  </div>
+
+  <% if @recent_imports.present? %>
+    <div class="subttl">Recent imports</div>
+    <% @recent_imports.each do |roster_import| %>
+      <%= link_to admin_roster_import_path(roster_import), class: "imp" do %>
+        <div class="l1">
+          <span class="when"><%= legion_datetime(roster_import.imported_at) %></span>
+          <span class="status <%= roster_import.status == "completed" ? "ok" : "fail" %>">
+            <%= roster_import.status == "completed" ? "Complete" : "Failed" %>
+          </span>
+        </div>
+        <div class="l2">
+          <%= roster_import.uploaded_filename %>
+          <span class="sep">&middot;</span>
+          <% if roster_import.status == "completed" %>
+            <span class="c cr">+<%= roster_import.created_count %></span>
+            <span class="c up"><%= roster_import.updated_count %> updated</span>
+            <span class="c rm"><%= roster_import.removed_count %> removed</span>
+            <% if roster_import.problem_count.positive? %>
+              <span class="c pr"><%= roster_import.problem_count %> problems</span>
+            <% else %>
+              no problems
+            <% end %>
+          <% else %>
+            <%= roster_import.problems.first&.dig("message").presence || "Import failed" %> — nothing changed
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+    <%= link_to "View all imports →", admin_roster_imports_path, class: "viewall" %>
+  <% else %>
+    <p class="page-sub">No roster imports yet.</p>
+  <% end %>
 <% end %>
 
-<% if @roster_stale %>
-  <p role="alert">The roster is more than 30 days old or has not been imported yet. Upload a current National roster export.</p>
+<%= render "shared/section_panel", label: "Post Positions" do %>
+  <% if @position_titles.present? %>
+    <% @position_titles.each do |title| %>
+      <div class="pos">
+        <span class="pn"><%= title.name %></span>
+        <span class="state <%= title.active? ? "on" : "off" %>"><%= title.active? ? "Active" : "Inactive" %></span>
+        <%= button_to title.active? ? "Deactivate" : "Activate", admin_position_title_path(title), method: :patch,
+              params: { position_title: { active: !title.active? } }, class: "toggle", form: { class: "posform" } %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="page-sub">No post positions yet.</p>
+  <% end %>
+
+  <div class="addrow">
+    <%= form_with url: admin_position_titles_path, method: :post, scope: :position_title do |form| %>
+      <div class="fl">
+        <%= form.label :name, "Position name" %>
+        <%= form.text_field :name, class: "f" %>
+      </div>
+      <div class="fl">
+        <%= form.label :display_order, "Order" %>
+        <%= form.number_field :display_order, class: "f", value: (@position_titles.map(&:display_order).max || 0) + 1 %>
+      </div>
+      <%= form.submit "+ Add position", class: "btn-secondary" %>
+    <% end %>
+  </div>
+<% end %>
+
+<%= render "shared/section_panel", label: "Administrators" do %>
+  <% @administrators.each do |admin| %>
+    <div class="admrow">
+      <span class="an"><%= admin.person.full_name %></span>
+      <% if (role = admin.person.current_role_label) %>
+        <span class="ao"><%= role %></span>
+      <% end %>
+      <%= link_to "Manage on their page →", person_path(admin.person), class: "go" %>
+    </div>
+  <% end %>
+  <p class="safe">Permissions are granted on each person's page. At least one enabled administrator is always required — the last one can't be removed or disabled.</p>
 <% end %>
