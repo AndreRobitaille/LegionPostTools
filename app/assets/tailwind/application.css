@@ -150,3 +150,18 @@
 .app-flash { border-radius: 6px; padding: 12px 16px; font-size: 16px; line-height: 1.5; margin: 0 0 20px; }
 .app-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
 .app-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
+
+/* Primary navigation (navy-2 tab strip; tracked caps; gold active underline) --- */
+.nav-bar { background: var(--color-navy-2); border-bottom: 1px solid rgba(198,161,91,.35); }
+.nav-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: stretch; padding: 0 12px; }
+.nav-tab { display: flex; align-items: center; gap: 8px; padding: 0 18px; height: 48px; text-decoration: none; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c8d3e3; border-bottom: 3px solid transparent; }
+.nav-tab:hover { color: #fff; }
+.nav-tab--active { color: var(--color-gold-hi); border-bottom-color: var(--color-gold); font-weight: 600; }
+.nav-tab--soon { color: #5f6f88; cursor: default; }
+.nav-tab--soon:hover { color: #5f6f88; }
+.nav-soon { font-size: 11px; letter-spacing: .12em; color: var(--color-navy); background: #6b7a97; border-radius: 3px; padding: 2px 6px; margin-left: 8px; }
+.nav-spacer { flex: 1; }
+.nav-tab--admin { color: var(--color-gold); border-left: 1px solid rgba(198,161,91,.28); }
+.nav-tab--admin:hover { color: var(--color-gold-hi); }
+.nav-dia { font-size: 13px; }
+.app-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(160deg, var(--color-gold-hi), var(--color-gold)); color: var(--color-navy); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-gold-hi); }
