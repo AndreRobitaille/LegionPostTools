@@ -1,5 +1,6 @@
 <% production_config = ENV.fetch("RAILS_ENV", ENV.fetch("RACK_ENV", "development")) == "production" %>
-<% required_production_env = ->(name, fallback) { ENV.fetch(name) { production_config ? raise(KeyError, "key not found: #{name}") : fallback } } %>
+<% production_build = !ENV["SECRET_KEY_BASE_DUMMY"].to_s.empty? %>
+<% required_production_env = ->(name, fallback) { ENV.fetch(name) { production_config && !production_build ? raise(KeyError, "key not found: #{name}") : fallback } } %>
 
 # PostgreSQL. Versions 9.5 and up are supported.
 #

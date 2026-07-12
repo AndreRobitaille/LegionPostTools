@@ -27,6 +27,15 @@ class DatabaseConfigurationTest < ActiveSupport::TestCase
     end
   end
 
+  test "database configuration loads during production asset precompile with dummy secret" do
+    with_env(POSTGRES_ENV_KEYS.index_with { nil }.merge("RAILS_ENV" => "production", "SECRET_KEY_BASE_DUMMY" => "1")) do
+      config = YAML.safe_load(ERB.new(CONFIG_PATH.read).result, aliases: true)
+
+      assert_equal "legion_post_tools_production", config.dig("production", "primary", "database")
+      assert_equal "localhost", config.dig("production", "primary", "host")
+    end
+  end
+
   private
 
   def with_env(values)
