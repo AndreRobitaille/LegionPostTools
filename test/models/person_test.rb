@@ -60,4 +60,16 @@ class PersonTest < ActiveSupport::TestCase
 
     assert_nil person.current_role_label
   end
+
+  test "service_summary joins branch and era, dropping blanks" do
+    assert_equal "U.S. Army · Vietnam", Person.new(roster_branch: "U.S. Army", roster_war_era: "Vietnam").service_summary
+    assert_equal "U.S. Army", Person.new(roster_branch: "U.S. Army").service_summary
+    assert_equal "", Person.new.service_summary
+  end
+
+  test "roster_paid_through_display shows PUFL or the year" do
+    assert_equal "Paid up for life", Person.new(roster_membership_type: "Paid Up For Life member").roster_paid_through_display
+    assert_equal "Paid through: 2027", Person.new(roster_paid_through_year: 2027).roster_paid_through_display
+    assert_equal "", Person.new.roster_paid_through_display
+  end
 end
