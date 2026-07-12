@@ -60,6 +60,9 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_select ".card-head-label", text: /Roster Record/, count: 0
     assert_select ".card-head-label", text: /Login Account/, count: 0
     assert_select "body", text: /123 Main St/, count: 0 # address hidden from members
+    assert_select "body", text: /000204540637/, count: 0 # member number hidden from members
+    assert_select "body", text: /Active/, count: 0 # member status hidden from members
+    assert_select "body", text: /Paid through/, count: 0 # paid-through hidden from members
   end
 
   test "manage_people officer sees officer view but not mutation forms" do

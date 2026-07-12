@@ -11,7 +11,7 @@
     <% end %>
   </div>
 
-  <% if @user.roster_email_mismatch? %>
+  <% if @user.roster_email_mismatch? && @user == current_user %>
     <div class="pk-card">
       <div class="pk-card-label">&#9888; Roster email doesn't match login email</div>
       <p class="pk-card-lead">

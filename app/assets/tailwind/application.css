@@ -277,7 +277,7 @@
 /* Person page: grouped permission checklist (no disclosure, always visible) - */
 .permwrap { margin-top: 18px; border-top: 1px solid #e6dcbe; padding-top: 14px; }
 .permhead { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
-.permsub { font-size: 13.5px; color: var(--color-muted); margin-top: 2px; margin-bottom: 6px; }
+.permsub { font-size: 14px; color: var(--color-muted); margin-top: 2px; margin-bottom: 6px; }
 .pg { margin-top: 12px; }
 /* Mockup used 12px for .gname; readability floor requires >= 13px for labels. */
 .pg .gname { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; margin: 0 0 2px; }
