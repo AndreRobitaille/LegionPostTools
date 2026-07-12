@@ -189,3 +189,18 @@
 .st--expired .st-dot { background: transparent; border: 2px solid var(--color-legionred); width: 6px; height: 6px; }
 .st--other { color: var(--color-muted); }
 .st--other .st-dot { background: var(--color-muted); }
+
+/* De-noised member row: identity left, quiet status column at a divider --- */
+.mrow { display: flex; align-items: center; gap: 0; padding: 14px 16px; border-top: 1px solid #eadfbf; text-decoration: none; color: inherit; }
+.mrow:first-child { border-top: none; }
+.mrow--office { border-left: 3px solid var(--color-gold); }
+.mrow-id { flex: 1; min-width: 0; padding-right: 18px; }
+.mrow-l1 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.mrow-name { font-size: 17px; color: var(--color-navy); font-weight: 600; }
+.mrow:hover .mrow-name { text-decoration: underline; }
+.mrow-office { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; }
+.mrow-sub { display: block; font-size: 14px; color: var(--color-muted); margin-top: 5px; }
+.mrow-status { flex: 0 0 208px; border-left: 1px solid #e4d9bb; padding-left: 18px; text-align: left; }
+.mrow-st { display: block; }
+.mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
+.mrow-kv .k { color: var(--color-muted); }
