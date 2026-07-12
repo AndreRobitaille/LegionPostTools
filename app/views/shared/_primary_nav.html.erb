@@ -1,0 +1,15 @@
+<%# app/views/shared/_primary_nav.html.erb %>
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <%= link_to "Dashboard", root_path, class: nav_tab_class(:dashboard) %>
+    <span class="nav-tab nav-tab--soon">Meetings<span class="nav-soon">Soon</span></span>
+    <span class="nav-tab nav-tab--soon">Records<span class="nav-soon">Soon</span></span>
+    <span class="nav-tab nav-tab--soon">Tracked Items<span class="nav-soon">Soon</span></span>
+    <%= link_to "People", people_path, class: nav_tab_class(:people) %>
+    <%= link_to "Settings", settings_security_path, class: nav_tab_class(:settings) %>
+    <span class="nav-spacer"></span>
+    <% if current_user.can?("manage_settings") %>
+      <%= link_to admin_root_path, class: "#{nav_tab_class(:admin)} nav-tab--admin" do %><span class="nav-dia">◆</span> Admin<% end %>
+    <% end %>
+  </div>
+</nav>

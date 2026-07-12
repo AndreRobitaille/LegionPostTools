@@ -1,0 +1,12 @@
+<% content_for :title, "People" %>
+
+<div class="page-lead">
+  <h1 class="page-title">People</h1>
+  <p class="page-sub"><%= pluralize(@officers.size + @members.size, "member") %></p>
+</div>
+
+<% if officer? %>
+  <%= render "officer_directory" %>
+<% else %>
+  <%= render "member_directory" %>
+<% end %>

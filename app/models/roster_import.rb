@@ -4,10 +4,11 @@ class RosterImport < ApplicationRecord
 
   validates :uploaded_filename, :status, :imported_at, presence: true
   validates :status, inclusion: { in: STATUSES }
-  validates :created_count, :updated_count, :unchanged_count, :problem_count,
+  validates :created_count, :updated_count, :unchanged_count, :removed_count, :problem_count,
     numericality: { greater_than_or_equal_to: 0 }
 
   scope :successful, -> { where(status: "completed") }
+  scope :history, -> { order(imported_at: :desc, id: :desc) }
 
   def self.latest_successful
     successful.order(imported_at: :desc, id: :desc).first
@@ -16,5 +17,13 @@ class RosterImport < ApplicationRecord
   def self.roster_stale?
     latest = latest_successful
     latest.blank? || latest.imported_at < STALE_AFTER.ago
+  end
+
+  def problems
+    Array(summary&.fetch("problems", nil))
+  end
+
+  def removed_members
+    Array(summary&.fetch("removed_members", nil))
   end
 end

@@ -1,5 +1,9 @@
 module Admin
   class RosterImportsController < BaseController
+    def index
+      @roster_imports = RosterImport.history
+    end
+
     def new
       @latest_roster_import = RosterImport.latest_successful
       @roster_stale = RosterImport.roster_stale?
@@ -28,7 +32,8 @@ module Admin
 
     def show
       @roster_import = RosterImport.find(params[:id])
-      @problems = Array(@roster_import.summary&.fetch("problems", nil))
+      @problems = @roster_import.problems
+      @removed_members = @roster_import.removed_members
     end
   end
 end

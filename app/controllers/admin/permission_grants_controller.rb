@@ -5,7 +5,7 @@ module Admin
       submitted_capabilities = Array(params.dig(:permission_grant, :capabilities)).map(&:to_s) & PermissionGrant::CAPABILITIES
 
       if removing_last_manage_settings_grant?(submitted_capabilities)
-        redirect_to admin_person_path(@user.person), alert: "At least one enabled administrator account is required."
+        redirect_to person_path(@user.person), alert: "At least one enabled administrator account is required."
         return
       end
 
@@ -16,7 +16,7 @@ module Admin
         end
       end
 
-      redirect_to admin_person_path(@user.person), notice: "Permissions updated."
+      redirect_to person_path(@user.person), notice: "Permissions updated."
     end
 
     private

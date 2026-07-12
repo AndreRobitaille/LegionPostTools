@@ -1,0 +1,21 @@
+<%# app/views/people/_permission_groups.html.erb
+    Locals (from PeopleController#show, via _login_account.html.erb, rendered only when @can_manage): @user %>
+
+<%= form_with url: admin_user_permission_grants_path(@user), method: :patch do |f| %>
+  <div class="permwrap">
+    <div class="permhead">Permissions</div>
+    <p class="permsub">What this member can do in the app.</p>
+    <% PermissionGrant::GROUPS.each do |label, caps| %>
+      <div class="pg">
+        <div class="gname"><%= label %></div>
+        <% caps.each do |cap| %>
+          <label class="perm">
+            <%= check_box_tag "permission_grant[capabilities][]", cap, @user.can?(cap) %>
+            <%= cap.humanize %>
+          </label>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="btnrow"><%= f.submit "Save permissions", class: "btn-primary" %></div>
+  </div>
+<% end %>

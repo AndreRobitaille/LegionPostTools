@@ -6,7 +6,7 @@ class Admin::PermissionGrantsControllerTest < ActionDispatch::IntegrationTest
 
     patch admin_user_permission_grants_path(user), params: { permission_grant: { capabilities: [ "manage_people", "approve_minutes" ] } }
 
-    assert_redirected_to admin_person_path(user.person)
+    assert_redirected_to person_path(user.person)
     assert_equal "Permissions updated.", flash[:notice]
     assert_equal %w[approve_minutes manage_people], user.reload.permission_grants.order(:capability).pluck(:capability)
   end
@@ -16,7 +16,7 @@ class Admin::PermissionGrantsControllerTest < ActionDispatch::IntegrationTest
 
     patch admin_user_permission_grants_path(user), params: { permission_grant: { capabilities: [ "manage_people", "not_real", "also_fake" ] } }
 
-    assert_redirected_to admin_person_path(user.person)
+    assert_redirected_to person_path(user.person)
     assert_equal %w[manage_people], user.reload.permission_grants.order(:capability).pluck(:capability)
   end
 
@@ -25,7 +25,7 @@ class Admin::PermissionGrantsControllerTest < ActionDispatch::IntegrationTest
 
     patch admin_user_permission_grants_path(user), params: { permission_grant: { capabilities: [ "manage_people" ] } }
 
-    assert_redirected_to admin_person_path(user.person)
+    assert_redirected_to person_path(user.person)
     assert_equal "At least one enabled administrator account is required.", flash[:alert]
     assert_equal %w[manage_people manage_settings], user.reload.permission_grants.order(:capability).pluck(:capability)
   end
@@ -38,7 +38,7 @@ class Admin::PermissionGrantsControllerTest < ActionDispatch::IntegrationTest
 
     patch admin_user_permission_grants_path(user), params: { permission_grant: { capabilities: [ "manage_people" ] } }
 
-    assert_redirected_to admin_person_path(user.person)
+    assert_redirected_to person_path(user.person)
     assert_equal "Permissions updated.", flash[:notice]
     assert_equal %w[manage_people], user.reload.permission_grants.order(:capability).pluck(:capability)
   end

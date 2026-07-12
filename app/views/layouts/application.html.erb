@@ -23,6 +23,7 @@
   <body class="app-body">
     <% if authenticated? %>
       <%= render "shared/app_header" %>
+      <%= render "shared/primary_nav" %>
     <% end %>
     <main class="app-main">
       <% if notice.present? %>

@@ -1,0 +1,11 @@
+<%# app/views/shared/_date_field.html.erb
+    Locals: name:, value: (Date|nil). Submits DD MMM YYYY text; server parses with parse_legion_date. %>
+<span class="datefield" data-controller="date-field">
+  <input type="text" name="<%= name %>" value="<%= value.present? ? legion_date(value) : "" %>"
+         placeholder="DD MMM YYYY" autocomplete="off" inputmode="text"
+         class="datefield-input" data-date-field-target="text">
+  <input type="date" class="datefield-native" tabindex="-1" aria-hidden="true"
+         value="<%= value&.strftime("%Y-%m-%d") %>"
+         data-date-field-target="native" data-action="change->date-field#pick">
+  <button type="button" class="datefield-cal" data-action="date-field#open" aria-label="Open calendar">&#128197;</button>
+</span>

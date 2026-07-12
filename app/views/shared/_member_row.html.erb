@@ -1,0 +1,18 @@
+<%# app/views/shared/_member_row.html.erb
+    Locals: name:, office: (String|nil), path:, subline:,
+            membership: (bool), status_tag: (html|nil), status_lines: (Array<String>) %>
+<%= link_to path, class: "mrow#{' mrow--office' if office.present?}" do %>
+  <span class="mrow-id">
+    <span class="mrow-l1">
+      <span class="mrow-name"><%= name %></span>
+      <% if office.present? %><span class="mrow-office"><%= office %></span><% end %>
+    </span>
+    <% if subline.present? %><span class="mrow-sub"><%= subline %></span><% end %>
+  </span>
+  <% if membership %>
+    <span class="mrow-status">
+      <% if status_tag.present? %><span class="mrow-st"><%= status_tag %></span><% end %>
+      <% status_lines.each do |line| %><span class="mrow-kv"><%= line %></span><% end %>
+    </span>
+  <% end %>
+<% end %>

@@ -1,17 +1,80 @@
-<h1>Roster import result</h1>
+<%# app/views/admin/roster_imports/show.html.erb
+    Locals (from Admin::RosterImportsController#show): @roster_import, @problems, @removed_members
+    "Importer" (who ran the import) isn't tracked on RosterImport yet, so it's omitted here. %>
 
-<p>Uploaded filename: <%= @roster_import.uploaded_filename %></p>
-<p>Imported at: <%= l(@roster_import.imported_at, format: :long) %></p>
-<p>Status: <%= @roster_import.status %></p>
-<p>Created: <%= @roster_import.created_count %></p>
-<p>Updated: <%= @roster_import.updated_count %></p>
-<p>Unchanged: <%= @roster_import.unchanged_count %></p>
-<p>Problems: <%= @roster_import.problem_count %></p>
+<% content_for :title, "Roster import result" %>
+<a class="back" href="<%= admin_roster_imports_path %>">&larr; Import history</a>
+
+<% if @roster_import.status == "completed" %>
+  <div class="done">
+    <div class="done-seal" aria-hidden="true">&check;</div>
+    <div>
+      <h1 class="done-title">Roster import complete</h1>
+      <div class="done-sub">From <b><%= @roster_import.uploaded_filename %></b> · imported <%= legion_datetime(@roster_import.imported_at) %></div>
+    </div>
+  </div>
+<% else %>
+  <div class="done done--fail">
+    <div class="done-seal" aria-hidden="true">!</div>
+    <div>
+      <h1 class="done-title">Roster import could not be completed</h1>
+      <div class="done-sub">From <b><%= @roster_import.uploaded_filename %></b> · attempted <%= legion_datetime(@roster_import.imported_at) %></div>
+    </div>
+  </div>
+<% end %>
+
+<div class="sec-head">
+  <span class="sec-head-dia" aria-hidden="true">&#9670;</span>
+  <span class="sec-head-label">What changed</span>
+  <span class="sec-head-rule"></span>
+</div>
+<div class="tiles">
+  <%= render "shared/stat_tile", count: @roster_import.created_count, label: "Created", variant: "created" %>
+  <%= render "shared/stat_tile", count: @roster_import.updated_count, label: "Updated", variant: "updated" %>
+  <%= render "shared/stat_tile", count: @roster_import.removed_count, label: "Removed", variant: "removed" %>
+  <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: @roster_import.problem_count.positive? ? "problems" : "neutral" %>
+</div>
+
+<% if @removed_members.present? %>
+  <%= render "shared/section_panel", label: "Removed from the roster — #{@removed_members.size}" do %>
+    <% @removed_members.each do |removed| %>
+      <% person = removed["member_number"].present? ? Person.find_by(member_number: removed["member_number"]) : nil %>
+      <div class="item">
+        <span class="who"><%= removed["name"] %></span>
+        <% if removed["member_number"].present? %>
+          <span class="meta">· #<%= removed["member_number"] %></span>
+        <% end %>
+        <div class="fix">
+          No longer on the National roster.
+          <% if removed["user_disabled"] %>
+            Sign-in was <b>turned off</b>.
+          <% end %>
+          <% if person %>
+            <%= link_to "View record", person_path(person), class: "go" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <p class="ownernote">If someone was removed by mistake, they'll return on the next import once National has them again — their record and roles are kept in the meantime.</p>
+  <% end %>
+<% end %>
 
 <% if @problems.present? %>
-  <ul>
+  <%= render "shared/section_panel", label: "#{pluralize(@problems.size, 'row')} #{@problems.size == 1 ? 'needs' : 'need'} attention" do %>
     <% @problems.each do |problem| %>
-      <li><%= problem %></li>
+      <div class="item">
+        <% if problem["row"].present? %>
+          <span class="rowid">Row <%= problem["row"] %></span>
+        <% end %>
+        <%= problem["message"] %>
+      </div>
     <% end %>
-  </ul>
+    <p class="ownernote">Roster data is owned by National — most fixes are made there and picked up on the next import.</p>
+  <% end %>
 <% end %>
+
+<div class="btnrow">
+  <%= link_to "View People", people_path, class: "btn-primary" %>
+  <%= link_to "Import another roster", new_admin_roster_import_path, class: "btn-secondary" %>
+  <%= link_to "View import history", admin_roster_imports_path, class: "histlink" %>
+</div>

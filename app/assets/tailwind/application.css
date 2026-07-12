@@ -12,6 +12,9 @@
   --color-legionred: #8C1622;
   --color-ink: #1b222b;
   --color-muted: #6b7684;
+  --color-green: #3f6b3f;
+  --color-bronze: #6e5a2b;
+  --color-gold-ink: #7a5f22;
   --font-serif: Georgia, "Times New Roman", serif;
 }
 
@@ -98,7 +101,7 @@
 .page-lead { margin-top: 8px; }
 .page-title { margin: 0 0 4px; color: var(--color-navy); font-size: 24px; font-weight: 800; letter-spacing: .02em; }
 .page-sub { margin: 0; color: var(--color-muted); font-size: 16px; }
-.btn-primary { background: var(--color-navy); color: #fff; border: 0; padding: 14px 22px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-primary { display: inline-block; background: var(--color-navy); color: #fff; border: 0; padding: 14px 22px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; }
 .btn-primary:disabled { opacity: .6; cursor: default; }
 
 /* First-login passkey invitation card --------------------------------------- */
@@ -132,7 +135,7 @@
 .pk-row-meta { font-size: 14px; color: var(--color-muted); margin: 0; }
 .pk-row-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .pk-row-remove { margin: 0; }
-.btn-secondary { background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-secondary { display: inline-block; background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; }
 .btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .pk-empty { color: #4f5f72; font-size: 16px; line-height: 1.55; margin: 0 0 24px; }
 
@@ -147,3 +150,261 @@
 .app-flash { border-radius: 6px; padding: 12px 16px; font-size: 16px; line-height: 1.5; margin: 0 0 20px; }
 .app-flash-notice { background: #eafaf0; border: 1px solid #b7e0c4; color: #2f6b43; }
 .app-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
+
+/* Primary navigation (navy-2 tab strip; tracked caps; gold active underline) --- */
+.nav-bar { background: var(--color-navy-2); border-bottom: 1px solid rgba(198,161,91,.35); }
+.nav-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: stretch; padding: 0 12px; }
+.nav-tab { display: flex; align-items: center; gap: 8px; padding: 0 18px; height: 48px; text-decoration: none; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c8d3e3; border-bottom: 3px solid transparent; }
+.nav-tab:hover { color: #fff; }
+.nav-tab--active { color: var(--color-gold-hi); border-bottom-color: var(--color-gold); font-weight: 600; }
+.nav-tab--soon { color: #5f6f88; cursor: default; }
+.nav-tab--soon:hover { color: #5f6f88; }
+.nav-soon { font-size: 13px; letter-spacing: .10em; color: var(--color-navy); background: #6b7a97; border-radius: 3px; padding: 2px 6px; margin-left: 8px; }
+.nav-spacer { flex: 1; }
+.nav-tab--admin { color: var(--color-gold); border-left: 1px solid rgba(198,161,91,.28); }
+.nav-tab--admin:hover { color: var(--color-gold-hi); }
+.nav-dia { font-size: 13px; }
+.app-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(160deg, var(--color-gold-hi), var(--color-gold)); color: var(--color-navy); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-gold-hi); }
+
+/* Section panel: boxed unit with a tinted header strip -------------------- */
+.card { border: 1px solid #d3c391; border-radius: 11px; background: var(--color-paper); overflow: hidden; margin-bottom: 22px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.card-head { display: flex; align-items: center; gap: 11px; padding: 12px 18px; background: #efe5cb; border-bottom: 1px solid #ddcfa4; }
+.card-dia { color: var(--color-gold); font-size: 14px; }
+.card-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
+.card-head-prov { margin-left: auto; font-size: 14px; color: var(--color-bronze); display: flex; align-items: center; gap: 6px; }
+.card-body { padding: 18px 20px; }
+
+/* Inline section header: diamond + tracked label + gold gradient rule ----- */
+.sec-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
+.sec-head-dia { color: var(--color-gold); font-size: 14px; }
+.sec-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; white-space: nowrap; }
+.sec-head-rule { flex: 1; height: 2px; background: linear-gradient(90deg, var(--color-gold), rgba(198,161,91,.15)); }
+
+/* Membership status word (calm colored word + dot, never a boxed pill) ---- */
+.st { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.st-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+.st--active { color: var(--color-green); }
+.st--active .st-dot { background: var(--color-green); }
+.st--expired { color: var(--color-legionred); }
+.st--expired .st-dot { background: transparent; border: 2px solid var(--color-legionred); width: 6px; height: 6px; }
+.st--other { color: var(--color-muted); }
+.st--other .st-dot { background: var(--color-muted); }
+
+/* De-noised member row: identity left, quiet status column at a divider --- */
+.mrow { display: flex; align-items: center; gap: 0; padding: 14px 16px; border-top: 1px solid #eadfbf; text-decoration: none; color: inherit; }
+.mrow:first-child { border-top: none; }
+.mrow--office { border-left: 3px solid var(--color-gold); }
+.mrow-id { flex: 1; min-width: 0; padding-right: 18px; }
+.mrow-l1 { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.mrow-name { font-size: 17px; color: var(--color-navy); font-weight: 600; }
+.mrow:hover .mrow-name { text-decoration: underline; }
+.mrow-office { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; }
+.mrow-sub { display: block; font-size: 14px; color: var(--color-muted); margin-top: 5px; }
+.mrow-status { flex: 0 0 208px; border-left: 1px solid #e4d9bb; padding-left: 18px; text-align: left; }
+.mrow-st { display: block; }
+.mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
+.mrow-kv .k { color: var(--color-muted); }
+
+/* Boxed list of member rows (People directory sections) ------------------- */
+.mrow-list { border: 1px solid #eadfbf; border-radius: 10px; overflow: hidden; background: var(--color-ivory); margin-bottom: 22px; }
+.mrow-list .mrow:first-child { border-top: none; }
+
+/* People directory toolbar: search field, filter bar, sort control -------- */
+.search { display: flex; gap: 10px; margin-bottom: 10px; }
+.search input { flex: 1; font-size: 17px; padding: 12px 14px; border: 1px solid #cdbf98; border-radius: 8px; background: #fff; color: var(--color-ink); }
+.filterbar { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 8px; padding: 11px 14px; margin-bottom: 20px; }
+.fl { display: flex; flex-direction: column; gap: 4px; }
+/* Mockup used 12px uppercase labels here; readability floor requires >= 13px for labels. */
+.fl label { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+/* Mockup used 15px for these selects; readability floor requires >= 16px for interactive text. */
+.fl .f { font-size: 16px; padding: 8px 10px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); min-width: 150px; }
+.clear { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; margin-left: auto; align-self: center; background: none; border: 0; padding: 0; font-family: inherit; }
+.sec-head-row { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
+.sec-head-row .sec-head { flex: 1; margin: 0; }
+.sort { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+/* Mockup used 12px uppercase label here; readability floor requires >= 13px for labels. */
+.sort label { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+/* Mockup used 14px for this select; readability floor requires >= 16px for interactive text. */
+.sort select { font-size: 16px; padding: 5px 8px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); }
+
+/* Stat tile (import summary counts) --------------------------------------- */
+.stat-tile { background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 11px; padding: 16px 14px; text-align: center; }
+.stat-n { font-size: 34px; font-weight: 700; line-height: 1; }
+.stat-t { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); margin-top: 8px; }
+.stat-tile--created .stat-n { color: var(--color-green); }
+.stat-tile--updated .stat-n { color: var(--color-navy); }
+.stat-tile--removed .stat-n { color: var(--color-bronze); }
+.stat-tile--neutral .stat-n { color: var(--color-muted); }
+.stat-tile--problems { border-color: #e2b6b6; background: #fbefef; }
+.stat-tile--problems .stat-n { color: var(--color-legionred); }
+.stat-tile--problems .stat-t { color: #8a5b5b; }
+
+/* Roster import result: green/red confirmation banner + stat tile grid ----- */
+.done { display: flex; align-items: center; gap: 16px; background: linear-gradient(180deg, #eef4ea, #e6efe1); border: 1px solid #bcd3b6; border-left: 5px solid var(--color-green); border-radius: 12px; padding: 16px 20px; margin: 12px 0 24px; }
+.done--fail { background: linear-gradient(180deg, #f7e7e7, #f3dede); border-color: #ecc9c9; border-left-color: var(--color-legionred); }
+.done-seal { width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; background: var(--color-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.done--fail .done-seal { background: var(--color-legionred); }
+.done-title { font-size: 22px; color: #1f3d1f; margin: 0; font-weight: 700; }
+.done--fail .done-title { color: #4a2020; }
+.done-sub { font-size: 14px; color: #4a5c46; margin-top: 3px; }
+.done--fail .done-sub { color: #6b3d3d; }
+.done-sub b { color: #26401f; }
+.done--fail .done-sub b { color: #4a2020; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.tiles-total { font-size: 14px; color: var(--color-muted); text-align: right; margin-top: 8px; }
+
+/* Result panel rows: a removed member or a problem row, with explanatory note - */
+.item { padding: 12px 0; border-bottom: 1px solid #ece0bd; font-size: 16px; line-height: 1.5; }
+.item:last-child { border-bottom: none; }
+.item .who { color: var(--color-navy); font-weight: 600; }
+.item .meta { color: var(--color-muted); font-size: 14px; }
+.item .fix { margin-top: 4px; color: var(--color-ink); }
+.item .go { color: var(--color-navy); text-decoration: underline; }
+.item .rowid { color: var(--color-muted); font-variant-numeric: tabular-nums; margin-right: 8px; font-size: 14px; font-weight: 600; }
+.ownernote { font-size: 14px; color: var(--color-bronze); background: #f6efe0; border: 1px dashed #ddcfa4; border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+.histlink { margin-left: auto; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
+
+/* Import history list (admin roster import log) ---------------------------- */
+.imp { display: block; padding: 11px 0; border-bottom: 1px solid #ece0bd; text-decoration: none; color: inherit; }
+.imp:last-of-type { border-bottom: none; }
+.imp .l1 { display: flex; align-items: center; gap: 10px; }
+.imp .when { font-size: 16px; color: var(--color-navy); font-weight: 600; }
+.imp .status { font-size: 13px; font-weight: 700; }
+.imp .status.ok { color: var(--color-green); }
+.imp .status.fail { color: var(--color-legionred); }
+.imp .l2 { font-size: 14px; color: var(--color-muted); margin-top: 3px; }
+.imp .c { font-weight: 600; }
+.imp .c.cr { color: var(--color-green); }
+.imp .c.up { color: var(--color-navy); }
+.imp .c.rm { color: var(--color-bronze); }
+.imp .c.pr { color: var(--color-legionred); }
+.imp .sep { color: #cabd97; margin: 0 6px; }
+
+/* Admin landing: roster freshness banner ------------------------------------ */
+.fresh { display: flex; align-items: center; gap: 12px; background: #eef4ea; border: 1px solid #bcd3b6; border-radius: 9px; padding: 13px 16px; margin-bottom: 14px; }
+.fresh .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-green); flex: 0 0 10px; }
+.fresh .txt { font-size: 15px; color: #33502f; }
+.fresh .txt b { color: #22401d; }
+.fresh.stale { background: #f8efe0; border-color: #e6cf9c; }
+.fresh.stale .dot { background: var(--color-gold-ink); }
+.fresh.stale .txt { color: #5c4a24; }
+/* Mockup used 12.5px for .subttl; readability floor requires >= 13px for labels. */
+.subttl { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-muted); font-weight: 700; margin: 18px 0 6px; }
+/* Mockup used 15px for .viewall; readability floor requires >= 16px for interactive links. */
+.viewall { display: inline-block; margin-top: 12px; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
+
+/* Admin landing: Post Positions list ---------------------------------------- */
+.pos { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #ece0bd; }
+.pos:last-of-type { border-bottom: none; }
+.pos .pn { font-size: 16px; color: var(--color-navy); font-weight: 600; flex: 1; }
+.pos .state { font-size: 13px; font-weight: 600; }
+.pos .state.on { color: var(--color-green); }
+.pos .state.off { color: var(--color-muted); }
+/* Mockup used a 14px "Edit" link; the active toggle is a submit button here and must be >= 16px (interactive). */
+.pos .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.addrow { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 14px; border-top: 1px dashed #e0d5b4; padding-top: 14px; }
+
+/* Admin landing: Administrators list ----------------------------------------- */
+.admrow { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #ece0bd; }
+.admrow:last-of-type { border-bottom: none; }
+.admrow .an { font-size: 16px; color: var(--color-navy); font-weight: 600; }
+.admrow .ao { font-size: 13px; color: var(--color-gold-ink); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+/* Mockup used a 14px "Manage on their page" link; readability floor requires >= 16px for interactive links. */
+.admrow .go { margin-left: auto; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
+/* Mockup used 13.5px for .safe; readability floor requires >= 14px for secondary/caption text. */
+.safe { font-size: 14px; color: var(--color-bronze); background: #f6efe0; border: 1px dashed #ddcfa4; border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+
+/* Roster import upload: guided steps, file-choose area, "what happens" note - */
+.steps { display: flex; gap: 12px; margin: 18px 0 22px; flex-wrap: wrap; }
+.step { flex: 1 1 200px; background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 10px; padding: 14px 16px; }
+.step .num { width: 26px; height: 26px; border-radius: 50%; background: var(--color-navy); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+.step .t { font-size: 16px; color: var(--color-ink); line-height: 1.4; }
+.step .t b { color: var(--color-navy); }
+
+.drop { border: 2px dashed #cbb877; background: #fdfaf0; border-radius: 12px; padding: 28px 22px; text-align: center; }
+.drop .ic { font-size: 30px; color: var(--color-gold-ink); }
+.drop .big { font-size: 18px; color: var(--color-navy); font-weight: 600; margin-top: 8px; }
+.drop .big label { font-size: inherit; color: inherit; font-weight: inherit; }
+.drop-input { display: block; margin: 16px auto 0; font-size: 16px; color: var(--color-ink); max-width: 100%; }
+.drop .hint { font-size: 14px; color: var(--color-muted); margin-top: 12px; }
+
+.whatnext { background: #f8efe0; border: 1px solid #e6cf9c; border-left: 4px solid var(--color-gold); border-radius: 10px; padding: 16px 18px; margin-top: 20px; font-size: 15px; color: #5c4a24; line-height: 1.55; }
+.whatnext b { color: #3d3011; }
+.whatnext ul { margin: 8px 0 0; padding-left: 20px; }
+.whatnext li { margin: 5px 0; }
+
+/* Type-or-pick date field: text input (DD MMM YYYY) + hidden native picker - */
+.datefield { position: relative; display: inline-flex; align-items: center; }
+.datefield-input { font-size: 16px; padding: 10px 44px 10px 12px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); width: 170px; letter-spacing: .06em; text-transform: uppercase; }
+.datefield-native { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; right: 40px; }
+.datefield-cal { position: absolute; right: 5px; width: 32px; height: 32px; border: none; background: #efe5cb; border-radius: 5px; cursor: pointer; font-size: 16px; line-height: 1; }
+
+/* Person page: identity header, back link ---------------------------------- */
+.back { font-size: 16px; color: var(--color-navy); text-decoration: none; display: inline-block; margin-bottom: 10px; }
+.back:hover { text-decoration: underline; }
+.idhead { margin: 12px 0 22px; }
+.pname { font-size: 27px; color: var(--color-navy); font-weight: 700; line-height: 1.1; margin: 0; }
+.idmeta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 9px; }
+/* Mockup used 12.5px for .office; readability floor requires >= 13px for labels. */
+.office { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; }
+.idsub { font-size: 15px; color: var(--color-muted); margin-top: 8px; }
+
+/* Person page: read-only key/value grid (Roster Record, Service) ----------- */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 34px; }
+.kv .k { display: block; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 3px; }
+.kv .v { font-size: 16px; color: var(--color-ink); margin: 0; }
+.kv a.v { color: var(--color-navy); text-decoration: none; border-bottom: 1px solid #cbb877; }
+.kv a.v:hover { border-bottom-color: var(--color-navy); }
+.kv .v.pufl { color: var(--color-gold-ink); font-weight: 600; }
+.kv--full { grid-column: 1 / -1; }
+.readonly-tip { margin-top: 16px; font-size: 14px; color: var(--color-muted); border-top: 1px dashed #e0d5b4; padding-top: 12px; }
+.lock { color: var(--color-bronze); }
+
+/* Person page: Login Account panel ------------------------------------------ */
+.acct-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 16px; }
+.acct-line .em { font-weight: 600; color: var(--color-navy); }
+.badge-on { font-size: 13px; font-weight: 700; color: var(--color-green); background: #e7efe4; border: 1px solid #bcd3b6; border-radius: 20px; padding: 3px 11px; }
+.btnrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+.btn-sm { padding: 8px 14px; font-size: 16px; }
+.helper { font-size: 14px; color: var(--color-muted); }
+
+/* Person page: grouped permission checklist (no disclosure, always visible) - */
+.permwrap { margin-top: 18px; border-top: 1px solid #e6dcbe; padding-top: 14px; }
+.permhead { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
+.permsub { font-size: 14px; color: var(--color-muted); margin-top: 2px; margin-bottom: 6px; }
+.pg { margin-top: 12px; }
+/* Mockup used 12px for .gname; readability floor requires >= 13px for labels. */
+.pg .gname { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; margin: 0 0 2px; }
+.perm { display: flex; align-items: center; gap: 11px; font-size: 16px; padding: 8px 0; border-bottom: 1px solid #f0e7cf; }
+.perm:last-child { border-bottom: none; }
+.perm input { width: 18px; height: 18px; accent-color: var(--color-navy); }
+
+/* Person page: Post Roles list + date-correction / assignment forms -------- */
+.role { padding: 12px 0; border-bottom: 1px solid #ece0bd; }
+.role:last-child { border-bottom: none; }
+.role-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.role .rn { font-size: 16px; color: var(--color-navy); font-weight: 600; }
+.role .rd { font-size: 14px; color: var(--color-muted); margin-top: 2px; }
+.role .present { color: var(--color-green); font-weight: 600; }
+.role-actions { display: flex; gap: 14px; white-space: nowrap; }
+/* Mockup used 14px for .lnk; readability floor requires >= 16px for interactive links. */
+.lnk { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.lnk.warnlnk { color: var(--color-legionred); }
+.editbox { margin-top: 12px; background: #fdfaf0; border: 1px solid #e6dcbe; border-radius: 8px; padding: 12px 14px; }
+.editrow { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; }
+.assign { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 14px; border-top: 1px dashed #e0d5b4; padding-top: 16px; }
+
+/* Person page (member view): Contact panel tap-to-reach rows ---------------- */
+.contact { display: flex; flex-direction: column; gap: 14px; }
+.crow { display: flex; align-items: center; gap: 13px; }
+.cic { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 9px; background: #efe5cb; border: 1px solid #ddcfa4; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+/* Mockup used 12px for .crow .k; readability floor requires >= 13px for labels. */
+.crow .k { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+.crow a { font-size: 17px; color: var(--color-navy); font-weight: 600; text-decoration: none; }
+.crow a:hover { text-decoration: underline; }
+
+/* Person page: continuous-membership honor callout -------------------------- */
+.honor { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; background: #fbf3dd; border: 1px solid #e7d6a6; border-radius: 8px; padding: 12px 14px; }
+.honor .num { font-size: 24px; font-weight: 700; color: var(--color-gold-ink); line-height: 1; }
+.honor .txt { font-size: 15px; color: #5c4a24; }

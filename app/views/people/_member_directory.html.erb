@@ -1,0 +1,56 @@
+<%# app/views/people/_member_directory.html.erb
+    Locals (from PeopleController#index): @officers, @members %>
+
+<%= form_with url: people_path, method: :get do |form| %>
+  <div class="search">
+    <%= form.search_field :q, value: params[:q], placeholder: "Search by name…", aria: { label: "Search by name" } %>
+    <%= form.submit "Search", class: "btn-primary" %>
+  </div>
+<% end %>
+
+<% if @officers.any? %>
+  <%= render "shared/section_header", label: "Post Officers" %>
+  <div class="mrow-list">
+    <% @officers.each do |person| %>
+      <%= render "shared/member_row",
+            name: person.roster_display_name,
+            office: person.active_role_labels.first,
+            path: person_path(person),
+            subline: person.service_summary,
+            membership: false,
+            status_tag: nil,
+            status_lines: [] %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="sec-head-row" style="margin-top: 22px">
+  <%= render "shared/section_header", label: "All Members" %>
+  <%= form_with url: people_path, method: :get, class: "sort" do |form| %>
+    <%= form.hidden_field :q, value: params[:q] %>
+    <%= form.label :sort, "Sort" %>
+    <%= form.select :sort,
+          options_for_select(
+            [ [ "Name (A–Z)", "name" ], [ "Branch", "branch" ] ],
+            params[:sort]
+          ),
+          {}, onchange: "this.form.requestSubmit()" %>
+    <%= form.submit "Sort", class: "btn-secondary" %>
+  <% end %>
+</div>
+<% if @members.any? %>
+  <div class="mrow-list">
+    <% @members.each do |person| %>
+      <%= render "shared/member_row",
+            name: person.roster_display_name,
+            office: person.active_role_labels.first,
+            path: person_path(person),
+            subline: person.service_summary,
+            membership: false,
+            status_tag: nil,
+            status_lines: [] %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="page-sub">No members found.</p>
+<% end %>

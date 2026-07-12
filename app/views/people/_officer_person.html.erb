@@ -1,0 +1,47 @@
+<%# app/views/people/_officer_person.html.erb
+    Locals (from PeopleController#show, via show.html.erb): @person, @user, @can_manage, @position_assignment, @position_titles %>
+
+<div class="idhead">
+  <h1 class="pname"><%= @person.roster_display_name %></h1>
+  <div class="idmeta">
+    <% if (office = @person.active_role_labels.first) %>
+      <span class="office"><%= office %></span>
+    <% end %>
+    <%= membership_status_tag(@person.roster_member_status) %>
+  </div>
+</div>
+
+<%= render "shared/section_panel", label: "Roster Record",
+      provenance: "National roster · imported #{legion_date(@person.roster_imported_at)}" do %>
+  <div class="grid">
+    <div class="kv"><span class="k">Member ID</span><span class="v"><%= @person.member_number.presence || "—" %></span></div>
+    <div class="kv"><span class="k">Post/Squadron</span><span class="v"><%= @person.roster_post.presence || "—" %></span></div>
+    <div class="kv"><span class="k">Membership type</span><span class="v"><%= @person.roster_membership_type.presence || "—" %></span></div>
+    <div class="kv"><span class="k">Status</span><span class="v"><%= @person.roster_member_status.presence || "—" %></span></div>
+    <div class="kv">
+      <span class="k">Paid through</span>
+      <span class="v<%= " pufl" if @person.paid_up_for_life? %>">
+        <%= @person.paid_up_for_life? ? "Paid up for life" : (@person.roster_paid_through_year || "—") %>
+      </span>
+    </div>
+    <div class="kv"><span class="k">Branch of service</span><span class="v"><%= @person.roster_branch.presence || "—" %></span></div>
+    <div class="kv"><span class="k">War era</span><span class="v"><%= @person.roster_war_era.presence || "—" %></span></div>
+    <div class="kv"><span class="k">Continuous years</span><span class="v"><%= @person.roster_continuous_years.presence || "—" %></span></div>
+    <div class="kv"><span class="k">Mail deliverable</span><span class="v"><%= @person.roster_undeliverable? ? "No" : "Yes" %></span></div>
+    <div class="kv"><span class="k">Roster email</span><span class="v"><%= @person.roster_email_address.presence || "—" %></span></div>
+    <div class="kv"><span class="k">Roster phone</span><span class="v"><%= @person.roster_phone_number.presence || "—" %></span></div>
+    <div class="kv kv--full">
+      <span class="k">Mailing address</span>
+      <p class="v"><%= @person.roster_address.presence || "—" %></p>
+    </div>
+  </div>
+  <p class="readonly-tip"><span class="lock" aria-hidden="true">&#128274;</span> These fields come from the National roster and can't be edited here. Corrections are made through National, then picked up on the next import.</p>
+<% end %>
+
+<%= render "shared/section_panel", label: "Login Account" do %>
+  <%= render "login_account" %>
+<% end %>
+
+<%= render "shared/section_panel", label: "Post Roles" do %>
+  <%= render "post_roles" %>
+<% end %>

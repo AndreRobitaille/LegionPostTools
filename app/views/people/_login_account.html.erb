@@ -1,0 +1,52 @@
+<%# app/views/people/_login_account.html.erb
+    Locals (from PeopleController#show, via _officer_person.html.erb): @person, @user, @can_manage
+    Preserves the existing Admin::UserAccountsController contract exactly: create keys off
+    params[:user][:email_address] (falling back to the roster email) and destroy sets disabled_at. %>
+
+<% if @user %>
+  <div class="acct-line">
+    <span>Signs in as <span class="em"><%= @user.email_address %></span></span>
+    <% if @user.disabled_at.blank? %>
+      <span class="badge-on">Can sign in</span>
+    <% end %>
+  </div>
+
+  <% if @user.roster_email_mismatch? && @user == current_user %>
+    <div class="pk-card">
+      <div class="pk-card-label">&#9888; Roster email doesn't match login email</div>
+      <p class="pk-card-lead">
+        The roster email (<%= @person.roster_email_address %>) doesn't match this login email (<%= @user.email_address %>).
+        The roster import never changes how someone signs in — this can be updated here if it should match.
+      </p>
+      <%= button_to "Use roster email for login", roster_email_review_path(decision: "update_login"), method: :patch, class: "btn-primary btn-sm", form: { class: "inline" } %>
+      <%= button_to "Keep current login email", roster_email_review_path(decision: "keep_current"), method: :patch, class: "btn-secondary btn-sm", form: { class: "inline" } %>
+    </div>
+  <% end %>
+
+  <% if @can_manage %>
+    <%= render "permission_groups" %>
+
+    <% if @user.disabled_at.present? %>
+      <div class="btnrow">
+        <%= form_with url: admin_person_user_account_path(@person), scope: :user do |form| %>
+          <%= form.label :email_address, "Login email" %>
+          <%= form.email_field :email_address, value: @user.email_address %>
+          <%= form.submit "Re-enable sign-in", class: "btn-primary" %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="btnrow">
+        <%= button_to "Disable sign-in", admin_person_user_account_path(@person), method: :delete, class: "btn-return" %>
+        <span class="helper">Keeps their record and roles — they just can't sign in until re-enabled.</span>
+      </div>
+    <% end %>
+  <% end %>
+<% elsif @can_manage %>
+  <%= form_with url: admin_person_user_account_path(@person), scope: :user do |form| %>
+    <%= form.label :email_address, "Login email" %>
+    <%= form.email_field :email_address, value: @person.roster_email_address %>
+    <%= form.submit "Enable sign-in", class: "btn-primary" %>
+  <% end %>
+<% else %>
+  <p class="page-sub">This member does not have a login account.</p>
+<% end %>

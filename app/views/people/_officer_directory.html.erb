@@ -1,0 +1,84 @@
+<%# app/views/people/_officer_directory.html.erb
+    Locals (from PeopleController#index): @officers, @members, @filter_options %>
+
+<%= form_with url: people_path, method: :get do |form| %>
+  <div class="search">
+    <%= form.search_field :q, value: params[:q], placeholder: "Search by name or member ID…", aria: { label: "Search by name or member ID" } %>
+    <%= form.submit "Search", class: "btn-primary" %>
+  </div>
+
+  <div class="filterbar">
+    <div class="fl">
+      <%= form.label :roster_member_status, "Member status" %>
+      <%= form.select :roster_member_status,
+            options_for_select([ [ "Any", "" ] ] + @filter_options[:statuses].map { |status| [ status, status ] }, params[:roster_member_status]),
+            {}, class: "f" %>
+    </div>
+    <div class="fl">
+      <%= form.label :roster_paid_through_year, "Paid through" %>
+      <%= form.select :roster_paid_through_year,
+            options_for_select([ [ "Any", "" ] ] + @filter_options[:years].map { |year| [ year, year ] }, params[:roster_paid_through_year]),
+            {}, class: "f" %>
+    </div>
+    <div class="fl">
+      <%= form.label :login_status, "Can sign in?" %>
+      <%= form.select :login_status,
+            options_for_select([ [ "Any", "" ], [ "Yes", "enabled" ], [ "No", "disabled" ], [ "No account", "no_login" ] ], params[:login_status]),
+            {}, class: "f" %>
+    </div>
+    <%= form.submit "Apply filters", class: "btn-secondary" %>
+    <% if params[:roster_member_status].present? || params[:roster_paid_through_year].present? || params[:login_status].present? %>
+      <%= link_to "Clear filters", people_path(q: params[:q]), class: "clear" %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @officers.any? %>
+  <%= render "shared/section_header", label: "Post Officers" %>
+  <div class="mrow-list">
+    <% @officers.each do |person| %>
+      <%= render "shared/member_row",
+            name: person.roster_display_name,
+            office: person.active_role_labels.first,
+            path: person_path(person),
+            subline: [ person.member_number.present? ? "Member ##{person.member_number}" : nil, person.service_summary.presence ].compact.join(" · "),
+            membership: true,
+            status_tag: membership_status_tag(person.roster_member_status),
+            status_lines: [ person.roster_paid_through_display.presence || "Paid through: —", signin_line(person) ] %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="sec-head-row" style="margin-top: 22px">
+  <%= render "shared/section_header", label: "All Members" %>
+  <%= form_with url: people_path, method: :get, class: "sort" do |form| %>
+    <%= form.hidden_field :q, value: params[:q] %>
+    <%= form.hidden_field :roster_member_status, value: params[:roster_member_status] %>
+    <%= form.hidden_field :roster_paid_through_year, value: params[:roster_paid_through_year] %>
+    <%= form.hidden_field :login_status, value: params[:login_status] %>
+    <%= form.label :sort, "Sort" %>
+    <%= form.select :sort,
+          options_for_select(
+            [ [ "Name (A–Z)", "name" ], [ "Member ID", "member_id" ], [ "Paid through", "paid_through" ], [ "Status", "status" ] ],
+            params[:sort]
+          ),
+          {}, onchange: "this.form.requestSubmit()" %>
+    <%= form.submit "Sort", class: "btn-secondary" %>
+  <% end %>
+</div>
+<% if @members.any? %>
+  <div class="mrow-list">
+    <% @members.each do |person| %>
+      <%= render "shared/member_row",
+            name: person.roster_display_name,
+            office: person.active_role_labels.first,
+            path: person_path(person),
+            subline: [ person.member_number.present? ? "Member ##{person.member_number}" : nil, person.service_summary.presence ].compact.join(" · "),
+            membership: true,
+            status_tag: membership_status_tag(person.roster_member_status),
+            status_lines: [ person.roster_paid_through_display.presence || "Paid through: —", signin_line(person) ] %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="page-sub">No members found.</p>
+<% end %>

@@ -1,0 +1,64 @@
+<%# app/views/people/_member_person.html.erb
+    Locals (from PeopleController#show, via show.html.erb): @person, @can_manage
+    Never renders mailing address, dues/paid-through, member status, member number, or any
+    login/permission/edit control — those stay in the officer view (_officer_person.html.erb). %>
+
+<div class="idhead">
+  <h1 class="pname"><%= @person.roster_display_name %></h1>
+  <% if (office = @person.active_role_labels.first) %>
+    <div><span class="office"><%= office %></span></div>
+  <% end %>
+  <% if @person.service_summary.present? %>
+    <div class="idsub"><%= @person.service_summary %></div>
+  <% end %>
+</div>
+
+<%= render "shared/section_panel", label: "Contact" do %>
+  <div class="contact">
+    <% if @person.roster_email_address.present? %>
+      <div class="crow">
+        <span class="cic" aria-hidden="true">&#9993;</span>
+        <div>
+          <div class="k">Email</div>
+          <%= link_to @person.roster_email_address, "mailto:#{@person.roster_email_address}" %>
+        </div>
+      </div>
+    <% end %>
+    <% if @person.roster_phone_number.present? %>
+      <div class="crow">
+        <span class="cic" aria-hidden="true">&#9742;</span>
+        <div>
+          <div class="k">Phone</div>
+          <%= link_to @person.roster_phone_number, "tel:#{@person.roster_phone_number.gsub(/[^\d+]/, "")}" %>
+        </div>
+      </div>
+    <% end %>
+    <% if @person.roster_email_address.blank? && @person.roster_phone_number.blank? %>
+      <p class="page-sub">No contact information on file.</p>
+    <% end %>
+  </div>
+<% end %>
+
+<%= render "shared/section_panel", label: "Service" do %>
+  <div class="grid">
+    <% if @person.roster_branch.present? %>
+      <div class="kv"><span class="k">Branch of service</span><span class="v"><%= @person.roster_branch %></span></div>
+    <% end %>
+    <% if @person.roster_war_era.present? %>
+      <div class="kv"><span class="k">War era</span><span class="v"><%= @person.roster_war_era %></span></div>
+    <% end %>
+    <% if @person.roster_continuous_years.present? %>
+      <div class="honor">
+        <span class="num"><%= @person.roster_continuous_years %></span>
+        <span class="txt">years of continuous membership in The American Legion</span>
+      </div>
+    <% end %>
+    <% if @person.roster_branch.blank? && @person.roster_war_era.blank? && @person.roster_continuous_years.blank? %>
+      <p class="page-sub">No service record on file.</p>
+    <% end %>
+  </div>
+<% end %>
+
+<%= render "shared/section_panel", label: "Post Roles" do %>
+  <%= render "post_roles" %>
+<% end %>

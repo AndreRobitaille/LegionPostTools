@@ -19,9 +19,25 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "signed in user with manage_settings can open admin dashboard" do
+  test "landing shows roster, positions, and administrators panels" do
     prepare_setup_complete_state
-    sign_in_member
+    admin = sign_in_admin
+    RosterImport.create!(status: "completed", imported_at: 1.hour.ago, uploaded_filename: "latest.csv")
+    PositionTitle.create!(organization: @org, name: "Commander", display_order: 1, active: true)
+
+    get admin_root_path
+
+    assert_response :success
+    assert_select ".card-head-label", text: /Roster/
+    assert_select ".card-head-label", text: /Post Positions/
+    assert_select ".card-head-label", text: /Administrators/
+    assert_select "body", text: /Commander/
+    assert_select "body", text: /#{admin.person.full_name}/
+  end
+
+  test "roster panel shows freshness banner and recent import history" do
+    prepare_setup_complete_state
+    sign_in_admin
     RosterImport.create!(
       uploaded_filename: "roster-2026.csv",
       status: "completed",
@@ -35,32 +51,25 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_select "h1", "Administration"
-    assert_select "p", "Manage the roster import, accounts, permissions, and post roles."
-    assert_select "a[href=?]", admin_people_path, text: "People"
-    assert_select "p", /Latest successful roster import: /
-    assert_select "p[role='alert']", 0
-    assert_select "p", { count: 0, text: /roster-2026\.csv/ }
-    assert_select "p", { count: 0, text: /Status: / }
-    assert_select "p", { count: 0, text: /Created: / }
+    assert_select ".fresh:not(.stale) .txt", text: /Roster is current\./
+    assert_select ".imp", text: /roster-2026\.csv/
+    assert_select "a[href=?]", admin_roster_imports_path, text: /View all imports/
   end
 
-  test "signed in user with manage_settings sees empty roster state when no import exists" do
+  test "roster panel shows stale warning when no import exists" do
     prepare_setup_complete_state
-    sign_in_member
+    sign_in_admin
 
     get admin_root_path
 
     assert_response :success
-    assert_select "h1", "Administration"
-    assert_select "p", "Manage the roster import, accounts, permissions, and post roles."
-    assert_select "p", "No roster has been imported yet."
-    assert_select "p[role='alert']", "The roster is more than 30 days old or has not been imported yet. Upload a current National roster export."
+    assert_select ".fresh.stale .txt", text: /No roster has been imported yet\./
+    assert_select "a[href=?]", new_admin_roster_import_path, text: "Import roster"
   end
 
-  test "signed in user with manage_settings sees stale roster warning when import is old" do
+  test "roster panel shows stale warning when import is old" do
     prepare_setup_complete_state
-    sign_in_member
+    sign_in_admin
     RosterImport.create!(
       uploaded_filename: "roster-2026.csv",
       status: "completed",
@@ -74,14 +83,13 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_select "p", /Latest successful roster import: /
-    assert_select "p[role='alert']", "The roster is more than 30 days old or has not been imported yet. Upload a current National roster export."
+    assert_select ".fresh.stale .txt", text: /Roster import is due\./
   end
 
   private
 
   def prepare_setup_complete_state
-    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    @org = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
   end
 
@@ -91,5 +99,9 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     PermissionGrant.create!(user: user, capability: "manage_settings") if can_manage_settings
     sign_in_as(user)
     user
+  end
+
+  def sign_in_admin
+    sign_in_member(can_manage_settings: true)
   end
 end

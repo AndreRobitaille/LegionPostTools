@@ -35,9 +35,11 @@ module RosterImports
       keyword_init: true
     )
 
-    Result = Struct.new(:rows, :errors, keyword_init: true) do
+    Problem = Struct.new(:row, :kind, :member_number, :message, keyword_init: true)
+
+    Result = Struct.new(:rows, :problems, :fatal_errors, keyword_init: true) do
       def valid?
-        errors.empty?
+        fatal_errors.empty?
       end
     end
 
@@ -50,7 +52,7 @@ module RosterImports
       validate_headers!(csv.headers)
 
       rows = []
-      errors = []
+      problems = []
       seen_member_numbers = {}
 
       csv.each_with_index do |row, index|
@@ -58,12 +60,14 @@ module RosterImports
         member_number = row["Member ID"]&.strip
 
         if member_number.blank?
-          errors << "Row #{row_number} is missing Member ID"
+          problems << Problem.new(row: row_number, kind: "missing_member_id", member_number: nil,
+            message: "No Member ID in the row — skipped. A member can't be matched without a Member ID.")
           next
         end
 
         if seen_member_numbers[member_number]
-          errors << "Duplicate Member ID #{member_number} in uploaded roster"
+          problems << Problem.new(row: row_number, kind: "duplicate_member_id", member_number: member_number,
+            message: "Member ID #{member_number} appears more than once in the file — kept the first, skipped this one.")
           next
         end
 
@@ -86,13 +90,13 @@ module RosterImports
         )
       end
 
-      Result.new(rows: rows, errors: errors)
+      Result.new(rows: rows, problems: problems, fatal_errors: [])
     rescue ArgumentError => e
-      Result.new(rows: [], errors: [ e.message ])
+      Result.new(rows: [], problems: [], fatal_errors: [ e.message ])
     rescue CSV::MalformedCSVError => e
-      Result.new(rows: [], errors: [ e.message ])
+      Result.new(rows: [], problems: [], fatal_errors: [ e.message ])
     rescue Encoding::InvalidByteSequenceError, Encoding::UndefinedConversionError => e
-      Result.new(rows: [], errors: [ e.message ])
+      Result.new(rows: [], problems: [], fatal_errors: [ e.message ])
     end
 
     private
