@@ -1,0 +1,12 @@
+<div class="pk-card">
+  <div class="pk-card-label">&#9670; Email needs review</div>
+  <h2 class="pk-card-title">Review your login email</h2>
+  <p class="pk-card-lead">Roster email: <%= current_user.person.roster_email_address %></p>
+  <p class="pk-card-lead">Login email: <%= current_user.email_address %></p>
+
+  <div class="space-y-3">
+    <%= button_to "Use roster email for login", roster_email_review_path(decision: "update_login"), method: :patch, class: "btn-primary", form: { class: "inline" } %>
+    <%= button_to "Keep my current login email", roster_email_review_path(decision: "keep_current"), method: :patch, class: "btn-secondary", form: { class: "inline" } %>
+    <%= button_to "Remind me later", roster_email_review_path(decision: "remind_later"), method: :patch, class: "btn-secondary", form: { class: "inline" } %>
+  </div>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_11_171917) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_11_190002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -118,9 +118,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_171917) do
     t.string "member_number"
     t.text "notes"
     t.string "phone_number"
+    t.text "roster_address"
+    t.string "roster_branch"
+    t.integer "roster_continuous_years"
+    t.string "roster_email_address"
+    t.datetime "roster_imported_at"
+    t.string "roster_member_status"
+    t.string "roster_membership_type"
+    t.string "roster_name"
+    t.integer "roster_paid_through_year"
+    t.string "roster_phone_number"
+    t.string "roster_post"
+    t.boolean "roster_undeliverable", default: false, null: false
+    t.string "roster_war_era"
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_people_on_email_address"
-    t.index ["member_number"], name: "index_people_on_member_number"
+    t.index ["member_number"], name: "index_people_on_member_number", unique: true, where: "(member_number IS NOT NULL)"
+    t.index ["roster_email_address"], name: "index_people_on_roster_email_address"
+    t.index ["roster_member_status"], name: "index_people_on_roster_member_status"
+    t.index ["roster_paid_through_year"], name: "index_people_on_roster_paid_through_year"
   end
 
   create_table "permission_grants", force: :cascade do |t|
@@ -158,6 +174,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_171917) do
     t.index ["organization_id"], name: "index_position_titles_on_organization_id"
   end
 
+  create_table "roster_imports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "created_count", default: 0, null: false
+    t.datetime "imported_at", null: false
+    t.integer "problem_count", default: 0, null: false
+    t.string "status", default: "completed", null: false
+    t.jsonb "summary", default: {}, null: false
+    t.integer "unchanged_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "updated_count", default: 0, null: false
+    t.string "uploaded_filename", null: false
+    t.index ["status", "imported_at"], name: "index_roster_imports_on_status_and_imported_at"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -174,6 +204,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_11_171917) do
     t.string "email_address", null: false
     t.datetime "email_verified_at"
     t.bigint "person_id", null: false
+    t.string "roster_email_review_decision"
+    t.string "roster_email_reviewed_address"
+    t.datetime "roster_email_reviewed_at"
     t.datetime "updated_at", null: false
     t.string "webauthn_id", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true

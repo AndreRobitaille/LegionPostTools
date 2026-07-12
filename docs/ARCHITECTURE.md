@@ -33,6 +33,10 @@ Production uses a primary PostgreSQL database plus database-backed cache and que
 
 People can hold multiple positions at once. Position assignments must be historical so old records can show who held an office at that time.
 
+## Roster-backed administration
+
+National American Legion roster CSV imports populate read-only roster fields on people, keyed by Member ID. Roster data is dated and refreshed by later imports rather than edited locally. Login accounts remain separate: a person may or may not have a user, roster email remains separate from login email, and app permissions are granted to users rather than imported roster rows. Post positions and committee-lead-style roles are assigned to people with effective dates so officer history is preserved.
+
 ## Authentication
 
 Authentication is passwordless.

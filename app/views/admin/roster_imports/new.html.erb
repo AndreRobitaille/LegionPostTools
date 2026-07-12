@@ -1,0 +1,22 @@
+<h1>Upload National roster</h1>
+
+<% if @latest_roster_import.present? %>
+  <p>Latest successful roster import: <%= l(@latest_roster_import.imported_at, format: :long) %></p>
+<% else %>
+  <p>No roster has been imported yet.</p>
+<% end %>
+
+<% if @roster_stale %>
+  <p role="alert">The roster is more than 30 days old or has not been imported yet. Upload a current National roster export.</p>
+<% end %>
+
+<%= form_with scope: :roster_import, url: admin_roster_imports_path, multipart: true do |form| %>
+  <div>
+    <%= form.label :file, "Roster CSV file" %>
+    <%= form.file_field :file, accept: ".csv,text/csv" %>
+  </div>
+
+  <div>
+    <%= form.submit "Upload roster" %>
+  </div>
+<% end %>

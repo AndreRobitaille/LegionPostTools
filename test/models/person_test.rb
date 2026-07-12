@@ -7,12 +7,32 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal "Jane Doe", person.full_name
   end
 
+  test "roster display name uses imported roster name when present" do
+    person = Person.new(first_name: "Vincent", last_name: "Alber", roster_name: "Alber, Vincent")
+
+    assert_equal "Alber, Vincent", person.roster_display_name
+  end
+
+  test "roster display name falls back to full name" do
+    person = Person.new(first_name: "Jane", last_name: "Doe")
+
+    assert_equal "Jane Doe", person.roster_display_name
+  end
+
   test "requires first_name and last_name" do
     person = Person.new
 
     assert_not person.valid?
     assert_includes person.errors[:first_name], "can't be blank"
     assert_includes person.errors[:last_name], "can't be blank"
+  end
+
+  test "blank member_number values are normalized to nil and do not violate uniqueness" do
+    person_one = Person.create!(first_name: "Blank", last_name: "One", member_number: "")
+    person_two = Person.create!(first_name: "Blank", last_name: "Two", member_number: "   ")
+
+    assert_nil person_one.reload.member_number
+    assert_nil person_two.reload.member_number
   end
 
   test "current_role_label returns the active title with the lowest display_order" do

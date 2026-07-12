@@ -132,6 +132,60 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "Add a passkey", response.body
   end
 
+  test "shows roster email review prompt when needed" do
+    user = signed_in_member
+    user.person.update!(roster_email_address: "roster@example.com")
+    user.update!(email_address: "login@example.com")
+
+    get root_path
+
+    assert_response :success
+    assert_select "h2", "Review your login email"
+  end
+
+  test "remind later does not show the roster email review prompt again in the same session" do
+    user = signed_in_member
+    user.person.update!(roster_email_address: "roster@example.com")
+    user.update!(email_address: "login@example.com")
+
+    patch roster_email_review_path, params: { decision: "remind_later" }
+
+    assert_redirected_to root_path
+
+    get root_path
+
+    assert_response :success
+    assert_no_match "Review your login email", response.body
+  end
+
+  test "remind later shows the roster email review prompt again in a new signed-in session" do
+    user = signed_in_member
+    user.person.update!(roster_email_address: "roster@example.com")
+    user.update!(email_address: "login@example.com")
+
+    patch roster_email_review_path, params: { decision: "remind_later" }
+
+    assert_redirected_to root_path
+
+    open_session do |new_session|
+      new_session.sign_in_as(user)
+      new_session.get root_path
+
+      new_session.assert_response :success
+      new_session.assert_select "h2", "Review your login email"
+    end
+  end
+
+  test "does not show roster email review prompt when roster and login emails match" do
+    user = signed_in_member
+    user.person.update!(roster_email_address: "jane@example.com")
+
+    get root_path
+
+    assert_response :success
+    assert_no_match "Review your login email", response.body
+  end
+
   test "invite stays hidden after dismissal within the session" do
     signed_in_member
     delete passkey_invitation_path

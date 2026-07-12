@@ -20,7 +20,20 @@ Rails.application.routes.draw do
   namespace :settings do
     resource :security, only: %i[show], controller: "security"
   end
+  namespace :admin do
+    root "dashboard#show"
+    resources :people, only: %i[index show]
+    resources :people, only: [] do
+      resource :user_account, only: %i[create destroy]
+      resources :position_assignments, only: %i[create update]
+    end
+    resources :users, only: [] do
+      resource :permission_grants, only: %i[update]
+    end
+    resources :roster_imports, only: %i[new create show]
+  end
   resource :passkey_invitation, only: %i[destroy]
+  resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
   root "dashboard#show"
 end

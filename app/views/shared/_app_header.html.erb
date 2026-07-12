@@ -15,6 +15,9 @@
       <span class="app-user-name">
         <%= current_user.person.full_name %><% if current_user.person.current_role_label %> &middot; <%= current_user.person.current_role_label %><% end %>
       </span>
+      <% if current_user.can?("manage_settings") %>
+        <%= link_to "Admin", admin_root_path, class: "app-user-link" %>
+      <% end %>
       <%= link_to "Settings", settings_security_path, class: "app-user-link" %>
       <%= button_to "Sign out", session_path, method: :delete, class: "app-user-link app-user-signout" %>
     </div>

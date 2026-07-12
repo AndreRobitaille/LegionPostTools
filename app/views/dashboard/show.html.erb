@@ -16,6 +16,10 @@
   </div>
 <% end %>
 
+<% if @show_roster_email_review %>
+  <%= render "roster_email_review" %>
+<% end %>
+
 <div class="page-lead">
   <h1 class="page-title"><%= @organization&.name || "LegionPostTools" %></h1>
   <p class="page-sub">Signed in as <%= current_user.person.full_name %>.</p>

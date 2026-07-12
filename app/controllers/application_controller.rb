@@ -27,7 +27,16 @@ class ApplicationController < ActionController::Base
     redirect_to new_session_path, alert: "You must sign in first."
   end
 
+  def require_capability(capability)
+    require_authentication
+    return if performed?
+    return if current_user.can?(capability)
+
+    redirect_to root_path, alert: "You do not have permission to open that page."
+  end
+
   def start_new_session_for(user)
+    reset_session
     session = Session.create!(user: user, ip_address: request.remote_ip, user_agent: request.user_agent, last_seen_at: Time.current)
     cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax, secure: Rails.env.production? }
     Current.session = session

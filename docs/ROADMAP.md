@@ -20,6 +20,11 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
   vocabulary, and a readability hard rule (`docs/superpowers/specs/2026-07-11-visual-design-system-design.md`).
 - Styled sign-in and magic-link confirmation screens on a dedicated entry layout, using the
   official American Legion emblem and a configurable organization identity (name + locality).
+- Roster-backed administration: admin section, National roster CSV import keyed by Member ID,
+  dated read-only roster fields with 30-day freshness warnings, people/member list and detail
+  views, person-to-user login management, app permission assignment, post role assignment with
+  effective dates, and roster/login email mismatch review. See
+  `docs/superpowers/specs/2026-07-11-admin-and-roster-import-design.md`.
 
 ## Current Documentation Foundation
 
@@ -29,8 +34,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 ## Immediate Next: Structured Agendas
 
-The authentication flow is complete (see Completed Foundation). The next product slice builds
-the meeting record core.
+With authentication and roster-backed administration in place, build the meeting record core.
 
 - Meeting templates.
 - Agenda sections.

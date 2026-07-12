@@ -15,6 +15,42 @@ class User < ApplicationRecord
     permission_grants.exists?(capability: capability.to_s)
   end
 
+  def roster_email_mismatch?
+    person.roster_email_address.present? && person.roster_email_address != email_address
+  end
+
+  def needs_roster_email_review?
+    return false unless roster_email_mismatch?
+    return true if roster_email_review_decision == "remind_later"
+
+    roster_email_reviewed_address != person.roster_email_address
+  end
+
+  def keep_current_login_email!
+    update!(
+      roster_email_reviewed_address: person.roster_email_address,
+      roster_email_review_decision: "keep_current",
+      roster_email_reviewed_at: Time.current
+    )
+  end
+
+  def remind_later_about_roster_email!
+    update!(
+      roster_email_reviewed_address: person.roster_email_address,
+      roster_email_review_decision: "remind_later",
+      roster_email_reviewed_at: Time.current
+    )
+  end
+
+  def update_login_email_to_roster_email!
+    update!(
+      email_address: person.roster_email_address,
+      roster_email_reviewed_address: person.roster_email_address,
+      roster_email_review_decision: "updated_login",
+      roster_email_reviewed_at: Time.current
+    )
+  end
+
   private
 
   # WebAuthn requires an opaque, non-PII, base64url user handle (not the DB id).

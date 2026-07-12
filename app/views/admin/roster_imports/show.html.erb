@@ -1,0 +1,17 @@
+<h1>Roster import result</h1>
+
+<p>Uploaded filename: <%= @roster_import.uploaded_filename %></p>
+<p>Imported at: <%= l(@roster_import.imported_at, format: :long) %></p>
+<p>Status: <%= @roster_import.status %></p>
+<p>Created: <%= @roster_import.created_count %></p>
+<p>Updated: <%= @roster_import.updated_count %></p>
+<p>Unchanged: <%= @roster_import.unchanged_count %></p>
+<p>Problems: <%= @roster_import.problem_count %></p>
+
+<% if @problems.present? %>
+  <ul>
+    <% @problems.each do |problem| %>
+      <li><%= problem %></li>
+    <% end %>
+  </ul>
+<% end %>
