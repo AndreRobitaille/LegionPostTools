@@ -57,9 +57,11 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
+  production_build = !ENV["SECRET_KEY_BASE_DUMMY"].to_s.empty?
+
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = {
-    host: ENV.fetch("APP_HOST"),
+    host: ENV.fetch("APP_HOST") { production_build ? "example.com" : raise(KeyError, "key not found: APP_HOST") },
     protocol: ENV.fetch("APP_PROTOCOL", "https")
   }
 
