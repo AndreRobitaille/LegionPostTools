@@ -204,3 +204,15 @@
 .mrow-st { display: block; }
 .mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
 .mrow-kv .k { color: var(--color-muted); }
+
+/* Stat tile (import summary counts) --------------------------------------- */
+.stat-tile { background: var(--color-paper); border: 1px solid #e6dcbe; border-radius: 11px; padding: 16px 14px; text-align: center; }
+.stat-n { font-size: 34px; font-weight: 700; line-height: 1; }
+.stat-t { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); margin-top: 8px; }
+.stat-tile--created .stat-n { color: var(--color-green); }
+.stat-tile--updated .stat-n { color: var(--color-navy); }
+.stat-tile--removed .stat-n { color: var(--color-bronze); }
+.stat-tile--neutral .stat-n { color: var(--color-muted); }
+.stat-tile--problems { border-color: #e2b6b6; background: #fbefef; }
+.stat-tile--problems .stat-n { color: var(--color-legionred); }
+.stat-tile--problems .stat-t { color: #8a5b5b; }
