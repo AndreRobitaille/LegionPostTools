@@ -173,3 +173,9 @@
 .card-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
 .card-head-prov { margin-left: auto; font-size: 13px; color: var(--color-bronze); display: flex; align-items: center; gap: 6px; }
 .card-body { padding: 18px 20px; }
+
+/* Inline section header: diamond + tracked label + gold gradient rule ----- */
+.sec-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
+.sec-head-dia { color: var(--color-gold); font-size: 14px; }
+.sec-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; white-space: nowrap; }
+.sec-head-rule { flex: 1; height: 2px; background: linear-gradient(90deg, var(--color-gold), rgba(198,161,91,.15)); }
