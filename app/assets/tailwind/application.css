@@ -101,7 +101,7 @@
 .page-lead { margin-top: 8px; }
 .page-title { margin: 0 0 4px; color: var(--color-navy); font-size: 24px; font-weight: 800; letter-spacing: .02em; }
 .page-sub { margin: 0; color: var(--color-muted); font-size: 16px; }
-.btn-primary { background: var(--color-navy); color: #fff; border: 0; padding: 14px 22px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-primary { display: inline-block; background: var(--color-navy); color: #fff; border: 0; padding: 14px 22px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; }
 .btn-primary:disabled { opacity: .6; cursor: default; }
 
 /* First-login passkey invitation card --------------------------------------- */
@@ -135,7 +135,7 @@
 .pk-row-meta { font-size: 14px; color: var(--color-muted); margin: 0; }
 .pk-row-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .pk-row-remove { margin: 0; }
-.btn-secondary { background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-secondary { display: inline-block; background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; }
 .btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .pk-empty { color: #4f5f72; font-size: 16px; line-height: 1.55; margin: 0 0 24px; }
 
@@ -238,6 +238,48 @@
 .stat-tile--problems { border-color: #e2b6b6; background: #fbefef; }
 .stat-tile--problems .stat-n { color: var(--color-legionred); }
 .stat-tile--problems .stat-t { color: #8a5b5b; }
+
+/* Roster import result: green/red confirmation banner + stat tile grid ----- */
+.done { display: flex; align-items: center; gap: 16px; background: linear-gradient(180deg, #eef4ea, #e6efe1); border: 1px solid #bcd3b6; border-left: 5px solid var(--color-green); border-radius: 12px; padding: 16px 20px; margin: 12px 0 24px; }
+.done--fail { background: linear-gradient(180deg, #f7e7e7, #f3dede); border-color: #ecc9c9; border-left-color: var(--color-legionred); }
+.done-seal { width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%; background: var(--color-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.done--fail .done-seal { background: var(--color-legionred); }
+.done-title { font-size: 22px; color: #1f3d1f; margin: 0; font-weight: 700; }
+.done--fail .done-title { color: #4a2020; }
+.done-sub { font-size: 14px; color: #4a5c46; margin-top: 3px; }
+.done--fail .done-sub { color: #6b3d3d; }
+.done-sub b { color: #26401f; }
+.done--fail .done-sub b { color: #4a2020; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.tiles-total { font-size: 14px; color: var(--color-muted); text-align: right; margin-top: 8px; }
+
+/* Result panel rows: a removed member or a problem row, with explanatory note - */
+.item { padding: 12px 0; border-bottom: 1px solid #ece0bd; font-size: 16px; line-height: 1.5; }
+.item:last-child { border-bottom: none; }
+.item .who { color: var(--color-navy); font-weight: 600; }
+.item .meta { color: var(--color-muted); font-size: 14px; }
+.item .fix { margin-top: 4px; color: var(--color-ink); }
+.item .go { color: var(--color-navy); text-decoration: underline; }
+.item .rowid { color: var(--color-muted); font-variant-numeric: tabular-nums; margin-right: 8px; font-size: 14px; font-weight: 600; }
+.ownernote { font-size: 14px; color: var(--color-bronze); background: #f6efe0; border: 1px dashed #ddcfa4; border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+.histlink { margin-left: auto; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
+
+/* Import history list (admin roster import log) ---------------------------- */
+.imp { display: block; padding: 11px 0; border-bottom: 1px solid #ece0bd; text-decoration: none; color: inherit; }
+.imp:last-of-type { border-bottom: none; }
+.imp .l1 { display: flex; align-items: center; gap: 10px; }
+.imp .when { font-size: 16px; color: var(--color-navy); font-weight: 600; }
+.imp .status { font-size: 13px; font-weight: 700; }
+.imp .status.ok { color: var(--color-green); }
+.imp .status.fail { color: var(--color-legionred); }
+.imp .l2 { font-size: 14px; color: var(--color-muted); margin-top: 3px; }
+.imp .c { font-weight: 600; }
+.imp .c.cr { color: var(--color-green); }
+.imp .c.up { color: var(--color-navy); }
+.imp .c.rm { color: var(--color-bronze); }
+.imp .c.pr { color: var(--color-legionred); }
+.imp .sep { color: #cabd97; margin: 0 6px; }
 
 /* Type-or-pick date field: text input (DD MMM YYYY) + hidden native picker - */
 .datefield { position: relative; display: inline-flex; align-items: center; }

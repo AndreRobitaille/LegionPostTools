@@ -1,0 +1,43 @@
+<%# app/views/admin/roster_imports/index.html.erb
+    Locals (from Admin::RosterImportsController#index): @roster_imports (RosterImport.history, newest first) %>
+
+<% content_for :title, "Roster import history" %>
+<a class="back" href="<%= admin_root_path %>">&larr; Administration</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Roster import history</h1>
+  <p class="page-sub"><%= pluralize(@roster_imports.size, "import") %></p>
+</div>
+
+<%= render "shared/section_panel", label: "Imports" do %>
+  <% if @roster_imports.present? %>
+    <% @roster_imports.each do |roster_import| %>
+      <%= link_to admin_roster_import_path(roster_import), class: "imp" do %>
+        <div class="l1">
+          <span class="when"><%= legion_datetime(roster_import.imported_at) %></span>
+          <span class="status <%= roster_import.status == "completed" ? "ok" : "fail" %>">
+            <%= roster_import.status == "completed" ? "Complete" : "Failed" %>
+          </span>
+        </div>
+        <div class="l2">
+          <%= roster_import.uploaded_filename %>
+          <span class="sep">·</span>
+          <% if roster_import.status == "completed" %>
+            <span class="c cr">+<%= roster_import.created_count %></span>
+            <span class="c up"><%= roster_import.updated_count %> updated</span>
+            <span class="c rm"><%= roster_import.removed_count %> removed</span>
+            <% if roster_import.problem_count.positive? %>
+              <span class="c pr"><%= roster_import.problem_count %> problems</span>
+            <% else %>
+              no problems
+            <% end %>
+          <% else %>
+            <%= roster_import.problems.first&.dig("message").presence || "Import failed" %> — nothing changed
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p class="page-sub">No roster imports yet.</p>
+  <% end %>
+<% end %>
