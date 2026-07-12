@@ -284,7 +284,6 @@
 .perm { display: flex; align-items: center; gap: 11px; font-size: 16px; padding: 8px 0; border-bottom: 1px solid #f0e7cf; }
 .perm:last-child { border-bottom: none; }
 .perm input { width: 18px; height: 18px; accent-color: var(--color-navy); }
-.perm .desc { color: var(--color-muted); font-size: 13.5px; margin-left: auto; }
 
 /* Person page: Post Roles list + date-correction / assignment forms -------- */
 .role { padding: 12px 0; border-bottom: 1px solid #ece0bd; }

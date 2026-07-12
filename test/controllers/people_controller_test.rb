@@ -38,6 +38,8 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".mrow-name", text: /Alber/
     assert_select ".mrow-status", count: 0
+    assert_select "body", text: /000204540637/, count: 0
+    assert_select "body", text: /Member #/, count: 0
   end
 
   test "officer index search filters by name" do

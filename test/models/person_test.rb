@@ -61,6 +61,20 @@ class PersonTest < ActiveSupport::TestCase
     assert_nil person.current_role_label
   end
 
+  test "active_role_labels lists active offices ordered by display_order then name" do
+    org = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "A", last_name: "B")
+    later = PositionTitle.create!(organization: org, name: "Quartermaster", display_order: 2)
+    first = PositionTitle.create!(organization: org, name: "Adjutant", display_order: 1)
+    ended = PositionTitle.create!(organization: org, name: "Historian", display_order: 3)
+    PositionAssignment.create!(person: person, position_title: later, starts_on: Date.new(2026, 1, 1))
+    PositionAssignment.create!(person: person, position_title: first, starts_on: Date.new(2026, 1, 1))
+    PositionAssignment.create!(person: person, position_title: ended,
+      starts_on: Date.new(2023, 1, 1), ends_on: Date.new(2024, 1, 1))
+
+    assert_equal [ "Adjutant", "Quartermaster" ], person.active_role_labels(Date.new(2026, 6, 1))
+  end
+
   test "service_summary joins branch and era, dropping blanks" do
     assert_equal "U.S. Army · Vietnam", Person.new(roster_branch: "U.S. Army", roster_war_era: "Vietnam").service_summary
     assert_equal "U.S. Army", Person.new(roster_branch: "U.S. Army").service_summary
