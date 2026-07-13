@@ -19,9 +19,29 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
+  test "manage_settings-only admin does not see Agenda Item Catalog link" do
+    prepare_setup_complete_state
+    sign_in_member(can_manage_settings: true, can_manage_agendas: false)
+
+    get admin_root_path
+
+    assert_response :success
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
+  end
+
+  test "admin with manage_settings and manage_agendas sees Agenda Item Catalog link" do
+    prepare_setup_complete_state
+    sign_in_member(can_manage_settings: true, can_manage_agendas: true)
+
+    get admin_root_path
+
+    assert_response :success
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: "Agenda Item Catalog"
+  end
+
   test "landing shows roster, positions, and administrators panels" do
     prepare_setup_complete_state
-    admin = sign_in_admin
+    admin = sign_in_member(can_manage_settings: true, can_manage_agendas: true)
     RosterImport.create!(status: "completed", imported_at: 1.hour.ago, uploaded_filename: "latest.csv")
     PositionTitle.create!(organization: @org, name: "Commander", display_order: 1, active: true)
 
@@ -122,10 +142,11 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     Installation.singleton.update!(setup_completed_at: Time.current)
   end
 
-  def sign_in_member(can_manage_settings: true)
+  def sign_in_member(can_manage_settings: true, can_manage_agendas: false)
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings") if can_manage_settings
+    PermissionGrant.create!(user: user, capability: "manage_agendas") if can_manage_agendas
     sign_in_as(user)
     user
   end

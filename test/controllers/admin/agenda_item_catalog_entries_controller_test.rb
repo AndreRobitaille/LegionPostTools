@@ -77,6 +77,27 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_equal "Discuss new business", entry.body.to_plain_text
   end
 
+  test "invalid create returns unprocessable entity with error summary" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    post admin_agenda_item_catalog_entries_path, params: {
+      agenda_item_catalog_entry: {
+        title: "",
+        slug: "bad-entry",
+        summary: "",
+        category: "",
+        behavior_type: "business_item",
+        position: 3,
+        active: true,
+        body: ""
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select ".error-summary", text: /Title can't be blank/
+    assert_select ".error-summary", text: /Category can't be blank/
+  end
+
   test "update entry rich text and active flag" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     entry = @organization.agenda_item_catalog_entries.create!(
@@ -108,6 +129,37 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_equal "Updated Minutes", entry.reload.title
     assert_not entry.reload.active
     assert_equal "New body", entry.body.to_plain_text
+  end
+
+  test "invalid update returns unprocessable entity with error summary" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Previous Minutes",
+      slug: "previous-minutes",
+      summary: "Read minutes",
+      category: "administration",
+      behavior_type: "motion_vote_item",
+      position: 1,
+      active: true,
+      body: "Old body"
+    )
+
+    patch admin_agenda_item_catalog_entry_path(entry), params: {
+      agenda_item_catalog_entry: {
+        title: "",
+        slug: "previous-minutes",
+        summary: "",
+        category: "",
+        behavior_type: "motion_vote_item",
+        position: 1,
+        active: false,
+        body: ""
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select ".error-summary", text: /Title can't be blank/
+    assert_select ".error-summary", text: /Category can't be blank/
   end
 
   test "cannot edit another organization entry" do
