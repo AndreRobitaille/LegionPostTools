@@ -1,0 +1,11 @@
+<% content_for :title, "Edit agenda item catalog entry" %>
+<a class="back" href="<%= admin_agenda_item_catalog_entries_path %>">&larr; Agenda Item Catalog</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Edit agenda item catalog entry</h1>
+  <% if @entry.seeded? %>
+    <p class="page-sub">This changes your post's local copy only. It will not affect the original seed.</p>
+  <% end %>
+</div>
+
+<%= render "form", entry: @entry %>

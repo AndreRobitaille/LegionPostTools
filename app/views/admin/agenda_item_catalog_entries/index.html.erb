@@ -1,0 +1,38 @@
+<% content_for :title, "Agenda Item Catalog" %>
+<a class="back" href="<%= admin_root_path %>">&larr; Administration</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Agenda Item Catalog</h1>
+  <p class="page-sub">These are the standard building blocks your post can use when creating meeting templates later.</p>
+</div>
+
+<div class="btnrow">
+  <%= link_to "Add catalog entry", new_admin_agenda_item_catalog_entry_path, class: "btn-primary" %>
+</div>
+
+<% @entries_by_category.each do |category, entries| %>
+  <%= render "shared/section_panel", label: AgendaItemCatalogEntry::CATEGORIES.fetch(category) do %>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Behavior</th>
+          <th>Status</th>
+          <th>Source</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% entries.each do |entry| %>
+          <tr>
+            <td><%= entry.title %></td>
+            <td><%= entry.behavior_type_label %></td>
+            <td><%= entry.active? ? "Active" : "Inactive" %></td>
+            <td><%= entry.seeded? ? entry.source_label : "Local" %></td>
+            <td><%= link_to "Edit", edit_admin_agenda_item_catalog_entry_path(entry) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+<% end %>

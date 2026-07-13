@@ -112,3 +112,10 @@
   <% end %>
   <p class="safe">Permissions are granted on each person's page. At least one enabled administrator is always required — the last one can't be removed or disabled.</p>
 <% end %>
+
+<%= render "shared/section_panel", label: "Meeting Templates" do %>
+  <div class="btnrow">
+    <%= link_to "Agenda Item Catalog", admin_agenda_item_catalog_entries_path, class: "btn-primary" %>
+  </div>
+  <p class="safe">Manage the standard agenda building blocks your post can use in meeting templates.</p>
+<% end %>

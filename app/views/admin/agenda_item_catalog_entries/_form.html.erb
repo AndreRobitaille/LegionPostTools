@@ -1,0 +1,36 @@
+<%= form_with model: [:admin, entry] do |form| %>
+  <div class="fl">
+    <%= form.label :title %>
+    <%= form.text_field :title, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :slug %>
+    <%= form.text_field :slug, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :category %>
+    <%= form.select :category, AgendaItemCatalogEntry::CATEGORIES.map { |value, label| [label, value] }, {}, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :behavior_type %>
+    <%= form.select :behavior_type, AgendaItemCatalogEntry::BEHAVIOR_TYPES.map { |value, label| [label, value] }, {}, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :position %>
+    <%= form.number_field :position, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :active do %>
+      <%= form.check_box :active %> Active
+    <% end %>
+  </div>
+  <div class="fl">
+    <%= form.label :summary %>
+    <%= form.text_area :summary, class: "f", rows: 3 %>
+  </div>
+  <div class="fl">
+    <%= form.label :body %>
+    <%= form.rich_text_area :body %>
+  </div>
+  <%= form.submit class: "btn-primary" %>
+<% end %>

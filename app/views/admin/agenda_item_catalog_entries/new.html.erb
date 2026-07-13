@@ -1,0 +1,8 @@
+<% content_for :title, "New agenda item catalog entry" %>
+<a class="back" href="<%= admin_agenda_item_catalog_entries_path %>">&larr; Agenda Item Catalog</a>
+
+<div class="page-lead">
+  <h1 class="page-title">New agenda item catalog entry</h1>
+</div>
+
+<%= render "form", entry: @entry %>

@@ -1,0 +1,117 @@
+require "test_helper"
+
+class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+  end
+
+  test "signed out users are redirected" do
+    get admin_agenda_item_catalog_entries_path
+
+    assert_redirected_to new_session_path
+  end
+
+  test "users without manage_agendas are denied" do
+    sign_in_as(user_with_capabilities)
+
+    get admin_agenda_item_catalog_entries_path
+
+    assert_redirected_to root_path
+    assert_equal "You do not have permission to open that page.", flash[:alert]
+  end
+
+  test "index seeds and lists entries for agenda managers" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    get admin_agenda_item_catalog_entries_path
+
+    assert_response :success
+    assert_select "h1", text: /Agenda Item Catalog/
+    assert_select "body", text: /Opening Ceremony/
+    assert_select "body", text: /Scripted ceremony/
+  end
+
+  test "create entry" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    assert_difference -> { @organization.agenda_item_catalog_entries.count }, 1 do
+      post admin_agenda_item_catalog_entries_path, params: {
+        agenda_item_catalog_entry: {
+          title: "New Business",
+          slug: " new-business ",
+          summary: "Add new business",
+          category: "business",
+          behavior_type: "business_item",
+          position: 3,
+          active: true,
+          body: "Discuss new business"
+        }
+      }
+    end
+
+    assert_redirected_to admin_agenda_item_catalog_entries_path
+    assert_equal "Agenda item catalog entry created.", flash[:notice]
+    entry = @organization.agenda_item_catalog_entries.find_by!(slug: "new-business")
+    assert_equal "Discuss new business", entry.body.to_plain_text
+  end
+
+  test "update entry rich text and active flag" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Previous Minutes",
+      slug: "previous-minutes",
+      summary: "Read minutes",
+      category: "administration",
+      behavior_type: "motion_vote_item",
+      position: 1,
+      active: true,
+      body: "Old body"
+    )
+
+    patch admin_agenda_item_catalog_entry_path(entry), params: {
+      agenda_item_catalog_entry: {
+        title: "Previous Minutes",
+        slug: "previous-minutes",
+        summary: "Read and approve minutes",
+        category: "administration",
+        behavior_type: "motion_vote_item",
+        position: 1,
+        active: false,
+        body: "New body"
+      }
+    }
+
+    assert_redirected_to admin_agenda_item_catalog_entries_path
+    assert_equal "Agenda item catalog entry updated.", flash[:notice]
+    assert_not entry.reload.active
+    assert_equal "New body", entry.body.to_plain_text
+  end
+
+  test "cannot edit another organization entry" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    entry = other.agenda_item_catalog_entries.create!(
+      title: "Other Entry",
+      slug: "other-entry",
+      summary: "Other",
+      category: "business",
+      behavior_type: "business_item",
+      position: 1,
+      active: true
+    )
+
+    get edit_admin_agenda_item_catalog_entry_path(entry)
+
+    assert_response :not_found
+  end
+
+  private
+
+  def user_with_capabilities(*capabilities)
+    person = Person.create!(first_name: "Test", last_name: "User")
+    user = User.create!(person: person, email_address: "test-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
+    capabilities.each { |capability| PermissionGrant.create!(user: user, capability: capability) }
+    user
+  end
+end

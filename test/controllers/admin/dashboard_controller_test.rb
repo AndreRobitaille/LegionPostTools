@@ -33,6 +33,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select ".card-head-label", text: /Administrators/
     assert_select "body", text: /Commander/
     assert_select "body", text: /#{admin.person.full_name}/
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda Item Catalog/
   end
 
   test "roster panel shows freshness banner and recent import history" do
