@@ -19,7 +19,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "full admin sees all four tiles and their links" do
+  test "full admin sees all five tiles and their links" do
     prepare_setup_complete_state
     admin = sign_in_member(can_manage_settings: true)
 
@@ -33,11 +33,12 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_admin_roster_import_path, text: /Import roster/
     assert_select "a[href=?]", admin_roster_imports_path, text: /View imports/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
+    assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
     assert_select "a[href=?]", admin_position_titles_path, text: /Manage positions/
     assert_select "a[href=?]", admin_administrators_path, text: /View administrators/
   end
 
-  test "agenda-only manager reaches the hub and sees only the agenda catalog tile" do
+  test "agenda-only manager reaches the hub and sees the agenda catalog and meeting types tiles" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: false, can_manage_agendas: true)
 
@@ -46,6 +47,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".hub-sec-h", text: "Meetings & Roster"
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
+    assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
     assert_select ".hub-sec-h", text: "Officers & Elections", count: 0
     assert_select ".hub-sec-h", text: "Setup & Administration", count: 0
     assert_select "a[href=?]", admin_position_titles_path, count: 0

@@ -45,9 +45,18 @@
         <div class="tile">
           <div class="tile-ic" aria-hidden="true">📋</div>
           <p class="tile-t">Agenda Catalog</p>
-          <p class="tile-d">Standard agenda building blocks your post can drop into meeting templates.</p>
+          <p class="tile-d">Standard agenda building blocks your post reuses across meetings.</p>
           <div class="tile-actions">
             <%= link_to "Open catalog →", admin_agenda_item_catalog_entries_path, class: "tile-act" %>
+          </div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-ic" aria-hidden="true">🗂️</div>
+          <p class="tile-t">Meeting Types</p>
+          <p class="tile-d">Reusable agenda templates for each kind of meeting, built from your catalog items.</p>
+          <div class="tile-actions">
+            <%= link_to "Manage meeting types →", admin_meeting_types_path, class: "tile-act" %>
           </div>
         </div>
       <% end %>
