@@ -18,20 +18,12 @@ module Admin
 
     def create
       catalog_entry = @organization.agenda_item_catalog_entries.active.find(params[:agenda_item_catalog_entry_id])
-      if @meeting_type.meeting_type_agenda_items.exists?(agenda_item_catalog_entry_id: catalog_entry.id)
-        redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: "That catalog item is already in this meeting type."
-        return
-      end
-
-      @meeting_type.meeting_type_agenda_items.create!(
-        agenda_item_catalog_entry: catalog_entry,
-        position: next_position,
-        title: catalog_entry.title,
-        summary: catalog_entry.summary,
-        active: true,
-        body: catalog_entry.body.to_s
-      )
+      MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position, meeting_type: @meeting_type)
       redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Catalog item added."
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+      # The uniqueness validation and the DB unique index both guard against a
+      # catalog item being added to a meeting type twice; a double-submit lands here.
+      redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: "That catalog item is already in this meeting type."
     end
 
     def edit; end
@@ -46,11 +38,14 @@ module Admin
 
     def destroy
       if @item.seeded?
+        # Seeded items are kept (marked inactive) so a reseed doesn't recreate them.
         @item.update!(active: false)
+        notice = "Template item deactivated for this meeting type."
       else
         @item.destroy
+        notice = "Template item removed."
       end
-      redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Template item removed."
+      redirect_to edit_admin_meeting_type_path(@meeting_type), notice: notice
     end
 
     def move

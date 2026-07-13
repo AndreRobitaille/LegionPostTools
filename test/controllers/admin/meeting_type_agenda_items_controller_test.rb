@@ -92,7 +92,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
     assert_equal 2, @organization.agenda_item_catalog_entries.count
     assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
-    assert_equal "Template item removed.", flash[:notice]
+    assert_equal "Template item deactivated for this meeting type.", flash[:notice]
     assert_not item.reload.active?
   end
 
@@ -135,6 +135,30 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
     post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: @other_entry.id }
     assert_response :not_found
+  end
+
+  test "add rejects an inactive catalog entry" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    assert_no_difference -> { @meeting_type.meeting_type_agenda_items.count } do
+      post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: @inactive_entry.id }
+    end
+
+    assert_response :not_found
+  end
+
+  test "existing template item survives when its source catalog entry becomes inactive" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true)
+
+    @catalog_entry.update!(active: false)
+
+    assert @meeting_type.meeting_type_agenda_items.exists?(item.id), "template item should remain after its catalog entry is deactivated"
+    assert item.reload.active?, "template item should stay active regardless of its source catalog entry"
+
+    get edit_admin_meeting_type_path(@meeting_type)
+    assert_response :success
+    assert_select "body", text: /#{@catalog_entry.title}/
   end
 
   private
