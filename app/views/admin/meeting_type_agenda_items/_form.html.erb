@@ -1,0 +1,32 @@
+<%= form_with model: [:admin, meeting_type, item], class: "stacked-form" do |form| %>
+  <% if item.errors.any? %>
+    <div class="error-summary">
+      <h2><%= pluralize(item.errors.count, "error") %> prohibited this template item from being saved:</h2>
+      <ul>
+        <% item.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div class="fl">
+    <%= form.label :title %>
+    <%= form.text_field :title, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :summary %>
+    <%= form.text_area :summary, class: "f", rows: 3 %>
+  </div>
+  <div class="fl">
+    <%= form.label :body, "Wording" %>
+    <%= form.rich_text_area :body, attachments: "false" %>
+  </div>
+  <label class="form-toggle">
+    <%= form.check_box :active %>
+    <span><span class="ft-label">Active</span></span>
+  </label>
+  <div class="btnrow">
+    <%= form.submit "Save changes", class: "btn-primary" %>
+    <%= link_to "Cancel", edit_admin_meeting_type_path(meeting_type), class: "btn-secondary" %>
+  </div>
+<% end %>

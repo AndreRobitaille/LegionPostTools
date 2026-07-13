@@ -13,9 +13,13 @@
   <%= render "shared/section_header", label: "Template agenda" %>
 </div>
 
+<div class="btnrow" style="margin-top: 12px">
+  <%= link_to "Add catalog item", new_admin_meeting_type_agenda_item_path(@meeting_type), class: "btn-primary" %>
+</div>
+
 <div class="mrow-list">
   <% @template_items.each do |item| %>
-    <div class="mrow">
+    <div class="mrow catrow">
       <span class="mrow-id">
         <span class="mrow-name"><%= item.title %></span>
         <% if item.summary.present? %><span class="mrow-sub"><%= item.summary %></span><% end %>
@@ -23,6 +27,10 @@
       <span class="catrow-meta">
         <% unless item.active? %><%= agenda_active_tag(false) %><% end %>
         <% unless item.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
+        <%= link_to "Edit", edit_admin_meeting_type_agenda_item_path(@meeting_type, item), class: "catrow-edit" %>
+        <%= button_to "Up", move_admin_meeting_type_agenda_item_path(@meeting_type, item, direction: "up"), method: :patch, class: "btn-secondary" %>
+        <%= button_to "Down", move_admin_meeting_type_agenda_item_path(@meeting_type, item, direction: "down"), method: :patch, class: "btn-secondary" %>
+        <%= button_to "Remove", admin_meeting_type_agenda_item_path(@meeting_type, item), method: :delete, class: "btn-secondary" %>
       </span>
     </div>
   <% end %>
