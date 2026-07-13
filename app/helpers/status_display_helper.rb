@@ -14,4 +14,13 @@ module StatusDisplayHelper
       tag.span("", class: "st-dot") + text
     end
   end
+
+  def agenda_active_tag(active)
+    variant = active ? "st--active" : "st--other"
+    label = active ? "Active" : "Inactive"
+
+    tag.span(class: "st #{variant}") do
+      tag.span("", class: "st-dot") + label
+    end
+  end
 end

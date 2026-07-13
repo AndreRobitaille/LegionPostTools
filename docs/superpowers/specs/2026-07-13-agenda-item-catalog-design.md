@@ -114,25 +114,54 @@ The first phase should not over-automate behavior types. They are structural met
 
 Add an admin-managed catalog page, likely under `Admin -> Agenda Item Catalog`.
 
+### Phase 1 interaction model (2026-07-12 revision)
+
+The catalog is the **canonical home for editing these repeatable items**, but Phase 1
+editing is **just-in-time, not bulk curation**. With no templates, agendas, or minutes
+workflows yet, an officer will not sit and groom the whole list. Instead, when they notice a
+specific item's wording is off (e.g. "our Opening Prayer actually reads like this"), they
+come here, find that one item, fix its wording, and leave. Editing therefore stays
+first-class and easy; only the bulk-management ceremony (reordering, mass curation) stays
+quiet. Editing an item on a future agenda editor would be the wrong place — this screen owns
+the canonical wording. The loop to design for is **scan → recognize the one item → edit its
+wording → done.**
+
+This screen must not read as a heavyweight CRUD console, and the edit form must never greet
+an officer with developer fields when all they want is to fix wording.
+
 The index view should:
 
-- group or filter entries by category
-- show title, behavior type, active/inactive status, and source label
-- provide edit links
-- provide deactivate/reactivate controls
-- allow creation of local catalog entries, but make management of the seeded baseline the primary path
+- group entries by category, presented in **meeting-sensible order** (Ceremony → Business →
+  Reports → Membership → Memorial → Administration), not alphabetical
+- use the shared **de-noised row vocabulary** (`shared/_member_row` / `.mrow*` classes), the
+  same one the People directory uses — never a bare full-width `<table>`
+- per row: title, behavior type as a quiet neutral caps tag, and the **summary as the
+  subline** (the plain-language "what this item is for" an officer scans by)
+- keep **status and its action together** on the right at the divider — the quiet green
+  Active / muted Inactive word beside the Deactivate/Reactivate control, never flung to a far
+  edge (see `2026-07-12-admin-roster-visual-ux-design.md`)
+- provide an edit affordance and deactivate/reactivate controls
+- allow creation of local catalog entries as a quiet secondary action; managing the seeded
+  baseline is the primary path
 
-The edit view should include:
+The edit view should include **only officer-facing fields**:
 
 - title
 - summary/guidance
-- category
-- behavior type
+- rich text body editor (the wording — the point of the visit), with a plain helper
+- category ("Part of the meeting")
+- behavior type, with a plain helper ("How this item is used when you build agendas later")
 - active toggle
-- rich text body editor
-- save/cancel controls
+- Save changes / Cancel controls
 
-Permissions should use the existing `manage_agendas` capability. The catalog feeds agenda construction more directly than organization setup.
+The edit form deliberately **omits `slug` and `position`**. `slug` is an internal identifier
+auto-derived from the title (unique per organization) and never shown. `position` is assigned
+by the system on creation and reordered only through future dedicated tooling, not typed by an
+officer during a wording fix. The form is bounded in width (never full-bleed) with roomy
+field rhythm.
+
+Permissions should use the existing `manage_agendas` capability. The catalog feeds agenda
+construction more directly than organization setup.
 
 When editing a seeded entry, the UI should make clear that the user is editing the post's local copy only. Suggested wording:
 

@@ -106,6 +106,38 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     assert entry.valid?
   end
 
+  test "derives slug from title when none is given" do
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Opening Ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true
+    )
+
+    assert_equal "opening-ceremony", entry.slug
+  end
+
+  test "derived slug avoids collisions within the organization" do
+    @organization.agenda_item_catalog_entries.create!(
+      title: "Opening Ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true
+    )
+
+    second = @organization.agenda_item_catalog_entries.create!(
+      title: "Opening Ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 2,
+      active: true
+    )
+
+    assert_equal "opening-ceremony-2", second.slug
+  end
+
   test "supports rich text body" do
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Preamble",

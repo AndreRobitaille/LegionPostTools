@@ -6,15 +6,19 @@ module Admin
 
     def index
       AgendaItemCatalogSeeder.seed_for!(@organization)
-      @entries_by_category = @organization.agenda_item_catalog_entries.ordered.group_by(&:category)
+      grouped = @organization.agenda_item_catalog_entries.ordered.group_by(&:category)
+      @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.filter_map do |category|
+        [ category, grouped[category] ] if grouped[category].present?
+      end
     end
 
     def new
-      @entry = @organization.agenda_item_catalog_entries.new(active: true, position: next_position)
+      @entry = @organization.agenda_item_catalog_entries.new(active: true)
     end
 
     def create
       @entry = @organization.agenda_item_catalog_entries.new(entry_params)
+      @entry.position ||= next_position
 
       if @entry.save
         redirect_to admin_agenda_item_catalog_entries_path, notice: "Agenda item catalog entry created."
@@ -48,7 +52,7 @@ module Admin
     end
 
     def entry_params
-      params.require(:agenda_item_catalog_entry).permit(:title, :slug, :summary, :category, :behavior_type, :position, :active, :body)
+      params.require(:agenda_item_catalog_entry).permit(:title, :summary, :category, :behavior_type, :active, :body)
     end
   end
 end

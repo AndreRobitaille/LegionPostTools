@@ -22,6 +22,7 @@ class AgendaItemCatalogEntry < ApplicationRecord
 
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }
   before_validation :normalize_optional_fields
+  before_validation :ensure_slug
 
   validates :title, :slug, :category, :behavior_type, presence: true
   validates :category, inclusion: { in: CATEGORIES.keys }
@@ -50,5 +51,23 @@ class AgendaItemCatalogEntry < ApplicationRecord
   def normalize_optional_fields
     self.summary = summary.to_s
     self.source_key = source_key&.strip.presence
+  end
+
+  # Slug is a stable internal identifier, never shown to officers. Derive it from
+  # the title so the edit form doesn't have to expose it, keeping it unique per post.
+  def ensure_slug
+    return if slug.present?
+
+    base = title.to_s.parameterize
+    return if base.blank?
+
+    candidate = base
+    suffix = 2
+    scope = organization&.agenda_item_catalog_entries&.where&.not(id: id)
+    while scope&.exists?(slug: candidate)
+      candidate = "#{base}-#{suffix}"
+      suffix += 1
+    end
+    self.slug = candidate
   end
 end

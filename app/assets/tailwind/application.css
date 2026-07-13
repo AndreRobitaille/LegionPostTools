@@ -218,6 +218,16 @@
 .mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
 .mrow-kv .k { color: var(--color-muted); }
 
+/* Catalog row: neutral classification tag + status and actions grouped right */
+.mrow-tag { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); font-weight: 700; }
+.mrow-status--actions { flex-basis: 240px; }
+.mrow-prov { display: block; font-size: 14px; color: var(--color-muted); margin-top: 6px; }
+.mrow-actions { display: flex; align-items: center; gap: 16px; margin-top: 10px; white-space: nowrap; }
+.mrow-actions form { display: inline; margin: 0; }
+.mrow-actions a, .mrow-btn { font-size: 14px; font-weight: 700; color: var(--color-navy); text-decoration: none; background: none; border: 0; padding: 0; font-family: inherit; cursor: pointer; }
+.mrow-actions a:hover, .mrow-btn:hover { text-decoration: underline; }
+.mrow--inactive .mrow-name { color: var(--color-muted); }
+
 /* Boxed list of member rows (People directory sections) ------------------- */
 .mrow-list { border: 1px solid #eadfbf; border-radius: 10px; overflow: hidden; background: var(--color-ivory); margin-bottom: 22px; }
 .mrow-list .mrow:first-child { border-top: none; }
@@ -231,6 +241,13 @@
 .fl label { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
 /* Mockup used 15px for these selects; readability floor requires >= 16px for interactive text. */
 .fl .f { font-size: 16px; padding: 8px 10px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); min-width: 150px; }
+.fl-help { margin: 0 0 2px; font-size: 14px; text-transform: none; letter-spacing: normal; color: var(--color-muted); }
+
+/* Vertical form: bounded width (never full-bleed), roomy field rhythm ------- */
+.stacked-form { max-width: 640px; }
+.stacked-form .fl { margin-bottom: 16px; }
+.stacked-form .fl .f { width: 100%; box-sizing: border-box; }
+.stacked-form .btnrow { margin-top: 4px; }
 .clear { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; margin-left: auto; align-self: center; background: none; border: 0; padding: 0; font-family: inherit; }
 .sec-head-row { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
 .sec-head-row .sec-head { flex: 1; margin: 0; }

@@ -1,4 +1,4 @@
-<%= form_with model: [:admin, entry] do |form| %>
+<%= form_with model: [:admin, entry], class: "stacked-form" do |form| %>
   <% if entry.seeded? %>
     <p class="page-sub">This changes your post's local copy only. It will not affect the original seed.</p>
   <% end %>
@@ -17,36 +17,30 @@
     <%= form.text_field :title, class: "f" %>
   </div>
   <div class="fl">
-    <%= form.label :slug %>
-    <%= form.text_field :slug, class: "f" %>
+    <%= form.label :summary, "Summary or guidance" %>
+    <%= form.text_area :summary, class: "f", rows: 3 %>
   </div>
   <div class="fl">
-    <%= form.label :category %>
+    <%= form.label :body, "Wording" %>
+    <p class="fl-help">Ceremony scripts, readings, or the full text officers read aloud. Leave blank for plain business items.</p>
+    <%= form.rich_text_area :body %>
+  </div>
+  <div class="fl">
+    <%= form.label :category, "Part of the meeting" %>
     <%= form.select :category, AgendaItemCatalogEntry::CATEGORIES.map { |value, label| [label, value] }, {}, class: "f" %>
   </div>
   <div class="fl">
     <%= form.label :behavior_type %>
+    <p class="fl-help">How this item is used when you build agendas later.</p>
     <%= form.select :behavior_type, AgendaItemCatalogEntry::BEHAVIOR_TYPES.map { |value, label| [label, value] }, {}, class: "f" %>
-  </div>
-  <div class="fl">
-    <%= form.label :position %>
-    <%= form.number_field :position, class: "f" %>
   </div>
   <div class="fl">
     <%= form.label :active do %>
       <%= form.check_box :active %> Active
     <% end %>
   </div>
-  <div class="fl">
-    <%= form.label :summary %>
-    <%= form.text_area :summary, class: "f", rows: 3 %>
-  </div>
-  <div class="fl">
-    <%= form.label :body %>
-    <%= form.rich_text_area :body %>
-  </div>
-  <div class="actions">
-    <%= form.submit class: "btn-primary" %>
-    <%= link_to "Cancel", admin_agenda_item_catalog_entries_path, class: "btn" %>
+  <div class="btnrow">
+    <%= form.submit "Save changes", class: "btn-primary" %>
+    <%= link_to "Cancel", admin_agenda_item_catalog_entries_path, class: "btn-secondary" %>
   </div>
 <% end %>

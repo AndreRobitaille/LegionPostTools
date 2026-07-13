@@ -13,35 +13,34 @@
 </div>
 
 <% @entries_by_category.each do |category, entries| %>
-  <%= render "shared/section_panel", label: AgendaItemCatalogEntry::CATEGORIES.fetch(category) do %>
-    <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Behavior</th>
-          <th>Status</th>
-          <th>Source</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% entries.each do |entry| %>
-          <tr>
-            <td><%= entry.title %></td>
-            <td><%= entry.behavior_type_label %></td>
-            <td><%= entry.active? ? "Active" : "Inactive" %></td>
-            <td><%= entry.seeded? ? entry.source_label : "Local" %></td>
-            <td>
-              <%= link_to "Edit", edit_admin_agenda_item_catalog_entry_path(entry) %>
-              <% if entry.active? %>
-                <%= button_to "Deactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "0" } }, class: "inline-btn" %>
-              <% else %>
-                <%= button_to "Reactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "1" } }, class: "inline-btn" %>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% end %>
+  <div class="sec-head-row" style="margin-top: 22px">
+    <%= render "shared/section_header", label: AgendaItemCatalogEntry::CATEGORIES.fetch(category) %>
+  </div>
+  <div class="mrow-list">
+    <% entries.each do |entry| %>
+      <div class="mrow<%= " mrow--inactive" unless entry.active? %>">
+        <span class="mrow-id">
+          <span class="mrow-l1">
+            <span class="mrow-name"><%= entry.title %></span>
+            <span class="mrow-tag"><%= entry.behavior_type_label %></span>
+          </span>
+          <% if entry.summary.present? %>
+            <span class="mrow-sub"><%= entry.summary %></span>
+          <% end %>
+        </span>
+        <span class="mrow-status mrow-status--actions">
+          <span class="mrow-st"><%= agenda_active_tag(entry.active?) %></span>
+          <span class="mrow-prov"><%= entry.seeded? ? entry.source_label : "Added by your post" %></span>
+          <span class="mrow-actions">
+            <%= link_to "Edit", edit_admin_agenda_item_catalog_entry_path(entry) %>
+            <% if entry.active? %>
+              <%= button_to "Deactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "0" } }, class: "mrow-btn" %>
+            <% else %>
+              <%= button_to "Reactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "1" } }, class: "mrow-btn" %>
+            <% end %>
+          </span>
+        </span>
+      </div>
+    <% end %>
+  </div>
 <% end %>

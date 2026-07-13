@@ -173,6 +173,27 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select ".error-summary", text: /Category can't be blank/
   end
 
+  test "edit form hides developer fields and keeps officer-facing ones" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Opening Ceremony",
+      slug: "opening-ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true
+    )
+
+    get edit_admin_agenda_item_catalog_entry_path(entry)
+
+    assert_response :success
+    assert_select "input[name=?]", "agenda_item_catalog_entry[slug]", count: 0
+    assert_select "input[name=?]", "agenda_item_catalog_entry[position]", count: 0
+    assert_select "input[name=?]", "agenda_item_catalog_entry[title]"
+    assert_select "select[name=?]", "agenda_item_catalog_entry[category]"
+    assert_select "textarea[name=?]", "agenda_item_catalog_entry[summary]"
+  end
+
   test "cannot edit another organization entry" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
