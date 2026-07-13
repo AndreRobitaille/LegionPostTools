@@ -29,7 +29,14 @@
             <td><%= entry.behavior_type_label %></td>
             <td><%= entry.active? ? "Active" : "Inactive" %></td>
             <td><%= entry.seeded? ? entry.source_label : "Local" %></td>
-            <td><%= link_to "Edit", edit_admin_agenda_item_catalog_entry_path(entry) %></td>
+            <td>
+              <%= link_to "Edit", edit_admin_agenda_item_catalog_entry_path(entry) %>
+              <% if entry.active? %>
+                <%= button_to "Deactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "0" } }, class: "inline-btn" %>
+              <% else %>
+                <%= button_to "Reactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "1" } }, class: "inline-btn" %>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>

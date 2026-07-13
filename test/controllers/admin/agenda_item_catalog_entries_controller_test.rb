@@ -24,12 +24,33 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
   test "index seeds and lists entries for agenda managers" do
     sign_in_as(user_with_capabilities("manage_agendas"))
 
+    active_entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Active Entry",
+      slug: "active-entry",
+      summary: "Active",
+      category: "business",
+      behavior_type: "business_item",
+      position: 10,
+      active: true
+    )
+    inactive_entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Inactive Entry",
+      slug: "inactive-entry",
+      summary: "Inactive",
+      category: "business",
+      behavior_type: "business_item",
+      position: 11,
+      active: false
+    )
+
     get admin_agenda_item_catalog_entries_path
 
     assert_response :success
     assert_select "h1", text: /Agenda Item Catalog/
     assert_select "body", text: /Opening Ceremony/
     assert_select "body", text: /Scripted ceremony/
+    assert_select "form[action='#{admin_agenda_item_catalog_entry_path(active_entry)}'][method='post'] button", text: "Deactivate"
+    assert_select "form[action='#{admin_agenda_item_catalog_entry_path(inactive_entry)}'][method='post'] button", text: "Reactivate"
   end
 
   test "create entry" do
