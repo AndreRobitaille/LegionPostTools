@@ -83,6 +83,20 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     assert_not item.active?
   end
 
+  test "reseeding does not reactivate a removed seeded template item" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+    item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+
+    item.update!(active: false)
+
+    assert_no_difference -> { membership.meeting_type_agenda_items.count } do
+      MeetingTypeTemplateSeeder.seed_for!(@organization)
+    end
+
+    assert_not item.reload.active?
+  end
+
   test "reseeding does not change meeting type or template item counts" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
 

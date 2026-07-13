@@ -9,6 +9,7 @@
       </ul>
     </div>
   <% end %>
+  <p class="form-help">This changes this meeting type only and will not change the Agenda Item Catalog.</p>
   <div class="fl">
     <%= form.label :title %>
     <%= form.text_field :title, class: "f" %>
@@ -25,6 +26,7 @@
     <%= form.check_box :active %>
     <span><span class="ft-label">Active</span></span>
   </label>
+  <p class="form-help">Inactive items stay in this meeting type but are hidden from future agendas.</p>
   <div class="btnrow">
     <%= form.submit "Save changes", class: "btn-primary" %>
     <%= link_to "Cancel", edit_admin_meeting_type_path(meeting_type), class: "btn-secondary" %>

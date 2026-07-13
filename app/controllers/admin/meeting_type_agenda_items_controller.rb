@@ -45,7 +45,11 @@ module Admin
     end
 
     def destroy
-      @item.destroy
+      if @item.seeded?
+        @item.update!(active: false)
+      else
+        @item.destroy
+      end
       redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Template item removed."
     end
 

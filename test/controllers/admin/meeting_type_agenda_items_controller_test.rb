@@ -82,7 +82,21 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_equal [ 1, 2 ], [ first.reload.position, second.reload.position ]
   end
 
-  test "remove deletes only template item and leaves catalog entry" do
+  test "remove deactivates seeded template item and leaves catalog entry" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true, source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony", source_label: "Seed")
+
+    assert_no_difference -> { @meeting_type.meeting_type_agenda_items.count } do
+      delete admin_meeting_type_agenda_item_path(@meeting_type, item)
+    end
+
+    assert_equal 2, @organization.agenda_item_catalog_entries.count
+    assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
+    assert_equal "Template item removed.", flash[:notice]
+    assert_not item.reload.active?
+  end
+
+  test "remove deletes local template item and leaves catalog entry" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true)
 

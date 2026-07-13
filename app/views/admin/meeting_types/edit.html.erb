@@ -30,7 +30,7 @@
         <%= link_to "Edit", edit_admin_meeting_type_agenda_item_path(@meeting_type, item), class: "catrow-edit" %>
         <%= button_to "Up", move_admin_meeting_type_agenda_item_path(@meeting_type, item, direction: "up"), method: :patch, class: "btn-secondary" %>
         <%= button_to "Down", move_admin_meeting_type_agenda_item_path(@meeting_type, item, direction: "down"), method: :patch, class: "btn-secondary" %>
-        <%= button_to "Remove", admin_meeting_type_agenda_item_path(@meeting_type, item), method: :delete, class: "btn-secondary" %>
+        <%= button_to "Remove", admin_meeting_type_agenda_item_path(@meeting_type, item), method: :delete, class: "btn-secondary", data: { turbo_confirm: "Remove this template item?" } %>
       </div>
     </div>
   <% end %>
