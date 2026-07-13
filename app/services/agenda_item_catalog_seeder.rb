@@ -47,18 +47,114 @@ class AgendaItemCatalogSeeder
       behavior_type: "reading_recitation",
       body: "For God and Country, we associate ourselves together for the following purposes:\n\nTo uphold and defend the Constitution of the United States of America;\nTo maintain law and order;\nTo foster and perpetuate a one hundred percent Americanism;\nTo preserve the memories and incidents of our associations in all wars;\nTo inculcate a sense of individual obligation to the community, state and nation;\nTo combat the autocracy of both the classes and the masses;\nTo make right the master of might;\nTo promote peace and goodwill on earth;\nTo safeguard and transmit to posterity the principles of justice, freedom and democracy;\nTo consecrate and sanctify our comradeship by our devotion to mutual helpfulness."
     },
-    { source_key: "regular_meeting.closing_ceremony", title: "Closing Ceremony", slug: "closing-ceremony", summary: "Closes the regular meeting with memorial service, POW/MIA flag recovery, colors, and adjournment.", category: "ceremony", behavior_type: "scripted_ceremony", body: "The commander asks: Is there any further business to come before the meeting? If not, the chaplain will lead us in memorial service.\n\nThe membership rises, uncovers, and stands in silence. The chaplain offers the memorial prayer. The commander directs the sergeant-at-arms to recover the POW/MIA flag. The commander reminds members that service to community, state, and nation is a main objective of The American Legion. The color bearers retire the flag of our country. The commander declares the meeting adjourned with one rap of the gavel." },
-    { source_key: "regular_meeting.roll_call_quorum", title: "Roll Call and Quorum", slug: "roll-call-and-quorum", summary: "Determine whether enough members are present to conduct authorized business.", category: "administration", behavior_type: "business_item", body: "Roll call to determine if a quorum is present before conducting official business." },
-    { source_key: "regular_meeting.previous_minutes", title: "Previous Meeting Minutes", slug: "previous-meeting-minutes", summary: "Read, correct, and approve the previous meeting minutes.", category: "administration", behavior_type: "motion_vote_item", body: "The adjutant reads the minutes of the previous meeting. The chair asks for corrections. If there are no corrections, the minutes stand approved as read; if corrected, they stand approved as corrected." },
-    { source_key: "regular_meeting.introductions", title: "Introduction of Guests and Prospective/New Members", slug: "introduction-of-guests-and-prospective-new-members", summary: "Welcome guests, prospective members, and new members.", category: "membership", behavior_type: "business_item", body: "Introduce guests, prospective members, and new members so they are recognized and welcomed by the post." },
-    { source_key: "regular_meeting.committee_reports", title: "Committee Reports", slug: "committee-reports", summary: "Reports from standing or special committees scheduled to report.", category: "reports", behavior_type: "section_heading", body: "The agenda should list committees scheduled to report. Confirm that a chairperson is ready before placing the report on the agenda." },
-    { source_key: "regular_meeting.balloting_on_applications", title: "Balloting on Applications", slug: "balloting-on-applications", summary: "Act on membership applications when required by post procedure.", category: "membership", behavior_type: "motion_vote_item", body: "Ballot on applications for membership according to the post constitution, by-laws, and applicable American Legion procedures." },
-    { source_key: "regular_meeting.sick_call_relief_employment", title: "Sick Call, Relief, and Employment", slug: "sick-call-relief-and-employment", summary: "Share member welfare, relief, employment, or assistance needs.", category: "business", behavior_type: "business_item", body: "Use this time for sick call, relief, employment, and other member welfare matters appropriate for the meeting." },
-    { source_key: "regular_meeting.service_officer_report", title: "Post Service Officer Report", slug: "post-service-officer-report", summary: "Standard report from the post service officer.", category: "reports", behavior_type: "report_slot", body: "The post service officer reports on veteran service matters, benefits awareness, claims support, and related assistance." },
-    { source_key: "regular_meeting.unfinished_old_business", title: "Unfinished / Old Business", slug: "unfinished-old-business", summary: "Business carried over from earlier meetings.", category: "business", behavior_type: "section_heading", body: "Bring forward business postponed from previous meetings or matters introduced earlier where action was not completed." },
-    { source_key: "regular_meeting.new_business_correspondence", title: "New Business and Correspondence", slug: "new-business-and-correspondence", summary: "New business, correspondence, and motions for post action.", category: "business", behavior_type: "section_heading", body: "Introduce new business, communications, correspondence, and motions calling for action by the post." },
-    { source_key: "regular_meeting.memorial_departed_member", title: "Memorial to a Departed Post Member", slug: "memorial-to-a-departed-post-member", summary: "Memorial recognition for a departed post member when needed.", category: "memorial", behavior_type: "scripted_ceremony", body: "Use this item when the post needs to recognize a departed member during the regular meeting. The post may use an appropriate memorial, charter-draping, or Post Everlasting ceremony when applicable." },
-    { source_key: "regular_meeting.good_of_legion", title: "Good of The American Legion", slug: "good-of-the-american-legion", summary: "Suggestions and remarks for the good of The American Legion.", category: "business", behavior_type: "business_item", body: "Members may make suggestions of any kind, character, or description, save religion or partisan politics." }
+    {
+      source_key: "regular_meeting.closing_ceremony",
+      title: "Closing Ceremony",
+      slug: "closing-ceremony",
+      summary: "Closes the regular meeting with memorial service, POW/MIA flag recovery, colors, and adjournment.",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      body: "The commander asks: Is there any further business to come before the meeting? If not, the chaplain will lead us in memorial service.\n\nThe membership rises, uncovers, and stands in silence. The chaplain offers the memorial prayer. The commander directs the sergeant-at-arms to recover the POW/MIA flag. The commander reminds members that service to community, state, and nation is a main objective of The American Legion. The color bearers retire the flag of our country. The commander declares the meeting adjourned with one rap of the gavel."
+    },
+    {
+      source_key: "regular_meeting.roll_call_quorum",
+      title: "Roll Call and Quorum",
+      slug: "roll-call-and-quorum",
+      summary: "Determine whether enough members are present to conduct authorized business.",
+      category: "administration",
+      behavior_type: "business_item",
+      body: "Roll call to determine if a quorum is present before conducting official business."
+    },
+    {
+      source_key: "regular_meeting.previous_minutes",
+      title: "Previous Meeting Minutes",
+      slug: "previous-meeting-minutes",
+      summary: "Read, correct, and approve the previous meeting minutes.",
+      category: "administration",
+      behavior_type: "motion_vote_item",
+      body: "The adjutant reads the minutes of the previous meeting. The chair asks for corrections. If there are no corrections, the minutes stand approved as read; if corrected, they stand approved as corrected."
+    },
+    {
+      source_key: "regular_meeting.introductions",
+      title: "Introduction of Guests and Prospective/New Members",
+      slug: "introduction-of-guests-and-prospective-new-members",
+      summary: "Welcome guests, prospective members, and new members.",
+      category: "membership",
+      behavior_type: "business_item",
+      body: "Introduce guests, prospective members, and new members so they are recognized and welcomed by the post."
+    },
+    {
+      source_key: "regular_meeting.committee_reports",
+      title: "Committee Reports",
+      slug: "committee-reports",
+      summary: "Reports from standing or special committees scheduled to report.",
+      category: "reports",
+      behavior_type: "section_heading",
+      body: "The agenda should list committees scheduled to report. Confirm that a chairperson is ready before placing the report on the agenda."
+    },
+    {
+      source_key: "regular_meeting.balloting_on_applications",
+      title: "Balloting on Applications",
+      slug: "balloting-on-applications",
+      summary: "Act on membership applications when required by post procedure.",
+      category: "membership",
+      behavior_type: "motion_vote_item",
+      body: "Ballot on applications for membership according to the post constitution, by-laws, and applicable American Legion procedures."
+    },
+    {
+      source_key: "regular_meeting.sick_call_relief_employment",
+      title: "Sick Call, Relief, and Employment",
+      slug: "sick-call-relief-and-employment",
+      summary: "Share member welfare, relief, employment, or assistance needs.",
+      category: "business",
+      behavior_type: "business_item",
+      body: "Use this time for sick call, relief, employment, and other member welfare matters appropriate for the meeting."
+    },
+    {
+      source_key: "regular_meeting.service_officer_report",
+      title: "Post Service Officer Report",
+      slug: "post-service-officer-report",
+      summary: "Standard report from the post service officer.",
+      category: "reports",
+      behavior_type: "report_slot",
+      body: "The post service officer reports on veteran service matters, benefits awareness, claims support, and related assistance."
+    },
+    {
+      source_key: "regular_meeting.unfinished_old_business",
+      title: "Unfinished / Old Business",
+      slug: "unfinished-old-business",
+      summary: "Business carried over from earlier meetings.",
+      category: "business",
+      behavior_type: "section_heading",
+      body: "Bring forward business postponed from previous meetings or matters introduced earlier where action was not completed."
+    },
+    {
+      source_key: "regular_meeting.new_business_correspondence",
+      title: "New Business and Correspondence",
+      slug: "new-business-and-correspondence",
+      summary: "New business, correspondence, and motions for post action.",
+      category: "business",
+      behavior_type: "section_heading",
+      body: "Introduce new business, communications, correspondence, and motions calling for action by the post."
+    },
+    {
+      source_key: "regular_meeting.memorial_departed_member",
+      title: "Memorial to a Departed Post Member",
+      slug: "memorial-to-a-departed-post-member",
+      summary: "Memorial recognition for a departed post member when needed.",
+      category: "memorial",
+      behavior_type: "scripted_ceremony",
+      body: "Use this item when the post needs to recognize a departed member during the regular meeting. The post may use an appropriate memorial, charter-draping, or Post Everlasting ceremony when applicable."
+    },
+    {
+      source_key: "regular_meeting.good_of_legion",
+      title: "Good of The American Legion",
+      slug: "good-of-the-american-legion",
+      summary: "Suggestions and remarks for the good of The American Legion.",
+      category: "business",
+      behavior_type: "business_item",
+      body: "Members may make suggestions of any kind, character, or description, save religion or partisan politics."
+    }
   ].freeze
 
   def self.seed_for!(organization)
@@ -70,18 +166,22 @@ class AgendaItemCatalogSeeder
   end
 
   def seed!
-    ENTRIES.each_with_index do |entry_attributes, index|
-      next if @organization.agenda_item_catalog_entries.exists?(source_key: entry_attributes.fetch(:source_key))
+    seeded_at = Time.current
 
-      @organization.agenda_item_catalog_entries.create!(
-        entry_attributes.except(:body).merge(
-          position: index + 1,
-          active: true,
-          source_label: SOURCE_LABEL,
-          seeded_at: Time.current,
-          body: entry_attributes.fetch(:body)
+    @organization.agenda_item_catalog_entries.transaction do
+      ENTRIES.each_with_index do |entry_attributes, index|
+        next if @organization.agenda_item_catalog_entries.exists?(source_key: entry_attributes.fetch(:source_key))
+
+        @organization.agenda_item_catalog_entries.create!(
+          entry_attributes.except(:body).merge(
+            position: index + 1,
+            active: true,
+            source_label: SOURCE_LABEL,
+            seeded_at: seeded_at,
+            body: entry_attributes.fetch(:body)
+          )
         )
-      )
+      end
     end
   end
 end

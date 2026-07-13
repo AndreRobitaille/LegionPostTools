@@ -10,11 +10,15 @@ class AgendaItemCatalogSeederTest < ActiveSupport::TestCase
       AgendaItemCatalogSeeder.seed_for!(@organization)
     end
 
-    titles = @organization.agenda_item_catalog_entries.order(:position).pluck(:title)
-    assert_includes titles, "Opening Ceremony"
-    assert_includes titles, "POW/MIA Empty Chair"
-    assert_includes titles, "Unfinished / Old Business"
-    assert_includes titles, "Good of The American Legion"
+    entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.opening_ceremony")
+    assert_equal AgendaItemCatalogSeeder::SOURCE_LABEL, entry.source_label
+    assert_predicate entry.seeded_at, :present?
+    assert_equal true, entry.active
+    assert_equal 1, entry.position
+
+    assert_no_difference -> { @organization.agenda_item_catalog_entries.count } do
+      AgendaItemCatalogSeeder.seed_for!(@organization)
+    end
   end
 
   test "stores full script text for ceremony entries" do
