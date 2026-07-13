@@ -53,4 +53,14 @@ class MeetingTypeTest < ActiveSupport::TestCase
 
     assert_equal [ earlier, later ], @organization.meeting_types.ordered.to_a
   end
+
+  test "can be destroyed cleanly" do
+    meeting_type = @organization.meeting_types.create!(name: "Annual Meeting", position: 1, active: true)
+
+    assert_difference -> { MeetingType.count }, -1 do
+      assert_difference -> { @organization.meeting_types.count }, -1 do
+        meeting_type.destroy!
+      end
+    end
+  end
 end
