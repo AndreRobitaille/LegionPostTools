@@ -95,6 +95,23 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_equal "Template item removed.", flash[:notice]
   end
 
+  test "edit form renders editable template fields" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Opening Ceremony", summary: "Read the opening script.", active: true, body: "Welcome")
+
+    get edit_admin_meeting_type_agenda_item_path(@meeting_type, item)
+
+    assert_response :success
+    assert_select "input[name='meeting_type_agenda_item[title]']"
+    assert_select "textarea[name='meeting_type_agenda_item[summary]']"
+    assert_select "lexxy-editor[input='meeting_type_agenda_item_body_trix_input_meeting_type_agenda_item_#{item.id}']"
+    assert_select "input[name='meeting_type_agenda_item[active]'][type='checkbox']"
+    assert_select "body", text: /source_key/i, count: 0
+    assert_select "body", text: /source_label/i, count: 0
+    assert_select "body", text: /catalog entry/i, count: 0
+    assert_select "body", text: /developer/i, count: 0
+  end
+
   test "cannot use another organization's catalog entry or meeting type" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     other_meeting_type = @other_organization.meeting_types.create!(name: "Other", position: 1, active: true)

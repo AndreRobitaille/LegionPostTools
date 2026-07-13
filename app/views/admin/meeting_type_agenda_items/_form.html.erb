@@ -1,4 +1,4 @@
-<%= form_with model: [:admin, meeting_type, item], class: "stacked-form" do |form| %>
+<%= form_with model: item, url: admin_meeting_type_agenda_item_path(meeting_type, item), class: "stacked-form" do |form| %>
   <% if item.errors.any? %>
     <div class="error-summary">
       <h2><%= pluralize(item.errors.count, "error") %> prohibited this template item from being saved:</h2>
