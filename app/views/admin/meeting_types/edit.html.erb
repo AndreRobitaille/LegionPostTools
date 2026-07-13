@@ -24,14 +24,14 @@
         <span class="mrow-name"><%= item.title %></span>
         <% if item.summary.present? %><span class="mrow-sub"><%= item.summary %></span><% end %>
       </span>
-      <span class="catrow-meta">
+      <div class="catrow-meta">
         <% unless item.active? %><%= agenda_active_tag(false) %><% end %>
         <% unless item.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
         <%= link_to "Edit", edit_admin_meeting_type_agenda_item_path(@meeting_type, item), class: "catrow-edit" %>
         <%= button_to "Up", move_admin_meeting_type_agenda_item_path(@meeting_type, item, direction: "up"), method: :patch, class: "btn-secondary" %>
         <%= button_to "Down", move_admin_meeting_type_agenda_item_path(@meeting_type, item, direction: "down"), method: :patch, class: "btn-secondary" %>
         <%= button_to "Remove", admin_meeting_type_agenda_item_path(@meeting_type, item), method: :delete, class: "btn-secondary" %>
-      </span>
+      </div>
     </div>
   <% end %>
 </div>

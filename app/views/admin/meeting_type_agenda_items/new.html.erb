@@ -16,13 +16,13 @@
           <span class="mrow-name"><%= entry.title %></span>
           <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
         </span>
-        <span class="catrow-meta">
+        <div class="catrow-meta">
           <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>
           <% if already_added %><span class="catrow-flag">Already added</span><% end %>
           <% unless already_added %>
             <%= button_to "Add", admin_meeting_type_agenda_items_path(@meeting_type, agenda_item_catalog_entry_id: entry.id), method: :post, class: "btn-secondary" %>
           <% end %>
-        </span>
+        </div>
       </div>
     <% end %>
   <% end %>
