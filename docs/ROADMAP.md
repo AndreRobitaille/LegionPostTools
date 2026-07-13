@@ -59,6 +59,15 @@ Still pending before inviting broader member use:
 
 With authentication and roster-backed administration in place, build the meeting record core.
 
+Completed for Structured Agendas foundation:
+
+- Organization-owned agenda item catalog with editable local copies.
+- Lean regular-meeting baseline seeded from The American Legion Officer's Guide and Manual of Ceremonies.
+- Admin management for catalog categories, behavior types, active status, and rich text/script bodies.
+
+Still pending:
+
+- Meeting type creator.
 - Meeting templates.
 - Agenda sections.
 - Structured agenda items.
