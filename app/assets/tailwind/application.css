@@ -352,19 +352,6 @@
 .imp .c.pr { color: var(--color-legionred); }
 .imp .sep { color: #cabd97; margin: 0 6px; }
 
-/* Admin landing: roster freshness banner ------------------------------------ */
-.fresh { display: flex; align-items: center; gap: 12px; background: #eef4ea; border: 1px solid #bcd3b6; border-radius: 9px; padding: 13px 16px; margin-bottom: 14px; }
-.fresh .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-green); flex: 0 0 10px; }
-.fresh .txt { font-size: 15px; color: #33502f; }
-.fresh .txt b { color: #22401d; }
-.fresh.stale { background: #f8efe0; border-color: #e6cf9c; }
-.fresh.stale .dot { background: var(--color-gold-ink); }
-.fresh.stale .txt { color: #5c4a24; }
-/* Mockup used 12.5px for .subttl; readability floor requires >= 13px for labels. */
-.subttl { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-muted); font-weight: 700; margin: 18px 0 6px; }
-/* Mockup used 15px for .viewall; readability floor requires >= 16px for interactive links. */
-.viewall { display: inline-block; margin-top: 12px; font-size: 16px; color: var(--color-navy); text-decoration: underline; }
-
 /* Admin landing: Post Positions list ---------------------------------------- */
 .pos { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #ece0bd; }
 .pos:last-of-type { border-bottom: none; }
