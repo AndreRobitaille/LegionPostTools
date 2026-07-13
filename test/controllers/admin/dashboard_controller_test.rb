@@ -27,6 +27,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
+    assert_select "a[href=?]", admin_meeting_types_path, count: 0
   end
 
   test "admin with manage_settings and manage_agendas sees Agenda Item Catalog link" do
@@ -37,6 +38,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 1, text: "Agenda Item Catalog"
+    assert_select "a[href=?]", admin_meeting_types_path, count: 1, text: "Meeting Types"
   end
 
   test "landing shows roster, positions, and administrators panels" do
@@ -54,6 +56,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Commander/
     assert_select "body", text: /#{admin.person.full_name}/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda Item Catalog/
+    assert_select "a[href=?]", admin_meeting_types_path, text: /Meeting Types/
   end
 
   test "roster panel shows freshness banner and recent import history" do

@@ -15,6 +15,7 @@ module Admin
 
     def create
       @meeting_type = @organization.meeting_types.new(meeting_type_params)
+      @meeting_type.position = next_position if @meeting_type.position.to_i.zero?
 
       if @meeting_type.save
         redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Meeting type created."
@@ -48,6 +49,10 @@ module Admin
 
     def meeting_type_params
       params.require(:meeting_type).permit(:name, :active)
+    end
+
+    def next_position
+      @organization.meeting_types.maximum(:position).to_i + 1
     end
   end
 end

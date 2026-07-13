@@ -44,6 +44,17 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Meeting type created.", flash[:notice]
   end
 
+  test "newly created meeting type appends after seeded defaults" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    get admin_meeting_types_path
+
+    post admin_meeting_types_path, params: { meeting_type: { name: "Special Ceremony Meeting", active: true } }
+
+    meeting_type = @organization.meeting_types.find_by!(slug: "special-ceremony-meeting")
+    assert_equal 3, meeting_type.position
+    assert_equal [ "PEC Meeting", "Membership Meeting", "Special Ceremony Meeting" ], @organization.meeting_types.ordered.pluck(:name)
+  end
+
   test "invalid create returns unprocessable entity" do
     sign_in_as(user_with_capabilities("manage_agendas"))
 

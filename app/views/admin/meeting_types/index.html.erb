@@ -19,7 +19,7 @@
           aria: { label: "Edit #{meeting_type.name}" } do %>
       <span class="mrow-id">
         <span class="mrow-name"><%= meeting_type.name %></span>
-        <span class="mrow-sub"><%= pluralize(meeting_type.meeting_type_agenda_items.count, "template item") %></span>
+        <span class="mrow-sub"><%= pluralize(meeting_type.meeting_type_agenda_items.size, "template item") %></span>
       </span>
       <span class="catrow-meta">
         <% unless meeting_type.active? %><%= agenda_active_tag(false) %><% end %>
