@@ -1,4 +1,7 @@
 <%= form_with model: [:admin, entry] do |form| %>
+  <% if entry.seeded? %>
+    <p class="page-sub">This changes your post's local copy only. It will not affect the original seed.</p>
+  <% end %>
   <div class="fl">
     <%= form.label :title %>
     <%= form.text_field :title, class: "f" %>
@@ -32,5 +35,8 @@
     <%= form.label :body %>
     <%= form.rich_text_area :body %>
   </div>
-  <%= form.submit class: "btn-primary" %>
+  <div class="actions">
+    <%= form.submit class: "btn-primary" %>
+    <%= link_to "Cancel", admin_agenda_item_catalog_entries_path, class: "btn" %>
+  </div>
 <% end %>

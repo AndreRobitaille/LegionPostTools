@@ -71,7 +71,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
 
     patch admin_agenda_item_catalog_entry_path(entry), params: {
       agenda_item_catalog_entry: {
-        title: "Previous Minutes",
+        title: "Updated Minutes",
         slug: "previous-minutes",
         summary: "Read and approve minutes",
         category: "administration",
@@ -84,6 +84,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
 
     assert_redirected_to admin_agenda_item_catalog_entries_path
     assert_equal "Agenda item catalog entry updated.", flash[:notice]
+    assert_equal "Updated Minutes", entry.reload.title
     assert_not entry.reload.active
     assert_equal "New body", entry.body.to_plain_text
   end
