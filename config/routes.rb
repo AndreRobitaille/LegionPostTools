@@ -39,6 +39,11 @@ Rails.application.routes.draw do
     resources :position_titles, only: %i[index create update]
     resources :agenda_item_catalog_entries, except: %i[show destroy]
     resources :administrators, only: %i[index]
+    resources :meeting_types, except: %i[show destroy] do
+      resources :agenda_items, controller: "meeting_type_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
+        patch :move, on: :member
+      end
+    end
   end
   resource :passkey_invitation, only: %i[destroy]
   resource :roster_email_review, only: %i[update]

@@ -1,0 +1,10 @@
+<% content_for :title, "Edit #{@item.title}" %>
+<a class="back" href="<%= edit_admin_meeting_type_path(@meeting_type) %>">&larr; <%= @meeting_type.name %></a>
+
+<div class="page-lead">
+  <h1 class="page-title">Edit template item</h1>
+</div>
+
+<div class="panel form-panel">
+  <%= render "form", meeting_type: @meeting_type, item: @item %>
+</div>
