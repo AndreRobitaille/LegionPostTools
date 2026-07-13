@@ -218,14 +218,15 @@
 .mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
 .mrow-kv .k { color: var(--color-muted); }
 
-/* Catalog row: neutral classification tag + status and actions grouped right */
-.mrow-tag { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); font-weight: 700; }
-.mrow-status--actions { flex-basis: 240px; }
-.mrow-prov { display: block; font-size: 14px; color: var(--color-muted); margin-top: 6px; }
-.mrow-actions { display: flex; align-items: center; gap: 16px; margin-top: 10px; white-space: nowrap; }
-.mrow-actions form { display: inline; margin: 0; }
-.mrow-actions a, .mrow-btn { font-size: 14px; font-weight: 700; color: var(--color-navy); text-decoration: none; background: none; border: 0; padding: 0; font-family: inherit; cursor: pointer; }
-.mrow-actions a:hover, .mrow-btn:hover { text-decoration: underline; }
+/* Catalog rows: whole row opens the editor, with a visible Edit affordance - */
+.catrow { position: relative; transition: background .12s ease; }
+.catrow:hover, .catrow:focus-visible { background: #e9eef6; outline: none; }
+.catrow:hover .mrow-name, .catrow:focus-visible .mrow-name { text-decoration: none; }
+.catrow-meta { display: flex; align-items: center; gap: 16px; flex: 0 0 auto; padding-left: 18px; }
+.catrow-flag { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; white-space: nowrap; }
+.catrow-edit { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: 6px; padding: 6px 14px; white-space: nowrap; transition: background .12s ease, border-color .12s ease, color .12s ease; }
+.catrow:hover .catrow-edit, .catrow:focus-visible .catrow-edit { background: var(--color-navy); border-color: var(--color-navy); color: #fff; }
+.catrow-caret { font-size: 18px; line-height: 1; margin-top: -1px; }
 .mrow--inactive .mrow-name { color: var(--color-muted); }
 
 /* Boxed list of member rows (People directory sections) ------------------- */

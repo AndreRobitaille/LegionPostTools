@@ -129,18 +129,24 @@ wording → done.**
 This screen must not read as a heavyweight CRUD console, and the edit form must never greet
 an officer with developer fields when all they want is to fix wording.
 
-The index view should:
+The index is a **scan-and-open** surface: every element on a row must earn its place for
+someone building agendas. It should:
 
 - group entries by category, presented in **meeting-sensible order** (Ceremony → Business →
   Reports → Membership → Memorial → Administration), not alphabetical
-- use the shared **de-noised row vocabulary** (`shared/_member_row` / `.mrow*` classes), the
-  same one the People directory uses — never a bare full-width `<table>`
-- per row: title, behavior type as a quiet neutral caps tag, and the **summary as the
-  subline** (the plain-language "what this item is for" an officer scans by)
-- keep **status and its action together** on the right at the divider — the quiet green
-  Active / muted Inactive word beside the Deactivate/Reactivate control, never flung to a far
-  edge (see `2026-07-12-admin-roster-visual-ux-design.md`)
-- provide an edit affordance and deactivate/reactivate controls
+- use the `.mrow*` row vocabulary (boxed list, identity left), never a bare full-width `<table>`
+- show, per row, **only** the title and the **summary as the subline** (the plain-language
+  "what this item is for"). No behavior-type tag (it repeats within a category and fragments
+  into singletons if sub-grouped — it lives on the edit form only), no repeated source/seed
+  label, and **no always-on "Active"** (that word on every row is noise)
+- surface a marker only when it is an **exception** worth an officer's attention: a muted
+  "Inactive" status word (with the row's title dimmed) for inactive items, and an "Added by
+  your post" flag for locally-created (non-seeded) entries
+- make the **whole row a click-to-open link** to the entry's editor, with a **visible "Edit ›"
+  button** on the right so the action is obvious (older/low-confidence users must not have to
+  guess the row is clickable). Hover tints the row a distinct cool wash and fills the Edit
+  button navy. There are **no per-row deactivate/reactivate controls** — activation is the
+  Active toggle on the edit form
 - allow creation of local catalog entries as a quiet secondary action; managing the seeded
   baseline is the primary path
 

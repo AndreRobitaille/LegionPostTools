@@ -5,7 +5,7 @@
 
 <div class="page-lead">
   <h1 class="page-title">Agenda Item Catalog</h1>
-  <p class="page-sub">These are the standard building blocks your post can use when creating meeting templates later.</p>
+  <p class="page-sub">These are the standard building blocks your post can use when creating meeting templates later. Select an item to edit its wording.</p>
 </div>
 
 <div class="btnrow">
@@ -18,29 +18,19 @@
   </div>
   <div class="mrow-list">
     <% entries.each do |entry| %>
-      <div class="mrow<%= " mrow--inactive" unless entry.active? %>">
+      <%= link_to edit_admin_agenda_item_catalog_entry_path(entry),
+            class: "mrow catrow#{' mrow--inactive' unless entry.active?}",
+            aria: { label: "Edit #{entry.title}" } do %>
         <span class="mrow-id">
-          <span class="mrow-l1">
-            <span class="mrow-name"><%= entry.title %></span>
-            <span class="mrow-tag"><%= entry.behavior_type_label %></span>
-          </span>
-          <% if entry.summary.present? %>
-            <span class="mrow-sub"><%= entry.summary %></span>
-          <% end %>
+          <span class="mrow-name"><%= entry.title %></span>
+          <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
         </span>
-        <span class="mrow-status mrow-status--actions">
-          <span class="mrow-st"><%= agenda_active_tag(entry.active?) %></span>
-          <span class="mrow-prov"><%= entry.seeded? ? entry.source_label : "Added by your post" %></span>
-          <span class="mrow-actions">
-            <%= link_to "Edit", edit_admin_agenda_item_catalog_entry_path(entry) %>
-            <% if entry.active? %>
-              <%= button_to "Deactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "0" } }, class: "mrow-btn" %>
-            <% else %>
-              <%= button_to "Reactivate", admin_agenda_item_catalog_entry_path(entry), method: :patch, params: { agenda_item_catalog_entry: { active: "1" } }, class: "mrow-btn" %>
-            <% end %>
-          </span>
+        <span class="catrow-meta">
+          <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>
+          <% unless entry.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
+          <span class="catrow-edit">Edit<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
         </span>
-      </div>
+      <% end %>
     <% end %>
   </div>
 <% end %>

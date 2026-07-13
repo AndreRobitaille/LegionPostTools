@@ -48,11 +48,19 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_response :success
     assert_select "h1", text: /Agenda Item Catalog/
     assert_select "body", text: /Opening Ceremony/
-    assert_select "body", text: /Scripted ceremony/
     assert_select "a.back[href=?]", root_path, text: /Dashboard/
     assert_select "a.back[href=?]", admin_root_path, count: 0
-    assert_select "form[action='#{admin_agenda_item_catalog_entry_path(active_entry)}'][method='post'] button", text: "Deactivate"
-    assert_select "form[action='#{admin_agenda_item_catalog_entry_path(inactive_entry)}'][method='post'] button", text: "Reactivate"
+
+    # Rows are click-to-open links straight to the edit page.
+    assert_select "a.mrow[href=?]", edit_admin_agenda_item_catalog_entry_path(active_entry)
+    assert_select "a.mrow[href=?]", edit_admin_agenda_item_catalog_entry_path(inactive_entry)
+
+    # Inactive entries are flagged; active ones carry no status noise.
+    assert_select "a.mrow.mrow--inactive[href=?]", edit_admin_agenda_item_catalog_entry_path(inactive_entry)
+    assert_select "a.mrow.mrow--inactive[href=?]", edit_admin_agenda_item_catalog_entry_path(active_entry), count: 0
+
+    # No per-row deactivate/reactivate controls remain on the index.
+    assert_select "form[action=?]", admin_agenda_item_catalog_entry_path(active_entry), count: 0
   end
 
   test "index back link points to administration for manage_settings users" do
