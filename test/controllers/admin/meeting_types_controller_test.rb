@@ -35,13 +35,23 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
   test "create meeting type" do
     sign_in_as(user_with_capabilities("manage_agendas"))
 
-    assert_difference -> { @organization.meeting_types.count }, 1 do
+    assert_difference -> { @organization.meeting_types.count }, 3 do
       post admin_meeting_types_path, params: { meeting_type: { name: "Special Ceremony Meeting", active: true } }
     end
 
     meeting_type = @organization.meeting_types.find_by!(slug: "special-ceremony-meeting")
     assert_redirected_to edit_admin_meeting_type_path(meeting_type)
     assert_equal "Meeting type created.", flash[:notice]
+  end
+
+  test "create seeds defaults before assigning next position on a fresh organization" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    post admin_meeting_types_path, params: { meeting_type: { name: "Special Ceremony Meeting", active: true } }
+
+    meeting_type = @organization.meeting_types.find_by!(slug: "special-ceremony-meeting")
+    assert_equal 3, meeting_type.position
+    assert_equal [ "PEC Meeting", "Membership Meeting", "Special Ceremony Meeting" ], @organization.meeting_types.ordered.pluck(:name)
   end
 
   test "newly created meeting type appends after seeded defaults" do

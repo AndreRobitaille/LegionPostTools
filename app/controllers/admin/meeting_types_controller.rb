@@ -14,6 +14,7 @@ module Admin
     end
 
     def create
+      MeetingTypeTemplateSeeder.seed_for!(@organization)
       @meeting_type = @organization.meeting_types.new(meeting_type_params)
       @meeting_type.position = next_position if @meeting_type.position.to_i.zero?
 
