@@ -1,0 +1,37 @@
+<% content_for :title, "Post Positions" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Post Positions</h1>
+  <p class="page-sub">The offices your post fills, their wording, and their order.</p>
+</div>
+
+<%= render "shared/section_panel", label: "Post Positions" do %>
+  <% if @position_titles.present? %>
+    <% @position_titles.each do |title| %>
+      <div class="pos">
+        <span class="pn"><%= title.name %></span>
+        <span class="state <%= title.active? ? "on" : "off" %>"><%= title.active? ? "Active" : "Inactive" %></span>
+        <%= button_to title.active? ? "Deactivate" : "Activate", admin_position_title_path(title), method: :patch,
+              params: { position_title: { active: !title.active? } }, class: "toggle", form: { class: "posform" } %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="page-sub">No post positions yet.</p>
+  <% end %>
+
+  <div class="addrow">
+    <%= form_with url: admin_position_titles_path, method: :post, scope: :position_title do |form| %>
+      <div class="fl">
+        <%= form.label :name, "Position name" %>
+        <%= form.text_field :name, class: "f" %>
+      </div>
+      <div class="fl">
+        <%= form.label :display_order, "Order" %>
+        <%= form.number_field :display_order, class: "f", value: (@position_titles.map(&:display_order).max || 0) + 1 %>
+      </div>
+      <%= form.submit "+ Add position", class: "btn-secondary" %>
+    <% end %>
+  </div>
+<% end %>
+
+<p class="page-sub"><%= link_to "← Back to Administration", admin_root_path %></p>

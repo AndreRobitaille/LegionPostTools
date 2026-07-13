@@ -36,7 +36,7 @@ Rails.application.routes.draw do
       post :confirm, on: :member
       delete :discard, on: :member
     end
-    resources :position_titles, only: %i[create update]
+    resources :position_titles, only: %i[index create update]
     resources :agenda_item_catalog_entries, except: %i[show destroy]
   end
   resource :passkey_invitation, only: %i[destroy]
