@@ -1,123 +1,88 @@
-<%# app/views/admin/dashboard/show.html.erb
-    Locals (from Admin::DashboardController#show): @latest_roster_import, @roster_stale, @recent_imports,
-    @position_titles, @administrators
-    Mockup put "Import roster" in the panel header; it's rendered in the body here instead so the
-    shared/section_panel "provenance" slot keeps its documented meaning (source attribution, not actions). %>
-
 <% content_for :title, "Administration" %>
 
 <div class="page-lead">
   <h1 class="page-title">Administration</h1>
-  <p class="page-sub">Roster import, post positions, and who can administer the app.</p>
+  <p class="page-sub">Everything that keeps the post’s tools running.</p>
 </div>
 
-<%= render "shared/section_panel", label: "Roster" do %>
-  <div class="fresh<%= " stale" if @roster_stale %>">
-    <span class="dot" aria-hidden="true"></span>
-    <% if @latest_roster_import.present? %>
-      <span class="txt">
-        <b><%= @roster_stale ? "Roster import is due." : "Roster is current." %></b>
-        Last imported <%= legion_date(@latest_roster_import.imported_at) %>.
-      </span>
-    <% else %>
-      <span class="txt"><b>No roster has been imported yet.</b> Upload a National roster export to get started.</span>
-    <% end %>
-  </div>
+<% show_roster = current_user.can?("manage_settings") %>
+<% show_agendas = current_user.can?("manage_agendas") %>
+<% show_positions = current_user.can?("manage_settings") %>
+<% show_admins = current_user.can?("manage_settings") %>
 
-  <div class="btnrow">
-    <%= link_to "Import roster", new_admin_roster_import_path, class: "btn-primary" %>
-  </div>
-
-  <% if @recent_imports.present? %>
-    <div class="subttl">Recent imports</div>
-    <% @recent_imports.each do |roster_import| %>
-      <%= link_to admin_roster_import_path(roster_import), class: "imp" do %>
-        <% pill = case roster_import.status
-                  when "completed" then [ "ok", "Complete" ]
-                  when "pending_confirmation" then [ "warn", "Needs confirmation" ]
-                  when "discarded" then [ "muted", "Discarded" ]
-                  else [ "fail", "Failed" ]
-                  end %>
-        <div class="l1">
-          <span class="when"><%= legion_datetime(roster_import.imported_at) %></span>
-          <span class="status <%= pill[0] %>"><%= pill[1] %></span>
-        </div>
-        <div class="l2">
-          <%= roster_import.uploaded_filename %>
-          <span class="sep">&middot;</span>
-          <% case roster_import.status %>
-          <% when "completed" %>
-            <span class="c cr">+<%= roster_import.created_count %></span>
-            <span class="c up"><%= roster_import.updated_count %> updated</span>
-            <span class="c rm"><%= roster_import.removed_count %> removed</span>
-            <% if roster_import.problem_count.positive? %>
-              <span class="c pr"><%= roster_import.problem_count %> problems</span>
-            <% else %>
-              no problems
-            <% end %>
-          <% when "pending_confirmation" %>
-            <%= roster_import.removed_count %> members would be removed — needs your confirmation
-          <% when "discarded" %>
-            Discarded — nothing changed
+<% if show_roster || show_agendas %>
+  <section class="hub-sec">
+    <h2 class="hub-sec-h">Meetings &amp; Roster</h2>
+    <p class="hub-sec-n">Keep the membership current and prepare your agendas.</p>
+    <div class="hub-tiles">
+      <% if show_roster %>
+        <div class="tile<%= " tile--due" if @roster_stale %>">
+          <div class="tile-ic" aria-hidden="true">📇</div>
+          <% if @roster_stale %>
+            <span class="tile-status"><span class="dot" aria-hidden="true"></span><%= @latest_roster_import ? "Import due" : "Not imported" %></span>
           <% else %>
-            <%= roster_import.first_problem_message.presence || "Import failed" %> — nothing changed
+            <span class="tile-status ok"><span class="dot" aria-hidden="true"></span>Current</span>
           <% end %>
+          <p class="tile-t">Roster</p>
+          <p class="tile-d">
+            <% if @latest_roster_import %>
+              Last imported <%= legion_date(@latest_roster_import.imported_at) %>.
+            <% else %>
+              No roster has been imported yet.
+            <% end %>
+            Upload the latest National roster to bring the post current.
+          </p>
+          <div class="tile-actions">
+            <%= link_to "Import roster", new_admin_roster_import_path, class: "tile-btn" %>
+            <%= link_to "View imports →", admin_roster_imports_path, class: "tile-act" %>
+          </div>
         </div>
       <% end %>
-    <% end %>
-    <%= link_to "View all imports →", admin_roster_imports_path, class: "viewall" %>
-  <% else %>
-    <p class="page-sub">No roster imports yet.</p>
-  <% end %>
-<% end %>
 
-<%= render "shared/section_panel", label: "Post Positions" do %>
-  <% if @position_titles.present? %>
-    <% @position_titles.each do |title| %>
-      <div class="pos">
-        <span class="pn"><%= title.name %></span>
-        <span class="state <%= title.active? ? "on" : "off" %>"><%= title.active? ? "Active" : "Inactive" %></span>
-        <%= button_to title.active? ? "Deactivate" : "Activate", admin_position_title_path(title), method: :patch,
-              params: { position_title: { active: !title.active? } }, class: "toggle", form: { class: "posform" } %>
-      </div>
-    <% end %>
-  <% else %>
-    <p class="page-sub">No post positions yet.</p>
-  <% end %>
-
-  <div class="addrow">
-    <%= form_with url: admin_position_titles_path, method: :post, scope: :position_title do |form| %>
-      <div class="fl">
-        <%= form.label :name, "Position name" %>
-        <%= form.text_field :name, class: "f" %>
-      </div>
-      <div class="fl">
-        <%= form.label :display_order, "Order" %>
-        <%= form.number_field :display_order, class: "f", value: (@position_titles.map(&:display_order).max || 0) + 1 %>
-      </div>
-      <%= form.submit "+ Add position", class: "btn-secondary" %>
-    <% end %>
-  </div>
-<% end %>
-
-<%= render "shared/section_panel", label: "Administrators" do %>
-  <% @administrators.each do |admin| %>
-    <div class="admrow">
-      <span class="an"><%= admin.person.full_name %></span>
-      <% if (role = admin.person.current_role_label) %>
-        <span class="ao"><%= role %></span>
+      <% if show_agendas %>
+        <div class="tile">
+          <div class="tile-ic" aria-hidden="true">📋</div>
+          <p class="tile-t">Agenda Catalog</p>
+          <p class="tile-d">Standard agenda building blocks your post can drop into meeting templates.</p>
+          <div class="tile-actions">
+            <%= link_to "Open catalog →", admin_agenda_item_catalog_entries_path, class: "tile-act" %>
+          </div>
+        </div>
       <% end %>
-      <%= link_to "Manage on their page →", person_path(admin.person), class: "go" %>
     </div>
-  <% end %>
-  <p class="safe">Permissions are granted on each person's page. At least one enabled administrator is always required — the last one can't be removed or disabled.</p>
+  </section>
 <% end %>
 
-<% if current_user.can?("manage_agendas") %>
-  <%= render "shared/section_panel", label: "Meeting Templates" do %>
-    <div class="btnrow">
-      <%= link_to "Agenda Item Catalog", admin_agenda_item_catalog_entries_path, class: "btn-primary" %>
+<% if show_positions %>
+  <section class="hub-sec">
+    <h2 class="hub-sec-h">Officers &amp; Elections</h2>
+    <p class="hub-sec-n">The offices your post fills and who holds them — usually only after an election.</p>
+    <div class="hub-tiles">
+      <div class="tile">
+        <div class="tile-ic" aria-hidden="true">🎖️</div>
+        <p class="tile-t">Post Positions</p>
+        <p class="tile-d">The offices your post fills, their wording, and their order.</p>
+        <div class="tile-actions">
+          <%= link_to "Manage positions →", admin_position_titles_path, class: "tile-act" %>
+        </div>
+      </div>
     </div>
-    <p class="safe">Manage the standard agenda building blocks your post can use in meeting templates.</p>
-  <% end %>
+  </section>
+<% end %>
+
+<% if show_admins %>
+  <section class="hub-sec">
+    <h2 class="hub-sec-h">Setup &amp; Administration</h2>
+    <p class="hub-sec-n">Accounts, access, and post details. Rarely changed.</p>
+    <div class="hub-tiles">
+      <div class="tile">
+        <div class="tile-ic" aria-hidden="true">👥</div>
+        <p class="tile-t">Administrators</p>
+        <p class="tile-d">Who can administer the app. Permissions are granted on each person’s page.</p>
+        <div class="tile-actions">
+          <%= link_to "View administrators →", admin_administrators_path, class: "tile-act" %>
+        </div>
+      </div>
+    </div>
+  </section>
 <% end %>

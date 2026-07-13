@@ -3,15 +3,15 @@ require "test_helper"
 class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
   test "unauthenticated admin root redirects to sign in" do
     prepare_setup_complete_state
-
     get admin_root_path
-
     assert_redirected_to new_session_path
   end
 
-  test "signed in user without manage_settings is denied" do
+  test "member with no admin capability is denied" do
     prepare_setup_complete_state
-    user = sign_in_member(can_manage_settings: false)
+    person = Person.create!(first_name: "Ann", last_name: "Roe")
+    user = User.create!(person: person, email_address: "ann@example.com", email_verified_at: Time.current)
+    sign_in_as(user)
 
     get admin_root_path
 
@@ -19,120 +19,72 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "manage_settings-only admin sees Agenda Item Catalog link via implication" do
+  test "full admin sees all four tiles and their links" do
     prepare_setup_complete_state
-    sign_in_member(can_manage_settings: true, can_manage_agendas: false)
+    admin = sign_in_member(can_manage_settings: true)
 
     get admin_root_path
 
     assert_response :success
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 1, text: "Agenda Item Catalog"
+    assert_select ".hub-sec-h", text: "Meetings & Roster"
+    assert_select ".hub-sec-h", text: "Officers & Elections"
+    assert_select ".hub-sec-h", text: "Setup & Administration"
+    assert_select ".tile .tile-t", text: "Roster"
+    assert_select "a[href=?]", new_admin_roster_import_path, text: /Import roster/
+    assert_select "a[href=?]", admin_roster_imports_path, text: /View imports/
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
+    assert_select "a[href=?]", admin_position_titles_path, text: /Manage positions/
+    assert_select "a[href=?]", admin_administrators_path, text: /View administrators/
   end
 
-  test "admin with manage_settings and manage_agendas sees Agenda Item Catalog link" do
+  test "agenda-only manager reaches the hub and sees only the agenda catalog tile" do
     prepare_setup_complete_state
-    sign_in_member(can_manage_settings: true, can_manage_agendas: true)
+    sign_in_member(can_manage_settings: false, can_manage_agendas: true)
 
     get admin_root_path
 
     assert_response :success
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 1, text: "Agenda Item Catalog"
+    assert_select ".hub-sec-h", text: "Meetings & Roster"
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
+    assert_select ".hub-sec-h", text: "Officers & Elections", count: 0
+    assert_select ".hub-sec-h", text: "Setup & Administration", count: 0
+    assert_select "a[href=?]", admin_position_titles_path, count: 0
+    assert_select "a[href=?]", new_admin_roster_import_path, count: 0
   end
 
-  test "landing shows roster, positions, and administrators panels" do
+  test "roster tile reads current when a recent import exists" do
     prepare_setup_complete_state
-    admin = sign_in_member(can_manage_settings: true, can_manage_agendas: true)
-    RosterImport.create!(status: "completed", imported_at: 1.hour.ago, uploaded_filename: "latest.csv")
-    PositionTitle.create!(organization: @org, name: "Commander", display_order: 1, active: true)
+    sign_in_member(can_manage_settings: true)
+    RosterImport.create!(uploaded_filename: "roster.csv", status: "completed", imported_at: 2.days.ago,
+                         created_count: 1, updated_count: 0, unchanged_count: 0, problem_count: 0)
 
     get admin_root_path
 
     assert_response :success
-    assert_select ".card-head-label", text: /Roster/
-    assert_select ".card-head-label", text: /Post Positions/
-    assert_select ".card-head-label", text: /Administrators/
-    assert_select "body", text: /Commander/
-    assert_select "body", text: /#{admin.person.full_name}/
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda Item Catalog/
+    assert_select ".tile .tile-status.ok", text: /Current/
+    assert_select ".tile--due", count: 0
   end
 
-  test "roster panel shows freshness banner and recent import history" do
+  test "roster tile turns due and flags an overdue import" do
     prepare_setup_complete_state
-    sign_in_admin
-    RosterImport.create!(
-      uploaded_filename: "roster-2026.csv",
-      status: "completed",
-      imported_at: 2.days.ago,
-      created_count: 3,
-      updated_count: 4,
-      unchanged_count: 5,
-      problem_count: 0
-    )
+    sign_in_member(can_manage_settings: true)
+    RosterImport.create!(uploaded_filename: "roster.csv", status: "completed", imported_at: 31.days.ago,
+                         created_count: 1, updated_count: 0, unchanged_count: 0, problem_count: 0)
 
     get admin_root_path
 
     assert_response :success
-    assert_select ".fresh:not(.stale) .txt", text: /Roster is current\./
-    assert_select ".imp", text: /roster-2026\.csv/
-    assert_select "a[href=?]", admin_roster_imports_path, text: /View all imports/
+    assert_select ".tile.tile--due .tile-status", text: /Import due/
   end
 
-  test "recent imports render pending and discarded statuses without treating them as failures" do
+  test "roster tile flags when no roster has been imported" do
     prepare_setup_complete_state
-    sign_in_admin
-    pending = RosterImport.new(status: "pending_confirmation", imported_at: 1.hour.ago, uploaded_filename: "pending.csv", removed_count: 11, problem_count: 0)
-    pending.pending_csv.attach(io: StringIO.new("x"), filename: "pending.csv", content_type: "text/csv")
-    pending.save!
-    RosterImport.create!(status: "discarded", imported_at: 2.hours.ago, uploaded_filename: "discarded.csv")
+    sign_in_member(can_manage_settings: true)
 
     get admin_root_path
 
     assert_response :success
-    assert_select ".imp .status.warn", text: /Needs confirmation/
-    assert_select ".imp .status.muted", text: /Discarded/
-  end
-
-  test "recent imports tolerate an older failed import whose problems are plain strings" do
-    prepare_setup_complete_state
-    sign_in_admin
-    legacy = RosterImport.new(status: "failed", imported_at: 1.hour.ago, uploaded_filename: "legacy.csv", problem_count: 1)
-    legacy.summary = { "problems" => [ "Illegal quoting in line 1." ] }
-    legacy.save!(validate: false)
-
-    get admin_root_path
-
-    assert_response :success
-    assert_select ".imp .l2", text: /Illegal quoting in line 1\./
-  end
-
-  test "roster panel shows stale warning when no import exists" do
-    prepare_setup_complete_state
-    sign_in_admin
-
-    get admin_root_path
-
-    assert_response :success
-    assert_select ".fresh.stale .txt", text: /No roster has been imported yet\./
-    assert_select "a[href=?]", new_admin_roster_import_path, text: "Import roster"
-  end
-
-  test "roster panel shows stale warning when import is old" do
-    prepare_setup_complete_state
-    sign_in_admin
-    RosterImport.create!(
-      uploaded_filename: "roster-2026.csv",
-      status: "completed",
-      imported_at: 31.days.ago,
-      created_count: 3,
-      updated_count: 4,
-      unchanged_count: 5,
-      problem_count: 0
-    )
-
-    get admin_root_path
-
-    assert_response :success
-    assert_select ".fresh.stale .txt", text: /Roster import is due\./
+    assert_select ".tile.tile--due .tile-status", text: /Not imported/
   end
 
   private
@@ -149,9 +101,5 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     PermissionGrant.create!(user: user, capability: "manage_agendas") if can_manage_agendas
     sign_in_as(user)
     user
-  end
-
-  def sign_in_admin
-    sign_in_member(can_manage_settings: true)
   end
 end

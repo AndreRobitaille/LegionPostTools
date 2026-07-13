@@ -488,3 +488,27 @@
 .honor { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; background: #fbf3dd; border: 1px solid #e7d6a6; border-radius: 8px; padding: 12px 14px; }
 .honor .num { font-size: 24px; font-weight: 700; color: var(--color-gold-ink); line-height: 1; }
 .honor .txt { font-size: 15px; color: #5c4a24; }
+
+/* ---------------------------------------------------------------------------
+   Admin hub: bounded tile cards grouped into topical sections. Tiles never
+   stretch full width; the auto-fill/minmax grid keeps a lone tile card-width.
+   Type floors: title 18px, description 15px, status label 13px.
+   --------------------------------------------------------------------------- */
+.hub-sec { margin-top: 26px; }
+.hub-sec:first-of-type { margin-top: 10px; }
+.hub-sec-h { font-size: 19px; font-weight: 800; color: var(--color-navy); margin: 0 0 2px; }
+.hub-sec-n { font-size: 14px; color: var(--color-muted); margin: 0 0 13px; }
+.hub-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 290px)); gap: 15px; }
+.tile { display: flex; flex-direction: column; background: var(--color-paper); border: 1px solid #d3c391; border-radius: 11px; padding: 16px 17px 17px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.tile .tile-ic { font-size: 22px; margin-bottom: 9px; }
+.tile .tile-t { font-size: 18px; font-weight: 800; color: var(--color-navy); margin: 0 0 5px; }
+.tile .tile-d { font-size: 15px; color: var(--color-muted); line-height: 1.42; margin: 0 0 14px; flex: 1; }
+.tile .tile-actions { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+.tile .tile-act { font-size: 15px; font-weight: 700; color: var(--color-legionred); text-decoration: none; }
+.tile .tile-act:hover { text-decoration: underline; }
+.tile .tile-btn { display: inline-block; font-size: 15px; font-weight: 800; color: #fff; background: var(--color-legionred); border-radius: 8px; padding: 9px 15px; text-decoration: none; }
+.tile .tile-status { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; color: var(--color-gold-ink); background: #f0e2c2; border-radius: 20px; padding: 3px 10px; margin: 0 0 10px; }
+.tile .tile-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-gold-ink); }
+.tile .tile-status.ok { color: var(--color-green); background: #dfebd9; }
+.tile .tile-status.ok .dot { background: var(--color-green); }
+.tile.tile--due { background: #f8efe0; border-color: #e6cf9c; box-shadow: inset 3px 0 0 var(--color-gold-ink), 0 8px 22px rgba(0,0,0,.06); }
