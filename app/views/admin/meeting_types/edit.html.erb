@@ -5,9 +5,7 @@
   <h1 class="page-title">Edit <%= @meeting_type.name %></h1>
 </div>
 
-<div class="panel form-panel">
-  <%= render "form", meeting_type: @meeting_type %>
-</div>
+<%= render "form", meeting_type: @meeting_type %>
 
 <div class="sec-head-row" style="margin-top: 22px">
   <%= render "shared/section_header", label: "Template agenda" %>

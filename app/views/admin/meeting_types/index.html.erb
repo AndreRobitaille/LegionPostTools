@@ -16,7 +16,7 @@
 <div class="mrow-list">
   <% @meeting_types.each do |meeting_type| %>
     <%= link_to edit_admin_meeting_type_path(meeting_type),
-          class: "mrow#{' mrow--inactive' unless meeting_type.active?}",
+          class: "mrow catrow#{' mrow--inactive' unless meeting_type.active?}",
           aria: { label: "Edit #{meeting_type.name}" } do %>
       <span class="mrow-id">
         <span class="mrow-name"><%= meeting_type.name %></span>
