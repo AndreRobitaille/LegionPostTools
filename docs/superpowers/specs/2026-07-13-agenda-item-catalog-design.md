@@ -157,8 +157,14 @@ The edit view should include **only officer-facing fields**:
 The edit form deliberately **omits `slug` and `position`**. `slug` is an internal identifier
 auto-derived from the title (unique per organization) and never shown. `position` is assigned
 by the system on creation and reordered only through future dedicated tooling, not typed by an
-officer during a wording fix. The form is bounded in width (never full-bleed) with roomy
-field rhythm.
+officer during a wording fix. The form is a **bounded, framed card** (never full-bleed) with
+roomy field rhythm, matching the app's other panels. The active control is a labeled toggle
+row (with a plain helper), not a lone checkbox.
+
+The rich-text "Wording" field uses **Lexxy** (the modern Action Text editor from 37signals),
+adopted app-wide in place of the default Trix editor. `has_rich_text :body` on the catalog
+entry is currently the app's only rich-text field. Lexxy's CSS variables are themed to the
+Legion navy palette. (Lexxy is early-beta; revisit if a stable release changes the API.)
 
 Permissions should use the existing `manage_agendas` capability. The catalog feeds agenda
 construction more directly than organization setup.

@@ -243,11 +243,31 @@
 .fl .f { font-size: 16px; padding: 8px 10px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); min-width: 150px; }
 .fl-help { margin: 0 0 2px; font-size: 14px; text-transform: none; letter-spacing: normal; color: var(--color-muted); }
 
-/* Vertical form: bounded width (never full-bleed), roomy field rhythm ------- */
-.stacked-form { max-width: 640px; }
-.stacked-form .fl { margin-bottom: 16px; }
+/* Catalog edit form: a framed card (bounded, never full-bleed) ------------- */
+.stacked-form { max-width: 660px; background: var(--color-paper); border: 1px solid #d3c391; border-radius: 12px; padding: 22px 24px 24px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.stacked-form .fl { margin-bottom: 18px; }
 .stacked-form .fl .f { width: 100%; box-sizing: border-box; }
-.stacked-form .btnrow { margin-top: 4px; }
+.stacked-form .error-summary { margin-bottom: 18px; }
+.stacked-form .btnrow { margin-top: 6px; padding-top: 18px; border-top: 1px solid #e6dcbe; }
+
+/* Active/inactive toggle row (replaces the lonely uppercase checkbox) ------- */
+.form-toggle { display: flex; gap: 11px; align-items: flex-start; margin-bottom: 18px; padding: 14px 16px; background: var(--color-ivory); border: 1px solid #e6dcbe; border-radius: 8px; cursor: pointer; }
+.form-toggle input[type="checkbox"] { width: 18px; height: 18px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--color-navy); }
+.form-toggle .ft-label { display: block; font-size: 16px; font-weight: 600; color: var(--color-navy); text-transform: none; letter-spacing: normal; }
+.form-toggle .ft-help { display: block; font-size: 14px; color: var(--color-muted); margin-top: 2px; }
+
+/* Lexxy rich-text editor, themed to the Legion palette --------------------- */
+:root {
+  --lexxy-color-accent-dark: var(--color-navy);
+  --lexxy-color-accent-medium: var(--color-navy-2);
+  --lexxy-color-accent-light: #dbe2ee;
+  --lexxy-color-accent-lightest: #eef1f7;
+  --lexxy-color-link: var(--color-navy);
+  --lexxy-color-text: var(--color-ink);
+  --lexxy-font-base: system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --lexxy-radius: 6px;
+}
+.stacked-form lexxy-editor { border-color: #cdbf98; background: #fff; }
 .clear { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; margin-left: auto; align-self: center; background: none; border: 0; padding: 0; font-family: inherit; }
 .sec-head-row { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; }
 .sec-head-row .sec-head { flex: 1; margin: 0; }
