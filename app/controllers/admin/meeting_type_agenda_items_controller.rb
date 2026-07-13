@@ -12,7 +12,7 @@ module Admin
         entries = grouped[category]
         next if entries.blank?
 
-        [category, entries.map { |entry| [entry, existing_ids.include?(entry.id)] }]
+        [ category, entries.map { |entry| [ entry, existing_ids.include?(entry.id) ] } ]
       end.to_h
     end
 

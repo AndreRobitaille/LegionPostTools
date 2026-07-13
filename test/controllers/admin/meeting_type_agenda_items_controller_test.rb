@@ -76,10 +76,10 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     second = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 2, title: "Second", active: true)
 
     patch move_admin_meeting_type_agenda_item_path(@meeting_type, second, direction: "up")
-    assert_equal [2, 1], [first.reload.position, second.reload.position]
+    assert_equal [ 2, 1 ], [ first.reload.position, second.reload.position ]
 
     patch move_admin_meeting_type_agenda_item_path(@meeting_type, second, direction: "down")
-    assert_equal [1, 2], [first.reload.position, second.reload.position]
+    assert_equal [ 1, 2 ], [ first.reload.position, second.reload.position ]
   end
 
   test "remove deletes only template item and leaves catalog entry" do
