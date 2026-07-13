@@ -19,7 +19,7 @@ module Admin
     def create
       catalog_entry = @organization.agenda_item_catalog_entries.active.find(params[:agenda_item_catalog_entry_id])
       if @meeting_type.meeting_type_agenda_items.exists?(agenda_item_catalog_entry_id: catalog_entry.id)
-        redirect_to edit_admin_meeting_type_path(@meeting_type), alert: "That catalog item is already in this meeting type."
+        redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: "That catalog item is already in this meeting type."
         return
       end
 

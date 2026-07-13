@@ -51,7 +51,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
       post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: @catalog_entry.id }
     end
 
-    assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
+    assert_redirected_to new_admin_meeting_type_agenda_item_path(@meeting_type)
     assert_equal "That catalog item is already in this meeting type.", flash[:alert]
   end
 
