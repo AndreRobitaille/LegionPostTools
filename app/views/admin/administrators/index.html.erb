@@ -1,0 +1,21 @@
+<% content_for :title, "Administrators" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Administrators</h1>
+  <p class="page-sub">Who can administer the app.</p>
+</div>
+
+<%= render "shared/section_panel", label: "Administrators" do %>
+  <% @administrators.each do |admin| %>
+    <div class="admrow">
+      <span class="an"><%= admin.person.full_name %></span>
+      <% if (role = admin.person.current_role_label) %>
+        <span class="ao"><%= role %></span>
+      <% end %>
+      <%= link_to "Manage on their page →", person_path(admin.person), class: "go" %>
+    </div>
+  <% end %>
+  <p class="safe">Permissions are granted on each person's page. At least one enabled administrator is always required — the last one can't be removed or disabled.</p>
+<% end %>
+
+<p class="page-sub"><%= link_to "← Back to Administration", admin_root_path %></p>

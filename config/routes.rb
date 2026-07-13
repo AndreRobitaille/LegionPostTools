@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     end
     resources :position_titles, only: %i[index create update]
     resources :agenda_item_catalog_entries, except: %i[show destroy]
+    resources :administrators, only: %i[index]
   end
   resource :passkey_invitation, only: %i[destroy]
   resource :roster_email_review, only: %i[update]
