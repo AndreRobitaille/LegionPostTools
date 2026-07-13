@@ -74,6 +74,7 @@ Still pending:
 - Item-level rich notes.
 - Reordering and moving agenda items.
 - Browser/HTML printable agenda rendering for on-screen review and printing.
+- Later guided workflow to create a new catalog item from the meeting type/template editor and add it directly to that template.
 
 ## Tracked Items
 
