@@ -12,7 +12,11 @@ class User < ApplicationRecord
   validates :webauthn_id, presence: true, uniqueness: true
 
   def can?(capability)
-    permission_grants.exists?(capability: capability.to_s)
+    capability = capability.to_s
+    return true if permission_grants.exists?(capability: capability)
+    return false unless PermissionGrant::IMPLIED_BY_MANAGE_SETTINGS.include?(capability)
+
+    permission_grants.exists?(capability: "manage_settings")
   end
 
   def roster_email_mismatch?

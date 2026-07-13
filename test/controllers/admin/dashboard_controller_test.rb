@@ -19,14 +19,14 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "manage_settings-only admin does not see Agenda Item Catalog link" do
+  test "manage_settings-only admin sees Agenda Item Catalog link via implication" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: true, can_manage_agendas: false)
 
     get admin_root_path
 
     assert_response :success
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 1, text: "Agenda Item Catalog"
   end
 
   test "admin with manage_settings and manage_agendas sees Agenda Item Catalog link" do

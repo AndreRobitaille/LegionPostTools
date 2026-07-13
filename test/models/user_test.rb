@@ -181,4 +181,36 @@ class UserTest < ActiveSupport::TestCase
     assert user.login_access_override_at.present?
     assert_nil user.disabled_at
   end
+
+  test "manage_settings implies the management capabilities" do
+    person = Person.create!(first_name: "Ada", last_name: "Admin")
+    user = User.create!(person: person, email_address: "ada@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
+
+    assert user.can?("manage_agendas")
+    assert user.can?("manage_people")
+    assert user.can?("manage_meeting_bodies")
+    assert user.can?("manage_minutes")
+    assert user.can?("view_internal_records")
+  end
+
+  test "manage_settings does not imply the identity-bound attestation acts" do
+    person = Person.create!(first_name: "Ada", last_name: "Admin")
+    user = User.create!(person: person, email_address: "ada2@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
+
+    assert_not user.can?("attest_minutes")
+    assert_not user.can?("approve_minutes")
+    assert_not user.can?("record_acceptance_motions")
+  end
+
+  test "a manage_agendas grant alone grants only manage_agendas" do
+    person = Person.create!(first_name: "Sam", last_name: "Agenda")
+    user = User.create!(person: person, email_address: "sam2@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_agendas")
+
+    assert user.can?("manage_agendas")
+    assert_not user.can?("manage_settings")
+    assert_not user.can?("manage_people")
+  end
 end

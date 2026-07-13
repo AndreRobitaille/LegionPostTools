@@ -27,7 +27,7 @@ class Admin::PermissionGrantsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to person_path(user.person)
     assert_equal "At least one enabled administrator account is required.", flash[:alert]
-    assert_equal %w[manage_people manage_settings], user.reload.permission_grants.order(:capability).pluck(:capability)
+    assert_equal %w[manage_settings], user.reload.permission_grants.order(:capability).pluck(:capability)
   end
 
   test "can remove manage_settings when another enabled admin exists" do
