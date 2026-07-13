@@ -49,8 +49,19 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "h1", text: /Agenda Item Catalog/
     assert_select "body", text: /Opening Ceremony/
     assert_select "body", text: /Scripted ceremony/
+    assert_select "a.back[href=?]", root_path, text: /Dashboard/
+    assert_select "a.back[href=?]", admin_root_path, count: 0
     assert_select "form[action='#{admin_agenda_item_catalog_entry_path(active_entry)}'][method='post'] button", text: "Deactivate"
     assert_select "form[action='#{admin_agenda_item_catalog_entry_path(inactive_entry)}'][method='post'] button", text: "Reactivate"
+  end
+
+  test "index back link points to administration for manage_settings users" do
+    sign_in_as(user_with_capabilities("manage_agendas", "manage_settings"))
+
+    get admin_agenda_item_catalog_entries_path
+
+    assert_response :success
+    assert_select "a.back[href=?]", admin_root_path, text: /Administration/
   end
 
   test "create entry" do

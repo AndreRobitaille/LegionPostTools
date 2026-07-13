@@ -10,6 +10,8 @@
     <span class="nav-spacer"></span>
     <% if current_user.can?("manage_settings") %>
       <%= link_to admin_root_path, class: "#{nav_tab_class(:admin)} nav-tab--admin" do %><span class="nav-dia">◆</span> Admin<% end %>
+    <% elsif current_user.can?("manage_agendas") %>
+      <%= link_to admin_agenda_item_catalog_entries_path, class: "#{nav_tab_class(:admin)} nav-tab--admin" do %><span class="nav-dia">◆</span> Admin<% end %>
     <% end %>
   </div>
 </nav>

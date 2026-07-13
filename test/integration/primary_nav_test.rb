@@ -22,6 +22,14 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     user
   end
 
+  def sign_in_agenda_manager
+    person = Person.create!(first_name: "Sam", last_name: "Roe")
+    user = User.create!(person: person, email_address: "sam@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_agendas")
+    sign_in_as(user)
+    user
+  end
+
   test "authenticated shell renders the primary nav with core and soon tabs" do
     prepare_setup_complete_state
     sign_in_admin
@@ -40,6 +48,14 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     get root_path
     assert_select "nav.nav-bar a.nav-tab", text: "People"
     assert_select "nav.nav-bar a.nav-tab--admin", text: /Admin/
+  end
+
+  test "agenda manager sees Admin tab linking to catalog" do
+    prepare_setup_complete_state
+    sign_in_agenda_manager
+    get root_path
+    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_agenda_item_catalog_entries_path, text: /Admin/
+    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_root_path, count: 0
   end
 
   test "plain member sees People but not Admin tab" do

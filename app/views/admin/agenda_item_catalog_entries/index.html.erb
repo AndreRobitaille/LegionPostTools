@@ -1,5 +1,7 @@
 <% content_for :title, "Agenda Item Catalog" %>
-<a class="back" href="<%= admin_root_path %>">&larr; Administration</a>
+<% back_path = current_user.can?("manage_settings") ? admin_root_path : root_path %>
+<% back_label = current_user.can?("manage_settings") ? "Administration" : "Dashboard" %>
+<a class="back" href="<%= back_path %>">&larr; <%= back_label %></a>
 
 <div class="page-lead">
   <h1 class="page-title">Agenda Item Catalog</h1>
