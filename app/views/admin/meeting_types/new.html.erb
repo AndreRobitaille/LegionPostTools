@@ -1,0 +1,10 @@
+<% content_for :title, "New meeting type" %>
+<a class="back" href="<%= admin_meeting_types_path %>">&larr; Meeting Types</a>
+
+<div class="page-lead">
+  <h1 class="page-title">New meeting type</h1>
+</div>
+
+<div class="panel form-panel">
+  <%= render "form", meeting_type: @meeting_type %>
+</div>

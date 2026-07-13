@@ -1,0 +1,30 @@
+<%= form_with model: [:admin, meeting_type], class: "stacked-form" do |form| %>
+  <% if meeting_type.errors.any? %>
+    <div class="error-summary">
+      <h2><%= pluralize(meeting_type.errors.count, "error") %> prohibited this meeting type from being saved:</h2>
+      <ul>
+        <% meeting_type.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="fl">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "f" %>
+  </div>
+
+  <label class="form-toggle">
+    <%= form.check_box :active %>
+    <span>
+      <span class="ft-label">Active</span>
+      <span class="ft-help">Inactive meeting types stay in the list but are hidden from routine use.</span>
+    </span>
+  </label>
+
+  <div class="btnrow">
+    <%= form.submit "Save changes", class: "btn-primary" %>
+    <%= link_to "Cancel", admin_meeting_types_path, class: "btn-secondary" %>
+  </div>
+<% end %>

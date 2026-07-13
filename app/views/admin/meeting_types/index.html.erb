@@ -1,0 +1,31 @@
+<% content_for :title, "Meeting Types" %>
+<% back_path = current_user.can?("manage_settings") ? admin_root_path : root_path %>
+<% back_label = current_user.can?("manage_settings") ? "Administration" : "Dashboard" %>
+<a class="back" href="<%= back_path %>">&larr; <%= back_label %></a>
+
+<div class="page-lead">
+  <h1 class="page-title">Meeting Types</h1>
+  <p class="page-sub">Create reusable agenda templates for the kinds of meetings your post holds.</p>
+</div>
+
+<div class="btnrow">
+  <%= link_to "Add meeting type", new_admin_meeting_type_path, class: "btn-primary" %>
+</div>
+
+<div class="mrow-list">
+  <% @meeting_types.each do |meeting_type| %>
+    <%= link_to edit_admin_meeting_type_path(meeting_type),
+          class: "mrow#{' mrow--inactive' unless meeting_type.active?}",
+          aria: { label: "Edit #{meeting_type.name}" } do %>
+      <span class="mrow-id">
+        <span class="mrow-name"><%= meeting_type.name %></span>
+        <span class="mrow-sub"><%= pluralize(meeting_type.meeting_type_agenda_items.count, "template item") %></span>
+      </span>
+      <span class="catrow-meta">
+        <% unless meeting_type.active? %><%= agenda_active_tag(false) %><% end %>
+        <% unless meeting_type.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
+        <span class="catrow-edit">Edit<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
+      </span>
+    <% end %>
+  <% end %>
+</div>

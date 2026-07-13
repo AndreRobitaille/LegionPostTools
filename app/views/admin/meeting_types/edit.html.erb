@@ -1,0 +1,29 @@
+<% content_for :title, "Edit #{@meeting_type.name}" %>
+<a class="back" href="<%= admin_meeting_types_path %>">&larr; Meeting Types</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Edit <%= @meeting_type.name %></h1>
+</div>
+
+<div class="panel form-panel">
+  <%= render "form", meeting_type: @meeting_type %>
+</div>
+
+<div class="sec-head-row" style="margin-top: 22px">
+  <%= render "shared/section_header", label: "Template agenda" %>
+</div>
+
+<div class="mrow-list">
+  <% @template_items.each do |item| %>
+    <div class="mrow">
+      <span class="mrow-id">
+        <span class="mrow-name"><%= item.title %></span>
+        <% if item.summary.present? %><span class="mrow-sub"><%= item.summary %></span><% end %>
+      </span>
+      <span class="catrow-meta">
+        <% unless item.active? %><%= agenda_active_tag(false) %><% end %>
+        <% unless item.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
+      </span>
+    </div>
+  <% end %>
+</div>
