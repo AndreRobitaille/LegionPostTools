@@ -129,16 +129,17 @@ The first real Post 165 production setup was completed on `members.wipost165.org
 - Sign-out worked from the production dashboard.
 - A production magic-link email was delivered to `andre@xyzmodem.com` through Loops.
 - Opening the magic-link confirmation screen and choosing **Finish signing in** returned to the authenticated production dashboard.
+- Passkey registration and passkey sign-in worked on the real production hostname with the administrator's browser/device.
+- Roster import and admin access-control workflows worked with production-safe data.
+- A production probe request confirmed Rails logged the real client IP in `request.remote_ip` behind Kamal Proxy.
+- Backup and restore are handled as server-side operations outside the application roadmap.
 - The persistent SSH control master used for production checks was torn down afterward.
 
 Do not record magic-link tokens, passkey ceremony data, Rails credentials, database passwords, or API keys in documentation or commits.
 
 Still pending for production-hardening, before broader member invitation:
 
-- Verify passkey registration and passkey sign-in on the real production hostname with the administrator's own browser/device.
-- Rehearse and record backup/restore for the Post 165 Postgres accessory and Active Storage volume.
 - Verify Active Storage persistence across a container restart after file-upload workflows exist.
-- Verify that `request.remote_ip` resolves to real client IPs behind Kamal Proxy before relying on auth rate-limit behavior at member scale.
 
 ## Repeat hosted install checklist
 

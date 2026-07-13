@@ -44,16 +44,16 @@ Completed for the first production setup:
 - Followed persistent SSH control-master discipline before Kamal and SSH-heavy production work, then tore the connection down afterward.
 - Completed first-run setup for Robert E. Burns Post 165.
 - Verified HTTPS app availability, health check, production magic-link delivery, production magic-link sign-in, and administrator dashboard access on the real hostname.
+- Verified production passkey registration and passkey sign-in.
+- Verified roster import and admin access-control workflows.
+- Verified that `request.remote_ip` resolves to the real client IP behind the Kamal proxy.
 - Confirmed the co-hosted TwoRiversReporter app still responded after deployment.
+- Backup and restore are handled as server-side operations outside the application roadmap.
 - Updated deployment documentation so the same pattern can later be repeated for another hosted American Legion post or unit without creating a SaaS/multi-tenant app.
 
 Still pending before inviting broader member use:
 
-- Verify production passkey registration and passkey sign-in on the administrator's own browser/device.
-- Rehearse and record production backup/restore for the Post 165 databases and Active Storage volume.
 - Verify storage persistence across a container restart after file-upload workflows exist.
-- Verify roster import and admin access-control workflows using production-safe data.
-- After deploying behind the Kamal proxy, verify that `request.remote_ip` resolves to real client IPs (not the proxy). The auth rate limits key on it; if it resolves to the proxy, all clients share one throttle bucket and sign-in could be throttled globally. Configure `trusted_proxies` if needed.
 
 ## Immediate Next: Structured Agendas
 
