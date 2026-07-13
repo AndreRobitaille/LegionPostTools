@@ -36,7 +36,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: "Agenda Item Catalog"
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 1, text: "Agenda Item Catalog"
   end
 
   test "landing shows roster, positions, and administrators panels" do
