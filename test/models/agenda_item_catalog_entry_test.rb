@@ -10,13 +10,53 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
       title: "Opening Ceremony",
       slug: "opening-ceremony",
       category: "not_a_category",
-      behavior_type: "scripted_ceremony",
+      behavior_type: "not_a_behavior_type",
       position: 1,
       active: true
     )
 
     assert_not entry.valid?
     assert_includes entry.errors[:category], "is not included in the list"
+    assert_includes entry.errors[:behavior_type], "is not included in the list"
+  end
+
+  test "normalizes blank source keys to nil and allows duplicates" do
+    first = @organization.agenda_item_catalog_entries.create!(
+      title: "Opening Ceremony",
+      slug: "opening-ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true,
+      source_key: ""
+    )
+
+    second = @organization.agenda_item_catalog_entries.create!(
+      title: "Closing Ceremony",
+      slug: "closing-ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 2,
+      active: true,
+      source_key: nil
+    )
+
+    assert_nil first.source_key
+    assert_nil second.source_key
+  end
+
+  test "normalizes nil summary to an empty string" do
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Opening Ceremony",
+      slug: "opening-ceremony",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true,
+      summary: nil
+    )
+
+    assert_equal "", entry.summary
   end
 
   test "normalizes slug and enforces organization scoped uniqueness" do

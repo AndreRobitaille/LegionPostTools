@@ -21,9 +21,9 @@ class AgendaItemCatalogEntry < ApplicationRecord
   has_rich_text :body
 
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }
+  before_validation :normalize_optional_fields
 
   validates :title, :slug, :category, :behavior_type, presence: true
-  validates :summary, presence: true, allow_blank: true
   validates :category, inclusion: { in: CATEGORIES.keys }
   validates :behavior_type, inclusion: { in: BEHAVIOR_TYPES.keys }
   validates :slug, uniqueness: { scope: :organization_id }
@@ -43,5 +43,12 @@ class AgendaItemCatalogEntry < ApplicationRecord
 
   def seeded?
     source_key.present?
+  end
+
+  private
+
+  def normalize_optional_fields
+    self.summary = summary.to_s
+    self.source_key = source_key&.strip.presence
   end
 end
