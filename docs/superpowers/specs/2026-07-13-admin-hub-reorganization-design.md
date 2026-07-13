@@ -171,10 +171,14 @@ security boundary, and they benefit from the same superset rule.
    tile links to a focused list of current admins, each handing off to their person page
    for grant changes.
 
-## Open Question
+4. **Attestation exclusion confirmed.** The superset excludes the identity-bound official
+   acts (`approve_minutes`, `attest_minutes`, `record_acceptance_motions`); those stay
+   explicit personal grants so a tech-support admin cannot sign/attest as though they were
+   the officer.
 
-- **Attestation exclusion.** The superset deliberately excludes the identity-bound official
-  acts (`approve_minutes`, `attest_minutes`, `record_acceptance_motions`) to preserve
-  official-record authenticity — a tech-support admin should not be able to sign/attest as
-  though they were the officer. Confirm this exclusion, or state that admins should override
-  even these when stepping in.
+## Guiding Principle
+
+Keep the capability boundary simple. Do not build technical solutions for administrative
+problems — the exclusion above is a plain capability line, not an enforcement/audit system.
+If someone abuses their access, that is handled in the real world through discipline, not by
+layering more machinery into the app. Applies to this work and future access decisions.
