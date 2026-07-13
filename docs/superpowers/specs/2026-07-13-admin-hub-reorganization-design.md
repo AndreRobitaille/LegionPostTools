@@ -56,26 +56,26 @@ count is low; if membership tools grow, split a dedicated "Membership" section o
 
 ### Tile inventory
 
-Real tiles link to focused pages. "Coming soon" tiles are dashed placeholders that show
-the structure without implying the feature exists — consistent with the existing primary
-nav "Soon" chips.
+Only **built** features get tiles. No "coming soon" placeholders — the hub shows what a
+viewer can actually do, nothing more. Sections stay in place as the organizing frame and
+fill in as features land, even while some sections hold a single tile today.
 
 **Meetings & Roster**
-- **Roster** *(real)* — carries its own status. When an import is due the tile turns amber,
-  wears an "Import due" pill, shows the last-imported date, and holds the **Import roster**
-  primary button. When current, it reads calm with a "View imports" action. This replaces
-  the old full-width amber banner: status lives on its subject.
-- **Agenda Catalog** *(real)* — links to the existing catalog page.
-- **Meeting Templates** *(coming soon)*.
+- **Roster** — carries its own status. When an import is due the tile turns amber, wears an
+  "Import due" pill, shows the last-imported date, and holds the **Import roster** primary
+  button. When current, it reads calm with a "View imports" action. This replaces the old
+  full-width amber banner: status lives on its subject.
+- **Agenda Catalog** — links to the existing catalog page.
 
 **Officers & Elections**
-- **Post Positions** *(real)* — the offices the post fills, their wording, and their order.
-- **Officer Assignments** *(coming soon)* — who currently holds each office (assignments
-  live on person pages today; this is future centralization).
+- **Post Positions** — the offices the post fills, their wording, and their order.
 
 **Setup & Administration**
-- **Administrators** *(real)* — who can administer the app; links to a focused list.
-- **Post Details** *(coming soon)* — post name, number, department identity.
+- **Administrators** — who can administer the app; links to a focused list.
+
+Today that is four real tiles. The three sections will look sparse initially (Officers &
+Elections and Setup & Administration each hold one tile); that is accepted — the sections
+are the growth frame, and the names are ones officers recognize.
 
 Icons: retained on tiles as lightweight recognition aids (they matched the app's tone in
 review). They are decorative, not the primary signal — the text label carries meaning.
@@ -94,28 +94,49 @@ today must move to their own pages:
 
 Roster imports and the agenda catalog already have focused pages and are reused as-is.
 
-### Hub reachability and capability-aware tiles
+### Capabilities and access
 
-Today the hub requires `manage_settings`, so agenda-only managers (`manage_agendas`) are
-routed by the nav directly to the catalog, bypassing the hub. The redesign makes the hub
-**reachable by any admin-capable user** and renders **each tile according to the viewer's
-capabilities**:
+Two coupled decisions drive the access model:
 
-- `manage_settings` sees all real tiles.
-- `manage_agendas` without `manage_settings` sees the hub with only the tiles they can use
-  (Agenda Catalog), and does not see Post Positions, Administrators, roster import, etc.
+**Admins are the tool's tech support (full management access).** `manage_settings` becomes
+a **superset** capability: holding it satisfies every *management* capability check, so an
+administrator can step in and do things when other officers struggle — including opening
+the Agenda Catalog without a separate `manage_agendas` grant. Today `User#can?` is a strict
+exact-match; it will be changed so that a `manage_settings` grant implies the management
+capabilities:
+
+- Implied by `manage_settings`: `manage_people`, `manage_meeting_bodies`, `manage_agendas`,
+  `manage_minutes`, `view_internal_records` (the configuration/management surface).
+- **Not** implied — deliberately excluded: `approve_minutes`, `attest_minutes`,
+  `record_acceptance_motions`. These are identity-bound official acts (attestation is
+  effectively a signature); auto-granting them to a tech-support admin would undercut
+  official-record authenticity. They remain explicit personal grants. *(Confirm — this is
+  a product-philosophy call. See Open Questions.)*
+
+The existing last-administrator protections (`another_enabled_manage_settings_user_exists?`,
+`can_be_disabled?`) query `permission_grants` directly, not through `can?`, so the superset
+change does not weaken them.
+
+**Capability-aware hub, reachable to any admin-capable user.** The hub is no longer
+`manage_settings`-only. It renders **each tile according to the viewer's capabilities** and
+is reachable by anyone who can use at least one tile:
+
+- A full admin (`manage_settings`) sees all four tiles.
+- A `manage_agendas`-only manager sees the hub with just the Agenda Catalog tile; the
+  Officers & Elections and Setup & Administration sections do not appear for them.
 - A section with no visible tiles for the viewer is hidden entirely.
 
-This removes the nav special-case and gives every admin a consistent front door. Each
-underlying page keeps its own `require_capability` guard — the hub only decides what to
-*show*; the pages remain the security boundary.
+This removes the nav special-case (which currently routes agenda managers past the hub) and
+gives every admin a consistent front door. Each underlying page keeps its own
+`require_capability` guard — the hub only decides what to *show*; the pages remain the
+security boundary, and they benefit from the same superset rule.
 
 ## Non-Goals
 
-- No new functional features. "Coming soon" tiles are wayfinding only; nothing behind them
-  is built here.
+- No new functional features and no "coming soon" placeholders — only built tiles appear.
 - No persistent sidebar, no accordion.
-- No change to how permissions are granted (still per-person on the person page).
+- No change to how permissions are *granted* (still per-person on the person page). The
+  superset change affects only how a `manage_settings` grant is *interpreted*.
 - No drill-through category pages — the hub is a single page with three sections; tiles go
   straight to the task.
 - No Post 165 hard-coding; post-specific values stay in setup data/config.
@@ -140,12 +161,20 @@ underlying page keeps its own `require_capability` guard — the hub only decide
 - Adding a future admin tool means adding one tile (and its page), not another scroll panel.
 - The page passes a readability check against the visual design system minimums.
 
-## Open Questions for Spec Review
+## Resolved Decisions
 
-1. **Capability-aware hub** — fold in now (recommended, removes the nav special-case), or
-   keep the hub `manage_settings`-only for a first pass and leave agenda managers on their
-   direct link?
-2. **"Coming soon" tiles** — keep them for structural wayfinding, or show only built tiles
-   until each feature lands?
-3. **Administrators tile** — a dedicated focused list page, or is a lighter treatment
-   (e.g. linking straight into the People area filtered to administrators) enough?
+1. **Capability-aware hub — yes, folded in now.** The hub is reachable to any admin-capable
+   user and renders tiles per capability, removing the nav special-case.
+2. **No "coming soon" tiles.** Only built features appear.
+3. **Admins get full management access.** `manage_settings` becomes a superset over the
+   management capabilities so administrators can act as tech support. The Administrators
+   tile links to a focused list of current admins, each handing off to their person page
+   for grant changes.
+
+## Open Question
+
+- **Attestation exclusion.** The superset deliberately excludes the identity-bound official
+  acts (`approve_minutes`, `attest_minutes`, `record_acceptance_motions`) to preserve
+  official-record authenticity — a tech-support admin should not be able to sign/attest as
+  though they were the officer. Confirm this exclusion, or state that admins should override
+  even these when stepping in.
