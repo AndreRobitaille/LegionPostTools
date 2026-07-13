@@ -64,6 +64,7 @@ Completed for Structured Agendas foundation:
 - Organization-owned agenda item catalog with editable local copies.
 - Lean regular-meeting baseline seeded from The American Legion Officer's Guide and Manual of Ceremonies.
 - Admin management for catalog categories, behavior types, active status, and rich text/script bodies.
+- Meeting type templates: seeded PEC Meeting and Membership Meeting, admin-created meeting types, catalog-item picker, template-specific rich text wording overrides, and item ordering/removal.
 
 Still pending:
 
