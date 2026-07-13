@@ -28,6 +28,7 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: /Meeting Types/
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda Item Catalog/
     assert_select "body", text: /PEC Meeting/
     assert_select "body", text: /Membership Meeting/
   end
