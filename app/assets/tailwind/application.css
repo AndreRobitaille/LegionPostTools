@@ -491,9 +491,10 @@
 .tile .tile-t { font-size: 18px; font-weight: 800; color: var(--color-navy); margin: 0 0 5px; }
 .tile .tile-d { font-size: 15px; color: var(--color-muted); line-height: 1.42; margin: 0 0 14px; flex: 1; }
 .tile .tile-actions { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
-.tile .tile-act { font-size: 15px; font-weight: 700; color: var(--color-legionred); text-decoration: none; }
+/* Interactive text (tile links + Import button) stays >= 16px per the readability hard rule. */
+.tile .tile-act { font-size: 16px; font-weight: 700; color: var(--color-legionred); text-decoration: none; }
 .tile .tile-act:hover { text-decoration: underline; }
-.tile .tile-btn { display: inline-block; font-size: 15px; font-weight: 800; color: #fff; background: var(--color-legionred); border-radius: 8px; padding: 9px 15px; text-decoration: none; }
+.tile .tile-btn { display: inline-block; font-size: 16px; font-weight: 800; color: #fff; background: var(--color-legionred); border-radius: 8px; padding: 9px 15px; text-decoration: none; }
 .tile .tile-status { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; color: var(--color-gold-ink); background: #f0e2c2; border-radius: 20px; padding: 3px 10px; margin: 0 0 10px; }
 .tile .tile-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-gold-ink); }
 .tile .tile-status.ok { color: var(--color-green); background: #dfebd9; }

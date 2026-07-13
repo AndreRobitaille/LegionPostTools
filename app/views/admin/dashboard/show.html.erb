@@ -30,7 +30,9 @@
             <% else %>
               No roster has been imported yet.
             <% end %>
-            Upload the latest National roster to bring the post current.
+            <% if @roster_stale %>
+              Upload the latest National roster to bring the post current.
+            <% end %>
           </p>
           <div class="tile-actions">
             <%= link_to "Import roster", new_admin_roster_import_path, class: "tile-btn" %>
