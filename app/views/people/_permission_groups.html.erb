@@ -10,7 +10,7 @@
         <div class="gname"><%= label %></div>
         <% caps.each do |cap| %>
           <label class="perm">
-            <%= check_box_tag "permission_grant[capabilities][]", cap, @user.can?(cap) %>
+            <%= check_box_tag "permission_grant[capabilities][]", cap, @user.permission_grants.exists?(capability: cap) %>
             <%= cap.humanize %>
           </label>
         <% end %>

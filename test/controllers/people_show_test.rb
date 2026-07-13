@@ -105,6 +105,20 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_select "input[type=submit], button", text: /Disable sign-in/, count: 0
   end
 
+  test "permission checkboxes reflect literal grants, not implied capabilities" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    user = User.create!(person: person, email_address: "vincent.grant@example.com", email_verified_at: Time.current)
+    PermissionGrant.create!(user: user, capability: "manage_settings")
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select "input[name='permission_grant[capabilities][]'][value=manage_settings][checked]"
+    assert_select "input[name='permission_grant[capabilities][]'][value=manage_agendas][checked]", count: 0
+  end
+
   test "officer show loads position titles for the current organization" do
     prepare_setup_complete_state
     sign_in_officer
