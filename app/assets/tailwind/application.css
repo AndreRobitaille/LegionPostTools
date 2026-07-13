@@ -64,7 +64,20 @@
 .entry-lead { color: #4f5f72; font-size: 16px; margin: 0 0 18px; line-height: 1.55; }
 .entry-field { margin-bottom: 4px; }
 .entry-field label { display: block; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #6a5320; margin-bottom: 7px; }
-.entry-field input { width: 100%; font-size: 17px; padding: 15px 15px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); }
+.entry-field input,
+.entry-field select,
+.entry-field textarea { width: 100%; font-size: 17px; padding: 15px 15px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); font-family: inherit; }
+.entry-field textarea { resize: vertical; line-height: 1.5; }
+.entry-field select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%236a5320' stroke-width='2'/></svg>"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+.entry-opt { font-size: 12px; letter-spacing: .04em; font-weight: 600; color: #9a8659; text-transform: none; }
+.entry-help { font-size: 14px; color: #6b7684; margin: 7px 2px 0; line-height: 1.45; }
+.entry-col-wide { max-width: 520px; }
+.entry-row { display: flex; gap: 14px; }
+.entry-row .entry-field { flex: 1; }
+.setup-sec { display: flex; align-items: center; gap: 8px; margin: 26px 0 14px; color: var(--color-navy); font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; border-top: 1px solid #e2d4ab; padding-top: 18px; }
+.setup-sec:first-of-type { border-top: 0; padding-top: 4px; margin-top: 6px; }
+.setup-sec-mark { color: var(--color-gold); font-size: 10px; }
+.setup-sec-note { font-weight: 600; letter-spacing: .02em; text-transform: none; color: #6b7684; font-size: 13px; }
 .entry-btn { width: 100%; margin-top: 16px; background: var(--color-navy); color: #fff; border: 0; padding: 16px; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
 .entry-reassure { font-size: 14px; color: #5b6b7e; margin: 14px 2px 0; line-height: 1.55; text-align: center; }
 .entry-orline { display: flex; align-items: center; gap: 12px; color: #8a7a53; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; margin: 20px 0; }

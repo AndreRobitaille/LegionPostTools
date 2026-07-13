@@ -5,7 +5,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     get new_setup_path
 
     assert_response :success
-    assert_select "h1", "Set up LegionPostTools"
+    assert_select "h1", "LegionPostTools"
+    assert_select "input[type=submit][value=?]", "Create your post"
   end
 
   test "creates organization first person user permissions and preset data" do
@@ -67,7 +68,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "h1", "Set up LegionPostTools"
+    assert_select "h1", "LegionPostTools"
+    assert_select "input[type=submit][value=?]", "Create your post"
   end
 
   test "setup cannot be reopened after setup exists" do
@@ -88,7 +90,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     get new_setup_path
 
     assert_response :success
-    assert_select "h1", "Set up LegionPostTools"
+    assert_select "h1", "LegionPostTools"
+    assert_select "input[type=submit][value=?]", "Create your post"
   end
 
   test "user without organization still shows setup" do
@@ -99,7 +102,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     get new_setup_path
 
     assert_response :success
-    assert_select "h1", "Set up LegionPostTools"
+    assert_select "h1", "LegionPostTools"
+    assert_select "input[type=submit][value=?]", "Create your post"
   end
 
   test "both organization and user without setup completion redirects new setup to session sign in" do

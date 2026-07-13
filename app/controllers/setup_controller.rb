@@ -1,4 +1,6 @@
 class SetupController < ApplicationController
+  layout "entry"
+
   skip_before_action :redirect_to_setup_if_needed
   before_action :redirect_if_already_configured
   before_action :redirect_if_setup_recovery_required

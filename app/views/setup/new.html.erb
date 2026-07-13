@@ -1,40 +1,113 @@
-<h1>Set up LegionPostTools</h1>
+<% content_for :title, "Set up your post" %>
 
-<%= form_with url: setup_path, method: :post do %>
-  <%= hidden_field_tag :preset, "american_legion_post" %>
+<div class="entry">
+  <div class="entry-hero">
+    <div class="entry-rays"></div>
+    <div class="entry-fade"></div>
 
-  <fieldset>
-    <legend>Organization</legend>
-    <%= label_tag "organization_name", "Organization name" %>
-    <%= text_field_tag "organization[name]", nil, required: true %>
+    <div class="entry-col entry-col-wide">
+      <%= image_tag "al-emblem.png", alt: "The American Legion emblem", class: "entry-emb" %>
+      <div class="entry-kick">First-time setup</div>
+      <h1 class="entry-title">LegionPostTools</h1>
+      <div class="entry-diamonds">&#9670; &#9670; &#9670;</div>
+      <div class="entry-loc">Let&rsquo;s set up your post</div>
 
-    <%= label_tag "organization_unit_number", "Unit number" %>
-    <%= text_field_tag "organization[unit_number]" %>
+      <div class="entry-card">
+        <% if flash[:alert] %>
+          <div class="entry-flash entry-flash-alert"><%= flash[:alert] %></div>
+        <% end %>
 
-    <%= label_tag "organization_locality", "City and state" %>
-    <%= text_field_tag "organization[locality]", nil, placeholder: "Two Rivers, WI" %>
+        <p class="entry-lead">
+          This one-time setup creates your post and your own administrator account.
+          You can change any of it later in Settings.
+        </p>
 
-    <%= label_tag "organization_timezone", "Timezone" %>
-    <%= text_field_tag "organization[timezone]", "America/Chicago", required: true %>
+        <%= form_with url: setup_path, method: :post do %>
+          <%= hidden_field_tag :preset, "american_legion_post" %>
 
-    <%= label_tag "organization_default_location_name", "Default location name" %>
-    <%= text_field_tag "organization[default_location_name]" %>
+          <div class="setup-sec">
+            <span class="setup-sec-mark">&#9670;</span> Your post
+          </div>
 
-    <%= label_tag "organization_default_location_address", "Default location address" %>
-    <%= text_area_tag "organization[default_location_address]" %>
-  </fieldset>
+          <div class="entry-field">
+            <%= label_tag "organization_name", "Post name" %>
+            <%= text_field_tag "organization[name]", params.dig(:organization, :name),
+                  id: "organization_name", required: true,
+                  placeholder: "Robert E. Burns Post 165" %>
+          </div>
 
-  <fieldset>
-    <legend>First person</legend>
-    <%= label_tag "person_first_name", "First name" %>
-    <%= text_field_tag "person[first_name]", nil, required: true %>
+          <div class="entry-field">
+            <%= label_tag "organization_unit_number" do %>
+              Unit number <span class="entry-opt">optional</span>
+            <% end %>
+            <%= text_field_tag "organization[unit_number]", params.dig(:organization, :unit_number),
+                  id: "organization_unit_number", placeholder: "165" %>
+          </div>
 
-    <%= label_tag "person_last_name", "Last name" %>
-    <%= text_field_tag "person[last_name]", nil, required: true %>
+          <div class="entry-field">
+            <%= label_tag "organization_locality" do %>
+              City and state <span class="entry-opt">optional</span>
+            <% end %>
+            <%= text_field_tag "organization[locality]", params.dig(:organization, :locality),
+                  id: "organization_locality", placeholder: "Two Rivers, WI" %>
+          </div>
 
-    <%= label_tag "person_email_address", "Email address" %>
-    <%= email_field_tag "person[email_address]", nil, required: true %>
-  </fieldset>
+          <div class="entry-field">
+            <%= label_tag "organization_timezone", "Timezone" %>
+            <%= select_tag "organization[timezone]",
+                  options_for_select(
+                    ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.tzinfo.name] },
+                    params.dig(:organization, :timezone) || "America/Chicago"
+                  ),
+                  id: "organization_timezone", required: true %>
+            <p class="entry-help">Used to show meeting dates and times in your local time.</p>
+          </div>
 
-  <%= submit_tag "Create organization" %>
-<% end %>
+          <div class="entry-field">
+            <%= label_tag "organization_default_location_name" do %>
+              Where you usually meet <span class="entry-opt">optional</span>
+            <% end %>
+            <%= text_field_tag "organization[default_location_name]", params.dig(:organization, :default_location_name),
+                  id: "organization_default_location_name", placeholder: "Manitowoc Rifle & Pistol Club" %>
+          </div>
+
+          <div class="entry-field">
+            <%= label_tag "organization_default_location_address" do %>
+              Meeting address <span class="entry-opt">optional</span>
+            <% end %>
+            <%= text_area_tag "organization[default_location_address]", params.dig(:organization, :default_location_address),
+                  id: "organization_default_location_address", rows: 2,
+                  placeholder: "7227 Sandy Hill Lane\nTwo Rivers, WI" %>
+          </div>
+
+          <div class="setup-sec">
+            <span class="setup-sec-mark">&#9670;</span> You <span class="setup-sec-note">&mdash; the first administrator</span>
+          </div>
+
+          <div class="entry-row">
+            <div class="entry-field">
+              <%= label_tag "person_first_name", "First name" %>
+              <%= text_field_tag "person[first_name]", params.dig(:person, :first_name),
+                    id: "person_first_name", required: true, autocomplete: "given-name" %>
+            </div>
+            <div class="entry-field">
+              <%= label_tag "person_last_name", "Last name" %>
+              <%= text_field_tag "person[last_name]", params.dig(:person, :last_name),
+                    id: "person_last_name", required: true, autocomplete: "family-name" %>
+            </div>
+          </div>
+
+          <div class="entry-field">
+            <%= label_tag "person_email_address", "Email address" %>
+            <%= email_field_tag "person[email_address]", params.dig(:person, :email_address),
+                  id: "person_email_address", required: true, autocomplete: "email",
+                  placeholder: "you@example.com" %>
+            <p class="entry-help">You&rsquo;ll sign in with this address &mdash; no password to remember.</p>
+          </div>
+
+          <%= submit_tag "Create your post", class: "entry-btn" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
