@@ -36,13 +36,24 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 As a bounded operational track, prepare the first real production installation for Robert E. Burns Post 165. This does not replace Structured Agendas as the next core product workflow.
 
-- Configure `members.wipost165.org` on the shared Hetzner VPS as a separate Kamal service.
-- Use install-specific names such as `legion_post_165_wi_tools` for service, databases, and volumes.
-- Use a dedicated PostgreSQL accessory and Active Storage volume for this install.
-- Follow persistent SSH control-master discipline before any Kamal or SSH-heavy production work.
-- Rehearse production on the real hostname before inviting members.
-- Verify HTTPS, WebAuthn/passkeys, magic links, roster import, admin access control, backups, restore, and storage persistence.
-- Update deployment documentation so the same pattern can later be repeated for another hosted American Legion post or unit without creating a SaaS/multi-tenant app.
+Completed for the first production setup:
+
+- Configured `members.wipost165.org` on the shared Hetzner VPS as a separate Kamal service.
+- Used install-specific names such as `legion_post_165_wi_tools` for service, databases, and volumes.
+- Provisioned a dedicated PostgreSQL accessory and Active Storage volume for this install.
+- Followed persistent SSH control-master discipline before Kamal and SSH-heavy production work, then tore the connection down afterward.
+- Completed first-run setup for Robert E. Burns Post 165.
+- Verified HTTPS app availability, health check, production magic-link delivery, production magic-link sign-in, and administrator dashboard access on the real hostname.
+- Confirmed the co-hosted TwoRiversReporter app still responded after deployment.
+- Updated deployment documentation so the same pattern can later be repeated for another hosted American Legion post or unit without creating a SaaS/multi-tenant app.
+
+Still pending before inviting broader member use:
+
+- Verify production passkey registration and passkey sign-in on the administrator's own browser/device.
+- Rehearse and record production backup/restore for the Post 165 databases and Active Storage volume.
+- Verify storage persistence across a container restart after file-upload workflows exist.
+- Verify roster import and admin access-control workflows using production-safe data.
+- After deploying behind the Kamal proxy, verify that `request.remote_ip` resolves to real client IPs (not the proxy). The auth rate limits key on it; if it resolves to the proxy, all clients share one throttle bucket and sign-in could be throttled globally. Configure `trusted_proxies` if needed.
 
 ## Immediate Next: Structured Agendas
 
@@ -84,10 +95,6 @@ With authentication and roster-backed administration in place, build the meeting
 - Longer-term deployment hardening beyond the Production Readiness Side-Roadmap.
 - Harden Kamal production deployment for repeatable future installs.
 - Expand deployment automation and operational checks for additional American Legion posts or units.
-- After deploying behind the Kamal proxy, verify that `request.remote_ip` resolves to real
-  client IPs (not the proxy). The auth rate limits key on it; if it resolves to the proxy, all
-  clients share one throttle bucket and sign-in could be throttled globally. Configure
-  `trusted_proxies` if needed.
 
 ## Security and Account Continuity
 

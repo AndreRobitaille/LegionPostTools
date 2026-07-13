@@ -13,6 +13,7 @@ The app is not a SaaS or multi-tenant platform. Each installation gets its own K
 - Hostname: `members.wipost165.org`
 - Server: shared Hetzner VPS `178.156.250.235`
 - Co-hosted app: `TwoRiversReporter`
+- First production setup: completed for Robert E. Burns Post 165 on July 12, 2026.
 
 Primary deployment flow is from the local repo with `bin/kamal deploy`. Use `bin/kamal setup` for the First install only, when provisioning a new deployment target. Do not use a server-side git clone or web UI as the primary flow.
 
@@ -104,6 +105,40 @@ Passkeys require HTTPS and do not work by IP address.
 7. Run `bin/kamal deploy` from the local repo.
 8. Verify the app, sign-in email, passkeys, and persistence.
 9. Tear down the SSH control master.
+
+## Post 165 production acceptance record
+
+The first real Post 165 production setup was completed on `members.wipost165.org` with the following acceptance evidence:
+
+- `bin/kamal setup` completed successfully for the initial install.
+- `https://members.wipost165.org/up` returned HTTP `200`.
+- `https://members.wipost165.org/` loaded the production app.
+- The shared Hetzner host still served the existing `TwoRiversReporter` app at `https://tworiversmatters.com/` after setup.
+- Running containers included the Post 165 web container, the Post 165 Postgres accessory, the existing TwoRiversReporter containers, and `kamal-proxy`.
+- The Post 165 Postgres accessory contained the expected databases:
+  - `legion_post_165_wi_tools_production`
+  - `legion_post_165_wi_tools_production_cache`
+  - `legion_post_165_wi_tools_production_queue`
+- The first-run setup wizard was completed with:
+  - Organization: `Robert E. Burns Post 165`
+  - Unit number: `165`
+  - City/state: `Two Rivers, WI`
+  - Default meeting location: `Manitowoc Rifle & Pistol Club`, `7227 Sandy Hill Ln, Two Rivers, WI 54241`
+  - Initial administrator email: `andre@xyzmodem.com`
+- The authenticated dashboard loaded after setup and showed the Post 165 identity, primary navigation, admin access, and the passkey invitation card.
+- Sign-out worked from the production dashboard.
+- A production magic-link email was delivered to `andre@xyzmodem.com` through Loops.
+- Opening the magic-link confirmation screen and choosing **Finish signing in** returned to the authenticated production dashboard.
+- The persistent SSH control master used for production checks was torn down afterward.
+
+Do not record magic-link tokens, passkey ceremony data, Rails credentials, database passwords, or API keys in documentation or commits.
+
+Still pending for production-hardening, before broader member invitation:
+
+- Verify passkey registration and passkey sign-in on the real production hostname with the administrator's own browser/device.
+- Rehearse and record backup/restore for the Post 165 Postgres accessory and Active Storage volume.
+- Verify Active Storage persistence across a container restart after file-upload workflows exist.
+- Verify that `request.remote_ip` resolves to real client IPs behind Kamal Proxy before relying on auth rate-limit behavior at member scale.
 
 ## Repeat hosted install checklist
 
