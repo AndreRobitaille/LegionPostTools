@@ -14,15 +14,17 @@ class MeetingTypeAgendaItem < ApplicationRecord
   scope :ordered, -> { order(:position, :title) }
   scope :active, -> { where(active: true) }
 
-  def self.create_from_catalog_entry!(catalog_entry, position:)
-    create!(
+  def self.create_from_catalog_entry!(catalog_entry, position:, meeting_type: nil)
+    attributes = {
       agenda_item_catalog_entry: catalog_entry,
       position: position,
       title: catalog_entry.title,
       summary: catalog_entry.summary,
       active: true,
       body: catalog_entry.body.to_s
-    )
+    }
+
+    meeting_type ? meeting_type.meeting_type_agenda_items.create!(attributes) : create!(attributes)
   end
 
   def seeded?

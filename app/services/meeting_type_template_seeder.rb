@@ -49,10 +49,12 @@ class MeetingTypeTemplateSeeder
   end
 
   def seed!
-    AgendaItemCatalogSeeder.seed_for!(organization)
+    organization.with_lock do
+      AgendaItemCatalogSeeder.seed_for!(organization)
 
-    ApplicationRecord.transaction do
-      MEETING_TYPES.each { |definition| seed_meeting_type(definition) }
+      ApplicationRecord.transaction do
+        MEETING_TYPES.each { |definition| seed_meeting_type(definition) }
+      end
     end
   end
 
@@ -82,14 +84,10 @@ class MeetingTypeTemplateSeeder
     item = meeting_type.meeting_type_agenda_items.find_or_initialize_by(source_key: source_key)
     return unless item.new_record?
 
-    item.agenda_item_catalog_entry = catalog_entry
-    item.position = position
-    item.title = catalog_entry.title
-    item.summary = catalog_entry.summary
-    item.active = true
+    item = MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: position, meeting_type: meeting_type)
+    item.source_key = source_key
     item.source_label = SOURCE_LABEL
     item.seeded_at = Time.current
-    item.body = catalog_entry.body.to_s
     item.save!
   end
 end
