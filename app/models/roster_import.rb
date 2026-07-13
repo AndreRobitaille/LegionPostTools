@@ -37,6 +37,13 @@ class RosterImport < ApplicationRecord
     first.is_a?(Hash) ? first["message"] : first
   end
 
+  # Problems as {message:, row:, kind:} hashes, tolerant of older imports (or raw
+  # CSV parse failures) whose summary stored problems as plain strings. Display and
+  # partition code can then treat every entry uniformly.
+  def normalized_problems
+    problems.map { |problem| problem.is_a?(Hash) ? problem : { "message" => problem } }
+  end
+
   def access_effects
     summary&.fetch("access_effects", {}) || {}
   end

@@ -37,7 +37,7 @@ module Admin
 
     def show
       @roster_import = RosterImport.find(params[:id])
-      @problems = @roster_import.problems
+      @problems = @roster_import.normalized_problems
       @removed_members = @roster_import.removed_members
       @superseded = @roster_import.status == "pending_confirmation" && @roster_import.superseded?
       # Governance notices (last-admin protection, unsupported status) are shown apart from

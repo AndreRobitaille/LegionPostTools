@@ -139,6 +139,34 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".imp", minimum: 2
   end
 
+  test "index renders a failed import whose problems are stored as plain strings" do
+    prepare_setup_complete_state
+    sign_in_admin
+    RosterImport.create!(
+      status: "failed", imported_at: 1.hour.ago, uploaded_filename: "broken.csv",
+      summary: { "problems" => ["Illegal quoting in line 1."] }
+    )
+
+    get admin_roster_imports_path
+
+    assert_response :success
+    assert_select ".imp .l2", text: /Illegal quoting in line 1\./
+  end
+
+  test "show renders a failed import whose problems are stored as plain strings" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.create!(
+      status: "failed", imported_at: 1.hour.ago, uploaded_filename: "broken.csv",
+      problem_count: 1, summary: { "problems" => ["Illegal quoting in line 1."] }
+    )
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select ".item", text: /Illegal quoting in line 1\./
+  end
+
   test "large removal upload shows pending confirmation and does not mutate records" do
     prepare_setup_complete_state
     sign_in_admin

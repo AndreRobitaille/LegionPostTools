@@ -32,7 +32,7 @@
               no problems
             <% end %>
           <% else %>
-            <%= roster_import.problems.first&.dig("message").presence || "Import failed" %> — nothing changed
+            <%= roster_import.first_problem_message.presence || "Import failed" %> — nothing changed
           <% end %>
         </div>
       <% end %>
