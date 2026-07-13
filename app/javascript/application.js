@@ -4,4 +4,10 @@ import "controllers"
 
 import * as ActiveStorage from "@rails/activestorage"
 ActiveStorage.start()
-import "lexxy"
+import * as Lexxy from "lexxy"
+
+Lexxy.configure({
+  default: {
+    attachments: false
+  }
+})

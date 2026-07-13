@@ -18,7 +18,7 @@ module Admin
 
     def create
       @entry = @organization.agenda_item_catalog_entries.new(entry_params)
-      @entry.position ||= next_position
+      @entry.position = next_position if @entry.position.to_i.zero?
 
       if @entry.save
         redirect_to admin_agenda_item_catalog_entries_path, notice: "Agenda item catalog entry created."

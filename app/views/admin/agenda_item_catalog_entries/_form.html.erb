@@ -23,7 +23,7 @@
   <div class="fl">
     <%= form.label :body, "Wording" %>
     <p class="fl-help">Ceremony scripts, readings, or the full text officers read aloud. Leave blank for plain business items.</p>
-    <%= form.rich_text_area :body %>
+    <%= form.rich_text_area :body, attachments: "false" %>
   </div>
   <div class="fl">
     <%= form.label :category, "Part of the meeting" %>

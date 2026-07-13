@@ -75,15 +75,21 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
   test "create entry" do
     sign_in_as(user_with_capabilities("manage_agendas"))
 
+    @organization.agenda_item_catalog_entries.create!(
+      title: "Existing Business",
+      category: "business",
+      behavior_type: "business_item",
+      position: 7,
+      active: true
+    )
+
     assert_difference -> { @organization.agenda_item_catalog_entries.count }, 1 do
       post admin_agenda_item_catalog_entries_path, params: {
         agenda_item_catalog_entry: {
           title: "New Business",
-          slug: " new-business ",
           summary: "Add new business",
           category: "business",
           behavior_type: "business_item",
-          position: 3,
           active: true,
           body: "Discuss new business"
         }
@@ -93,6 +99,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_redirected_to admin_agenda_item_catalog_entries_path
     assert_equal "Agenda item catalog entry created.", flash[:notice]
     entry = @organization.agenda_item_catalog_entries.find_by!(slug: "new-business")
+    assert_equal 8, entry.position
     assert_equal "Discuss new business", entry.body.to_plain_text
   end
 
@@ -102,11 +109,9 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     post admin_agenda_item_catalog_entries_path, params: {
       agenda_item_catalog_entry: {
         title: "",
-        slug: "bad-entry",
         summary: "",
         category: "",
         behavior_type: "business_item",
-        position: 3,
         active: true,
         body: ""
       }
@@ -133,11 +138,9 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     patch admin_agenda_item_catalog_entry_path(entry), params: {
       agenda_item_catalog_entry: {
         title: "Updated Minutes",
-        slug: "previous-minutes",
         summary: "Read and approve minutes",
         category: "administration",
         behavior_type: "motion_vote_item",
-        position: 1,
         active: false,
         body: "New body"
       }
@@ -166,11 +169,9 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     patch admin_agenda_item_catalog_entry_path(entry), params: {
       agenda_item_catalog_entry: {
         title: "",
-        slug: "previous-minutes",
         summary: "",
         category: "",
         behavior_type: "motion_vote_item",
-        position: 1,
         active: false,
         body: ""
       }
@@ -200,6 +201,8 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "input[name=?]", "agenda_item_catalog_entry[title]"
     assert_select "select[name=?]", "agenda_item_catalog_entry[category]"
     assert_select "textarea[name=?]", "agenda_item_catalog_entry[summary]"
+    assert_select "lexxy-editor[name=?]", "agenda_item_catalog_entry[body]"
+    assert_select "lexxy-editor[attachments=?]", "false"
   end
 
   test "cannot edit another organization entry" do
