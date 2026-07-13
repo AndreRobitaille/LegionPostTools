@@ -21,7 +21,7 @@ class MeetingTypeAgendaItem < ApplicationRecord
       title: catalog_entry.title,
       summary: catalog_entry.summary,
       active: true,
-      body: catalog_entry.body.to_plain_text.strip
+      body: catalog_entry.body.to_s
     )
   end
 

@@ -11,7 +11,7 @@ class MeetingTypeAgendaItemTest < ActiveSupport::TestCase
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true,
-      body: "Original opening wording"
+      body: "<strong>Original</strong> opening wording"
     )
   end
 
@@ -20,7 +20,8 @@ class MeetingTypeAgendaItemTest < ActiveSupport::TestCase
 
     assert_equal "Opening Ceremony", item.title
     assert_equal "Open the meeting", item.summary
-    assert_equal "Original opening wording", item.body.to_plain_text
+    assert_equal "Original opening wording", item.body.to_plain_text.strip
+    assert_includes item.body.to_s, "<strong>Original</strong>"
   end
 
   test "template edits do not modify the catalog entry" do
@@ -30,7 +31,8 @@ class MeetingTypeAgendaItemTest < ActiveSupport::TestCase
 
     assert_equal "Opening Ceremony", @catalog_entry.reload.title
     assert_equal "Open the meeting", @catalog_entry.summary
-    assert_equal "Original opening wording", @catalog_entry.body.to_plain_text
+    assert_equal "Original opening wording", @catalog_entry.body.to_plain_text.strip
+    assert_includes @catalog_entry.body.to_s, "<strong>Original</strong>"
   end
 
   test "prevents duplicate catalog entry in same meeting type" do
