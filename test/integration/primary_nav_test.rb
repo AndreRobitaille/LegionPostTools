@@ -47,7 +47,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     sign_in_admin
     get root_path
     assert_select "nav.nav-bar a.nav-tab", text: "People"
-    assert_select "nav.nav-bar a.nav-tab--admin", text: /Admin/
+    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_root_path, text: /Admin/
   end
 
   test "agenda manager sees Admin tab linking to meeting types" do
