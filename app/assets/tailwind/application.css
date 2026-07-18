@@ -361,7 +361,7 @@
 .pos .state.off { color: var(--color-muted); }
 /* Mockup used a 14px "Edit" link; the active toggle is a submit button here and must be >= 16px (interactive). */
 .pos .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
-.pos-handle { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 32px; padding: 0; margin: 0; border: none; background: none; color: #b3a67d; cursor: grab; touch-action: none; }
+.pos-handle { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 32px; padding: 0; margin: 0; border: none; background: none; color: var(--color-muted); cursor: grab; touch-action: none; }
 .pos-handle:hover { color: var(--color-navy); }
 .pos-handle:active { cursor: grabbing; }
 .pos-ghost { opacity: .4; }
