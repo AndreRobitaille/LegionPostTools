@@ -49,3 +49,7 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# Never bake reference material / member roster data into the image.
+/docs/reference/*.pdf
+/docs/reference/*.csv

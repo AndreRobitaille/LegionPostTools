@@ -76,3 +76,8 @@ yarn-debug.log*
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# Reference material — not part of the app. Roster data must never reach the
+# repo or the deployed image (member PII); PDFs are just non-deployable refs.
+/docs/reference/*.pdf
+/docs/reference/*.csv
