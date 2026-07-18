@@ -40,6 +40,15 @@ class MeetingTypeTest < ActiveSupport::TestCase
     assert same_name_elsewhere.valid?
   end
 
+  test "position uniqueness is scoped to organization" do
+    @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
+
+    duplicate = @organization.meeting_types.new(name: "PEC Meeting", position: 1, active: true)
+
+    assert_not duplicate.valid?
+    assert_includes duplicate.errors[:position], "has already been taken"
+  end
+
   test "normalizes blank source key to nil" do
     meeting_type = @organization.meeting_types.create!(name: "Local Meeting", position: 1, active: true, source_key: "")
 

@@ -10,6 +10,9 @@
 
 <div class="btnrow">
   <%= link_to "Add meeting type", new_admin_meeting_type_path, class: "btn-primary" %>
+  <% if @default_meeting_types_missing %>
+    <%= button_to "Seed default meeting types", seed_defaults_admin_meeting_types_path, method: :post, class: "btn-secondary" %>
+  <% end %>
   <%= link_to "Agenda Item Catalog", admin_agenda_item_catalog_entries_path, class: "btn-secondary" %>
 </div>
 

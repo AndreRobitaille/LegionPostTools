@@ -18,12 +18,16 @@ module Admin
 
     def create
       catalog_entry = @organization.agenda_item_catalog_entries.active.find(params[:agenda_item_catalog_entry_id])
-      MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position, meeting_type: @meeting_type)
+      @meeting_type.with_lock do
+        MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position, meeting_type: @meeting_type)
+      end
       redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Catalog item added."
-    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
-      # The uniqueness validation and the DB unique index both guard against a
-      # catalog item being added to a meeting type twice; a double-submit lands here.
-      redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: "That catalog item is already in this meeting type."
+    rescue ActiveRecord::RecordNotUnique => error
+      alert = duplicate_catalog_entry_unique_violation?(error) ? "That catalog item is already in this meeting type." : "Catalog item could not be added."
+      redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: alert
+    rescue ActiveRecord::RecordInvalid => error
+      alert = duplicate_catalog_entry_error?(error.record) ? "That catalog item is already in this meeting type." : "Catalog item could not be added."
+      redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: alert
     end
 
     def edit; end
@@ -49,14 +53,20 @@ module Admin
     end
 
     def move
-      neighbor = case params[:direction]
-      when "up" then @meeting_type.meeting_type_agenda_items.where("position < ?", @item.position).ordered.last
-      when "down" then @meeting_type.meeting_type_agenda_items.where("position > ?", @item.position).ordered.first
-      end
-      if neighbor.present?
+      @meeting_type.with_lock do
+        @item.reload
         current_position = @item.position
-        @item.update!(position: neighbor.position)
-        neighbor.update!(position: current_position)
+        neighbor = case params[:direction]
+        when "up" then @meeting_type.meeting_type_agenda_items.where("position < ?", current_position).ordered.last
+        when "down" then @meeting_type.meeting_type_agenda_items.where("position > ?", current_position).ordered.first
+        end
+        if neighbor.present?
+          neighbor_position = neighbor.position
+          temp_position = next_position
+          @item.update!(position: temp_position)
+          neighbor.update!(position: current_position)
+          @item.update!(position: neighbor_position)
+        end
       end
       redirect_to edit_admin_meeting_type_path(@meeting_type)
     end
@@ -77,6 +87,15 @@ module Admin
 
     def next_position
       @meeting_type.meeting_type_agenda_items.maximum(:position).to_i + 1
+    end
+
+    def duplicate_catalog_entry_error?(record)
+      record&.errors&.of_kind?(:agenda_item_catalog_entry_id, :taken)
+    end
+
+    def duplicate_catalog_entry_unique_violation?(error)
+      exception_message = [ error.message, error.cause&.message ].compact.join(" ")
+      exception_message.include?("index_mt_agenda_items_on_type_and_catalog_entry") || exception_message.include?("agenda_item_catalog_entry_id")
     end
 
     def item_params

@@ -117,4 +117,46 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     assert_equal 2, @organization.meeting_types.count
     assert_equal 2, other_organization.meeting_types.count
   end
+
+  test "defaults_missing? is true when a seeded meeting type is missing template items" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+    membership.meeting_type_agenda_items.first.destroy!
+
+    assert MeetingTypeTemplateSeeder.defaults_missing?(@organization)
+  end
+
+  test "seeding appends defaults when preferred positions are taken by custom meeting types" do
+    @organization.meeting_types.create!(name: "Custom Meeting", position: 1, active: true)
+
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+
+    assert_equal [ "Custom Meeting", "PEC Meeting", "Membership Meeting" ], @organization.meeting_types.ordered.pluck(:name)
+    assert_equal [ 1, 2, 3 ], @organization.meeting_types.ordered.pluck(:position)
+  end
+
+  test "reseeding a missing template item appends when its canonical position is occupied locally" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+    seeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+    canonical_position = seeded_item.position
+
+    seeded_item.destroy!
+    local_entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Local Opening",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 99,
+      active: true
+    )
+    membership.meeting_type_agenda_items.create!(agenda_item_catalog_entry: local_entry, position: canonical_position, title: "Local Opening", active: true)
+
+    assert_difference -> { membership.meeting_type_agenda_items.count }, 1 do
+      MeetingTypeTemplateSeeder.seed_for!(@organization)
+    end
+
+    reseeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+    assert_not_equal canonical_position, reseeded_item.position
+    assert_equal membership.meeting_type_agenda_items.pluck(:position).uniq.sort, membership.meeting_type_agenda_items.pluck(:position).sort
+  end
 end

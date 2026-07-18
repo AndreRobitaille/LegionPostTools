@@ -5,8 +5,8 @@ module Admin
     before_action :set_meeting_type, only: %i[edit update]
 
     def index
-      MeetingTypeTemplateSeeder.seed_for!(@organization)
       @meeting_types = @organization.meeting_types.ordered.includes(:meeting_type_agenda_items)
+      @default_meeting_types_missing = MeetingTypeTemplateSeeder.defaults_missing?(@organization)
     end
 
     def new
@@ -14,15 +14,23 @@ module Admin
     end
 
     def create
-      MeetingTypeTemplateSeeder.seed_for!(@organization)
       @meeting_type = @organization.meeting_types.new(meeting_type_params)
-      @meeting_type.position = next_position if @meeting_type.position.to_i.zero?
 
-      if @meeting_type.save
+      @organization.with_lock do
+        @meeting_type.position = next_position if @meeting_type.position.to_i.zero?
+        @meeting_type.save
+      end
+
+      if @meeting_type.persisted?
         redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Meeting type created."
       else
         render :new, status: :unprocessable_entity
       end
+    end
+
+    def seed_defaults
+      MeetingTypeTemplateSeeder.seed_for!(@organization)
+      redirect_to admin_meeting_types_path, notice: "Default meeting types seeded."
     end
 
     def edit

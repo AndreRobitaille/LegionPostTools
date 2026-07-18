@@ -7,6 +7,7 @@ class MeetingTypeAgendaItem < ApplicationRecord
 
   validates :title, presence: true
   validates :position, numericality: { only_integer: true }
+  validates :position, uniqueness: { scope: :meeting_type_id }
   validates :agenda_item_catalog_entry_id, uniqueness: { scope: :meeting_type_id }
   validates :source_key, uniqueness: { scope: :meeting_type_id }, allow_blank: true
   validate :catalog_entry_belongs_to_same_organization

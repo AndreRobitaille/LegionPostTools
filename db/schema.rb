@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_13_020100) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_18_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -119,7 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_13_020100) do
     t.datetime "updated_at", null: false
     t.index ["agenda_item_catalog_entry_id"], name: "idx_on_agenda_item_catalog_entry_id_af09cfc728"
     t.index ["meeting_type_id", "agenda_item_catalog_entry_id"], name: "index_mt_agenda_items_on_type_and_catalog_entry", unique: true
-    t.index ["meeting_type_id", "position"], name: "index_mt_agenda_items_on_meeting_type_and_position"
+    t.index ["meeting_type_id", "position"], name: "index_mt_agenda_items_on_meeting_type_and_position", unique: true
     t.index ["meeting_type_id", "source_key"], name: "index_mt_agenda_items_on_type_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["meeting_type_id"], name: "index_meeting_type_agenda_items_on_meeting_type_id"
   end
@@ -136,7 +136,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_13_020100) do
     t.string "source_label"
     t.datetime "updated_at", null: false
     t.index ["organization_id", "name"], name: "index_meeting_types_on_organization_id_and_name", unique: true
-    t.index ["organization_id", "position"], name: "index_meeting_types_on_organization_id_and_position"
+    t.index ["organization_id", "position"], name: "index_meeting_types_on_organization_id_and_position", unique: true
     t.index ["organization_id", "slug"], name: "index_meeting_types_on_organization_id_and_slug", unique: true
     t.index ["organization_id", "source_key"], name: "index_meeting_types_on_organization_id_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["organization_id"], name: "index_meeting_types_on_organization_id"
