@@ -10,23 +10,25 @@
     <p class="page-sub" id="reorder-hint">Drag a row by its handle to change the order. Changes save automatically.</p>
     <div data-controller="reorder"
          data-reorder-url-value="<%= reorder_admin_position_titles_path %>">
-      <% @position_titles.each do |title| %>
-        <div class="pos" data-position-id="<%= title.id %>">
-          <button type="button" class="pos-handle" aria-label="Drag to reorder <%= title.name %>">
-            <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
-              <g fill="currentColor">
-                <circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/>
-                <circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/>
-                <circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/>
-              </g>
-            </svg>
-          </button>
-          <span class="pn"><%= title.name %></span>
-          <span class="state <%= title.active? ? "on" : "off" %>"><%= title.active? ? "Active" : "Inactive" %></span>
-          <%= button_to title.active? ? "Deactivate" : "Activate", admin_position_title_path(title), method: :patch,
-                params: { position_title: { active: !title.active? } }, class: "toggle", form: { class: "posform" } %>
-        </div>
-      <% end %>
+      <div data-reorder-target="list">
+        <% @position_titles.each do |title| %>
+          <div class="pos" data-position-id="<%= title.id %>">
+            <button type="button" class="pos-handle" aria-label="Drag to reorder <%= title.name %>">
+              <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
+                <g fill="currentColor">
+                  <circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/>
+                  <circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/>
+                  <circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/>
+                </g>
+              </svg>
+            </button>
+            <span class="pn"><%= title.name %></span>
+            <span class="state <%= title.active? ? "on" : "off" %>"><%= title.active? ? "Active" : "Inactive" %></span>
+            <%= button_to title.active? ? "Deactivate" : "Activate", admin_position_title_path(title), method: :patch,
+                  params: { position_title: { active: !title.active? } }, class: "toggle", form: { class: "posform" } %>
+          </div>
+        <% end %>
+      </div>
       <span class="pos-status" data-reorder-target="status" role="status" aria-live="polite"></span>
     </div>
   <% else %>

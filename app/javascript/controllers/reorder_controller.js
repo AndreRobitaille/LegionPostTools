@@ -6,11 +6,11 @@ import Sortable from "sortablejs"
 // draggable by its .pos-handle grip; dropping a row POSTs the new id order and
 // persists immediately. On failure the pre-drag order is restored.
 export default class extends Controller {
-  static targets = ["status"]
+  static targets = ["list", "status"]
   static values = { url: String }
 
   connect() {
-    this.sortable = Sortable.create(this.element, {
+    this.sortable = Sortable.create(this.listTarget, {
       handle: ".pos-handle",
       animation: 150,
       ghostClass: "pos-ghost",
@@ -25,7 +25,7 @@ export default class extends Controller {
   }
 
   rows() {
-    return Array.from(this.element.querySelectorAll("[data-position-id]"))
+    return Array.from(this.listTarget.querySelectorAll("[data-position-id]"))
   }
 
   async save() {
@@ -43,6 +43,7 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Reorder failed: ${response.status}`)
       this.flash("Order saved")
     } catch (error) {
+      console.error(error)
       this.restore()
       this.flash("Could not save order — please try again", true)
     }
@@ -50,7 +51,7 @@ export default class extends Controller {
 
   // Re-append rows in their pre-drag sequence to undo the visual move.
   restore() {
-    this.snapshot?.forEach((el) => this.element.appendChild(el))
+    this.snapshot?.forEach((el) => this.listTarget.appendChild(el))
   }
 
   flash(message, isError = false) {
