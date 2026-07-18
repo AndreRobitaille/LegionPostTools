@@ -8,3 +8,4 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin "lexxy", to: "lexxy.js"
 pin "@rails/activestorage", to: "activestorage.esm.js"
 pin "@github/webauthn-json", to: "@github--webauthn-json.js" # @2.1.1
+pin "sortablejs" # @1.15.7
