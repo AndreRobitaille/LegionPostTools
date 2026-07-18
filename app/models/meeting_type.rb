@@ -11,6 +11,7 @@ class MeetingType < ApplicationRecord
   validates :slug, uniqueness: { scope: :organization_id }
   validates :source_key, uniqueness: { scope: :organization_id }, allow_blank: true
   validates :position, numericality: { only_integer: true }
+  validates :position, uniqueness: { scope: :organization_id }
 
   scope :ordered, -> { order(:position, :name) }
   scope :active, -> { where(active: true) }

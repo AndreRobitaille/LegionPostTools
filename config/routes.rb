@@ -40,6 +40,7 @@ Rails.application.routes.draw do
     resources :agenda_item_catalog_entries, except: %i[show destroy]
     resources :administrators, only: %i[index]
     resources :meeting_types, except: %i[show destroy] do
+      post :seed_defaults, on: :collection
       resources :agenda_items, controller: "meeting_type_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         patch :move, on: :member
       end

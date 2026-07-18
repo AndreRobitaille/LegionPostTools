@@ -43,6 +43,17 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_equal "Catalog item added.", flash[:notice]
   end
 
+  test "add catalog item appends at next position" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true)
+    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Second Entry", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+
+    post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: second_entry.id }
+
+    item = @meeting_type.meeting_type_agenda_items.find_by!(agenda_item_catalog_entry: second_entry)
+    assert_equal 2, item.position
+  end
+
   test "duplicate add is rejected" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true)
@@ -53,6 +64,64 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
     assert_redirected_to new_admin_meeting_type_agenda_item_path(@meeting_type)
     assert_equal "That catalog item is already in this meeting type.", flash[:alert]
+  end
+
+  test "non duplicate validation failure is not reported as duplicate" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+    singleton = class << MeetingTypeAgendaItem; self; end
+    singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
+    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:|
+      raise ActiveRecord::RecordInvalid.new(meeting_type.meeting_type_agenda_items.build(position: position))
+    end
+
+    post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: invalid_entry.id }
+
+    assert_redirected_to new_admin_meeting_type_agenda_item_path(@meeting_type)
+    assert_equal "Catalog item could not be added.", flash[:alert]
+  ensure
+    singleton.alias_method :create_from_catalog_entry!, :original_create_from_catalog_entry!
+    singleton.remove_method :original_create_from_catalog_entry!
+  end
+
+  test "non catalog unique violation uses generic message" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy 2", category: "ceremony", behavior_type: "scripted_ceremony", position: 4, active: true)
+    singleton = class << MeetingTypeAgendaItem; self; end
+    singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
+    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:|
+      raise ActiveRecord::RecordNotUnique.new(
+        'duplicate key value violates unique constraint "index_mt_agenda_items_on_meeting_type_and_position"'
+      )
+    end
+
+    post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: invalid_entry.id }
+
+    assert_redirected_to new_admin_meeting_type_agenda_item_path(@meeting_type)
+    assert_equal "Catalog item could not be added.", flash[:alert]
+  ensure
+    singleton.alias_method :create_from_catalog_entry!, :original_create_from_catalog_entry!
+    singleton.remove_method :original_create_from_catalog_entry!
+  end
+
+  test "duplicate record not unique is reported as duplicate" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    duplicate_entry = @organization.agenda_item_catalog_entries.create!(title: "Duplicate Copy", category: "ceremony", behavior_type: "scripted_ceremony", position: 5, active: true)
+    singleton = class << MeetingTypeAgendaItem; self; end
+    singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
+    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:|
+      raise ActiveRecord::RecordNotUnique.new(
+        'duplicate key value violates unique constraint "index_mt_agenda_items_on_type_and_catalog_entry"'
+      )
+    end
+
+    post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: duplicate_entry.id }
+
+    assert_redirected_to new_admin_meeting_type_agenda_item_path(@meeting_type)
+    assert_equal "That catalog item is already in this meeting type.", flash[:alert]
+  ensure
+    singleton.alias_method :create_from_catalog_entry!, :original_create_from_catalog_entry!
+    singleton.remove_method :original_create_from_catalog_entry!
   end
 
   test "update template item does not change catalog entry" do

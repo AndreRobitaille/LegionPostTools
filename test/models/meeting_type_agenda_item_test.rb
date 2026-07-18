@@ -43,6 +43,27 @@ class MeetingTypeAgendaItemTest < ActiveSupport::TestCase
     assert_includes duplicate.errors[:agenda_item_catalog_entry_id], "has already been taken"
   end
 
+  test "position uniqueness is scoped to meeting type" do
+    @meeting_type.meeting_type_agenda_items.create_from_catalog_entry!(@catalog_entry, position: 1)
+    second_entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Second Entry",
+      category: "business",
+      behavior_type: "business_item",
+      position: 2,
+      active: true
+    )
+
+    duplicate = @meeting_type.meeting_type_agenda_items.new(
+      agenda_item_catalog_entry: second_entry,
+      position: 1,
+      title: "Second Entry",
+      active: true
+    )
+
+    assert_not duplicate.valid?
+    assert_includes duplicate.errors[:position], "has already been taken"
+  end
+
   test "same catalog entry can be used by another meeting type in same organization" do
     other_meeting_type = @organization.meeting_types.create!(name: "PEC Meeting", position: 2, active: true)
     @meeting_type.meeting_type_agenda_items.create_from_catalog_entry!(@catalog_entry, position: 1)
