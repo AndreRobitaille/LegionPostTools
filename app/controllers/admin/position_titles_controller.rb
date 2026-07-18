@@ -24,6 +24,13 @@ module Admin
       end
     end
 
+    def reorder
+      PositionTitle.reorder!(Organization.first, params.require(:ids))
+      head :ok
+    rescue ActiveRecord::RecordNotFound
+      head :unprocessable_entity
+    end
+
     private
 
     def position_title_params

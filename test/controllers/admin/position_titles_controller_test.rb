@@ -62,4 +62,32 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     assert_not title.reload.active
     assert_redirected_to admin_position_titles_path
   end
+
+  test "reorder persists the new order" do
+    prepare_setup_complete_state
+    sign_in_admin
+    a = PositionTitle.create!(organization: @org, name: "Commander", display_order: 1)
+    b = PositionTitle.create!(organization: @org, name: "Adjutant", display_order: 2)
+    c = PositionTitle.create!(organization: @org, name: "Chaplain", display_order: 3)
+
+    post reorder_admin_position_titles_path, params: { ids: [c.id, a.id, b.id] }, as: :json
+
+    assert_response :success
+    assert_equal 1, c.reload.display_order
+    assert_equal 2, a.reload.display_order
+    assert_equal 3, b.reload.display_order
+  end
+
+  test "reorder rejects ids from another organization" do
+    prepare_setup_complete_state
+    sign_in_admin
+    a = PositionTitle.create!(organization: @org, name: "Commander", display_order: 1)
+    other_org = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = PositionTitle.create!(organization: other_org, name: "Historian", display_order: 1)
+
+    post reorder_admin_position_titles_path, params: { ids: [a.id, foreign.id] }, as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal 1, a.reload.display_order
+  end
 end
