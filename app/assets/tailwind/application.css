@@ -361,6 +361,13 @@
 .pos .state.off { color: var(--color-muted); }
 /* Mockup used a 14px "Edit" link; the active toggle is a submit button here and must be >= 16px (interactive). */
 .pos .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.pos-handle { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 32px; padding: 0; margin: 0; border: none; background: none; color: #b3a67d; cursor: grab; touch-action: none; }
+.pos-handle:hover { color: var(--color-navy); }
+.pos-handle:active { cursor: grabbing; }
+.pos-ghost { opacity: .4; }
+.pos-drag { box-shadow: 0 8px 20px rgba(0,0,0,.18); border-radius: 6px; background: #fff; }
+.pos-status { display: block; min-height: 20px; margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--color-green); }
+.pos-status.pos-status-error { color: var(--color-red, #b00020); }
 .addrow { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 14px; border-top: 1px dashed #e0d5b4; padding-top: 14px; }
 
 /* Admin landing: Administrators list ----------------------------------------- */
