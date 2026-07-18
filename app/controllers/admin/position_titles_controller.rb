@@ -5,7 +5,9 @@ module Admin
     end
 
     def create
-      title = Organization.first.position_titles.new(position_title_params)
+      org = Organization.first
+      title = org.position_titles.new(position_title_params)
+      title.display_order = (org.position_titles.maximum(:display_order) || 0) + 1
       if title.save
         redirect_to admin_position_titles_path, notice: "Post position added."
       else
@@ -25,7 +27,7 @@ module Admin
     private
 
     def position_title_params
-      params.require(:position_title).permit(:name, :display_order, :active)
+      params.require(:position_title).permit(:name, :active)
     end
   end
 end

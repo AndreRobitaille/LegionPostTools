@@ -39,14 +39,19 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test "create adds a position title and returns to the positions page" do
+  test "create appends the position to the end and ignores any submitted order" do
     prepare_setup_complete_state
     sign_in_admin
+    PositionTitle.create!(organization: @org, name: "Commander", display_order: 3, active: true)
+
     assert_difference -> { PositionTitle.count }, 1 do
-      post admin_position_titles_path, params: { position_title: { name: "Chaplain", display_order: 5 } }
+      post admin_position_titles_path, params: { position_title: { name: "Chaplain", display_order: 1 } }
     end
+
     assert_redirected_to admin_position_titles_path
-    assert_equal @org.id, PositionTitle.last.organization_id
+    created = PositionTitle.find_by!(name: "Chaplain")
+    assert_equal @org.id, created.organization_id
+    assert_equal 4, created.display_order
   end
 
   test "update can deactivate a title" do
