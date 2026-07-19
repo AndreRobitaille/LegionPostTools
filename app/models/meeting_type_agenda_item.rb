@@ -3,6 +3,8 @@ class MeetingTypeAgendaItem < ApplicationRecord
   belongs_to :agenda_item_catalog_entry
   has_rich_text :body
 
+  include Reorderable
+
   before_validation :normalize_optional_fields
 
   validates :title, presence: true
@@ -13,7 +15,12 @@ class MeetingTypeAgendaItem < ApplicationRecord
   validate :catalog_entry_belongs_to_same_organization
 
   scope :ordered, -> { order(:position, :title) }
+  # Unused by this feature since soft-delete removal; retained for potential future per-item visibility.
   scope :active, -> { where(active: true) }
+
+  def self.reorder!(meeting_type, ordered_ids)
+    reorder_within!(meeting_type.meeting_type_agenda_items, ordered_ids)
+  end
 
   def self.create_from_catalog_entry!(catalog_entry, position:, meeting_type: nil)
     attributes = {

@@ -3,7 +3,7 @@ module Admin
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
     before_action :set_meeting_type
-    before_action :set_item, only: %i[edit update destroy move]
+    before_action :set_item, only: %i[edit update destroy]
 
     def new
       existing_ids = @meeting_type.meeting_type_agenda_items.pluck(:agenda_item_catalog_entry_id).to_set
@@ -41,34 +41,15 @@ module Admin
     end
 
     def destroy
-      if @item.seeded?
-        # Seeded items are kept (marked inactive) so a reseed doesn't recreate them.
-        @item.update!(active: false)
-        notice = "Template item deactivated for this meeting type."
-      else
-        @item.destroy
-        notice = "Template item removed."
-      end
-      redirect_to edit_admin_meeting_type_path(@meeting_type), notice: notice
+      @item.destroy
+      redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Item removed from the agenda."
     end
 
-    def move
-      @meeting_type.with_lock do
-        @item.reload
-        current_position = @item.position
-        neighbor = case params[:direction]
-        when "up" then @meeting_type.meeting_type_agenda_items.where("position < ?", current_position).ordered.last
-        when "down" then @meeting_type.meeting_type_agenda_items.where("position > ?", current_position).ordered.first
-        end
-        if neighbor.present?
-          neighbor_position = neighbor.position
-          temp_position = next_position
-          @item.update!(position: temp_position)
-          neighbor.update!(position: current_position)
-          @item.update!(position: neighbor_position)
-        end
-      end
-      redirect_to edit_admin_meeting_type_path(@meeting_type)
+    def reorder
+      MeetingTypeAgendaItem.reorder!(@meeting_type, params.require(:ids))
+      head :ok
+    rescue ActiveRecord::RecordNotFound
+      head :unprocessable_entity
     end
 
     private

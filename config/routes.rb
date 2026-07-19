@@ -44,10 +44,13 @@ Rails.application.routes.draw do
     end
     resources :agenda_item_catalog_entries, except: %i[show destroy]
     resources :administrators, only: %i[index]
-    resources :meeting_types, except: %i[show destroy] do
+    resources :meeting_types, except: %i[show] do
       post :seed_defaults, on: :collection
+      post :reset_defaults, on: :collection
+      post :reorder, on: :collection
+      post :reset_agenda, on: :member
       resources :agenda_items, controller: "meeting_type_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
-        patch :move, on: :member
+        post :reorder, on: :collection
       end
     end
     resources :dated_agendas, except: %i[destroy] do

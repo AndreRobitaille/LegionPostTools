@@ -144,7 +144,7 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     sign_in_admin
     RosterImport.create!(
       status: "failed", imported_at: 1.hour.ago, uploaded_filename: "broken.csv",
-      summary: { "problems" => ["Illegal quoting in line 1."] }
+      summary: { "problems" => [ "Illegal quoting in line 1." ] }
     )
 
     get admin_roster_imports_path
@@ -158,7 +158,7 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     sign_in_admin
     roster_import = RosterImport.create!(
       status: "failed", imported_at: 1.hour.ago, uploaded_filename: "broken.csv",
-      problem_count: 1, summary: { "problems" => ["Illegal quoting in line 1."] }
+      problem_count: 1, summary: { "problems" => [ "Illegal quoting in line 1." ] }
     )
 
     get admin_roster_import_path(roster_import)

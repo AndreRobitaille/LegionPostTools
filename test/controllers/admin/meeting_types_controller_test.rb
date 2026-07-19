@@ -153,6 +153,137 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "destroy deletes a meeting type and its items" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    meeting_type = @organization.meeting_types.create!(name: "Doomed Meeting", position: 1, active: true)
+    entry = @organization.agenda_item_catalog_entries.create!(title: "Item", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
+    meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry, position: 1, title: "Item", active: true)
+
+    assert_difference -> { @organization.meeting_types.count }, -1 do
+      assert_difference -> { MeetingTypeAgendaItem.count }, -1 do
+        delete admin_meeting_type_path(meeting_type)
+      end
+    end
+
+    assert_redirected_to admin_meeting_types_path
+    assert_equal "Meeting type deleted.", flash[:notice]
+  end
+
+  test "reorder persists the new meeting type order" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    a = @organization.meeting_types.create!(name: "First", position: 1, active: true)
+    b = @organization.meeting_types.create!(name: "Second", position: 2, active: true)
+    c = @organization.meeting_types.create!(name: "Third", position: 3, active: true)
+
+    post reorder_admin_meeting_types_path, params: { ids: [ c.id, a.id, b.id ] }, as: :json
+
+    assert_response :success
+    assert_equal 1, c.reload.position
+    assert_equal 2, a.reload.position
+    assert_equal 3, b.reload.position
+  end
+
+  test "reorder rejects ids from another organization" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    a = @organization.meeting_types.create!(name: "First", position: 1, active: true)
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.meeting_types.create!(name: "Foreign", position: 1, active: true)
+
+    post reorder_admin_meeting_types_path, params: { ids: [ a.id, foreign.id ] }, as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal 1, a.reload.position
+  end
+
+  test "reset defaults restores suggested types and keeps custom ones" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 9, active: true)
+    @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting").update!(name: "Renamed")
+
+    post reset_defaults_admin_meeting_types_path
+
+    assert_redirected_to admin_meeting_types_path
+    assert_equal "Suggested meeting types reset.", flash[:notice]
+    assert @organization.meeting_types.exists?(custom.id)
+    assert_equal "PEC Meeting", @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting").name
+  end
+
+  test "reset agenda restores a suggested type's items" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    pec.meeting_type_agenda_items.destroy_all
+
+    post reset_agenda_admin_meeting_type_path(pec)
+
+    assert_redirected_to edit_admin_meeting_type_path(pec)
+    assert_equal "Agenda reset to the default items.", flash[:notice]
+    assert_equal 5, pec.reload.meeting_type_agenda_items.count
+  end
+
+  test "reset agenda is a no-op with an alert for a custom meeting type" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 1, active: true)
+
+    post reset_agenda_admin_meeting_type_path(custom)
+
+    assert_redirected_to edit_admin_meeting_type_path(custom)
+    assert_equal "This meeting type has no default agenda to restore.", flash[:alert]
+  end
+
+  test "index shows drag reorder, delete, and reset suggested when defaults present" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+
+    get admin_meeting_types_path
+
+    assert_response :success
+    assert_select "[data-controller='reorder']"
+    assert_select ".pos-handle"
+    assert_select "form[action=?][method=?]", reset_defaults_admin_meeting_types_path, "post"
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    assert_select "form[action=?]", admin_meeting_type_path(pec)
+  end
+
+  test "index shows add suggested when defaults are missing" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    @organization.meeting_types.create!(name: "Custom Only", position: 1, active: true)
+
+    get admin_meeting_types_path
+
+    assert_response :success
+    assert_select "form[action=?][method=?]", seed_defaults_admin_meeting_types_path, "post"
+    assert_select "form[action=?]", reset_defaults_admin_meeting_types_path, count: 0
+  end
+
+  test "edit page has inline name edit and instant active toggle" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
+
+    get edit_admin_meeting_type_path(meeting_type)
+
+    assert_response :success
+    assert_select "[data-controller='inline-edit']"
+    assert_select "input[name=?]", "meeting_type[name]"
+    assert_select "form[action=?]", admin_meeting_type_path(meeting_type)
+    # instant toggle posts only the active flag via PATCH
+    assert_select "form.mt-active-form input[name=?][value=?]", "meeting_type[active]", "false"
+  end
+
+  test "edit page shows reset agenda only for suggested types" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 9, active: true)
+
+    get edit_admin_meeting_type_path(pec)
+    assert_select "form[action=?]", reset_agenda_admin_meeting_type_path(pec)
+
+    get edit_admin_meeting_type_path(custom)
+    assert_select "form[action=?]", reset_agenda_admin_meeting_type_path(custom), count: 0
+  end
+
   private
 
   def user_with_capabilities(*capabilities)

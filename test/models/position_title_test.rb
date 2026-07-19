@@ -9,7 +9,7 @@ class PositionTitleTest < ActiveSupport::TestCase
   end
 
   test "reorder! rewrites display_order to the given 1-based sequence" do
-    PositionTitle.reorder!(@org, [@c.id, @a.id, @b.id])
+    PositionTitle.reorder!(@org, [ @c.id, @a.id, @b.id ])
 
     assert_equal 1, @c.reload.display_order
     assert_equal 2, @a.reload.display_order
@@ -21,7 +21,7 @@ class PositionTitleTest < ActiveSupport::TestCase
     foreign = PositionTitle.create!(organization: other_org, name: "Historian", display_order: 1)
 
     assert_raises(ActiveRecord::RecordNotFound) do
-      PositionTitle.reorder!(@org, [@a.id, foreign.id, @b.id])
+      PositionTitle.reorder!(@org, [ @a.id, foreign.id, @b.id ])
     end
 
     assert_equal 1, @a.reload.display_order
@@ -31,7 +31,7 @@ class PositionTitleTest < ActiveSupport::TestCase
 
   test "reorder! rejects duplicate ids" do
     assert_raises(ActiveRecord::RecordNotFound) do
-      PositionTitle.reorder!(@org, [@a.id, @a.id, @b.id])
+      PositionTitle.reorder!(@org, [ @a.id, @a.id, @b.id ])
     end
   end
 end

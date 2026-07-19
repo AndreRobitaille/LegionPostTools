@@ -138,31 +138,17 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_equal @catalog_entry.title, @catalog_entry.reload.title
   end
 
-  test "move item up and down swaps positions" do
-    sign_in_as(user_with_capabilities("manage_agendas"))
-    first = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "First", active: true)
-    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Second Entry", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
-    second = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 2, title: "Second", active: true)
-
-    patch move_admin_meeting_type_agenda_item_path(@meeting_type, second, direction: "up")
-    assert_equal [ 2, 1 ], [ first.reload.position, second.reload.position ]
-
-    patch move_admin_meeting_type_agenda_item_path(@meeting_type, second, direction: "down")
-    assert_equal [ 1, 2 ], [ first.reload.position, second.reload.position ]
-  end
-
-  test "remove deactivates seeded template item and leaves catalog entry" do
+  test "remove hard-deletes a seeded template item and leaves the catalog entry" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true, source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony", source_label: "Seed")
 
-    assert_no_difference -> { @meeting_type.meeting_type_agenda_items.count } do
+    assert_difference -> { @meeting_type.meeting_type_agenda_items.count }, -1 do
       delete admin_meeting_type_agenda_item_path(@meeting_type, item)
     end
 
     assert_equal 2, @organization.agenda_item_catalog_entries.count
     assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
-    assert_equal "Template item deactivated for this meeting type.", flash[:notice]
-    assert_not item.reload.active?
+    assert_equal "Item removed from the agenda.", flash[:notice]
   end
 
   test "remove deletes local template item and leaves catalog entry" do
@@ -175,7 +161,20 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
     assert_equal 2, @organization.agenda_item_catalog_entries.count
     assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
-    assert_equal "Template item removed.", flash[:notice]
+    assert_equal "Item removed from the agenda.", flash[:notice]
+  end
+
+  test "reorder persists the new item order" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry2 = @organization.agenda_item_catalog_entries.create!(title: "Second", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+    a = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "A", active: true)
+    b = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry2, position: 2, title: "B", active: true)
+
+    post reorder_admin_meeting_type_agenda_items_path(@meeting_type), params: { ids: [ b.id, a.id ] }, as: :json
+
+    assert_response :success
+    assert_equal 1, b.reload.position
+    assert_equal 2, a.reload.position
   end
 
   test "edit form renders editable template fields" do
@@ -228,6 +227,18 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     get edit_admin_meeting_type_path(@meeting_type)
     assert_response :success
     assert_select "body", text: /#{@catalog_entry.title}/
+  end
+
+  test "edit page renders draggable agenda rows with trash buttons" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Opening", active: true)
+
+    get edit_admin_meeting_type_path(@meeting_type)
+
+    assert_response :success
+    assert_select "[data-controller='reorder'] [data-reorder-item][data-reorder-id='#{item.id}']"
+    assert_select ".pos-handle"
+    assert_select "form[action=?][method=?]", admin_meeting_type_agenda_item_path(@meeting_type, item), "post"
   end
 
   private
