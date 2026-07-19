@@ -305,6 +305,37 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".error-summary", text: /Starts at can't be blank/
   end
 
+  test "edit shows the lifecycle bar, drag-reorder list, and Approve for a draft" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    get edit_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_select ".da-lifecycle .st.st--draft"
+    assert_select "form[action='#{approve_admin_dated_agenda_path(@agenda)}']"
+    assert_select "[data-controller='reorder'][data-reorder-url-value='#{reorder_admin_dated_agenda_agenda_items_path(@agenda)}']"
+    assert_select ".mrow-list[data-reorder-target='list'] .mrow.catrow[data-reorder-item] .pos-handle"
+    assert_select ".mrow.catrow .catrow-meta button.row-del"
+  end
+
+  test "edit locks the item list and shows Publish + Reopen when approved" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    @agenda.approve!(User.last)
+
+    get edit_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_select ".da-lifecycle .st.st--approved"
+    assert_select "form[action='#{publish_admin_dated_agenda_path(@agenda)}']"
+    assert_select "form[action='#{reopen_admin_dated_agenda_path(@agenda)}']"
+    assert_select ".readonly-tip"
+    assert_select "[data-controller='reorder']", false
+    assert_select ".pos-handle", false
+    assert_select "button.row-del", false
+    assert_select "input[name='dated_agenda[starts_at]']", false
+    assert_select "input[name='dated_agenda[title]']", false
+  end
+
   private
 
   def user_with_capabilities(*capabilities)

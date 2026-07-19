@@ -30,16 +30,27 @@
     </div>
   <% end %>
 
-  <div class="fl">
-    <%= form.label :starts_at, "Date & time" %>
-    <%= form.datetime_local_field :starts_at, class: "f" %>
-  </div>
+  <% if dated_agenda.persisted? && dated_agenda.locked_for_editing? %>
+    <div class="fl">
+      <span class="fl-label-inline">Date & time</span>
+      <p><%= legion_datetime(dated_agenda.starts_at) %></p>
+    </div>
+    <div class="fl">
+      <span class="fl-label-inline">Title</span>
+      <p><%= dated_agenda.title %></p>
+    </div>
+  <% else %>
+    <div class="fl">
+      <%= form.label :starts_at, "Date & time" %>
+      <%= form.datetime_local_field :starts_at, class: "f" %>
+    </div>
 
-  <div class="fl">
-    <%= form.label :title, "Title (optional)" %>
-    <%= form.text_field :title, class: "f" %>
-    <span class="fl-help">Leave blank to use the meeting type name and date.</span>
-  </div>
+    <div class="fl">
+      <%= form.label :title, "Title (optional)" %>
+      <%= form.text_field :title, class: "f" %>
+      <span class="fl-help">Leave blank to use the meeting type name and date.</span>
+    </div>
+  <% end %>
 
   <% if dated_agenda.draft? || !dated_agenda.persisted? %>
     <div class="btnrow">

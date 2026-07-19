@@ -543,3 +543,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .mt-active .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
 .mt-active-form { margin: 0; }
 .mt-active-help { font-size: 14px; color: var(--color-muted); }
+
+/* Dated agenda management -------------------------------------------------- */
+.da-lifecycle { margin: 8px 0 22px; }
+.da-lifecycle .st { display: inline-block; margin-bottom: 12px; }
+.da-lifecycle .btnrow { margin: 0; }
