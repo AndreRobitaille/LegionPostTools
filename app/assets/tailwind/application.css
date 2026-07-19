@@ -370,6 +370,18 @@
 .pos-status.pos-status-error { color: var(--color-red, #b00020); }
 .addrow { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin-top: 14px; border-top: 1px dashed #e0d5b4; padding-top: 14px; }
 
+/* Shared reorder + row actions (meeting types, agenda items) --------------- */
+.reorder-hint { margin: 0 0 10px; }
+.mrow-list [data-reorder-item] { cursor: default; }
+.mrow .pos-handle { margin-right: 4px; }
+.mrow-id { display: block; }
+a.mrow-id { text-decoration: none; color: inherit; }
+a.mrow-id:hover .mrow-name { text-decoration: underline; }
+.row-del { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; margin: 0; border: 1.5px solid transparent; border-radius: 8px; background: none; color: var(--color-legionred); cursor: pointer; }
+.row-del:hover, .row-del:focus-visible { background: #fbeceb; border-color: var(--color-legionred); outline: none; }
+.row-del svg { width: 20px; height: 20px; display: block; }
+.row-del form { margin: 0; }
+
 /* Admin landing: Administrators list ----------------------------------------- */
 .admrow { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #ece0bd; }
 .admrow:last-of-type { border-bottom: none; }
