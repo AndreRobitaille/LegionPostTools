@@ -1,11 +1,24 @@
-<h1>Upcoming Published Agendas</h1>
+<% content_for :title, "Upcoming Published Agendas" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Upcoming Published Agendas</h1>
+  <p class="page-sub">Agendas your post has published for upcoming meetings.</p>
+</div>
 
 <% if @dated_agendas.any? %>
-  <ul>
+  <div class="mrow-list">
     <% @dated_agendas.each do |dated_agenda| %>
-      <li><%= link_to dated_agenda.title, dated_agenda_path(dated_agenda) %> — <%= l(dated_agenda.starts_at, format: :long) %></li>
+      <%= link_to dated_agenda_path(dated_agenda), class: "mrow catrow", aria: { label: "View #{dated_agenda.title}" } do %>
+        <span class="mrow-id">
+          <span class="mrow-name"><%= dated_agenda.title %></span>
+          <span class="mrow-sub"><%= dated_agenda.meeting_body.name %> &middot; <%= legion_datetime(dated_agenda.starts_at) %></span>
+        </span>
+        <span class="catrow-meta">
+          <span class="catrow-edit">View<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
+        </span>
+      <% end %>
     <% end %>
-  </ul>
+  </div>
 <% else %>
-  <p>No upcoming published agendas are available yet.</p>
+  <p class="page-sub">No upcoming published agendas are available yet.</p>
 <% end %>

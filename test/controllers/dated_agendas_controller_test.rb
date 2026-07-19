@@ -1,6 +1,8 @@
 require "test_helper"
 
 class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
+  include LegionFormatHelper
+
   setup do
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
@@ -33,7 +35,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Upcoming Published Agendas"
-    assert_select "a[href=?]", dated_agenda_path(@published), text: "Published Agenda"
+    assert_select "a[href='#{dated_agenda_path(@published)}'] .mrow-name", text: "Published Agenda"
     assert_select "a", text: "Draft Agenda", count: 0
   end
 
@@ -56,7 +58,6 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Published Agenda"
-    assert_select "p", text: "Published agenda"
     assert_select "h2", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select "a", text: "Edit", count: 0
@@ -73,7 +74,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a", text: "Past Published Agenda", count: 0
-    assert_select "a[href=?]", dated_agenda_path(@published), text: "Published Agenda"
+    assert_select "a[href='#{dated_agenda_path(@published)}'] .mrow-name", text: "Published Agenda"
   end
 
   test "draft show returns not found" do
@@ -105,6 +106,28 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "nav", count: 0
     assert_select "header", count: 0
     assert_select "body", text: "Dashboard", count: 0
+  end
+
+  test "member show renders a readable agenda document with house date format and a print link" do
+    sign_in_as(user_with_capabilities)
+
+    get dated_agenda_path(@published)
+
+    assert_response :success
+    assert_select "article.agenda-doc .agenda-masthead .page-title", text: @published.title
+    assert_select "a.btn-secondary[href='#{print_dated_agenda_path(@published)}']", text: "Print"
+    assert_select ".agenda-item .agenda-item-title"
+    assert_select ".agenda-masthead", text: /#{Regexp.escape(legion_datetime(@published.starts_at))}/
+  end
+
+  test "member index lists published agendas in the design system" do
+    sign_in_as(user_with_capabilities)
+
+    get dated_agendas_path
+
+    assert_response :success
+    assert_select ".page-lead .page-title", text: "Upcoming Published Agendas"
+    assert_select ".mrow-list .mrow.catrow .mrow-name", text: @published.title
   end
 
   private

@@ -548,3 +548,13 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .da-lifecycle { margin: 8px 0 22px; }
 .da-lifecycle .st { display: inline-block; margin-bottom: 12px; }
 .da-lifecycle .btnrow { margin: 0; }
+
+/* Published / printable agenda document ------------------------------------ */
+.agenda-doc { max-width: 720px; }
+.agenda-masthead { margin-bottom: 22px; }
+.agenda-masthead .page-title { margin: 4px 0; }
+.agenda-item { padding: 18px 0; border-top: 1px solid #eadfbf; }
+.agenda-item:first-child { border-top: none; }
+.agenda-item-title { font-size: 20px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }
+.agenda-item-summary { font-size: 16px; color: var(--color-muted); margin: 0 0 8px; }
+.agenda-item-body { font-size: 16px; line-height: 1.6; color: var(--color-ink); }
