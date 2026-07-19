@@ -224,7 +224,7 @@
 .catrow:hover .mrow-name, .catrow:focus-visible .mrow-name { text-decoration: none; }
 .catrow-meta { display: flex; align-items: center; gap: 16px; flex: 0 0 auto; padding-left: 18px; }
 .catrow-flag { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; white-space: nowrap; }
-.catrow-edit { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: 6px; padding: 6px 14px; white-space: nowrap; transition: background .12s ease, border-color .12s ease, color .12s ease; }
+.catrow-edit { display: inline-flex; align-items: center; gap: 5px; font-size: 16px; font-weight: 700; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: 6px; padding: 6px 14px; white-space: nowrap; transition: background .12s ease, border-color .12s ease, color .12s ease; }
 .catrow:hover .catrow-edit, .catrow:focus-visible .catrow-edit { background: var(--color-navy); border-color: var(--color-navy); color: #fff; }
 .catrow-caret { font-size: 18px; line-height: 1; margin-top: -1px; }
 .mrow--inactive .mrow-name { color: var(--color-muted); }
@@ -523,7 +523,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 /* Meeting type edit head: click-to-edit name + instant active toggle -------- */
 .mt-head { margin-bottom: 18px; }
 .mt-head-name { display: flex; align-items: center; gap: 14px; }
-.mt-edit-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.mt-edit-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
 .mt-edit-btn:hover, .mt-edit-btn:focus-visible { background: var(--color-navy); border-color: var(--color-navy); color: #fff; outline: none; }
 .mt-head-form { margin: 0; }
 .fl-label-inline { display: block; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 4px; }

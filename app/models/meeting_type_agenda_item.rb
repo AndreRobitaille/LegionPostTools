@@ -15,6 +15,7 @@ class MeetingTypeAgendaItem < ApplicationRecord
   validate :catalog_entry_belongs_to_same_organization
 
   scope :ordered, -> { order(:position, :title) }
+  # Unused by this feature since soft-delete removal; retained for potential future per-item visibility.
   scope :active, -> { where(active: true) }
 
   def self.reorder!(meeting_type, ordered_ids)

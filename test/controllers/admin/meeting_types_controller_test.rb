@@ -222,6 +222,16 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 5, pec.reload.meeting_type_agenda_items.count
   end
 
+  test "reset agenda is a no-op with an alert for a custom meeting type" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 1, active: true)
+
+    post reset_agenda_admin_meeting_type_path(custom)
+
+    assert_redirected_to edit_admin_meeting_type_path(custom)
+    assert_equal "This meeting type has no default agenda to restore.", flash[:alert]
+  end
+
   test "index shows drag reorder, delete, and reset suggested when defaults present" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     MeetingTypeTemplateSeeder.seed_for!(@organization)

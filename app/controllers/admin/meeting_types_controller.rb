@@ -64,8 +64,11 @@ module Admin
     end
 
     def reset_agenda
-      MeetingTypeTemplateSeeder.reset_agenda_for!(@meeting_type)
-      redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Agenda reset to the default items."
+      if MeetingTypeTemplateSeeder.reset_agenda_for!(@meeting_type)
+        redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Agenda reset to the default items."
+      else
+        redirect_to edit_admin_meeting_type_path(@meeting_type), alert: "This meeting type has no default agenda to restore."
+      end
     end
 
     private
