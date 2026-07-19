@@ -16,6 +16,25 @@ Legion officers and members a clear, grounded workflow.
 This is a UI/UX pass within an existing design system. It does not change the product
 boundary, the data model, the lifecycle, or the authorization rules already specified.
 
+## Base
+
+This branch has been merged up to `main`. That matters because `main` landed a
+meeting-types admin refresh whose infrastructure this pass reuses instead of rebuilding:
+
+- `Reorderable` concern (`app/models/concerns/reorderable.rb`) exposing
+  `reorder_within!(scope, ordered_ids, column:)` — atomic, two-phase, UNIQUE-index-safe.
+  `MeetingTypeAgendaItem.reorder!` already wraps it; `DatedAgendaItem` follows the same
+  shape.
+- The `reorder` Stimulus controller is already generalized to `data-reorder-item` /
+  `data-reorder-id` / `data-reorder-url-value`. **No JS change is needed** — the
+  management screen just renders the established markup.
+- The redesigned `admin/meeting_types/edit` drag-and-trash agenda list is the exact
+  markup + CSS template for this feature's item list (see below).
+- Shared reorder/row CSS (`.reorder-hint`, `.mrow-list [data-reorder-item]`,
+  `.mrow .pos-handle`, `.row-del`) already exists in `application.css`.
+- The system-test harness (`test/application_system_test_case.rb`,
+  `system_sign_in`) exists, with `test/system/meeting_types_test.rb` as the pattern.
+
 ## Scope
 
 In scope (all confirmed with the user):
@@ -49,12 +68,17 @@ The feature reuses the vocabulary already established by the `meeting_types`,
 - Forms: `.panel` / `.form-panel`, `.stacked-form`, `.fl`, `.f`, `.error-summary`,
   `.btnrow`.
 - Status tags: `.st` / `.st-dot` with color variants (`StatusDisplayHelper`).
-- Drag reorder: the `reorder` Stimulus controller with `.pos-handle` / `.pos-ghost` /
-  `.pos-drag` / `.pos-status` (from `position_titles`).
+- Drag reorder: the generalized `reorder` Stimulus controller (`data-controller="reorder"`,
+  `data-reorder-url-value`, `data-reorder-target="list"`/`"status"`, rows marked
+  `data-reorder-item data-reorder-id="<id>"`), with `.pos-handle` / `.pos-ghost` /
+  `.pos-drag` / `.pos-status` and `.row-del` for the trash button — exactly as used by
+  `admin/meeting_types/edit`.
 - Read-only hint: `.readonly-tip`.
 
 The two already-styled item views (`admin/dated_agenda_items/new` and `edit`) are the
-correctness reference and are left as-is.
+correctness reference and are left as-is. The redesigned `admin/meeting_types/edit`
+(inline-edit header + drag/trash agenda rows) is the reference for the management
+screen's agenda-item list.
 
 ## Cross-Cutting Fixes
 
@@ -129,11 +153,16 @@ The centerpiece. Top to bottom:
    summary instead of inputs. Optimistic-lock error surfaces via `.error-summary`.
 4. **Agenda items** section: `.sec-head-row` + `section_header` "Agenda items", then
    **Add from catalog** (`.btn-primary`, draft only), then the item list:
-   - **Draft** → drag-reorder list (see Drag Reorder). Each row combines a `.pos-handle`
-     grip with the item's `.mrow-name` / `.mrow-sub`, and inline **Edit** / **Remove**
-     actions. A `.pos-status` live region reports "Order saved".
+   - **Draft** → drag-reorder list copied from `admin/meeting_types/edit`: a
+     `data-controller="reorder"` wrapper with `data-reorder-url-value` pointing at the new
+     reorder route, a `.mrow-list` `data-reorder-target="list"`, and one
+     `.mrow.catrow data-reorder-item data-reorder-id="<id>"` per item — each containing the
+     `.pos-handle` grip (same SVG), `.mrow-id` (name + optional summary as `.mrow-sub`),
+     and a `.catrow-meta` with an **Edit** link (`.catrow-edit`) and a trash **Remove**
+     button (`.row-del`, `turbo_confirm`). A `.pos-status` live region reports "Order
+     saved". A `.reorder-hint` line explains the drag affordance.
    - **Locked** (approved/published) → the same rows rendered statically: no handle, no
-     Edit/Remove, no add button.
+     Edit/Remove, no add button, no reorder wrapper.
    - **Empty** → friendly guidance ("This agenda has no items yet. Add items from the
      catalog to build this meeting agenda.").
 5. **Print** link to the admin print view.
@@ -186,48 +215,72 @@ and the rich-text body. Styling favors large, legible type over density.
 ## Drag Reorder
 
 The management screen replaces the Up/Down `move` buttons with drag-and-drop, reusing
-the existing `reorder` Stimulus controller (SortableJS).
+the infrastructure `main` already provides. **No Stimulus/JS change is required** — the
+generalized `reorder` controller already exists; only the server side and the rendered
+markup are new.
 
-### Shared controller generalization
+### Model
 
-`reorder_controller.js` currently keys off `data-position-id`. Generalize it to a
-neutral `data-reorder-id` attribute so it can serve both features, and update
-`admin/position_titles/index` to use `data-reorder-id`. This is the only change to the
-sibling feature and is justified because the controller is now shared.
+`DatedAgendaItem` includes the `Reorderable` concern and exposes a class method mirroring
+`MeetingTypeAgendaItem.reorder!`:
 
-### Route + controller + model
+```ruby
+include Reorderable
 
-- Route: add `post :reorder, on: :collection` to the admin dated-agenda `agenda_items`
-  resource.
-- Controller: add `Admin::DatedAgendaItemsController#reorder`, guarded by the existing
-  `require_capability("manage_agendas")` and `ensure_draft_agenda` filters. It calls the
-  model method and returns `head :ok`, or `head :unprocessable_entity` on a bad id set —
-  mirroring `Admin::PositionTitlesController#reorder`.
-- Model: add `DatedAgendaItem.reorder!(dated_agenda, ordered_ids)` mirroring
-  `PositionTitle.reorder!` — scoped to the given agenda's items, updating `position` in a
-  transaction, raising `ActiveRecord::RecordNotFound` if the id set doesn't match.
+def self.reorder!(dated_agenda, ordered_ids)
+  reorder_within!(dated_agenda.dated_agenda_items, ordered_ids)
+end
+```
+
+`reorder_within!` is atomic, two-phase, and safe with the existing
+`UNIQUE(position, dated_agenda_id)` index; it raises `ActiveRecord::RecordNotFound` when
+`ordered_ids` is not exactly the agenda's item ids.
+
+### Route + controller
+
+- Route: **replace** the existing `patch :move` with `post :reorder, on: :collection`
+  on the admin dated-agenda `agenda_items` resource.
+- Controller: add `Admin::DatedAgendaItemsController#reorder`, covered by the existing
+  `require_capability("manage_agendas")` and `ensure_draft_agenda` filters (add `:reorder`
+  to the `ensure_draft_agenda` filter list). It mirrors
+  `Admin::MeetingTypeAgendaItemsController#reorder`:
+
+```ruby
+def reorder
+  DatedAgendaItem.reorder!(@dated_agenda, params.require(:ids))
+  head :ok
+rescue ActiveRecord::RecordNotFound
+  head :unprocessable_entity
+end
+```
 
 ### Remove the Up/Down path
 
-Delete the now-redundant `move` action, its `patch :move` route, and its controller
-tests, so there is a single reorder path. This matches how `position_titles` works.
+Delete the now-redundant `move` action, its `patch :move` route, its `set_item`/
+`ensure_draft_agenda` inclusion for `:move`, and its controller tests, so there is a
+single reorder path — matching `meeting_types`.
 
 **Accepted tradeoff:** drag-only reorder has no no-JS/keyboard fallback. The
-`position_titles` feature already made this same choice for the same 70+ audience, so
-this keeps the app consistent. Without JS the rows still render in saved order; they
-just aren't draggable.
+`meeting_types` and `position_titles` features already made this same choice for the same
+70+ audience, so this keeps the app consistent. Without JS the rows still render in saved
+order; they just aren't draggable.
 
 ## Testing
 
 - **Controller tests:** replace the `move` tests with `reorder` tests covering a
-  successful reorder (positions persist in the posted order), a locked-agenda rejection,
-  and a bad id set returning `:unprocessable_entity`.
-- **Model test:** `DatedAgendaItem.reorder!` reorders within an agenda and rejects an id
-  set that doesn't match the agenda's items.
-- **System test** (headless Chromium harness, magic-link sign-in — the existing
-  `test:system` setup): on the draft management screen the items render and drag reorder
-  persists across reload; on an approved/published agenda no edit/reorder controls are
-  present. This satisfies the upstream spec's browser-smoke-test expectation.
+  successful reorder (positions persist in the posted order), a locked-agenda rejection
+  (guarded by `ensure_draft_agenda`), and a bad id set returning `:unprocessable_entity`
+  — mirroring `meeting_type_agenda_items_controller_test`.
+- **Model test:** `DatedAgendaItem.reorder!` reorders within an agenda and raises
+  `ActiveRecord::RecordNotFound` for an id set that doesn't match the agenda's items —
+  mirroring `meeting_type_agenda_item_test`.
+- **System test** (`test/system/dated_agendas_test.rb`, mirroring
+  `meeting_types_test.rb`: `system_sign_in`, a `manage_agendas` grant, a meeting body +
+  seeded meeting type + a dated agenda created from template): on the draft management
+  screen the items render and `drag_to(..., html5: true)` reorders and auto-saves
+  (`.pos-status` shows /saved/i); on an approved/published agenda no drag handles or
+  edit/remove controls are present. This satisfies the upstream spec's browser-smoke-test
+  expectation.
 - Existing model/controller tests for creation, template independence, lifecycle, and
   member visibility remain unchanged.
 
