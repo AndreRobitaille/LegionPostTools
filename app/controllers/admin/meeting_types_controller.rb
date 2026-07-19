@@ -2,7 +2,7 @@ module Admin
   class MeetingTypesController < ApplicationController
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
-    before_action :set_meeting_type, only: %i[edit update]
+    before_action :set_meeting_type, only: %i[edit update destroy reset_agenda]
 
     def index
       @meeting_types = @organization.meeting_types.ordered.includes(:meeting_type_agenda_items)
@@ -44,6 +44,28 @@ module Admin
         @template_items = @meeting_type.meeting_type_agenda_items.ordered
         render :edit, status: :unprocessable_entity
       end
+    end
+
+    def destroy
+      @meeting_type.destroy
+      redirect_to admin_meeting_types_path, notice: "Meeting type deleted."
+    end
+
+    def reorder
+      MeetingType.reorder!(@organization, params.require(:ids))
+      head :ok
+    rescue ActiveRecord::RecordNotFound
+      head :unprocessable_entity
+    end
+
+    def reset_defaults
+      MeetingTypeTemplateSeeder.reset_for!(@organization)
+      redirect_to admin_meeting_types_path, notice: "Suggested meeting types reset."
+    end
+
+    def reset_agenda
+      MeetingTypeTemplateSeeder.reset_agenda_for!(@meeting_type)
+      redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Agenda reset to the default items."
     end
 
     private

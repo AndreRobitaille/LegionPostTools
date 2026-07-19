@@ -153,6 +153,75 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "destroy deletes a meeting type and its items" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    meeting_type = @organization.meeting_types.create!(name: "Doomed Meeting", position: 1, active: true)
+    entry = @organization.agenda_item_catalog_entries.create!(title: "Item", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
+    meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry, position: 1, title: "Item", active: true)
+
+    assert_difference -> { @organization.meeting_types.count }, -1 do
+      assert_difference -> { MeetingTypeAgendaItem.count }, -1 do
+        delete admin_meeting_type_path(meeting_type)
+      end
+    end
+
+    assert_redirected_to admin_meeting_types_path
+    assert_equal "Meeting type deleted.", flash[:notice]
+  end
+
+  test "reorder persists the new meeting type order" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    a = @organization.meeting_types.create!(name: "First", position: 1, active: true)
+    b = @organization.meeting_types.create!(name: "Second", position: 2, active: true)
+    c = @organization.meeting_types.create!(name: "Third", position: 3, active: true)
+
+    post reorder_admin_meeting_types_path, params: { ids: [ c.id, a.id, b.id ] }, as: :json
+
+    assert_response :success
+    assert_equal 1, c.reload.position
+    assert_equal 2, a.reload.position
+    assert_equal 3, b.reload.position
+  end
+
+  test "reorder rejects ids from another organization" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    a = @organization.meeting_types.create!(name: "First", position: 1, active: true)
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.meeting_types.create!(name: "Foreign", position: 1, active: true)
+
+    post reorder_admin_meeting_types_path, params: { ids: [ a.id, foreign.id ] }, as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal 1, a.reload.position
+  end
+
+  test "reset defaults restores suggested types and keeps custom ones" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 9, active: true)
+    @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting").update!(name: "Renamed")
+
+    post reset_defaults_admin_meeting_types_path
+
+    assert_redirected_to admin_meeting_types_path
+    assert_equal "Suggested meeting types reset.", flash[:notice]
+    assert @organization.meeting_types.exists?(custom.id)
+    assert_equal "PEC Meeting", @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting").name
+  end
+
+  test "reset agenda restores a suggested type's items" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    pec.meeting_type_agenda_items.destroy_all
+
+    post reset_agenda_admin_meeting_type_path(pec)
+
+    assert_redirected_to edit_admin_meeting_type_path(pec)
+    assert_equal "Agenda reset to the default items.", flash[:notice]
+    assert_equal 5, pec.reload.meeting_type_agenda_items.count
+  end
+
   private
 
   def user_with_capabilities(*capabilities)
