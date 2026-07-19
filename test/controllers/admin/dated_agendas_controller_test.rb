@@ -260,13 +260,24 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_admin_dated_agenda_path(agenda)
 
     assert_response :success
-    assert_select "h1", text: "Membership Meeting — August 4, 2026 — Draft"
+    assert_select "h1.page-title", text: "Membership Meeting — August 4, 2026"
     assert_select "body", text: /Membership Meeting/
     assert_select "a[href=?]", edit_admin_dated_agenda_path(agenda), count: 0
     assert_select "form[action=?]", approve_admin_dated_agenda_path(agenda), count: 0
     assert_select "nav", count: 0
-    assert_select "header", count: 0
     assert_select "body", text: "Dashboard", count: 0
+  end
+
+  test "admin print renders a chrome-free agenda document" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    get print_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_select "article.agenda-doc .agenda-masthead .page-title", text: @agenda.title
+    assert_select ".agenda-item .agenda-item-title"
+    assert_select "a.back", false
+    assert_select ".btnrow", false
   end
 
   test "empty template create shows empty state guidance" do

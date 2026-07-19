@@ -558,3 +558,12 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-item-title { font-size: 20px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }
 .agenda-item-summary { font-size: 16px; color: var(--color-muted); margin: 0 0 8px; }
 .agenda-item-body { font-size: 16px; line-height: 1.6; color: var(--color-ink); }
+
+@media print {
+  .back, .btnrow, .app-header, .app-main > .app-flash, .nav-bar, .nav-inner { display: none !important; }
+  body { background: #fff; color: #000; }
+  .agenda-doc { max-width: none; }
+  .agenda-item { break-inside: avoid; page-break-inside: avoid; }
+  .agenda-masthead { border-bottom: 2px solid #000; padding-bottom: 10px; }
+  @page { margin: 18mm; }
+}

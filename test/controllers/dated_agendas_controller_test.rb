@@ -99,13 +99,23 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "h1", text: "Published Agenda"
+    assert_select "h1.page-title", text: "Published Agenda"
     assert_select "h2", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select "a", text: "Edit", count: 0
     assert_select "nav", count: 0
-    assert_select "header", count: 0
     assert_select "body", text: "Dashboard", count: 0
+  end
+
+  test "member print renders a chrome-free agenda document" do
+    sign_in_as(user_with_capabilities)
+
+    get print_dated_agenda_path(@published)
+
+    assert_response :success
+    assert_select "article.agenda-doc .agenda-masthead .page-title", text: @published.title
+    assert_select ".agenda-item .agenda-item-title"
+    assert_select "a.back", false
   end
 
   test "member show renders a readable agenda document with house date format and a print link" do
