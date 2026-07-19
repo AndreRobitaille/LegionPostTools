@@ -70,7 +70,7 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     b = PositionTitle.create!(organization: @org, name: "Adjutant", display_order: 2)
     c = PositionTitle.create!(organization: @org, name: "Chaplain", display_order: 3)
 
-    post reorder_admin_position_titles_path, params: { ids: [c.id, a.id, b.id] }, as: :json
+    post reorder_admin_position_titles_path, params: { ids: [ c.id, a.id, b.id ] }, as: :json
 
     assert_response :success
     assert_equal 1, c.reload.display_order
@@ -85,7 +85,7 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     other_org = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     foreign = PositionTitle.create!(organization: other_org, name: "Historian", display_order: 1)
 
-    post reorder_admin_position_titles_path, params: { ids: [a.id, foreign.id] }, as: :json
+    post reorder_admin_position_titles_path, params: { ids: [ a.id, foreign.id ] }, as: :json
 
     assert_response :unprocessable_entity
     assert_equal 1, a.reload.display_order
