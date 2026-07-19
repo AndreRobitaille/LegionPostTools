@@ -101,7 +101,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     agenda = DatedAgenda.where(organization_id: @organization.id).order(:created_at).last
     assert_redirected_to edit_admin_dated_agenda_path(agenda)
     assert_equal "Dated agenda created.", flash[:notice]
-    assert_equal "Membership Meeting — August 4, 2026", agenda.title
+    assert_equal "Membership Meeting — 04 AUG 2026", agenda.title
     assert_equal 1, agenda.dated_agenda_items.count
     assert_equal [ "Opening" ], agenda.dated_agenda_items.order(:position).pluck(:title)
   end

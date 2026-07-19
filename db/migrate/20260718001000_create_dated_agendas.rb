@@ -30,7 +30,6 @@ class CreateDatedAgendas < ActiveRecord::Migration[8.1]
       t.text :summary, null: false, default: ""
       t.string :behavior_type, null: false
       t.boolean :active, null: false, default: true
-      t.bigint :source_meeting_type_agenda_item_id
       t.string :source_key
       t.string :source_label
       t.datetime :seeded_at

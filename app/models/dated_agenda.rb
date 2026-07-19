@@ -30,7 +30,8 @@ class DatedAgenda < ApplicationRecord
   end
 
   def self.default_title(meeting_type:, starts_at:)
-    "#{meeting_type.name} — #{starts_at.in_time_zone.strftime('%B %-d, %Y')}"
+    # DD MMM YYYY uppercase, matching the house date format from LegionFormatHelper#legion_date.
+    "#{meeting_type.name} — #{starts_at.in_time_zone.strftime('%d %b %Y').upcase}"
   end
 
   def draft? = status == "draft"

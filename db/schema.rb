@@ -84,7 +84,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
     t.datetime "seeded_at"
     t.string "source_key"
     t.string "source_label"
-    t.bigint "source_meeting_type_agenda_item_id"
     t.text "summary", default: "", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false

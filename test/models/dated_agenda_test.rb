@@ -12,7 +12,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   test "create_from_template copies active template items into a dated agenda" do
     agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
 
-    assert_equal "Membership Meeting — August 4, 2026", agenda.title
+    assert_equal "Membership Meeting — 04 AUG 2026", agenda.title
     assert agenda.draft?
     assert_equal 1, agenda.dated_agenda_items.count
 
