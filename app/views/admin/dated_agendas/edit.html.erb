@@ -15,7 +15,7 @@
       <%= button_to "Publish", publish_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-primary" %>
       <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Reopen this approved agenda for editing?" } %>
     <% else %>
-      <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Reopen this published agenda for editing? Members keep seeing the last published version until you publish again." } %>
+      <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Reopen this published agenda for editing? This will unpublish it until you publish again." } %>
     <% end %>
     <%= link_to "Print", print_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>
   </div>

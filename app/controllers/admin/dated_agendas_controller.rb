@@ -14,11 +14,12 @@ module Admin
     end
 
     def create
-      meeting_body = @organization.meeting_bodies.find(params[:dated_agenda][:meeting_body_id])
-      meeting_type = @organization.meeting_types.active.find(params[:dated_agenda][:meeting_type_id])
-      starts_at = Time.zone.parse(params[:dated_agenda][:starts_at].to_s)
+      dated_agenda = dated_agenda_params
+      meeting_body = @organization.meeting_bodies.find(dated_agenda[:meeting_body_id])
+      meeting_type = @organization.meeting_types.active.find(dated_agenda[:meeting_type_id])
+      starts_at = Time.zone.parse(dated_agenda[:starts_at].to_s)
       raise ArgumentError, "Starts at can't be blank" if starts_at.blank?
-      title = params[:dated_agenda][:title]
+      title = dated_agenda[:title]
       @dated_agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body:, meeting_type:, starts_at:, title: title)
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Dated agenda created."
     rescue ActiveRecord::RecordNotFound

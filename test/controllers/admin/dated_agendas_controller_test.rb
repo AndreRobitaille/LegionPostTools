@@ -106,6 +106,15 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "Opening" ], agenda.dated_agenda_items.order(:position).pluck(:title)
   end
 
+  test "create with missing dated_agenda params fails with bad request and creates nothing" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    assert_no_difference -> { DatedAgenda.where(organization_id: @organization.id).count } do
+      post admin_dated_agendas_path, params: {}
+      assert_response :bad_request
+    end
+  end
+
   test "create rejects another organization's meeting type" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
@@ -345,6 +354,18 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "button.row-del", false
     assert_select "input[name='dated_agenda[starts_at]']", false
     assert_select "input[name='dated_agenda[title]']", false
+  end
+
+  test "reopening a published agenda tells admins it becomes unpublished" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    @agenda.approve!(User.last)
+    @agenda.publish!(User.last)
+
+    get edit_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_match "Reopen this published agenda for editing? This will unpublish it until you publish again.", response.body
+    refute_match "Members keep seeing the last published version until you publish again.", response.body
   end
 
   private

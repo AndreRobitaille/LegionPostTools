@@ -80,6 +80,8 @@ module Admin
     def ensure_draft_agenda
       return unless @dated_agenda.locked_for_editing?
 
+      return head :locked if action_name == "reorder" && request.format.json?
+
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "Reopen this agenda before editing items."
     end
 

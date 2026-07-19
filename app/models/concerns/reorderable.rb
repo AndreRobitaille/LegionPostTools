@@ -11,7 +11,8 @@ module Reorderable
     def reorder_within!(scope, ordered_ids, column: :position)
       ids = Array(ordered_ids).map(&:to_i)
       records = scope.where(id: ids).index_by(&:id)
-      raise ActiveRecord::RecordNotFound unless records.length == ids.length
+      scope_ids = scope.pluck(:id)
+      raise ActiveRecord::RecordNotFound unless records.length == ids.length && ids.uniq.length == ids.length && ids.sort == scope_ids.sort
 
       transaction do
         offset = (scope.maximum(column) || 0) + 1

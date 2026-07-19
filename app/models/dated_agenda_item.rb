@@ -14,6 +14,7 @@ class DatedAgendaItem < ApplicationRecord
   before_destroy :prevent_destroy_when_locked
 
   validates :title, :behavior_type, presence: true
+  validates :behavior_type, inclusion: { in: AgendaItemCatalogEntry::BEHAVIOR_TYPES.keys }, allow_blank: true
   validates :position, numericality: { only_integer: true }
   validates :position, uniqueness: { scope: :dated_agenda_id }
   validates :agenda_item_catalog_entry_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
@@ -54,7 +55,18 @@ class DatedAgendaItem < ApplicationRecord
   end
 
   def self.reorder!(dated_agenda, ordered_ids)
-    reorder_within!(dated_agenda.dated_agenda_items, ordered_ids)
+    active_scope = dated_agenda.dated_agenda_items.active
+    ids = Array(ordered_ids).map(&:to_i)
+    records = active_scope.where(id: ids).index_by(&:id)
+    active_ids = active_scope.pluck(:id)
+    raise ActiveRecord::RecordNotFound unless records.length == ids.length && ids.uniq.length == ids.length && ids.sort == active_ids.sort
+
+    target_positions = active_scope.order(:position).pluck(:position)
+    transaction do
+      offset = (dated_agenda.dated_agenda_items.maximum(:position) || 0) + 1
+      ids.each_with_index { |id, index| records.fetch(id).update!(position: offset + index) }
+      ids.each_with_index { |id, index| records.fetch(id).update!(position: target_positions[index]) }
+    end
   end
 
   private

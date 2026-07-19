@@ -2,13 +2,14 @@ require "test_helper"
 
 class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    @organization = Organization.first || Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
-    @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
-    @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
-    @catalog_entry = @organization.agenda_item_catalog_entries.create!(title: "Opening Ceremony", slug: "opening-ceremony", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true, body: "Opening words")
-    @template_item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Opening", active: true, body: "Template body")
-    @agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership-#{SecureRandom.hex(4)}")
+    @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting-#{SecureRandom.hex(4)}", position: 99, active: true)
+    @catalog_entry = @organization.agenda_item_catalog_entries.create!(title: "Opening Ceremony", slug: "opening-ceremony-#{SecureRandom.hex(4)}", category: "ceremony", behavior_type: "scripted_ceremony", position: 99, active: true, body: "Opening words")
+    @template_item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 99, title: "Opening", active: true, body: "Template body")
+    @agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Opening", behavior_type: "scripted_ceremony", active: true, body: "Template body")
   end
 
   test "signed out users are redirected" do
@@ -82,6 +83,38 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, first.reload.position
   end
 
+  test "reorder accepts only active agenda item ids when inactive items exist" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-2", category: "reports", behavior_type: "report_slot", position: 2, active: true)
+    third_entry = @organization.agenda_item_catalog_entries.create!(title: "Inactive Report", slug: "inactive-report", category: "reports", behavior_type: "report_slot", position: 3, active: true)
+    second = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 2, title: "Commander Report", behavior_type: "report_slot", active: true)
+    first = @agenda.dated_agenda_items.ordered.first
+    @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: third_entry, position: 3, title: "Inactive Report", behavior_type: "report_slot", active: false)
+
+    post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ second.id, first.id ] }, as: :json
+
+    assert_response :ok
+    assert_equal 1, second.reload.position
+    assert_equal 2, first.reload.position
+  end
+
+  test "reorder succeeds when an inactive agenda item occupies position one" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    first = agenda.dated_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 2, title: "Opening", behavior_type: "scripted_ceremony", active: true)
+    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-2", category: "reports", behavior_type: "report_slot", position: 2, active: true)
+    third_entry = @organization.agenda_item_catalog_entries.create!(title: "Inactive Report", slug: "inactive-report", category: "reports", behavior_type: "report_slot", position: 3, active: true)
+
+    agenda.dated_agenda_items.create!(agenda_item_catalog_entry: third_entry, position: 1, title: "Inactive Report", behavior_type: "report_slot", active: false)
+    second = agenda.dated_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 3, title: "Commander Report", behavior_type: "report_slot", active: true)
+
+    post reorder_admin_dated_agenda_agenda_items_path(agenda), params: { ids: [ second.id, first.id ] }, as: :json
+
+    assert_response :ok
+    assert_equal 2, second.reload.position
+    assert_equal 3, first.reload.position
+  end
+
   test "reorder with a bad id set is rejected" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @agenda.dated_agenda_items.first
@@ -91,15 +124,35 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "reorder with a partial id set is rejected" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-2", category: "reports", behavior_type: "report_slot", position: 2, active: true)
+    second = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 2, title: "Commander Report", behavior_type: "report_slot", active: true)
+
+    post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ second.id ] }, as: :json
+
+    assert_response :unprocessable_entity
+  end
+
   test "reorder is blocked on a locked agenda" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @agenda.dated_agenda_items.first
+    @agenda.approve!(User.last)
+
+    post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ item.id ] }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Reopen this agenda before editing items.", flash[:alert]
+  end
+
+  test "reorder returns locked status for a locked agenda json request" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @agenda.dated_agenda_items.first
     @agenda.approve!(User.last)
 
     post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ item.id ] }, as: :json
 
-    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
-    assert_equal "Reopen this agenda before editing items.", flash[:alert]
+    assert_response :locked
   end
 
   test "locked agenda item edit redirects with alert" do
