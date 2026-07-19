@@ -2,6 +2,8 @@ class MeetingType < ApplicationRecord
   belongs_to :organization
   has_many :meeting_type_agenda_items, dependent: :destroy
 
+  include Reorderable
+
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }
   before_validation :normalize_optional_fields
   before_validation :ensure_slug
@@ -15,6 +17,10 @@ class MeetingType < ApplicationRecord
 
   scope :ordered, -> { order(:position, :name) }
   scope :active, -> { where(active: true) }
+
+  def self.reorder!(organization, ordered_ids)
+    reorder_within!(organization.meeting_types, ordered_ids)
+  end
 
   def seeded?
     source_key.present?

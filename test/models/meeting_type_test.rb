@@ -72,4 +72,39 @@ class MeetingTypeTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test "reorder! rewrites position to the given 1-based sequence" do
+    a = @organization.meeting_types.create!(name: "PEC Meeting", position: 1, active: true)
+    b = @organization.meeting_types.create!(name: "Membership Meeting", position: 2, active: true)
+    c = @organization.meeting_types.create!(name: "Special Meeting", position: 3, active: true)
+
+    MeetingType.reorder!(@organization, [ c.id, a.id, b.id ])
+
+    assert_equal 1, c.reload.position
+    assert_equal 2, a.reload.position
+    assert_equal 3, b.reload.position
+  end
+
+  test "reorder! rejects ids outside the organization and changes nothing" do
+    a = @organization.meeting_types.create!(name: "PEC Meeting", position: 1, active: true)
+    b = @organization.meeting_types.create!(name: "Membership Meeting", position: 2, active: true)
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.meeting_types.create!(name: "Foreign", position: 1, active: true)
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      MeetingType.reorder!(@organization, [ a.id, foreign.id ])
+    end
+
+    assert_equal 1, a.reload.position
+    assert_equal 2, b.reload.position
+  end
+
+  test "reorder! rejects duplicate ids" do
+    a = @organization.meeting_types.create!(name: "PEC Meeting", position: 1, active: true)
+    @organization.meeting_types.create!(name: "Membership Meeting", position: 2, active: true)
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      MeetingType.reorder!(@organization, [ a.id, a.id ])
+    end
+  end
 end
