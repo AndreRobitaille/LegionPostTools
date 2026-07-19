@@ -159,4 +159,35 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     assert_not_equal canonical_position, reseeded_item.position
     assert_equal membership.meeting_type_agenda_items.pluck(:position).uniq.sort, membership.meeting_type_agenda_items.pluck(:position).sort
   end
+
+  test "reset_for! restores suggested meeting types to defaults and leaves custom types" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 9, active: true)
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    pec.meeting_type_agenda_items.first.destroy
+    pec.update!(name: "Renamed PEC")
+
+    MeetingTypeTemplateSeeder.reset_for!(@organization)
+
+    assert @organization.meeting_types.exists?(custom.id), "custom types must survive reset"
+    restored = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    assert_equal "PEC Meeting", restored.name
+    assert_equal 5, restored.meeting_type_agenda_items.count
+  end
+
+  test "reset_agenda_for! restores one suggested type's items to default" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    pec.meeting_type_agenda_items.destroy_all
+
+    assert MeetingTypeTemplateSeeder.reset_agenda_for!(pec)
+    assert_equal 5, pec.reload.meeting_type_agenda_items.count
+    assert_equal (1..5).to_a, pec.meeting_type_agenda_items.ordered.pluck(:position)
+  end
+
+  test "reset_agenda_for! is a no-op for a non-suggested meeting type" do
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 1, active: true)
+
+    assert_not MeetingTypeTemplateSeeder.reset_agenda_for!(custom)
+  end
 end
