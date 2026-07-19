@@ -11,25 +11,50 @@
 <div class="btnrow">
   <%= link_to "Add meeting type", new_admin_meeting_type_path, class: "btn-primary" %>
   <% if @default_meeting_types_missing %>
-    <%= button_to "Seed default meeting types", seed_defaults_admin_meeting_types_path, method: :post, class: "btn-secondary" %>
+    <%= button_to "Add suggested", seed_defaults_admin_meeting_types_path, method: :post, class: "btn-secondary" %>
+  <% else %>
+    <%= button_to "Reset suggested", reset_defaults_admin_meeting_types_path, method: :post, class: "btn-secondary",
+          data: { turbo_confirm: "Reset the suggested meeting types back to their defaults? Your changes to them will be lost." } %>
   <% end %>
   <%= link_to "Agenda Item Catalog", admin_agenda_item_catalog_entries_path, class: "btn-secondary" %>
 </div>
 
-<div class="mrow-list">
-  <% @meeting_types.each do |meeting_type| %>
-    <%= link_to edit_admin_meeting_type_path(meeting_type),
-          class: "mrow catrow#{' mrow--inactive' unless meeting_type.active?}",
-          aria: { label: "Edit #{meeting_type.name}" } do %>
-      <span class="mrow-id">
-        <span class="mrow-name"><%= meeting_type.name %></span>
-        <span class="mrow-sub"><%= pluralize(meeting_type.meeting_type_agenda_items.size, "template item") %></span>
-      </span>
-      <span class="catrow-meta">
-        <% unless meeting_type.active? %><%= agenda_active_tag(false) %><% end %>
-        <% unless meeting_type.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
-        <span class="catrow-edit">Edit<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
-      </span>
-    <% end %>
-  <% end %>
-</div>
+<% if @meeting_types.present? %>
+  <p class="page-sub reorder-hint">Drag a row by its handle to change the order. Changes save automatically.</p>
+  <div data-controller="reorder" data-reorder-url-value="<%= reorder_admin_meeting_types_path %>">
+    <div class="mrow-list" data-reorder-target="list">
+      <% @meeting_types.each do |meeting_type| %>
+        <div class="mrow catrow<%= ' mrow--inactive' unless meeting_type.active? %>" data-reorder-item data-reorder-id="<%= meeting_type.id %>">
+          <button type="button" class="pos-handle" aria-label="Drag to reorder <%= meeting_type.name %>">
+            <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
+              <g fill="currentColor">
+                <circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/>
+                <circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/>
+                <circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/>
+              </g>
+            </svg>
+          </button>
+          <%= link_to edit_admin_meeting_type_path(meeting_type), class: "mrow-id", aria: { label: "Edit #{meeting_type.name}" } do %>
+            <span class="mrow-name"><%= meeting_type.name %></span>
+            <span class="mrow-sub"><%= pluralize(meeting_type.meeting_type_agenda_items.size, "template item") %></span>
+          <% end %>
+          <div class="catrow-meta">
+            <% unless meeting_type.active? %><%= agenda_active_tag(false) %><% end %>
+            <%= link_to "Edit", edit_admin_meeting_type_path(meeting_type), class: "catrow-edit" %>
+            <%= button_to admin_meeting_type_path(meeting_type), method: :delete, class: "row-del",
+                  aria: { label: "Delete #{meeting_type.name}" },
+                  data: { turbo_confirm: "Delete “#{meeting_type.name}”? This removes the meeting type and its template agenda." } do %>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+                <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 11v6M14 11v6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <span class="pos-status" data-reorder-target="status" role="status" aria-live="polite"></span>
+  </div>
+<% else %>
+  <p class="page-sub">No meeting types yet.</p>
+<% end %>

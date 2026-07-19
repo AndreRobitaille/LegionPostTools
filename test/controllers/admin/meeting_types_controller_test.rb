@@ -222,6 +222,31 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 5, pec.reload.meeting_type_agenda_items.count
   end
 
+  test "index shows drag reorder, delete, and reset suggested when defaults present" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+
+    get admin_meeting_types_path
+
+    assert_response :success
+    assert_select "[data-controller='reorder']"
+    assert_select ".pos-handle"
+    assert_select "form[action=?][method=?]", reset_defaults_admin_meeting_types_path, "post"
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    assert_select "form[action=?]", admin_meeting_type_path(pec)
+  end
+
+  test "index shows add suggested when defaults are missing" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    @organization.meeting_types.create!(name: "Custom Only", position: 1, active: true)
+
+    get admin_meeting_types_path
+
+    assert_response :success
+    assert_select "form[action=?][method=?]", seed_defaults_admin_meeting_types_path, "post"
+    assert_select "form[action=?]", reset_defaults_admin_meeting_types_path, count: 0
+  end
+
   private
 
   def user_with_capabilities(*capabilities)
