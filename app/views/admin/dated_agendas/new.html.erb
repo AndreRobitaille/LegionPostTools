@@ -1,0 +1,9 @@
+<% content_for :title, "New dated agenda" %>
+<a class="back" href="<%= admin_dated_agendas_path %>">&larr; Dated Agendas</a>
+
+<div class="page-lead">
+  <h1 class="page-title">New dated agenda</h1>
+  <p class="page-sub">Create an agenda for a specific meeting date from a meeting type template. Creating it copies that template's current items into this agenda; if the template is empty, the agenda starts empty.</p>
+</div>
+
+<%= render "form", dated_agenda: @dated_agenda %>

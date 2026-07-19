@@ -1,0 +1,15 @@
+<% content_for :title, @dated_agenda.title %>
+
+<article class="agenda-doc">
+  <header class="agenda-masthead">
+    <p class="page-sub"><%= @dated_agenda.meeting_body.name %></p>
+    <h1 class="page-title"><%= @dated_agenda.title %></h1>
+    <p class="page-sub"><%= legion_datetime(@dated_agenda.starts_at) %></p>
+  </header>
+
+  <div class="btnrow">
+    <%= link_to "Print", print_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>
+  </div>
+
+  <%= render "agenda_body", dated_agenda: @dated_agenda %>
+</article>

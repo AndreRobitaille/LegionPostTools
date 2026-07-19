@@ -1,0 +1,30 @@
+<% content_for :title, "Dated Agendas" %>
+<a class="back" href="<%= admin_root_path %>">&larr; Administration</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Dated Agendas</h1>
+  <p class="page-sub">Agendas for specific meeting dates, built from your meeting type templates.</p>
+</div>
+
+<div class="btnrow">
+  <%= link_to "New dated agenda", new_admin_dated_agenda_path, class: "btn-primary" %>
+</div>
+
+<% if @dated_agendas.any? %>
+  <div class="mrow-list">
+    <% @dated_agendas.each do |dated_agenda| %>
+      <%= link_to edit_admin_dated_agenda_path(dated_agenda), class: "mrow catrow", aria: { label: "Open #{dated_agenda.title}" } do %>
+        <span class="mrow-id">
+          <span class="mrow-name"><%= dated_agenda.title %></span>
+          <span class="mrow-sub"><%= dated_agenda.meeting_body.name %> &middot; <%= legion_datetime(dated_agenda.starts_at) %></span>
+        </span>
+        <span class="catrow-meta">
+          <%= dated_agenda_status_tag(dated_agenda.status) %>
+          <span class="catrow-edit">Open<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="page-sub">No dated agendas yet. Create one to prepare for an upcoming meeting.</p>
+<% end %>

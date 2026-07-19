@@ -1,0 +1,9 @@
+<% content_for :title, @dated_agenda.title %>
+<article class="agenda-doc">
+  <header class="agenda-masthead">
+    <p class="page-sub"><%= @dated_agenda.meeting_body.name %></p>
+    <h1 class="page-title"><%= @dated_agenda.title %></h1>
+    <p class="page-sub"><%= legion_datetime(@dated_agenda.starts_at) %></p>
+  </header>
+  <%= render "agenda_body", dated_agenda: @dated_agenda %>
+</article>

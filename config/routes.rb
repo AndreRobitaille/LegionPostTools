@@ -21,6 +21,9 @@ Rails.application.routes.draw do
     resource :security, only: %i[show], controller: "security"
   end
   resources :people, only: %i[index show]
+  resources :dated_agendas, only: %i[index show] do
+    get :print, on: :member
+  end
   namespace :admin do
     root "dashboard#show"
     resources :people, only: [] do
@@ -47,6 +50,17 @@ Rails.application.routes.draw do
       post :reorder, on: :collection
       post :reset_agenda, on: :member
       resources :agenda_items, controller: "meeting_type_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
+        post :reorder, on: :collection
+      end
+    end
+    resources :dated_agendas, except: %i[destroy] do
+      member do
+        patch :approve
+        patch :publish
+        patch :reopen
+        get :print
+      end
+      resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         post :reorder, on: :collection
       end
     end

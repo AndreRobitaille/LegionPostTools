@@ -1,0 +1,28 @@
+<% content_for :title, "Add agenda item to #{@dated_agenda.title}" %>
+<a class="back" href="<%= edit_admin_dated_agenda_path(@dated_agenda) %>">&larr; <%= @dated_agenda.title %></a>
+
+<div class="page-lead">
+  <h1 class="page-title">Add agenda item</h1>
+</div>
+
+<div class="mrow-list">
+  <% @entries_by_category.each do |category, entries| %>
+    <div class="sec-head-row" style="margin-top: 22px">
+      <%= render "shared/section_header", label: AgendaItemCatalogEntry::CATEGORIES.fetch(category) %>
+    </div>
+    <% entries.each do |entry, already_added| %>
+      <div class="mrow catrow<%= ' mrow--inactive' unless entry.active? %>">
+        <span class="mrow-id">
+          <span class="mrow-name"><%= entry.title %></span>
+          <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
+        </span>
+        <div class="catrow-meta">
+          <% if already_added %><span class="catrow-flag">Already added</span><% end %>
+          <% unless already_added %>
+            <%= button_to "Add", admin_dated_agenda_agenda_items_path(@dated_agenda, agenda_item_catalog_entry_id: entry.id), method: :post, class: "btn-secondary" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

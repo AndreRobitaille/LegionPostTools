@@ -203,6 +203,13 @@
 .st--other { color: var(--color-muted); }
 .st--other .st-dot { background: var(--color-muted); }
 
+.st--draft { color: var(--color-muted); }
+.st--draft .st-dot { background: var(--color-muted); }
+.st--approved { color: var(--color-gold-ink); }
+.st--approved .st-dot { background: var(--color-gold); }
+.st--published { color: var(--color-green); }
+.st--published .st-dot { background: var(--color-green); }
+
 /* De-noised member row: identity left, quiet status column at a divider --- */
 .mrow { display: flex; align-items: center; gap: 0; padding: 14px 16px; border-top: 1px solid #eadfbf; text-decoration: none; color: inherit; }
 .mrow:first-child { border-top: none; }
@@ -536,3 +543,27 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .mt-active .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
 .mt-active-form { margin: 0; }
 .mt-active-help { font-size: 14px; color: var(--color-muted); }
+
+/* Dated agenda management -------------------------------------------------- */
+.da-lifecycle { margin: 8px 0 22px; }
+.da-lifecycle .st { display: inline-block; margin-bottom: 12px; }
+.da-lifecycle .btnrow { margin: 0; }
+
+/* Published / printable agenda document ------------------------------------ */
+.agenda-doc { max-width: 720px; }
+.agenda-masthead { margin-bottom: 22px; }
+.agenda-masthead .page-title { margin: 4px 0; }
+.agenda-item { padding: 18px 0; border-top: 1px solid #eadfbf; }
+.agenda-item:first-child { border-top: none; }
+.agenda-item-title { font-size: 20px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }
+.agenda-item-summary { font-size: 16px; color: var(--color-muted); margin: 0 0 8px; }
+.agenda-item-body { font-size: 16px; line-height: 1.6; color: var(--color-ink); }
+
+@media print {
+  .back, .btnrow, .app-header, .app-main > .app-flash, .nav-bar, .nav-inner { display: none !important; }
+  body { background: #fff; color: #000; }
+  .agenda-doc { max-width: none; }
+  .agenda-item { break-inside: avoid; page-break-inside: avoid; }
+  .agenda-masthead { border-bottom: 2px solid #000; padding-bottom: 10px; }
+  @page { margin: 18mm; }
+}

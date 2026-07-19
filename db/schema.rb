@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_18_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -70,6 +70,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_000000) do
     t.index ["organization_id", "slug"], name: "index_agenda_item_catalog_entries_on_organization_id_and_slug", unique: true
     t.index ["organization_id", "source_key"], name: "idx_on_organization_id_source_key_ecf47169eb", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["organization_id"], name: "index_agenda_item_catalog_entries_on_organization_id"
+  end
+
+  create_table "dated_agenda_items", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.bigint "agenda_item_catalog_entry_id"
+    t.string "behavior_type", null: false
+    t.datetime "created_at", null: false
+    t.bigint "dated_agenda_id", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_type_agenda_item_id"
+    t.integer "position", default: 0, null: false
+    t.datetime "seeded_at"
+    t.string "source_key"
+    t.string "source_label"
+    t.text "summary", default: "", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_item_catalog_entry_id"
+    t.index ["dated_agenda_id", "agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_and_catalog_entry", unique: true
+    t.index ["dated_agenda_id", "meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_agenda_and_mt_item", unique: true, where: "(meeting_type_agenda_item_id IS NOT NULL)"
+    t.index ["dated_agenda_id", "position"], name: "index_dated_agenda_items_on_dated_agenda_id_and_position", unique: true
+    t.index ["dated_agenda_id", "source_key"], name: "index_dated_agenda_items_on_agenda_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
+    t.index ["dated_agenda_id"], name: "index_dated_agenda_items_on_dated_agenda_id"
+    t.index ["meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_meeting_type_agenda_item_id"
+  end
+
+  create_table "dated_agendas", force: :cascade do |t|
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "created_at", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_body_id", null: false
+    t.bigint "meeting_type_id", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "published_at"
+    t.bigint "published_by_id"
+    t.datetime "reopened_at"
+    t.bigint "reopened_by_id"
+    t.datetime "starts_at", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_id"], name: "index_dated_agendas_on_approved_by_id"
+    t.index ["meeting_body_id"], name: "index_dated_agendas_on_meeting_body_id"
+    t.index ["meeting_type_id"], name: "index_dated_agendas_on_meeting_type_id"
+    t.index ["organization_id", "meeting_body_id", "meeting_type_id", "starts_at"], name: "index_dated_agendas_on_org_body_type_and_starts_at"
+    t.index ["organization_id", "starts_at"], name: "index_dated_agendas_on_organization_id_and_starts_at"
+    t.index ["organization_id", "status"], name: "index_dated_agendas_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_dated_agendas_on_organization_id"
+    t.index ["published_by_id"], name: "index_dated_agendas_on_published_by_id"
+    t.index ["reopened_by_id"], name: "index_dated_agendas_on_reopened_by_id"
   end
 
   create_table "installations", force: :cascade do |t|
@@ -280,6 +331,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_000000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agenda_item_catalog_entries", "organizations"
+  add_foreign_key "dated_agenda_items", "agenda_item_catalog_entries"
+  add_foreign_key "dated_agenda_items", "dated_agendas"
+  add_foreign_key "dated_agenda_items", "meeting_type_agenda_items"
+  add_foreign_key "dated_agendas", "meeting_bodies"
+  add_foreign_key "dated_agendas", "meeting_types"
+  add_foreign_key "dated_agendas", "organizations"
+  add_foreign_key "dated_agendas", "users", column: "approved_by_id"
+  add_foreign_key "dated_agendas", "users", column: "published_by_id"
+  add_foreign_key "dated_agendas", "users", column: "reopened_by_id"
   add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"
   add_foreign_key "meeting_type_agenda_items", "agenda_item_catalog_entries"

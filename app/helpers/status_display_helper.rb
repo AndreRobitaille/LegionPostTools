@@ -23,4 +23,18 @@ module StatusDisplayHelper
       tag.span("", class: "st-dot") + label
     end
   end
+
+  def dated_agenda_status_tag(status)
+    variant, label =
+      case status.to_s
+      when "draft" then [ "st--draft", "Draft" ]
+      when "approved" then [ "st--approved", "Approved" ]
+      when "published" then [ "st--published", "Published" ]
+      else [ "st--other", status.to_s.titleize ]
+      end
+
+    tag.span(class: "st #{variant}") do
+      tag.span("", class: "st-dot") + label
+    end
+  end
 end
