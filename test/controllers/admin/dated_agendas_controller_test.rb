@@ -14,6 +14,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
       item.active = true
       item.body = "Template body"
     end
+    @agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
   end
 
   test "signed out users are redirected" do
@@ -49,8 +50,20 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: /Dated Agendas/
-    assert_select "a[href=?]", new_admin_dated_agenda_path, text: /New Dated Agenda/
+    assert_select "a[href=?]", new_admin_dated_agenda_path, text: /New Dated Agenda/i
     assert_select "body", text: /Membership/
+  end
+
+  test "index renders agendas in the design system with a status tag and house date format" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    get admin_dated_agendas_path
+
+    assert_response :success
+    assert_select ".page-lead .page-title", text: "Dated Agendas"
+    assert_select ".mrow-list .mrow.catrow .mrow-name"
+    assert_select ".mrow-list .catrow-meta .st"
+    assert_select "a.btn-primary", text: "New dated agenda"
   end
 
   test "new form includes dated agenda fields" do
