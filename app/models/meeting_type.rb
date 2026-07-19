@@ -1,6 +1,7 @@
 class MeetingType < ApplicationRecord
   belongs_to :organization
   has_many :meeting_type_agenda_items, dependent: :destroy
+  has_many :dated_agendas, dependent: :restrict_with_exception
 
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }
   before_validation :normalize_optional_fields

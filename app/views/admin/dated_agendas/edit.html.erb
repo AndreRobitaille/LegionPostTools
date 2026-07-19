@@ -1,0 +1,38 @@
+<h1><%= @dated_agenda.title %></h1>
+
+<p>Status: <%= @dated_agenda.status %></p>
+<p>Starts at: <%= l(@dated_agenda.starts_at, format: :long) %></p>
+<p><%= link_to "Print", print_admin_dated_agenda_path(@dated_agenda) %></p>
+
+<% if @dated_agenda.draft? %>
+  <%= button_to "Approve", approve_admin_dated_agenda_path(@dated_agenda), method: :patch %>
+<% elsif @dated_agenda.approved? %>
+  <%= button_to "Publish", publish_admin_dated_agenda_path(@dated_agenda), method: :patch %>
+  <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, data: { turbo_confirm: "Reopen this approved agenda for editing?" } %>
+<% else %>
+  <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, data: { turbo_confirm: "Reopen this published agenda for editing? Members will not see draft changes until it is published again." } %>
+<% end %>
+
+<%= render "form", dated_agenda: @dated_agenda %>
+
+<% if @dated_agenda.draft? %>
+  <p><%= link_to "Add from catalog", new_admin_dated_agenda_agenda_item_path(@dated_agenda) %></p>
+<% end %>
+
+<ul>
+  <% @dated_agenda.dated_agenda_items.active.ordered.each do |item| %>
+    <li>
+      <%= item.title %>
+      <% if @dated_agenda.draft? %>
+        <%= link_to "Edit", edit_admin_dated_agenda_agenda_item_path(@dated_agenda, item) %>
+        <%= button_to "Move up", move_admin_dated_agenda_agenda_item_path(@dated_agenda, item, direction: "up"), method: :patch %>
+        <%= button_to "Move down", move_admin_dated_agenda_agenda_item_path(@dated_agenda, item, direction: "down"), method: :patch %>
+        <%= button_to "Remove", admin_dated_agenda_agenda_item_path(@dated_agenda, item), method: :delete, data: { turbo_confirm: "Remove this item from this dated agenda?" } %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>
+
+<% if @dated_agenda.dated_agenda_items.active.none? %>
+  <p>This agenda does not have any items yet. Add items from the catalog to build this meeting agenda.</p>
+<% end %>

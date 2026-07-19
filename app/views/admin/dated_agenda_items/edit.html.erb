@@ -1,0 +1,42 @@
+<% content_for :title, "Edit #{@item.title}" %>
+<a class="back" href="<%= edit_admin_dated_agenda_path(@dated_agenda) %>">&larr; <%= @dated_agenda.title %></a>
+
+<div class="page-lead">
+  <h1 class="page-title">Edit agenda item</h1>
+</div>
+
+<div class="panel form-panel">
+  <%= form_with model: @item, url: admin_dated_agenda_agenda_item_path(@dated_agenda, @item), method: :patch, class: "stacked-form" do |form| %>
+    <% if @item.errors.any? %>
+      <div class="error-summary">
+        <h2><%= pluralize(@item.errors.count, "error") %> prohibited this agenda item from being saved:</h2>
+        <ul>
+          <% @item.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <%= form.hidden_field :lock_version %>
+    <div class="fl">
+      <%= form.label :title %>
+      <%= form.text_field :title, class: "f" %>
+    </div>
+    <div class="fl">
+      <%= form.label :summary %>
+      <%= form.text_area :summary, class: "f", rows: 3 %>
+    </div>
+    <div class="fl">
+      <%= form.label :behavior_type %>
+      <%= form.select :behavior_type, AgendaItemCatalogEntry::BEHAVIOR_TYPES.map { |value, label| [label, value] }, {}, class: "f" %>
+    </div>
+    <div class="fl">
+      <%= form.label :body, "Wording" %>
+      <%= form.rich_text_area :body, attachments: "false" %>
+    </div>
+    <div class="btnrow">
+      <%= form.submit "Save changes", class: "btn-primary" %>
+      <%= link_to "Cancel", edit_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>

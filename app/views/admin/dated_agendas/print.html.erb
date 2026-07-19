@@ -1,0 +1,7 @@
+<h1><%= @dated_agenda.title %> — <%= @dated_agenda.status.titleize %></h1>
+
+<p><%= @dated_agenda.meeting_body.name %></p>
+<p><%= @dated_agenda.meeting_type.name %></p>
+<p><%= l(@dated_agenda.starts_at, format: :long) %></p>
+
+<%= render "dated_agendas/agenda_body", dated_agenda: @dated_agenda %>

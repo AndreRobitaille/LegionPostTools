@@ -1,0 +1,9 @@
+<% dated_agenda.dated_agenda_items.active.ordered.each do |agenda_item| %>
+  <section>
+    <h2><%= agenda_item.title %></h2>
+    <% if agenda_item.summary.present? %>
+      <p><%= agenda_item.summary %></p>
+    <% end %>
+    <%= agenda_item.body %>
+  </section>
+<% end %>

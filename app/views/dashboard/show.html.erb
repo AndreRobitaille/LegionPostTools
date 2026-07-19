@@ -24,3 +24,18 @@
   <h1 class="page-title"><%= @organization&.name || "LegionPostTools" %></h1>
   <p class="page-sub">Signed in as <%= current_user.person.full_name %>.</p>
 </div>
+
+<section class="hub-sec">
+  <h2 class="hub-sec-h">Meetings</h2>
+  <p class="hub-sec-n">View upcoming published agendas that are ready for post meetings.</p>
+  <div class="hub-tiles">
+    <div class="tile">
+      <div class="tile-ic" aria-hidden="true">📋</div>
+      <p class="tile-t">Upcoming Published Agendas</p>
+      <p class="tile-d">Read or print agendas that have been approved for members and are coming up soon.</p>
+      <div class="tile-actions">
+        <%= link_to "View upcoming published agendas →", dated_agendas_path, class: "tile-act" %>
+      </div>
+    </div>
+  </div>
+</section>

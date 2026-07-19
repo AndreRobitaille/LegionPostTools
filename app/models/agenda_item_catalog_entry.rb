@@ -19,6 +19,7 @@ class AgendaItemCatalogEntry < ApplicationRecord
 
   belongs_to :organization
   has_rich_text :body
+  has_many :dated_agenda_items, dependent: :restrict_with_exception
 
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }
   before_validation :normalize_optional_fields

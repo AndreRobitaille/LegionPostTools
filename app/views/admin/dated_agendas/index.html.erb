@@ -1,0 +1,14 @@
+<h1>Dated Agendas</h1>
+
+<p><%= link_to "New Dated Agenda", new_admin_dated_agenda_path %></p>
+
+<ul>
+  <% @dated_agendas.each do |dated_agenda| %>
+    <li>
+      <strong><%= link_to dated_agenda.title, edit_admin_dated_agenda_path(dated_agenda) %></strong>
+      — <%= dated_agenda.status %>
+      — <%= dated_agenda.meeting_body.name %>
+      — <%= dated_agenda.starts_at.strftime("%B %-d, %Y") %>
+    </li>
+  <% end %>
+</ul>

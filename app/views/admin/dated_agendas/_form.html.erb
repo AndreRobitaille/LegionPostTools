@@ -1,0 +1,45 @@
+<%= form_with model: [:admin, dated_agenda] do |form| %>
+  <% if dated_agenda.errors.any? %>
+    <div class="error-summary"><%= dated_agenda.errors.full_messages.to_sentence %></div>
+  <% end %>
+
+  <%= form.hidden_field :lock_version if dated_agenda.persisted? %>
+
+  <% if dated_agenda.persisted? %>
+    <div>
+      <%= form.label :meeting_body_id, "Meeting body" %>
+      <p><%= dated_agenda.meeting_body.name %></p>
+    </div>
+
+    <div>
+      <%= form.label :meeting_type_id, "Meeting type" %>
+      <p><%= dated_agenda.meeting_type.name %></p>
+    </div>
+  <% else %>
+    <div>
+      <%= form.label :meeting_body_id %>
+      <%= form.collection_select :meeting_body_id, @meeting_bodies, :id, :name %>
+    </div>
+
+    <div>
+      <%= form.label :meeting_type_id %>
+      <%= form.collection_select :meeting_type_id, @meeting_types, :id, :name %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :starts_at %>
+    <%= form.datetime_local_field :starts_at %>
+  </div>
+
+  <div>
+    <%= form.label :title %>
+    <%= form.text_field :title %>
+  </div>
+
+  <% if dated_agenda.draft? || !dated_agenda.persisted? %>
+    <%= form.submit %>
+  <% else %>
+    <p>This agenda is locked.</p>
+  <% end %>
+<% end %>

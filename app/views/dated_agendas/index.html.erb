@@ -1,0 +1,11 @@
+<h1>Upcoming Published Agendas</h1>
+
+<% if @dated_agendas.any? %>
+  <ul>
+    <% @dated_agendas.each do |dated_agenda| %>
+      <li><%= link_to dated_agenda.title, dated_agenda_path(dated_agenda) %> — <%= l(dated_agenda.starts_at, format: :long) %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No upcoming published agendas are available yet.</p>
+<% end %>
