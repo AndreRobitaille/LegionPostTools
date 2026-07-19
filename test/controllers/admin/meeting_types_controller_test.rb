@@ -247,6 +247,33 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", reset_defaults_admin_meeting_types_path, count: 0
   end
 
+  test "edit page has inline name edit and instant active toggle" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
+
+    get edit_admin_meeting_type_path(meeting_type)
+
+    assert_response :success
+    assert_select "[data-controller='inline-edit']"
+    assert_select "input[name=?]", "meeting_type[name]"
+    assert_select "form[action=?]", admin_meeting_type_path(meeting_type)
+    # instant toggle posts only the active flag via PATCH
+    assert_select "form.mt-active-form input[name=?][value=?]", "meeting_type[active]", "false"
+  end
+
+  test "edit page shows reset agenda only for suggested types" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    custom = @organization.meeting_types.create!(name: "Custom Meeting", position: 9, active: true)
+
+    get edit_admin_meeting_type_path(pec)
+    assert_select "form[action=?]", reset_agenda_admin_meeting_type_path(pec)
+
+    get edit_admin_meeting_type_path(custom)
+    assert_select "form[action=?]", reset_agenda_admin_meeting_type_path(custom), count: 0
+  end
+
   private
 
   def user_with_capabilities(*capabilities)

@@ -519,3 +519,20 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .tile .tile-status.ok { color: var(--color-green); background: #dfebd9; }
 .tile .tile-status.ok .dot { background: var(--color-green); }
 .tile.tile--due { background: #f8efe0; border-color: #e6cf9c; box-shadow: inset 3px 0 0 var(--color-gold-ink), 0 8px 22px rgba(0,0,0,.06); }
+
+/* Meeting type edit head: click-to-edit name + instant active toggle -------- */
+.mt-head { margin-bottom: 18px; }
+.mt-head-name { display: flex; align-items: center; gap: 14px; }
+.mt-edit-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.mt-edit-btn:hover, .mt-edit-btn:focus-visible { background: var(--color-navy); border-color: var(--color-navy); color: #fff; outline: none; }
+.mt-head-form { margin: 0; }
+.fl-label-inline { display: block; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 4px; }
+.mt-head-editrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mt-head-editrow .f { font-size: 18px; padding: 8px 10px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); min-width: 260px; }
+.mt-active { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.mt-active .state { font-size: 14px; font-weight: 600; }
+.mt-active .state.on { color: var(--color-green); }
+.mt-active .state.off { color: var(--color-muted); }
+.mt-active .toggle { font-size: 16px; color: var(--color-navy); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
+.mt-active-form { margin: 0; }
+.mt-active-help { font-size: 14px; color: var(--color-muted); }

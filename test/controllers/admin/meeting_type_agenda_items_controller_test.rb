@@ -229,6 +229,18 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_select "body", text: /#{@catalog_entry.title}/
   end
 
+  test "edit page renders draggable agenda rows with trash buttons" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Opening", active: true)
+
+    get edit_admin_meeting_type_path(@meeting_type)
+
+    assert_response :success
+    assert_select "[data-controller='reorder'] [data-reorder-item][data-reorder-id='#{item.id}']"
+    assert_select ".pos-handle"
+    assert_select "form[action=?][method=?]", admin_meeting_type_agenda_item_path(@meeting_type, item), "post"
+  end
+
   private
 
   def user_with_capabilities(*capabilities)
