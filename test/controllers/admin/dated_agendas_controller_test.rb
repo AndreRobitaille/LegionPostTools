@@ -78,6 +78,19 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name=?]", "dated_agenda[title]"
   end
 
+  test "new renders a stacked form with plain labels and a title field" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    get new_admin_dated_agenda_path
+
+    assert_response :success
+    assert_select "form.stacked-form"
+    assert_select "form.stacked-form select[name='dated_agenda[meeting_body_id]']"
+    assert_select "form.stacked-form select[name='dated_agenda[meeting_type_id]']"
+    assert_select "form.stacked-form input[name='dated_agenda[starts_at]']"
+    assert_select "form.stacked-form input.btn-primary"
+  end
+
   test "create copies meeting type agenda items" do
     sign_in_as(user_with_capabilities("manage_agendas"))
 

@@ -1,45 +1,52 @@
-<%= form_with model: [:admin, dated_agenda] do |form| %>
+<%= form_with model: [ :admin, dated_agenda ], class: "stacked-form" do |form| %>
   <% if dated_agenda.errors.any? %>
-    <div class="error-summary"><%= dated_agenda.errors.full_messages.to_sentence %></div>
+    <div class="error-summary">
+      <h2><%= pluralize(dated_agenda.errors.count, "error") %> prohibited this agenda from being saved:</h2>
+      <ul>
+        <% dated_agenda.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+      </ul>
+    </div>
   <% end %>
 
   <%= form.hidden_field :lock_version if dated_agenda.persisted? %>
 
   <% if dated_agenda.persisted? %>
-    <div>
-      <%= form.label :meeting_body_id, "Meeting body" %>
+    <div class="fl">
+      <span class="fl-label-inline">Meeting body</span>
       <p><%= dated_agenda.meeting_body.name %></p>
     </div>
-
-    <div>
-      <%= form.label :meeting_type_id, "Meeting type" %>
+    <div class="fl">
+      <span class="fl-label-inline">Meeting type</span>
       <p><%= dated_agenda.meeting_type.name %></p>
     </div>
   <% else %>
-    <div>
-      <%= form.label :meeting_body_id %>
-      <%= form.collection_select :meeting_body_id, @meeting_bodies, :id, :name %>
+    <div class="fl">
+      <%= form.label :meeting_body_id, "Meeting body" %>
+      <%= form.collection_select :meeting_body_id, @meeting_bodies, :id, :name, {}, class: "f" %>
     </div>
-
-    <div>
-      <%= form.label :meeting_type_id %>
-      <%= form.collection_select :meeting_type_id, @meeting_types, :id, :name %>
+    <div class="fl">
+      <%= form.label :meeting_type_id, "Meeting type" %>
+      <%= form.collection_select :meeting_type_id, @meeting_types, :id, :name, {}, class: "f" %>
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :starts_at %>
-    <%= form.datetime_local_field :starts_at %>
+  <div class="fl">
+    <%= form.label :starts_at, "Date & time" %>
+    <%= form.datetime_local_field :starts_at, class: "f" %>
   </div>
 
-  <div>
-    <%= form.label :title %>
-    <%= form.text_field :title %>
+  <div class="fl">
+    <%= form.label :title, "Title (optional)" %>
+    <%= form.text_field :title, class: "f" %>
+    <span class="fl-help">Leave blank to use the meeting type name and date.</span>
   </div>
 
   <% if dated_agenda.draft? || !dated_agenda.persisted? %>
-    <%= form.submit %>
+    <div class="btnrow">
+      <%= form.submit(dated_agenda.persisted? ? "Save details" : "Create agenda", class: "btn-primary") %>
+      <%= link_to "Cancel", admin_dated_agendas_path, class: "btn-secondary" %>
+    </div>
   <% else %>
-    <p>This agenda is locked.</p>
+    <p class="readonly-tip">This agenda is locked. Reopen it to edit these details.</p>
   <% end %>
 <% end %>
