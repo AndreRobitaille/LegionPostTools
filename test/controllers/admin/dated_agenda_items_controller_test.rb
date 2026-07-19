@@ -69,17 +69,37 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Catalog item added.", flash[:notice]
   end
 
-  test "move item up and down swaps positions" do
+  test "reorder rewrites item positions for a draft agenda" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-2", category: "reports", behavior_type: "report_slot", position: 2, active: true)
     second = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 2, title: "Commander Report", behavior_type: "report_slot", active: true)
-    first = @agenda.dated_agenda_items.first
+    first = @agenda.dated_agenda_items.ordered.first
 
-    patch move_admin_dated_agenda_agenda_item_path(@agenda, second, direction: "up")
-    assert_equal [ 2, 1 ], [ first.reload.position, second.reload.position ]
+    post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ second.id, first.id ] }, as: :json
 
-    patch move_admin_dated_agenda_agenda_item_path(@agenda, second, direction: "down")
-    assert_equal [ 1, 2 ], [ first.reload.position, second.reload.position ]
+    assert_response :ok
+    assert_equal 1, second.reload.position
+    assert_equal 2, first.reload.position
+  end
+
+  test "reorder with a bad id set is rejected" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @agenda.dated_agenda_items.first
+
+    post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ item.id, 999_999 ] }, as: :json
+
+    assert_response :unprocessable_entity
+  end
+
+  test "reorder is blocked on a locked agenda" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @agenda.dated_agenda_items.first
+    @agenda.approve!(User.last)
+
+    post reorder_admin_dated_agenda_agenda_items_path(@agenda), params: { ids: [ item.id ] }, as: :json
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Reopen this agenda before editing items.", flash[:alert]
   end
 
   test "locked agenda item edit redirects with alert" do
@@ -148,21 +168,6 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     patch admin_dated_agenda_agenda_item_path(other_agenda, other_agenda.dated_agenda_items.first), params: { dated_agenda_item: { title: "Nope", lock_version: other_agenda.dated_agenda_items.first.lock_version } }
 
     assert_response :not_found
-  end
-
-  test "move stops cleanly if agenda becomes locked" do
-    sign_in_as(user_with_capabilities("manage_agendas"))
-    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-3", category: "reports", behavior_type: "report_slot", position: 2, active: true)
-    second = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: second_entry, position: 2, title: "Commander Report", behavior_type: "report_slot", active: true)
-    first = @agenda.dated_agenda_items.first
-
-    @agenda.approve!(User.last)
-
-    patch move_admin_dated_agenda_agenda_item_path(@agenda, second, direction: "up")
-
-    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
-    assert_equal "Reopen this agenda before editing items.", flash[:alert]
-    assert_equal [ 1, 2 ], [ first.reload.position, second.reload.position ]
   end
 
   private

@@ -3,8 +3,8 @@ module Admin
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
     before_action :set_dated_agenda
-    before_action :set_item, only: %i[edit update destroy move]
-    before_action :ensure_draft_agenda, only: %i[new create edit update destroy move]
+    before_action :set_item, only: %i[edit update destroy]
+    before_action :ensure_draft_agenda, only: %i[new create edit update destroy reorder]
 
     def new
       existing_ids = @dated_agenda.dated_agenda_items.pluck(:agenda_item_catalog_entry_id).to_set
@@ -56,25 +56,11 @@ module Admin
       redirect_locked_agenda
     end
 
-    def move
-      @dated_agenda.with_lock do
-        return redirect_locked_agenda if @dated_agenda.locked_for_editing?
-
-        @item.reload
-        current_position = @item.position
-        neighbor = case params[:direction]
-        when "up" then @dated_agenda.dated_agenda_items.where("position < ?", current_position).ordered.last
-        when "down" then @dated_agenda.dated_agenda_items.where("position > ?", current_position).ordered.first
-        end
-        if neighbor.present?
-          neighbor_position = neighbor.position
-          temp_position = next_position
-          @item.update!(position: temp_position)
-          neighbor.update!(position: current_position)
-          @item.update!(position: neighbor_position)
-        end
-      end
-      redirect_to edit_admin_dated_agenda_path(@dated_agenda)
+    def reorder
+      DatedAgendaItem.reorder!(@dated_agenda, params.require(:ids))
+      head :ok
+    rescue ActiveRecord::RecordNotFound
+      head :unprocessable_entity
     end
 
     private

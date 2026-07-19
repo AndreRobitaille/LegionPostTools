@@ -61,7 +61,7 @@ Rails.application.routes.draw do
         get :print
       end
       resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
-        patch :move, on: :member
+        post :reorder, on: :collection
       end
     end
   end
