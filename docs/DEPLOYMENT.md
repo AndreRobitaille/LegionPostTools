@@ -42,7 +42,7 @@ Post 165 concrete names:
 Required Kamal secrets:
 
 - `RAILS_MASTER_KEY`
-- `KAMAL_REGISTRY_PASSWORD`
+- `KAMAL_REGISTRY_PASSWORD` (from the local `gh auth token` command in `.kamal/secrets`, or another authenticated `gh` CLI session/token with GHCR access if you change that sourcing)
 - `LEGION_POST_TOOLS_DATABASE_PASSWORD`
 - `LOOPS_API_KEY`
 - `LOOPS_MAGIC_LINK_TEMPLATE_ID`
@@ -69,9 +69,48 @@ For Post 165, `DB_HOST` should point at the Kamal Postgres accessory hostname on
 
 ## Persistent SSH control master
 
+Production SSH credentials are not stored in Kamal secrets. Do not put SSH private keys, SSH certificates, or 1Password SSH references in `.kamal/secrets`.
+
+Use a normal private key file from `~/.ssh/...`. Do not invent certificate-based auth unless `~/.ssh/config` intentionally includes `CertificateFile`.
+
+Kamal must use the same host token as `~/.ssh/config`; for Post 165 that means `Host 178.156.250.235`.
+
+Required SSH stanza, in substance:
+
+```ssh-config
+Host 178.156.250.235
+  HostName 178.156.250.235
+  User root
+  IdentityFile ~/.ssh/PRIVATE_KEY_NAME
+  IdentityAgent none
+  IdentitiesOnly yes
+  ControlMaster auto
+  ControlPersist 30m
+  ControlPath ~/.ssh/controlmasters/legion-post-tools-prod-post-165
+```
+
+Create the shared controlmasters directory before use:
+
+```bash
+mkdir -p ~/.ssh/controlmasters
+chmod 700 ~/.ssh/controlmasters
+```
+
+`IdentityAgent none` intentionally disables the 1Password SSH agent for this host.
+
+Practical control-connection commands:
+
+```bash
+ssh -MNf 178.156.250.235
+ssh -O check 178.156.250.235
+ssh -O exit 178.156.250.235
+```
+
+Use the shown `ControlPath` only for Post 165; repeat installs must use a unique ControlPath per host/install.
+
 Before any Kamal or SSH-heavy operation, establish a persistent SSH control master. Route the deployment work through that connection and tear it down afterward.
 
-Do not run repeated fresh SSH/Kamal commands directly against the Hetzner host.
+Do not run repeated fresh SSH or Kamal commands directly against the Hetzner host without connection sharing.
 
 ## Postgres accessory
 
@@ -97,14 +136,18 @@ Passkeys require HTTPS and do not work by IP address.
 ## First deploy checklist: Post 165
 
 1. Confirm DNS for `members.wipost165.org` points at `178.156.250.235`.
-2. Establish the persistent SSH control master.
-3. Set all required Kamal secrets.
-4. Set clear env values, especially `APP_HOST`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names.
-5. Confirm the Kamal service name, image name, and storage names match the Post 165 convention.
-6. Run `bin/kamal setup` from the local repo for the First install only.
-7. Run `bin/kamal deploy` from the local repo.
-8. Verify the app, sign-in email, passkeys, and persistence.
-9. Tear down the SSH control master.
+2. Verify `~/.ssh/config` contains the exact Post 165 host token and control-master stanza.
+3. Create `~/.ssh/controlmasters` with `mkdir -p ~/.ssh/controlmasters` and `chmod 700 ~/.ssh/controlmasters`.
+4. Start the persistent SSH control master with `ssh -MNf 178.156.250.235`.
+5. Set all required Kamal secrets.
+6. Set clear env values, especially `APP_HOST`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names.
+7. Confirm the Kamal service name, image name, and storage names match the Post 165 convention.
+8. Run `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` once as a preflight check.
+9. Run the same `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` command a second time; it should reuse the shared control connection.
+10. Run `bin/kamal setup` from the local repo for the First install only.
+11. Run `bin/kamal deploy` from the local repo.
+12. Verify the app, sign-in email, passkeys, and persistence.
+13. Tear down the SSH control master.
 
 ## Post 165 production acceptance record
 
@@ -171,8 +214,19 @@ bin/bundler-audit
 
 For deployment-specific checks, also confirm:
 
-- Only run `bin/kamal setup` for initial provisioning or a new install.
-- `bin/kamal deploy` for routine production deploy verification.
+- exact host token match with `config/deploy.yml`
+- `IdentityAgent none`
+- `IdentitiesOnly yes`
+- `ControlMaster` / `ControlPersist` / `ControlPath`
+- two successful `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` runs before Kamal
+- only run `bin/kamal setup` for first provisioning
+- run `bin/kamal deploy` only after SSH preflight succeeds
+- if SSH fails, fix `~/.ssh/config` before touching Kamal secrets
+- if Kamal opens fresh sessions, inspect `ControlMaster` / `ControlPersist` / `ControlPath`
+- if auth tries 1Password identities, verify `IdentityAgent none`
+- if auth offers too many keys, verify `IdentitiesOnly yes`
+- if runtime secrets fail, inspect `.kamal/secrets`
+- if registry auth fails, inspect `KAMAL_REGISTRY_PASSWORD`
 - a real sign-in email reaches inbox
 - a passkey sign-in works at `APP_HOST`
 - storage survives a container restart
