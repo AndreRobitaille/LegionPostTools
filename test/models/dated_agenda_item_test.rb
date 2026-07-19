@@ -39,4 +39,25 @@ class DatedAgendaItemTest < ActiveSupport::TestCase
     assert_not stale_item.destroy
     assert_includes stale_item.errors.full_messages.join, "agenda is locked"
   end
+
+  test "reorder! rewrites positions to match the given id order" do
+    entry_a = @organization.agenda_item_catalog_entries.create!(title: "A", category: "reports", behavior_type: "report_slot", position: 10, active: true)
+    entry_b = @organization.agenda_item_catalog_entries.create!(title: "B", category: "reports", behavior_type: "report_slot", position: 11, active: true)
+    first = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: entry_a, position: 1, title: "A", behavior_type: "report_slot", active: true)
+    second = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: entry_b, position: 2, title: "B", behavior_type: "report_slot", active: true)
+
+    DatedAgendaItem.reorder!(@agenda, [ second.id, first.id ])
+
+    assert_equal 1, second.reload.position
+    assert_equal 2, first.reload.position
+  end
+
+  test "reorder! raises when the id set does not match the agenda's items" do
+    entry_a = @organization.agenda_item_catalog_entries.create!(title: "A", category: "reports", behavior_type: "report_slot", position: 10, active: true)
+    only = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: entry_a, position: 1, title: "A", behavior_type: "report_slot", active: true)
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      DatedAgendaItem.reorder!(@agenda, [ only.id, 999_999 ])
+    end
+  end
 end

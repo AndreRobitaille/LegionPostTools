@@ -1,4 +1,6 @@
 class DatedAgendaItem < ApplicationRecord
+  include Reorderable
+
   belongs_to :dated_agenda
   belongs_to :meeting_type_agenda_item, optional: true
   belongs_to :agenda_item_catalog_entry, optional: true
@@ -49,6 +51,10 @@ class DatedAgendaItem < ApplicationRecord
     }
     attrs[:meeting_type_agenda_item] = meeting_type_agenda_item if meeting_type_agenda_item
     create!(attrs)
+  end
+
+  def self.reorder!(dated_agenda, ordered_ids)
+    reorder_within!(dated_agenda.dated_agenda_items, ordered_ids)
   end
 
   private
