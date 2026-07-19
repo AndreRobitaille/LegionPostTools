@@ -203,6 +203,13 @@
 .st--other { color: var(--color-muted); }
 .st--other .st-dot { background: var(--color-muted); }
 
+.st--draft { color: var(--color-muted); }
+.st--draft .st-dot { background: var(--color-muted); }
+.st--approved { color: var(--color-gold-ink); }
+.st--approved .st-dot { background: var(--color-gold); }
+.st--published { color: var(--color-green); }
+.st--published .st-dot { background: var(--color-green); }
+
 /* De-noised member row: identity left, quiet status column at a divider --- */
 .mrow { display: flex; align-items: center; gap: 0; padding: 14px 16px; border-top: 1px solid #eadfbf; text-decoration: none; color: inherit; }
 .mrow:first-child { border-top: none; }
