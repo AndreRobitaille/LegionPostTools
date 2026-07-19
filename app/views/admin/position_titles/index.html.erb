@@ -12,7 +12,7 @@
          data-reorder-url-value="<%= reorder_admin_position_titles_path %>">
       <div data-reorder-target="list">
         <% @position_titles.each do |title| %>
-          <div class="pos" data-position-id="<%= title.id %>">
+          <div class="pos" data-reorder-item data-reorder-id="<%= title.id %>">
             <button type="button" class="pos-handle" aria-label="Drag to reorder <%= title.name %>">
               <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
                 <g fill="currentColor">

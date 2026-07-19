@@ -51,6 +51,18 @@ class MeetingTypeTemplateSeeder
     end
   end
 
+  def self.reset_for!(organization)
+    source_keys = MEETING_TYPES.map { |definition| definition.fetch(:source_key) }
+    ApplicationRecord.transaction do
+      organization.meeting_types.where(source_key: source_keys).destroy_all
+      seed_for!(organization)
+    end
+  end
+
+  def self.reset_agenda_for!(meeting_type)
+    new(meeting_type.organization).reset_agenda!(meeting_type)
+  end
+
   def initialize(organization)
     @organization = organization
   end
@@ -63,6 +75,20 @@ class MeetingTypeTemplateSeeder
         MEETING_TYPES.each { |definition| seed_meeting_type(definition) }
       end
     end
+  end
+
+  def reset_agenda!(meeting_type)
+    definition = MEETING_TYPES.find { |candidate| candidate.fetch(:source_key) == meeting_type.source_key }
+    return false unless definition
+
+    organization.with_lock do
+      AgendaItemCatalogSeeder.seed_for!(organization)
+      meeting_type.meeting_type_agenda_items.destroy_all
+      definition.fetch(:item_source_keys).each_with_index do |catalog_source_key, index|
+        seed_template_item(meeting_type, catalog_source_key, index + 1)
+      end
+    end
+    true
   end
 
   private

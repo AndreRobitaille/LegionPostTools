@@ -88,4 +88,31 @@ class MeetingTypeAgendaItemTest < ActiveSupport::TestCase
     assert_not item.valid?
     assert_includes item.errors[:agenda_item_catalog_entry], "must belong to the same organization"
   end
+
+  test "reorder! rewrites item position to the given 1-based sequence" do
+    entry2 = @organization.agenda_item_catalog_entries.create!(title: "Second", category: "ceremony", behavior_type: "scripted_ceremony", position: 2, active: true)
+    entry3 = @organization.agenda_item_catalog_entries.create!(title: "Third", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+    a = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "A", active: true)
+    b = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry2, position: 2, title: "B", active: true)
+    c = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry3, position: 3, title: "C", active: true)
+
+    MeetingTypeAgendaItem.reorder!(@meeting_type, [ c.id, a.id, b.id ])
+
+    assert_equal 1, c.reload.position
+    assert_equal 2, a.reload.position
+    assert_equal 3, b.reload.position
+  end
+
+  test "reorder! rejects ids from another meeting type" do
+    other_type = @organization.meeting_types.create!(name: "Other Type", position: 2, active: true)
+    a = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "A", active: true)
+    foreign_entry = @organization.agenda_item_catalog_entries.create!(title: "Foreign", category: "ceremony", behavior_type: "scripted_ceremony", position: 9, active: true)
+    foreign = other_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: foreign_entry, position: 1, title: "F", active: true)
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      MeetingTypeAgendaItem.reorder!(@meeting_type, [ a.id, foreign.id ])
+    end
+
+    assert_equal 1, a.reload.position
+  end
 end

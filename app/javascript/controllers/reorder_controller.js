@@ -25,11 +25,11 @@ export default class extends Controller {
   }
 
   rows() {
-    return Array.from(this.listTarget.querySelectorAll("[data-position-id]"))
+    return Array.from(this.listTarget.querySelectorAll("[data-reorder-item]"))
   }
 
   async save() {
-    const ids = this.rows().map((el) => el.dataset.positionId)
+    const ids = this.rows().map((el) => el.dataset.reorderId)
     try {
       const response = await fetch(this.urlValue, {
         method: "POST",
