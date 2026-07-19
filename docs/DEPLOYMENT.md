@@ -201,6 +201,14 @@ Still pending for production-hardening, before broader member invitation:
 - A restore should bring back the primary database first, then cache/queue if needed, then Active Storage files.
 - Do not assume another post's backup can be mixed into this install.
 
+## Refreshing development data from production
+
+Use `bin/sync_prod_db` to replace the local development database with a fresh dump of the Post 165 production primary database.
+
+Before running it, stop local Rails processes and establish the documented persistent SSH control master for `178.156.250.235`. The script reads from production with `pg_dump`, recreates `legion_post_tools_development`, restores the dump, and deletes copied sessions, magic links, and passkey credentials.
+
+It does not copy Active Storage files or the production cache/queue databases.
+
 ## Verification commands
 
 Run the usual app checks before production deploys:
