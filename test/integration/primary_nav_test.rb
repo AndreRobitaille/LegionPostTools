@@ -30,7 +30,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     user
   end
 
-  test "authenticated shell renders the primary nav with core and soon tabs" do
+  test "authenticated shell renders working tracked items navigation and remaining soon tabs" do
     prepare_setup_complete_state
     sign_in_admin
     get root_path
@@ -39,7 +39,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_select "nav.nav-bar a.nav-tab", text: "Settings"
     assert_select "nav.nav-bar .nav-tab--soon", text: /Meetings/
     assert_select "nav.nav-bar .nav-tab--soon", text: /Records/
-    assert_select "nav.nav-bar .nav-tab--soon", text: /Tracked Items/
+    assert_select "nav.nav-bar a.nav-tab[href=?]", tracked_items_path, text: "Tracked Items"
   end
 
   test "admin sees People and Admin tabs" do
@@ -71,5 +71,14 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     sign_in_admin
     get people_path
     assert_select "nav.nav-bar a.nav-tab--active", text: "People"
+  end
+
+  test "tracked items tab is active within tracked item pages" do
+    prepare_setup_complete_state
+    sign_in_admin
+
+    get tracked_items_path
+
+    assert_select "nav.nav-bar a.nav-tab--active", text: "Tracked Items"
   end
 end

@@ -10,6 +10,7 @@ class DatedAgenda < ApplicationRecord
 
   has_many :dated_agenda_items, dependent: :destroy
   has_many :dated_agenda_sections, -> { ordered }, dependent: :destroy
+  has_many :tracked_items, through: :dated_agenda_items
 
   after_create :create_default_agenda_section!
 

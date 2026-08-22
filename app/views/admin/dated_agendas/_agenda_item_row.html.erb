@@ -9,6 +9,7 @@
   <div class="section-item-copy">
     <span class="section-item-title"><%= item.title %></span>
     <% if item.summary.present? %><span class="section-item-summary"><%= item.summary %></span><% end %>
+    <% if item.tracked_item.present? %><%= link_to "Tracked business", tracked_item_path(item.tracked_item), class: "section-item-source" %><% end %>
   </div>
   <% if editable %>
     <%= link_to "Edit", edit_admin_dated_agenda_agenda_item_path(dated_agenda, item), class: "catrow-edit" %>

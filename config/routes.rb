@@ -21,6 +21,13 @@ Rails.application.routes.draw do
     resource :security, only: %i[show], controller: "security"
   end
   resources :people, only: %i[index show]
+  resources :tracked_items, except: %i[destroy] do
+    member do
+      patch :complete
+      patch :reopen
+    end
+    resources :updates, only: :create, controller: "tracked_item_updates"
+  end
   resources :dated_agendas, only: %i[index show] do
     get :print, on: :member
   end
@@ -71,6 +78,7 @@ Rails.application.routes.draw do
       resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         post :reorder, on: :collection
       end
+      resources :tracked_items, controller: "dated_agenda_tracked_items", only: %i[new create]
     end
   end
   resource :passkey_invitation, only: %i[destroy]

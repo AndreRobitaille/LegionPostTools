@@ -1,0 +1,53 @@
+<% content_for :title, "Tracked Items" %>
+
+<div class="page-lead tracked-page-lead">
+  <div>
+    <span class="tracked-kicker">Post business continuity</span>
+    <h1 class="page-title">Tracked Items</h1>
+    <p class="page-sub">Keep unfinished post business visible across meetings and officer transitions.</p>
+  </div>
+  <% if current_user.can?("manage_agendas") %>
+    <%= link_to "Track new business", new_tracked_item_path, class: "btn-primary" %>
+  <% end %>
+</div>
+
+<div class="tracked-docket">
+  <% any_active = @priority_groups.values.any?(&:any?) %>
+  <% if any_active %>
+    <% @priority_groups.each do |bucket, items| %>
+      <% next if items.empty? %>
+      <section class="tracked-bucket tracked-bucket--<%= bucket %>">
+        <header class="tracked-bucket-head">
+          <span class="tracked-bucket-diamond" aria-hidden="true">◆</span>
+          <h2><%= TrackedItem::PRIORITY_BUCKETS.fetch(bucket) %></h2>
+          <span><%= pluralize(items.size, "item") %></span>
+        </header>
+        <div class="tracked-row-list">
+          <% items.each do |tracked_item| %>
+            <%= render "tracked_item", tracked_item: tracked_item %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <div class="tracked-empty">
+      <span aria-hidden="true">◇</span>
+      <div>
+        <h2>No active business is being tracked.</h2>
+        <p>Start with one item that needs to return at a future meeting.</p>
+        <% if current_user.can?("manage_agendas") %><%= link_to "Track new business", new_tracked_item_path, class: "btn-secondary" %><% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<% if @completed_items.any? %>
+  <section class="tracked-completed">
+    <%= render "shared/section_header", label: "Recently completed" %>
+    <div class="tracked-row-list">
+      <% @completed_items.each do |tracked_item| %>
+        <%= render "tracked_item", tracked_item: tracked_item %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

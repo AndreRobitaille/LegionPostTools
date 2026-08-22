@@ -4,7 +4,7 @@
     <%= link_to "Dashboard", root_path, class: nav_tab_class(:dashboard) %>
     <span class="nav-tab nav-tab--soon">Meetings<span class="nav-soon">Soon</span></span>
     <span class="nav-tab nav-tab--soon">Records<span class="nav-soon">Soon</span></span>
-    <span class="nav-tab nav-tab--soon">Tracked Items<span class="nav-soon">Soon</span></span>
+    <%= link_to "Tracked Items", tracked_items_path, class: nav_tab_class(:tracked_items) %>
     <%= link_to "People", people_path, class: nav_tab_class(:people) %>
     <%= link_to "Settings", settings_security_path, class: nav_tab_class(:settings) %>
     <span class="nav-spacer"></span>

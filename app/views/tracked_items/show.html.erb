@@ -1,0 +1,85 @@
+<% content_for :title, @tracked_item.title %>
+<%= link_to "← Tracked Items", tracked_items_path, class: "back" %>
+
+<div class="tracked-detail-lead">
+  <div>
+    <span class="tracked-kicker">Post business continuity</span>
+    <h1 class="page-title"><%= @tracked_item.title %></h1>
+    <% if @tracked_item.summary.present? %><p class="tracked-summary"><%= @tracked_item.summary %></p><% end %>
+  </div>
+  <%= tracked_item_status_tag(@tracked_item) %>
+</div>
+
+<div class="tracked-detail-grid">
+  <main class="tracked-record">
+    <% if @tracked_item.details.present? %>
+      <section class="tracked-context">
+        <%= render "shared/section_header", label: "Background and context" %>
+        <div class="prose"><%= @tracked_item.details %></div>
+      </section>
+    <% end %>
+
+    <section class="tracked-continuity">
+      <%= render "shared/section_header", label: "Continuity" %>
+      <% if @timeline_entries.any? %>
+        <ol class="continuity-spine">
+          <% @timeline_entries.each do |time, kind, entry| %>
+            <li class="continuity-entry continuity-entry--<%= kind %>">
+              <span class="continuity-node" aria-hidden="true">◆</span>
+              <time datetime="<%= time.iso8601 %>"><%= legion_date(time) %></time>
+              <% if kind == :update %>
+                <div class="continuity-copy">
+                  <strong>Update from <%= entry.author.person.full_name %></strong>
+                  <div class="prose"><%= entry.body %></div>
+                </div>
+              <% else %>
+                <div class="continuity-copy">
+                  <strong>Added to <%= entry.dated_agenda.title %></strong>
+                  <span><%= entry.dated_agenda.meeting_body.name %> · <%= legion_datetime(entry.dated_agenda.starts_at) %></span>
+                  <% if entry.dated_agenda.published? %><%= link_to "View published agenda", dated_agenda_path(entry.dated_agenda) %><% end %>
+                </div>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <div class="continuity-empty">No updates or agenda appearances yet. Add the first update when this business moves forward.</div>
+      <% end %>
+    </section>
+
+    <% if current_user.can?("manage_agendas") %>
+      <section class="tracked-update-form">
+        <h2>Add a dated update</h2>
+        <p>Record what changed or what the next officer needs to know. Updates cannot be rewritten later.</p>
+        <%= form_with model: TrackedItemUpdate.new, url: tracked_item_updates_path(@tracked_item), class: "stacked-form" do |form| %>
+          <div class="fl">
+            <%= form.label :body, "Update" %>
+            <%= form.rich_text_area :body, attachments: "false" %>
+          </div>
+          <%= form.submit "Add update", class: "btn-primary" %>
+        <% end %>
+      </section>
+    <% end %>
+  </main>
+
+  <aside class="tracked-facts" aria-label="Tracked item details">
+    <div class="tracked-fact-head">◆ Current direction</div>
+    <dl>
+      <div><dt>Priority</dt><dd><%= TrackedItem::PRIORITY_BUCKETS.fetch(@tracked_item.priority_bucket) %></dd></div>
+      <div><dt>Reason</dt><dd><%= tracked_item_priority_reason(@tracked_item) %></dd></div>
+      <div><dt>Usually discussed by</dt><dd><%= @tracked_item.meeting_body&.name || "Any post meeting" %></dd></div>
+      <div><dt>Started by</dt><dd><%= @tracked_item.created_by.person.full_name %> · <%= legion_date(@tracked_item.created_at) %></dd></div>
+      <% if @tracked_item.completed? %><div><dt>Completed</dt><dd><%= legion_date(@tracked_item.completed_at) %> by <%= @tracked_item.completed_by.person.full_name %></dd></div><% end %>
+    </dl>
+    <% if current_user.can?("manage_agendas") %>
+      <div class="tracked-fact-actions">
+        <%= link_to "Edit current details", edit_tracked_item_path(@tracked_item), class: "btn-secondary" %>
+        <% if @tracked_item.active? %>
+          <%= button_to "Mark complete", complete_tracked_item_path(@tracked_item), method: :patch, class: "btn-primary", data: { turbo_confirm: "Mark “#{@tracked_item.title}” complete? Its history will remain available." } %>
+        <% else %>
+          <%= button_to "Reopen", reopen_tracked_item_path(@tracked_item), method: :patch, class: "btn-secondary" %>
+        <% end %>
+      </div>
+    <% end %>
+  </aside>
+</div>

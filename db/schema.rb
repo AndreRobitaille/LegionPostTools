@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_22_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,14 +87,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_000000) do
     t.string "source_label"
     t.text "summary", default: "", null: false
     t.string "title", null: false
+    t.bigint "tracked_item_id"
     t.datetime "updated_at", null: false
     t.index ["agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_item_catalog_entry_id"
     t.index ["dated_agenda_id", "agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_and_catalog_entry", unique: true
     t.index ["dated_agenda_id", "meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_agenda_and_mt_item", unique: true, where: "(meeting_type_agenda_item_id IS NOT NULL)"
     t.index ["dated_agenda_id", "source_key"], name: "index_dated_agenda_items_on_agenda_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
+    t.index ["dated_agenda_id", "tracked_item_id"], name: "idx_dated_agenda_items_agenda_tracked_item", unique: true, where: "(tracked_item_id IS NOT NULL)"
     t.index ["dated_agenda_id"], name: "index_dated_agenda_items_on_dated_agenda_id"
     t.index ["dated_agenda_section_id", "position"], name: "idx_dated_agenda_items_section_position", unique: true
     t.index ["meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_meeting_type_agenda_item_id"
+    t.index ["tracked_item_id"], name: "index_dated_agenda_items_on_tracked_item_id"
   end
 
   create_table "dated_agenda_sections", force: :cascade do |t|
@@ -337,6 +340,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_000000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "tracked_item_updates", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "tracked_item_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_tracked_item_updates_on_author_id"
+    t.index ["tracked_item_id"], name: "index_tracked_item_updates_on_tracked_item_id"
+  end
+
+  create_table "tracked_items", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.bigint "completed_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "importance", default: "standard", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_body_id"
+    t.bigint "organization_id", null: false
+    t.date "raise_by_on"
+    t.string "status", default: "active", null: false
+    t.text "summary", default: "", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["completed_by_id"], name: "index_tracked_items_on_completed_by_id"
+    t.index ["created_by_id"], name: "index_tracked_items_on_created_by_id"
+    t.index ["meeting_body_id"], name: "index_tracked_items_on_meeting_body_id"
+    t.index ["organization_id", "raise_by_on"], name: "index_tracked_items_on_organization_id_and_raise_by_on"
+    t.index ["organization_id", "status"], name: "index_tracked_items_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_tracked_items_on_organization_id"
+    t.check_constraint "importance::text = ANY (ARRAY['standard'::character varying, 'important'::character varying]::text[])", name: "tracked_items_importance_check"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'completed'::character varying]::text[])", name: "tracked_items_status_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "disabled_at"
@@ -363,6 +399,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_000000) do
   add_foreign_key "dated_agenda_items", "dated_agenda_sections"
   add_foreign_key "dated_agenda_items", "dated_agendas"
   add_foreign_key "dated_agenda_items", "meeting_type_agenda_items"
+  add_foreign_key "dated_agenda_items", "tracked_items"
   add_foreign_key "dated_agenda_sections", "dated_agendas"
   add_foreign_key "dated_agenda_sections", "meeting_type_agenda_sections"
   add_foreign_key "dated_agendas", "meeting_bodies"
@@ -384,5 +421,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_000000) do
   add_foreign_key "position_assignments", "position_titles"
   add_foreign_key "position_titles", "organizations"
   add_foreign_key "sessions", "users"
+  add_foreign_key "tracked_item_updates", "tracked_items"
+  add_foreign_key "tracked_item_updates", "users", column: "author_id"
+  add_foreign_key "tracked_items", "meeting_bodies"
+  add_foreign_key "tracked_items", "organizations"
+  add_foreign_key "tracked_items", "users", column: "completed_by_id"
+  add_foreign_key "tracked_items", "users", column: "created_by_id"
   add_foreign_key "users", "people"
 end

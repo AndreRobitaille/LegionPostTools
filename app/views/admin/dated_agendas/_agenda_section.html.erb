@@ -65,6 +65,9 @@
         <%= link_to new_admin_dated_agenda_agenda_item_path(dated_agenda, dated_agenda_section_id: agenda_section.id), class: "section-add-link" do %>
           <span aria-hidden="true">＋</span> Add catalog item
         <% end %>
+        <%= link_to new_admin_dated_agenda_tracked_item_path(dated_agenda, dated_agenda_section_id: agenda_section.id), class: "section-add-link section-add-link--tracked" do %>
+          <span aria-hidden="true">◆</span> Add tracked business
+        <% end %>
       </div>
     <% end %>
   </div>

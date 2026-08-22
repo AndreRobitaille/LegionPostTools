@@ -1,0 +1,43 @@
+<% content_for :title, "Add tracked business to #{@dated_agenda.title}" %>
+<%= link_to "← #{@dated_agenda.title}", edit_admin_dated_agenda_path(@dated_agenda), class: "back" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Add tracked business</h1>
+  <p class="page-sub">Bring unfinished post business forward into this meeting.</p>
+</div>
+
+<div class="picker-destination"><span>Adding to</span><strong><%= @agenda_section.title %></strong></div>
+
+<div class="tracked-picker">
+  <% if @priority_groups.values.flatten(1).any? %>
+    <% @priority_groups.each do |bucket, entries| %>
+      <% next if entries.empty? %>
+      <section class="tracked-bucket tracked-bucket--<%= bucket %>">
+        <header class="tracked-bucket-head">
+          <span class="tracked-bucket-diamond" aria-hidden="true">◆</span>
+          <h2><%= TrackedItem::PRIORITY_BUCKETS.fetch(bucket) %></h2>
+        </header>
+        <div class="tracked-row-list">
+          <% entries.each do |tracked_item, already_added| %>
+            <div class="tracked-row tracked-picker-row<%= ' tracked-row--completed' if already_added %>">
+              <span class="tracked-row-mark" aria-hidden="true">◆</span>
+              <span class="tracked-row-copy">
+                <strong><%= tracked_item.title %></strong>
+                <% if tracked_item.summary.present? %><span><%= tracked_item.summary %></span><% end %>
+              </span>
+              <span class="tracked-row-reason"><%= tracked_item_priority_reason(tracked_item) %></span>
+              <span class="tracked-row-body"><%= tracked_item.meeting_body&.name || "Any post meeting" %></span>
+              <% if already_added %>
+                <span class="catrow-flag">Already added</span>
+              <% else %>
+                <%= button_to "Add", admin_dated_agenda_tracked_items_path(@dated_agenda, tracked_item_id: tracked_item.id, dated_agenda_section_id: @agenda_section.id), method: :post, class: "btn-secondary" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <div class="tracked-empty"><span aria-hidden="true">◇</span><div><h2>No active tracked business.</h2><p>Start a tracked item before bringing it into an agenda.</p><%= link_to "Track new business", new_tracked_item_path, class: "btn-secondary" %></div></div>
+  <% end %>
+</div>

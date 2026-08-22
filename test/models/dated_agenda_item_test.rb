@@ -39,6 +39,42 @@ class DatedAgendaItemTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "Report text"
   end
 
+  test "create_from_tracked_item snapshots content independently" do
+    user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Adjutant"), email_address: "pat-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
+    tracked_item = @organization.tracked_items.create!(created_by: user, title: "Car Show", summary: "Confirm permits", details: "Permit history")
+
+    item = DatedAgendaItem.create_from_tracked_item!(tracked_item, position: 1, dated_agenda: @agenda)
+    tracked_item.update!(title: "Changed title", summary: "Changed summary", details: "Changed details")
+
+    assert_equal tracked_item, item.tracked_item
+    assert_equal "Car Show", item.reload.title
+    assert_equal "Confirm permits", item.summary
+    assert_includes item.body.to_s, "Permit history"
+    assert_equal "business_item", item.behavior_type
+  end
+
+  test "tracked item must belong to the same organization as the dated agenda" do
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    user = User.create!(person: Person.create!(first_name: "Other", last_name: "Adjutant"), email_address: "other-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
+    tracked_item = other.tracked_items.create!(created_by: user, title: "Other business")
+
+    item = @agenda.dated_agenda_items.build(tracked_item: tracked_item, position: 1, title: "Other business", behavior_type: "business_item")
+
+    assert_not item.valid?
+    assert_includes item.errors[:tracked_item], "must belong to the same organization"
+  end
+
+  test "tracked item can appear only once on an agenda" do
+    user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Adjutant"), email_address: "pat-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
+    tracked_item = @organization.tracked_items.create!(created_by: user, title: "Car Show")
+    DatedAgendaItem.create_from_tracked_item!(tracked_item, position: 1, dated_agenda: @agenda)
+
+    duplicate = @agenda.dated_agenda_items.build(tracked_item: tracked_item, position: 2, title: "Car Show", behavior_type: "business_item")
+
+    assert_not duplicate.valid?
+    assert_includes duplicate.errors[:tracked_item_id], "has already been taken"
+  end
+
   test "stale item update and destroy fail after parent approval" do
     item = @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Reports", behavior_type: "report_slot", active: true)
     stale_item = DatedAgendaItem.find(item.id)

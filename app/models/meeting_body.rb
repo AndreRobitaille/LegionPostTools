@@ -1,6 +1,7 @@
 class MeetingBody < ApplicationRecord
   belongs_to :organization
   has_many :dated_agendas, dependent: :restrict_with_exception
+  has_many :tracked_items, dependent: :nullify
 
   normalizes :slug, with: ->(value) { value.strip.downcase }
 

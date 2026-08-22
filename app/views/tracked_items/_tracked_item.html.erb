@@ -1,0 +1,10 @@
+<%= link_to tracked_item_path(tracked_item), class: "tracked-row#{' tracked-row--completed' if tracked_item.completed?}" do %>
+  <span class="tracked-row-mark" aria-hidden="true">◆</span>
+  <span class="tracked-row-copy">
+    <strong><%= tracked_item.title %></strong>
+    <% if tracked_item.summary.present? %><span><%= tracked_item.summary %></span><% end %>
+  </span>
+  <span class="tracked-row-reason"><%= tracked_item_priority_reason(tracked_item) %></span>
+  <span class="tracked-row-body"><%= tracked_item.meeting_body&.name || "Any post meeting" %></span>
+  <span class="tracked-row-caret" aria-hidden="true">›</span>
+<% end %>

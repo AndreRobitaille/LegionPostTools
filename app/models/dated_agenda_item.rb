@@ -8,6 +8,7 @@ class DatedAgendaItem < ApplicationRecord
     inverse_of: :agenda_items
   belongs_to :meeting_type_agenda_item, optional: true
   belongs_to :agenda_item_catalog_entry, optional: true
+  belongs_to :tracked_item, optional: true
 
   has_rich_text :body
 
@@ -16,6 +17,7 @@ class DatedAgendaItem < ApplicationRecord
   validate :catalog_entry_belongs_to_same_organization
   validate :meeting_type_agenda_item_belongs_to_same_meeting_type
   validate :agenda_section_belongs_to_same_dated_agenda
+  validate :tracked_item_belongs_to_same_organization
   validate :agenda_is_editable, on: %i[create update]
   before_destroy :prevent_destroy_when_locked
 
@@ -24,6 +26,7 @@ class DatedAgendaItem < ApplicationRecord
   validates :position, numericality: { only_integer: true }
   validates :position, uniqueness: { scope: :dated_agenda_section_id }
   validates :agenda_item_catalog_entry_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
+  validates :tracked_item_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
 
   scope :ordered, -> {
     joins(:agenda_section).order("dated_agenda_sections.position", "dated_agenda_items.position", "dated_agenda_items.title")
@@ -62,6 +65,20 @@ class DatedAgendaItem < ApplicationRecord
     }
     attrs[:meeting_type_agenda_item] = meeting_type_agenda_item if meeting_type_agenda_item
     create!(attrs)
+  end
+
+  def self.create_from_tracked_item!(tracked_item, position:, dated_agenda:, agenda_section: nil)
+    create!(
+      dated_agenda: dated_agenda,
+      agenda_section: agenda_section || dated_agenda.default_agenda_section,
+      tracked_item: tracked_item,
+      position: position,
+      title: tracked_item.title,
+      summary: tracked_item.summary,
+      behavior_type: "business_item",
+      active: true,
+      body: tracked_item.details.to_s
+    )
   end
 
   def self.reorder!(container, ordered_ids)
@@ -123,5 +140,12 @@ class DatedAgendaItem < ApplicationRecord
     return if agenda_section.dated_agenda_id == dated_agenda_id
 
     errors.add(:agenda_section, "must belong to the same dated agenda")
+  end
+
+  def tracked_item_belongs_to_same_organization
+    return if dated_agenda.blank? || tracked_item.blank?
+    return if dated_agenda.organization_id == tracked_item.organization_id
+
+    errors.add(:tracked_item, "must belong to the same organization")
   end
 end

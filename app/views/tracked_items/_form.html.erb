@@ -1,0 +1,45 @@
+<div class="panel form-panel tracked-form-panel">
+  <%= form_with model: tracked_item, class: "stacked-form" do |form| %>
+    <% if tracked_item.errors.any? %>
+      <div class="error-summary">
+        <h2><%= pluralize(tracked_item.errors.count, "error") %> prevented this tracked item from being saved:</h2>
+        <ul><% tracked_item.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+      </div>
+    <% end %>
+
+    <%= form.hidden_field :lock_version if tracked_item.persisted? %>
+    <div class="fl">
+      <%= form.label :title, "Business to track" %>
+      <%= form.text_field :title, class: "f", autofocus: true %>
+      <span class="form-help">Use the wording officers will recognize at a meeting.</span>
+    </div>
+    <div class="fl">
+      <%= form.label :summary, "What should happen next?" %>
+      <%= form.text_area :summary, class: "f", rows: 3 %>
+      <span class="form-help">Keep this short enough to scan while preparing an agenda.</span>
+    </div>
+    <div class="tracked-form-grid">
+      <div class="fl">
+        <%= form.label :meeting_body_id, "Usually discussed by" %>
+        <%= form.collection_select :meeting_body_id, @meeting_bodies, :id, :name, { include_blank: "Any post meeting" }, class: "f" %>
+      </div>
+      <div class="fl">
+        <%= form.label :importance %>
+        <%= form.select :importance, TrackedItem::IMPORTANCE_LEVELS.map { |value, label| [ label, value ] }, {}, class: "f" %>
+      </div>
+      <div class="fl">
+        <%= form.label :raise_by_on, "Raise by" %>
+        <%= form.date_field :raise_by_on, class: "f" %>
+        <span class="form-help">Items due within 30 days are treated as time-sensitive.</span>
+      </div>
+    </div>
+    <div class="fl">
+      <%= form.label :details, "Background and context" %>
+      <%= form.rich_text_area :details, attachments: "false" %>
+    </div>
+    <div class="btnrow">
+      <%= form.submit(tracked_item.persisted? ? "Save changes" : "Start tracking", class: "btn-primary") %>
+      <%= link_to "Cancel", tracked_item.persisted? ? tracked_item_path(tracked_item) : tracked_items_path, class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>
