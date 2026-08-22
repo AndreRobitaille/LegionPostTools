@@ -2,6 +2,9 @@ class User < ApplicationRecord
   belongs_to :person
   has_many :permission_grants, dependent: :destroy
   has_many :passkey_credentials, dependent: :destroy
+  has_many :agent_access_tokens, dependent: :destroy
+  has_many :sessions, dependent: :destroy
+  has_many :magic_links, dependent: :destroy
 
   normalizes :email_address, with: ->(value) { value.strip.downcase }
 

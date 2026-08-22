@@ -212,6 +212,33 @@ accessible, selectable without JavaScript, and usable at phone width.
 Before completion, critique both flows at desktop and narrow widths, with keyboard
 navigation, enlarged text, and JavaScript unavailable for the manual-copy fallback.
 
+### Recorded implementation direction
+
+This phase inherits “The 1919” rather than creating a parallel security-product look.
+The working tokens are Navy `#0A2240`, Deep navy `#081A34`, Legion gold `#C6A15B`,
+Cream `#F4EEDD`, Paper `#FBF7EC`, and Legion red `#8C1622`. System UI remains the
+plain body and control face; Georgia remains reserved for official-document surfaces;
+tabular system numerals distinguish the short code, and a system monospace face is
+used only for the one-time bearer token.
+
+The layouts stay bounded and linear:
+
+```text
+Sign-in                    Profile / Agent access
+┌ existing entry card ┐    ┌ section panel ─────────────┐
+│ instruction         │    │ token name       Revoke   │
+│   1234 5678         │    │ hint · dates · status     │
+│ finish sign-in      │    ├────────────────────────────┤
+│ recovery link       │    │ create named token         │
+└─────────────────────┘    └────────────────────────────┘
+```
+
+The memorable element is the single generous grouped-code field, shaped like the
+number an officer sees in the email rather than eight scripted boxes. The token reveal
+gets one gold top rule and a selectable field, not a new illustration, badge system,
+or animation. This avoids the generic “developer credential dashboard” look while
+preserving the established passkey vocabulary and no-JavaScript operation.
+
 ## Failure behavior
 
 - Invalid, expired, already-used, wrong-browser, or exhausted codes use the same

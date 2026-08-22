@@ -90,6 +90,20 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes paths, [ "POST", "/api/tracked_items" ]
   end
 
+  test "bearer caller receives bearer and idempotency guidance without CSRF secret" do
+    _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+
+    get "/api", as: :json, headers: { "Authorization" => "Bearer #{plaintext}" }
+
+    assert_response :success
+    body = response.parsed_body
+    assert_equal "bearer", body["authentication"]
+    assert_nil body["csrf_token"]
+    assert_nil body["csrf_header"]
+    assert_match(/Authorization/, body.dig("calling", "authentication"))
+    assert_match(/Idempotency-Key/, body.dig("calling", "writes"))
+  end
+
   test "handbook catalog actions are real routes" do
     AgentHandbook.catalog.each do |action|
       path = action.fetch(:path).gsub(":id", "1")

@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
   before_action :resume_session
 
   def current_user
-    Current.session&.user
+    Current.agent_access_token&.user || Current.session&.user
   end
 
   def authenticated?
@@ -42,7 +42,13 @@ class ApplicationController < ActionController::Base
 
   def start_new_session_for(user)
     reset_session
-    session = Session.create!(user: user, ip_address: request.remote_ip, user_agent: request.user_agent, last_seen_at: Time.current)
+    session = Session.create!(
+      user: user,
+      ip_address: request.remote_ip,
+      user_agent: request.user_agent,
+      last_seen_at: Time.current,
+      authenticated_at: Time.current
+    )
     cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax, secure: Rails.env.production? }
     Current.session = session
   end

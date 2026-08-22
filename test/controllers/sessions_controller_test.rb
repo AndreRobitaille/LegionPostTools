@@ -9,8 +9,9 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
       post session_path, params: { email_address: user.email_address }
     end
 
-    assert_redirected_to new_session_path
-    assert_equal "Check your email for a login link.", flash[:notice]
+    assert_redirected_to code_session_path
+    assert_equal "Check your email for a sign-in link and 8-digit code.", flash[:notice]
+    assert cookies[:pending_sign_in].present?
   end
 
   test "magic link requests are rate limited by requester" do
@@ -23,8 +24,8 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
         post session_path, params: { email_address: user.email_address }
       end
 
-      assert_redirected_to new_session_path
-      assert_equal "Check your email for a login link.", flash[:notice]
+      assert_redirected_to code_session_path
+      assert_equal "Check your email for a sign-in link and 8-digit code.", flash[:notice]
     end
 
     assert_no_emails do
@@ -49,7 +50,77 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_emails 1 do
       post session_path, params: { email_address: second.email_address }
     end
-    assert_equal "Check your email for a login link.", flash[:notice]
+    assert_equal "Check your email for a sign-in link and 8-digit code.", flash[:notice]
+  end
+
+  test "known unknown and disabled requests have indistinguishable responses and pending cookies" do
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    known = User.create!(person: Person.create!(first_name: "Known", last_name: "Officer"), email_address: "known@example.com")
+    disabled = User.create!(person: Person.create!(first_name: "Disabled", last_name: "Officer"), email_address: "disabled@example.com", disabled_at: Time.current)
+
+    post session_path, params: { email_address: known.email_address }
+    known_result = [ response.status, response.location, flash[:notice], cookies[:pending_sign_in].length ]
+
+    open_session do |unknown_browser|
+      unknown_browser.post session_path, params: { email_address: "missing@example.com" }
+      unknown_result = [ unknown_browser.response.status, unknown_browser.response.location, unknown_browser.flash[:notice], unknown_browser.cookies[:pending_sign_in].length ]
+      assert_equal known_result, unknown_result
+    end
+
+    open_session do |disabled_browser|
+      disabled_browser.post session_path, params: { email_address: disabled.email_address }
+      disabled_result = [ disabled_browser.response.status, disabled_browser.response.location, disabled_browser.flash[:notice], disabled_browser.cookies[:pending_sign_in].length ]
+      assert_equal known_result, disabled_result
+    end
+  end
+
+  test "matching requesting browser can sign in with emailed code" do
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Jane", last_name: "Doe"), email_address: "jane@example.com")
+
+    perform_enqueued_jobs { post session_path, params: { email_address: user.email_address } }
+    email = ActionMailer::Base.deliveries.last
+    code = email.text_part.body.to_s[/\b\d{4} \d{4}\b/]
+    assert code
+
+    assert_difference -> { Session.count }, 1 do
+      post code_session_path, params: { code: code }
+    end
+
+    assert_redirected_to root_path
+    assert cookies[:pending_sign_in].blank?
+    assert user.reload.email_verified_at
+  end
+
+  test "code fails in a browser that did not request it" do
+    Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Jane", last_name: "Doe"), email_address: "jane@example.com")
+
+    perform_enqueued_jobs { post session_path, params: { email_address: user.email_address } }
+    code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
+
+    open_session do |other_browser|
+      assert_no_difference -> { Session.count } do
+        other_browser.post code_session_path, params: { code: code }
+      end
+      assert_redirected_to code_session_path
+      assert_equal "That code is invalid or expired. Request a new email and try again.", other_browser.flash[:alert]
+    end
+  end
+
+  test "fifth failed code attempt exhausts challenge" do
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Jane", last_name: "Doe"), email_address: "jane@example.com")
+    perform_enqueued_jobs { post session_path, params: { email_address: user.email_address } }
+    code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
+
+    5.times { post code_session_path, params: { code: "0000 0000" } }
+    post code_session_path, params: { code: code }
+
+    assert_redirected_to code_session_path
+    assert_equal 0, Session.where(user: user).count
   end
 
   test "magic link callback signs in" do

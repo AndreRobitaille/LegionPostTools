@@ -1,0 +1,39 @@
+<% content_for :title, "Agent access" %>
+
+<div class="page-lead-row">
+  <div class="page-lead">
+    <h1 class="page-title">Agent access</h1>
+    <p class="page-sub">Named credentials for Bots that use the private API as you.</p>
+  </div>
+  <%= link_to "Create an agent token", new_agent_access_token_path, class: "btn-primary" %>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Your agent tokens" %>
+  <div class="panel">
+    <p class="panel-lead">Each token uses your current app permissions. Revoking a token stops it on its next request.</p>
+    <% if @agent_access_tokens.any? %>
+      <ul class="pk-list agent-token-list">
+        <% @agent_access_tokens.each do |token| %>
+          <li class="pk-row">
+            <div class="pk-row-info">
+              <strong class="agent-token-name"><%= token.name %></strong>
+              <p class="pk-row-meta">
+                Ends in <%= token.display_hint %> &middot; added <%= legion_date(token.created_at) %> &middot;
+                expires <%= legion_date(token.expires_at) %><% if token.last_used_at %> &middot; last used <%= legion_date(token.last_used_at) %><% end %>
+              </p>
+              <p class="agent-token-status"><%= agent_access_token_status(token) %></p>
+            </div>
+            <% unless token.revoked? %>
+              <%= link_to "Revoke", revoke_agent_access_token_path(token), class: "btn-return" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="pk-empty">You have no agent tokens. Create one only when a Bot needs terminal access to this app.</p>
+    <% end %>
+  </div>
+</section>
+
+<p class="profile-crosslink"><%= link_to "Back to your profile", profile_path, class: "lnk" %></p>

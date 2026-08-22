@@ -103,6 +103,14 @@
           <%= link_to "View administrators →", admin_administrators_path, class: "tile-act" %>
         </div>
       </div>
+      <div class="tile">
+        <div class="tile-ic" aria-hidden="true">🔑</div>
+        <p class="tile-t">Agent access</p>
+        <p class="tile-d">Review and revoke personal agent tokens across this installation.</p>
+        <div class="tile-actions">
+          <%= link_to "Review agent access →", admin_agent_access_tokens_path, class: "tile-act" %>
+        </div>
+      </div>
     </div>
   </section>
 <% end %>

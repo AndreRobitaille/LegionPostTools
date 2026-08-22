@@ -1,0 +1,16 @@
+<% content_for :title, "Revoke agent token" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Revoke <%= @agent_access_token.name %>?</h1>
+  <p class="page-sub">The next request using this token will be refused. This cannot be undone.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <div class="panel">
+    <p class="panel-lead">Token ending in <strong><%= @agent_access_token.display_hint %></strong>, expiring <%= legion_date(@agent_access_token.expires_at) %>.</p>
+    <div class="btnrow">
+      <%= button_to "Revoke token", agent_access_token_path(@agent_access_token), method: :delete, class: "btn-return" %>
+      <%= link_to "Keep token", agent_access_tokens_path, class: "btn-secondary" %>
+    </div>
+  </div>
+</section>

@@ -6,7 +6,8 @@ module Api
       handbook = AgentHandbook.new(
         user: current_user,
         organization: organization,
-        csrf_token: form_authenticity_token
+        csrf_token: Current.agent_access_token ? nil : form_authenticity_token,
+        agent_access_token: Current.agent_access_token
       )
 
       if json_request?

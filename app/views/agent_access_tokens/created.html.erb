@@ -1,0 +1,24 @@
+<% content_for :title, "Copy agent token" %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
+<div class="page-lead">
+  <h1 class="page-title">Copy your agent token now</h1>
+  <p class="page-sub">This is the only time the complete token will be shown.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "One-time token" %>
+  <div class="panel agent-token-reveal" data-controller="copy-token">
+    <p class="panel-lead">Store it in the Agent Computer's credential storage. Do not paste it into chat, a URL, command history, or logs.</p>
+    <label class="agent-token-label" for="issued-agent-token">Token for <%= @agent_access_token.name %></label>
+    <textarea id="issued-agent-token" class="agent-token-value" rows="4" readonly data-copy-token-target="source"><%= @plaintext_token %></textarea>
+    <div class="btnrow">
+      <button type="button" class="btn-primary" data-copy-token-target="button" data-action="copy-token#copy" hidden>Copy token</button>
+      <%= link_to "I have stored it", agent_access_tokens_path, class: "btn-secondary" %>
+    </div>
+    <p class="pk-card-status" data-copy-token-target="status" role="status" aria-live="polite">Without JavaScript, select the token above and copy it manually.</p>
+    <div class="agent-shared-warning">All Bots on the same Grok computer may be able to use this token.</div>
+  </div>
+</section>

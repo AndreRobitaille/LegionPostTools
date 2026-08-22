@@ -1,9 +1,15 @@
 module Api
   class BaseController < ApplicationController
     UNAUTHORIZED_MESSAGE = "This is a private post operations app. Sign in, then open /api."
+    MUTATION_METHODS = %w[POST PATCH PUT DELETE].freeze
+    SENSITIVE_PARAMETER_PATTERN = /token|secret|password|code|authenticity/i
 
+    skip_forgery_protection
     before_action :prefer_json
-    before_action :require_authentication
+    before_action :authenticate_api_request
+    before_action :verify_session_authenticity_token
+    around_action :with_agent_idempotency
+    after_action :prevent_bearer_caching
 
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
     rescue_from ActionController::InvalidAuthenticityToken, with: :render_invalid_authenticity_token
@@ -29,6 +35,130 @@ module Api
     end
 
     private
+
+    def authenticate_api_request
+      authorization = request.headers["Authorization"].to_s
+      if authorization.present?
+        Current.session = nil
+        scheme, credential = authorization.split(" ", 2)
+        token = AgentAccessToken.authenticate(credential) if scheme&.casecmp?("Bearer")
+        return render_error(UNAUTHORIZED_MESSAGE, status: :unauthorized) unless token
+
+        Current.agent_access_token = token
+        response.cache_control.replace(no_store: true)
+      elsif !authenticated?
+        render_error(UNAUTHORIZED_MESSAGE, status: :unauthorized)
+      end
+    end
+
+    def prevent_bearer_caching
+      response.headers["Cache-Control"] = "no-store" if Current.agent_access_token
+    end
+
+    def verify_session_authenticity_token
+      return unless mutation_request? && Current.agent_access_token.blank?
+      return unless protect_against_forgery?
+      return if verified_request?
+
+      raise ActionController::InvalidAuthenticityToken
+    end
+
+    def with_agent_idempotency
+      return yield unless mutation_request? && Current.agent_access_token.present?
+
+      key = request.headers["Idempotency-Key"].to_s
+      if key.blank? || key.length > 255
+        return render_error("Bearer-authenticated writes require an Idempotency-Key of 255 characters or fewer.", status: :unprocessable_entity)
+      end
+
+      token = Current.agent_access_token
+      fingerprint = request_fingerprint
+      token.with_lock do
+        token.reload
+        unless token.active?
+          return render_error(UNAUTHORIZED_MESSAGE, status: :unauthorized)
+        end
+
+        execution = token.agent_api_executions.find_by(idempotency_key: key)
+        if execution
+          unless matching_execution?(execution, fingerprint)
+            return render_error("That Idempotency-Key was already used for a different request.", status: :conflict)
+          end
+          return replay_execution(execution) if execution.completed?
+
+          return render_error("That request is still processing. Retry it with the same Idempotency-Key.", status: :conflict)
+        end
+
+        execution = token.agent_api_executions.create!(
+          user: current_user,
+          idempotency_key: key,
+          request_method: request.request_method,
+          request_path: request.path,
+          request_fingerprint: fingerprint,
+          state: "processing"
+        )
+
+        yield
+        execution.update!(
+          state: "completed",
+          response_status: response.status,
+          response_body: response.body
+        )
+      end
+    end
+
+    def mutation_request?
+      MUTATION_METHODS.include?(request.request_method)
+    end
+
+    def request_fingerprint
+      payload = fingerprint_value(request.request_parameters.deep_stringify_keys)
+      canonical = JSON.generate(deep_sort(payload))
+      Digest::SHA256.hexdigest([ request.request_method, request.path, canonical ].join("\n"))
+    end
+
+    def fingerprint_value(value, sensitive: false)
+      return sensitive_fingerprint(value) if sensitive
+
+      case value
+      when Hash
+        value.each_with_object({}) do |(key, child), fingerprinted|
+          fingerprinted[key] = fingerprint_value(child, sensitive: key.match?(SENSITIVE_PARAMETER_PATTERN))
+        end
+      when Array
+        value.map { |child| fingerprint_value(child) }
+      else
+        value
+      end
+    end
+
+    def sensitive_fingerprint(value)
+      canonical = JSON.generate(deep_sort(value))
+      "hmac:#{OpenSSL::HMAC.hexdigest('SHA256', Rails.application.secret_key_base, canonical)}"
+    end
+
+    def deep_sort(value)
+      case value
+      when Hash
+        value.keys.sort.to_h { |key| [ key, deep_sort(value[key]) ] }
+      when Array
+        value.map { |child| deep_sort(child) }
+      else
+        value
+      end
+    end
+
+    def matching_execution?(execution, fingerprint)
+      execution.request_method == request.request_method &&
+        execution.request_path == request.path &&
+        ActiveSupport::SecurityUtils.secure_compare(execution.request_fingerprint, fingerprint)
+    end
+
+    def replay_execution(execution)
+      render body: execution.response_body,
+        status: execution.response_status,
+        content_type: "application/json; charset=utf-8"
+    end
 
     def prefer_json
       request.format = :json

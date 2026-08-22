@@ -1,0 +1,46 @@
+<% content_for :title, "Enter sign-in code" %>
+
+<div class="entry">
+  <div class="entry-hero">
+    <div class="entry-rays"></div>
+    <div class="entry-fade"></div>
+
+    <div class="entry-col">
+      <%= image_tag "al-emblem.png", alt: "The American Legion emblem", class: "entry-emb" %>
+      <% if @organization&.unit_type.present? %>
+        <div class="entry-kick"><%= @organization.unit_type.titleize %></div>
+      <% end %>
+      <h1 class="entry-title"><%= @organization&.name || "LegionPostTools" %></h1>
+      <div class="entry-diamonds">&#9670; &#9670; &#9670;</div>
+
+      <div class="entry-card">
+        <% if flash[:notice] %>
+          <div class="entry-flash entry-flash-notice" role="status"><%= flash[:notice] %></div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="entry-flash entry-flash-alert" role="alert"><%= flash[:alert] %></div>
+        <% end %>
+
+        <h2 class="entry-card-title">Enter your sign-in code</h2>
+        <p class="entry-lead">Keep this page open. Find the code in the email we sent, then enter it here.</p>
+
+        <%= form_with url: code_session_path, method: :post do |form| %>
+          <div class="entry-field entry-code-field">
+            <%= form.label :code, "8-digit sign-in code" %>
+            <%= form.text_field :code,
+                  inputmode: "numeric",
+                  autocomplete: "one-time-code",
+                  placeholder: "1234 5678",
+                  maxlength: 9,
+                  required: true,
+                  autofocus: true %>
+          </div>
+          <%= form.button "Finish signing in", class: "entry-btn" %>
+        <% end %>
+
+        <p class="entry-reassure">The code works once and expires after 15 minutes.</p>
+        <p class="entry-check-another"><%= link_to "Check another email or request a new code", new_session_path %></p>
+      </div>
+    </div>
+  </div>
+</div>

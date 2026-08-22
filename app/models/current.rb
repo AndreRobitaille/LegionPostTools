@@ -1,3 +1,3 @@
 class Current < ActiveSupport::CurrentAttributes
-  attribute :session
+  attribute :session, :agent_access_token
 end

@@ -20,12 +20,12 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     assert_select ".entry-loc", text: /Two Rivers, WI/
   end
 
-  test "sign-in page has the magic-link form and passkey placeholder" do
+  test "sign-in page has the email form and passkey option" do
     get new_session_path
     assert_response :success
     assert_select "form[action=?][method=post]", session_path do
       assert_select "input[type=email][name=email_address]"
-      assert_select "button", text: /Send my sign-in link/
+      assert_select "button", text: /Send my sign-in email/
     end
     assert_select "button.entry-passkey", text: /passkey/i
   end

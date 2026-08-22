@@ -64,6 +64,18 @@
   </div>
 </section>
 
+<section class="profile-section">
+  <%= render "shared/section_header", label: "Agent access" %>
+
+  <div class="panel">
+    <p class="panel-lead">
+      Create a named, expiring token when Grok Bot needs to use the private API from its terminal.
+      The token acts with your current app permissions and can be revoked at any time.
+    </p>
+    <%= link_to "Manage agent access", agent_access_tokens_path, class: "btn-secondary" %>
+  </div>
+</section>
+
 <%# The post's own record of you lives in the directory, not here: roster data,
     post roles, and who may sign in are the post's business, not self-service. %>
 <p class="profile-crosslink">

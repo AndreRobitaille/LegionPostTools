@@ -25,17 +25,17 @@
         <% end %>
 
         <h2 class="entry-card-title">Sign in</h2>
-        <p class="entry-lead">Enter your email and we'll send you a secure sign-in link. There's no password to remember.</p>
+        <p class="entry-lead">Enter your email and we'll send you a secure sign-in link and an 8-digit code. There's no password to remember.</p>
 
         <%= form_with url: session_path, method: :post do |form| %>
           <div class="entry-field">
             <%= form.label :email_address, "Email address" %>
             <%= form.email_field :email_address, autocomplete: "email", placeholder: "you@example.com", required: true %>
           </div>
-          <%= form.button "Send my sign-in link", class: "entry-btn" %>
+          <%= form.button "Send my sign-in email", class: "entry-btn" %>
         <% end %>
 
-        <p class="entry-reassure">The link works once and expires shortly. Check your inbox after you tap the button.</p>
+        <p class="entry-reassure">The link and code work once and expire after 15 minutes. Check your inbox after you tap the button.</p>
 
         <div class="entry-orline">Already set up a passkey?</div>
         <div data-controller="passkey" data-passkey-redirect-value="/">

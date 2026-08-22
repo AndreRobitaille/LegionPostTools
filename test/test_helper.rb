@@ -24,9 +24,10 @@ end
 
 class ActionDispatch::IntegrationTest
   # Forge an authenticated session (auth is passwordless; there is no password login to POST).
-  def sign_in_as(user)
+  def sign_in_as(user, authenticated_at: Time.current)
     session_record = Session.create!(
-      user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current
+      user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current,
+      authenticated_at: authenticated_at
     )
     jar = ActionDispatch::TestRequest.create.cookie_jar
     jar.signed[:session_id] = session_record.id

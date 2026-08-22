@@ -7,7 +7,15 @@
 
     <p style="font-size:16px; line-height:1.55; margin:0 0 14px;">Hello <%= @user.person.full_name %>,</p>
     <p style="font-size:16px; line-height:1.55; margin:0 0 22px;">
-      Use the button below to sign in to LegionPostTools. There's no password to remember.
+      Enter this code in the browser where you requested the email:
+    </p>
+
+    <div style="margin:0 0 24px; padding:16px; text-align:center; background:#ffffff; border:1px solid #C6A15B; border-radius:6px; color:#0A2240; font-size:30px; font-weight:800; letter-spacing:.12em; font-variant-numeric:tabular-nums;">
+      <%= @login_code %>
+    </div>
+
+    <p style="font-size:16px; line-height:1.55; margin:0 0 22px;">
+      Or use the button below to sign in on the device where you open this email. There's no password to remember.
     </p>
 
     <div style="text-align:center; margin:0 0 22px;">
@@ -18,7 +26,7 @@
     </div>
 
     <p style="font-size:14px; line-height:1.55; color:#5b6b7e; margin:0 0 6px;">
-      This link works once and expires in 15 minutes.
+      The code and link each work once and expire in 15 minutes. Using either one invalidates the other.
     </p>
     <p style="font-size:14px; line-height:1.55; color:#5b6b7e; margin:0 0 4px;">
       If the button doesn't work, copy and paste this address into your browser:

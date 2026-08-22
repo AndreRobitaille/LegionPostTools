@@ -130,6 +130,41 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "passkey reauthentication refreshes the current session without creating another" do
+    Organization.create!(name: "Passkey Reauth Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    person = Person.create!(first_name: "Jane", last_name: "Reauth")
+    user = User.create!(person: person, email_address: "reauth@example.com", email_verified_at: Time.current)
+    session_record = sign_in_as(user, authenticated_at: 1.hour.ago)
+    PasskeyCredential.create!(user: user, external_id: "reauth-credential", public_key: "public-key", sign_count: 3)
+
+    credential = Object.new
+    credential.define_singleton_method(:id) { "reauth-credential" }
+    credential.define_singleton_method(:sign_count) { 4 }
+    credential.define_singleton_method(:verify) { |*_, **_| true }
+    options = Struct.new(:challenge) do
+      def as_json(*) = { challenge: challenge }
+    end.new("reauth-challenge")
+
+    original_from_get = WebAuthn::Credential.method(:from_get)
+    original_options_for_get = WebAuthn::Credential.method(:options_for_get)
+    WebAuthn::Credential.define_singleton_method(:from_get) { |*_args| credential }
+    WebAuthn::Credential.define_singleton_method(:options_for_get) { |**_kwargs| options }
+
+    begin
+      get new_agent_access_reauthentication_path
+      post authentication_options_passkeys_path
+      post authentication_passkeys_path, params: { publicKeyCredential: { id: "reauth-credential" } }
+
+      assert_response :success
+      assert_equal 1, Session.where(user: user).count
+      assert_operator session_record.reload.authenticated_at, :>, 1.minute.ago
+    ensure
+      WebAuthn::Credential.define_singleton_method(:from_get, original_from_get)
+      WebAuthn::Credential.define_singleton_method(:options_for_get, original_options_for_get)
+    end
+  end
+
   test "authenticated user renames their own passkey and returns to Security" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)

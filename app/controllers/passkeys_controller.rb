@@ -73,6 +73,9 @@ class PasskeysController < ApplicationController
 
     return render json: { error: "invalid passkey authentication" }, status: :unauthorized if stored_credential.blank?
     return render json: { error: "invalid passkey authentication" }, status: :unauthorized if stored_credential.user.disabled_at.present?
+    if reauthenticating? && stored_credential.user != current_user
+      return render json: { error: "invalid passkey authentication" }, status: :unauthorized
+    end
 
     credential.verify(
       session.delete(:webauthn_authentication_challenge),
@@ -82,7 +85,12 @@ class PasskeysController < ApplicationController
     )
 
     stored_credential.update!(sign_count: credential.sign_count, last_used_at: Time.current)
-    start_new_session_for(stored_credential.user)
+    if reauthenticating?
+      Current.session.reauthenticate!
+      session.delete(:reauthentication_purpose)
+    else
+      start_new_session_for(stored_credential.user)
+    end
 
     render json: { status: "authenticated" }
   rescue WebAuthn::Error
@@ -101,6 +109,10 @@ class PasskeysController < ApplicationController
   end
 
   private
+
+  def reauthenticating?
+    authenticated? && session[:reauthentication_purpose] == AgentAccessReauthenticationsController::PURPOSE
+  end
 
   def public_key_credential_params
     params.require(:publicKeyCredential).permit(

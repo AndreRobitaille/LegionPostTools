@@ -7,11 +7,19 @@ module MailDelivery
   class LoopsBackend
     ENDPOINT = URI("https://app.loops.so/api/v1/transactional").freeze
 
-    def deliver_magic_link(user:, login_url:)
+    def deliver_magic_link(user:, login_url:, login_code:)
       post(
         transactionalId: ENV.fetch("LOOPS_MAGIC_LINK_TEMPLATE_ID"),
         email: user.email_address,
-        dataVariables: { login_url: login_url, name: user.person.full_name }
+        dataVariables: { login_url: login_url, login_code: login_code, name: user.person.full_name }
+      )
+    end
+
+    def deliver_agent_access_confirmation(user:, confirmation_code:)
+      post(
+        transactionalId: ENV.fetch("LOOPS_AGENT_ACCESS_CONFIRMATION_TEMPLATE_ID"),
+        email: user.email_address,
+        dataVariables: { confirmation_code: confirmation_code, name: user.person.full_name }
       )
     end
 

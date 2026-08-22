@@ -306,6 +306,178 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_equal "Not found.", response.parsed_body["error"]
   end
 
+  test "bearer token reads with current grants and permission removal is immediate" do
+    _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+
+    get "/api/dated_agendas", as: :json, headers: bearer_headers(plaintext)
+    assert_response :success
+
+    @commander.permission_grants.find_by!(capability: "manage_settings").destroy!
+    get "/api/dated_agendas", as: :json, headers: bearer_headers(plaintext)
+    assert_response :forbidden
+  end
+
+  test "invalid bearer never falls back to a valid session cookie" do
+    sign_in_as(@commander)
+
+    get "/api/tracked_items", as: :json, headers: bearer_headers("lpt_missing_invalid")
+
+    assert_response :unauthorized
+  end
+
+  test "revoked expired and disabled bearer tokens return unauthorized" do
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+    token.revoke!(@commander)
+    get "/api/tracked_items", as: :json, headers: bearer_headers(plaintext)
+    assert_response :unauthorized
+
+    token.update!(revoked_at: nil, revoked_by: nil, expires_at: 1.minute.ago)
+    get "/api/tracked_items", as: :json, headers: bearer_headers(plaintext)
+    assert_response :unauthorized
+
+    token.update!(expires_at: 1.day.from_now)
+    @commander.update!(disabled_at: Time.current)
+    get "/api/tracked_items", as: :json, headers: bearer_headers(plaintext)
+    assert_response :unauthorized
+  end
+
+  test "bearer mutation requires idempotency key and does not require CSRF" do
+    _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+
+    with_forgery_protection do
+      post "/api/tracked_items", params: { title: "Buddy Checks" }, as: :json,
+        headers: bearer_headers(plaintext)
+    end
+    assert_response :unprocessable_entity
+    assert_match(/Idempotency-Key/, response.parsed_body["error"])
+
+    with_forgery_protection do
+      post "/api/tracked_items", params: { title: "Buddy Checks" }, as: :json,
+        headers: bearer_headers(plaintext, idempotency_key: "buddy-checks-2026-08-22")
+    end
+    assert_response :created
+  end
+
+  test "exact bearer retry returns the stored response without duplicating mutation" do
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+    headers = bearer_headers(plaintext, idempotency_key: "create-buddy-checks")
+    params = { title: "Buddy Checks", summary: "Call members" }
+
+    assert_difference -> { TrackedItem.count }, 1 do
+      post "/api/tracked_items", params: params, as: :json, headers: headers
+      assert_response :created
+      first_body = response.body
+
+      post "/api/tracked_items", params: params, as: :json, headers: headers
+      assert_response :created
+      assert_equal first_body, response.body
+    end
+
+    execution = token.agent_api_executions.find_by!(idempotency_key: "create-buddy-checks")
+    assert_equal @commander, execution.user
+    assert_equal "completed", execution.state
+    assert_equal 201, execution.response_status
+  end
+
+  test "altered input under an existing key is conflict" do
+    _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+    headers = bearer_headers(plaintext, idempotency_key: "one-purpose-only")
+
+    post "/api/tracked_items", params: { title: "First purpose" }, as: :json, headers: headers
+    assert_response :created
+
+    assert_no_difference -> { TrackedItem.count } do
+      post "/api/tracked_items", params: { title: "Altered purpose" }, as: :json, headers: headers
+    end
+    assert_response :conflict
+  end
+
+  test "altered sensitive input under an existing key is still a conflict" do
+    _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+    headers = bearer_headers(plaintext, idempotency_key: "sensitive-input")
+
+    post "/api/tracked_items",
+      params: { title: "First purpose", confirmation_code: "first-secret" },
+      as: :json,
+      headers: headers
+    assert_response :created
+
+    assert_no_difference -> { TrackedItem.count } do
+      post "/api/tracked_items",
+        params: { title: "First purpose", confirmation_code: "changed-secret" },
+        as: :json,
+        headers: headers
+    end
+    assert_response :conflict
+  end
+
+  test "a matching execution still marked processing fails safely" do
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+    headers = bearer_headers(plaintext, idempotency_key: "stale-processing")
+    params = { title: "Buddy Checks" }
+
+    post "/api/tracked_items", params: params, as: :json, headers: headers
+    assert_response :created
+    token.agent_api_executions.find_by!(idempotency_key: "stale-processing").update!(state: "processing")
+
+    assert_no_difference -> { TrackedItem.count } do
+      post "/api/tracked_items", params: params, as: :json, headers: headers
+    end
+    assert_response :conflict
+    assert_match(/still processing/i, response.parsed_body["error"])
+  end
+
+  test "session mutation remains compatible without idempotency key" do
+    sign_in_as(@commander)
+
+    post "/api/tracked_items", params: { title: "Human-created item" }, as: :json
+
+    assert_response :created
+  end
+
+  test "bearer retries are safe across every current API mutation family" do
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+
+    agenda_params = {
+      meeting_body_id: @pec_body.id,
+      meeting_type_id: @pec_type.id,
+      starts_at: 1.week.from_now.iso8601
+    }
+    twice_with_same_key(:post, "/api/dated_agendas", agenda_params, plaintext, "agenda-create", :created)
+    agenda = @organization.dated_agendas.last
+    assert_equal 1, @organization.dated_agendas.count
+
+    twice_with_same_key(
+      :post,
+      "/api/dated_agendas/#{agenda.id}/tracked_items",
+      { tracked_item_id: @car_show.id },
+      plaintext,
+      "agenda-add-tracked",
+      :created
+    )
+    assert_equal 1, agenda.dated_agenda_items.where(tracked_item_id: @car_show.id).count
+
+    twice_with_same_key(
+      :post,
+      "/api/tracked_items/#{@car_show.id}/updates",
+      { body: "Permit filed." },
+      plaintext,
+      "tracked-update",
+      :created
+    )
+    assert_equal 1, @car_show.updates.count
+
+    twice_with_same_key(:patch, "/api/tracked_items/#{@car_show.id}/complete", {}, plaintext, "tracked-complete", :success)
+    twice_with_same_key(:patch, "/api/tracked_items/#{@car_show.id}/reopen", {}, plaintext, "tracked-reopen", :success)
+    twice_with_same_key(:patch, "/api/dated_agendas/#{agenda.id}/approve", {}, plaintext, "agenda-approve", :success)
+    twice_with_same_key(:patch, "/api/dated_agendas/#{agenda.id}/publish", {}, plaintext, "agenda-publish", :success)
+    twice_with_same_key(:patch, "/api/dated_agendas/#{agenda.id}/reopen", {}, plaintext, "agenda-reopen", :success)
+
+    assert_equal 8, token.agent_api_executions.count
+    assert @car_show.reload.active?
+    assert agenda.reload.draft?
+  end
+
   private
 
   def create_user(label, capabilities: [])
@@ -321,5 +493,19 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     yield
   ensure
     Api::BaseController.allow_forgery_protection = previous
+  end
+
+  def bearer_headers(plaintext, idempotency_key: nil)
+    { "Authorization" => "Bearer #{plaintext}" }.tap do |headers|
+      headers["Idempotency-Key"] = idempotency_key if idempotency_key
+    end
+  end
+
+  def twice_with_same_key(method, path, params, plaintext, key, expected_status)
+    headers = bearer_headers(plaintext, idempotency_key: key)
+    2.times do
+      public_send(method, path, params: params, as: :json, headers: headers)
+      assert_response expected_status
+    end
   end
 end

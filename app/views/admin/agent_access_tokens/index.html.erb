@@ -1,0 +1,32 @@
+<% content_for :title, "Agent access oversight" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Agent access oversight</h1>
+  <p class="page-sub">Review and revoke personal agent tokens. Administrators cannot create or reveal them for another person.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "All agent tokens" %>
+  <div class="panel">
+    <% if @agent_access_tokens.any? %>
+      <ul class="pk-list agent-token-list">
+        <% @agent_access_tokens.each do |token| %>
+          <li class="pk-row">
+            <div class="pk-row-info">
+              <strong class="agent-token-name"><%= token.name %></strong>
+              <p class="pk-row-meta"><%= token.user.person.full_name %> &middot; ends in <%= token.display_hint %> &middot; expires <%= legion_date(token.expires_at) %></p>
+              <p class="agent-token-status"><%= agent_access_token_status(token) %></p>
+            </div>
+            <% unless token.revoked? %>
+              <%= link_to "Revoke", revoke_admin_agent_access_token_path(token), class: "btn-return" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="pk-empty">No one has created an agent token.</p>
+    <% end %>
+  </div>
+</section>
+
+<p class="profile-crosslink"><%= link_to "Back to Administration", admin_root_path, class: "lnk" %></p>

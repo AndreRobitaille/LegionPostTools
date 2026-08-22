@@ -1,0 +1,38 @@
+<% content_for :title, "Create agent token" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Create an agent token</h1>
+  <p class="page-sub">Name the computer or routine that will use it.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Token details" %>
+  <div class="panel">
+    <%= form_with model: @agent_access_token, class: "stacked-form" do |form| %>
+      <% if @agent_access_token.errors.any? %>
+        <div class="error-summary" role="alert">
+          <strong>Check these details:</strong>
+          <ul><% @agent_access_token.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+        </div>
+      <% end %>
+      <div class="fl">
+        <%= form.label :name, "Token name" %>
+        <%= form.text_field :name, class: "f", placeholder: "e.g. Grok Agent Computer", maxlength: 80, required: true, autocomplete: "off" %>
+        <p class="fl-help">Use a name you will recognize when you need to revoke it.</p>
+      </div>
+      <div class="fl">
+        <%= form.label :expires_in_days, "Expires after" %>
+        <%= form.select :expires_in_days,
+              options_for_select([["30 days", "30"], ["90 days", "90"], ["180 days", "180"]], "90"),
+              {}, class: "f" %>
+      </div>
+      <div class="agent-shared-warning">
+        All Bots on the same Grok computer may be able to use credentials stored there. Treat that computer as one shared security boundary.
+      </div>
+      <div class="btnrow">
+        <%= form.button "Create token", class: "btn-confirm" %>
+        <%= link_to "Cancel", agent_access_tokens_path, class: "btn-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</section>

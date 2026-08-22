@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_22_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -70,6 +70,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
     t.index ["organization_id", "slug"], name: "index_agenda_item_catalog_entries_on_organization_id_and_slug", unique: true
     t.index ["organization_id", "source_key"], name: "idx_on_organization_id_source_key_ecf47169eb", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["organization_id"], name: "index_agenda_item_catalog_entries_on_organization_id"
+  end
+
+  create_table "agent_access_tokens", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "display_hint", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "last_used_at"
+    t.string "name", null: false
+    t.string "public_id", null: false
+    t.datetime "revoked_at"
+    t.bigint "revoked_by_id"
+    t.string "secret_digest", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["expires_at"], name: "index_agent_access_tokens_on_expires_at"
+    t.index ["public_id"], name: "index_agent_access_tokens_on_public_id", unique: true
+    t.index ["revoked_at"], name: "index_agent_access_tokens_on_revoked_at"
+    t.index ["revoked_by_id"], name: "index_agent_access_tokens_on_revoked_by_id"
+    t.index ["user_id"], name: "index_agent_access_tokens_on_user_id"
+  end
+
+  create_table "agent_api_executions", force: :cascade do |t|
+    t.bigint "agent_access_token_id", null: false
+    t.datetime "created_at", null: false
+    t.string "idempotency_key", null: false
+    t.string "request_fingerprint", null: false
+    t.string "request_method", null: false
+    t.string "request_path", null: false
+    t.text "response_body"
+    t.integer "response_status"
+    t.string "state", default: "processing", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["agent_access_token_id", "idempotency_key"], name: "idx_agent_api_executions_token_key", unique: true
+    t.index ["agent_access_token_id"], name: "index_agent_api_executions_on_agent_access_token_id"
+    t.index ["state", "created_at"], name: "index_agent_api_executions_on_state_and_created_at"
+    t.index ["user_id"], name: "index_agent_api_executions_on_user_id"
+    t.check_constraint "state::text = ANY (ARRAY['processing'::character varying, 'completed'::character varying]::text[])", name: "agent_api_executions_state_check"
   end
 
   create_table "dated_agenda_items", force: :cascade do |t|
@@ -151,14 +189,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
   end
 
   create_table "magic_links", force: :cascade do |t|
+    t.string "browser_challenge_digest"
+    t.string "code_digest"
     t.datetime "created_at", null: false
     t.datetime "expires_at", null: false
+    t.integer "failed_attempts", default: 0, null: false
+    t.string "purpose", default: "sign_in", null: false
+    t.bigint "session_id"
     t.string "token_digest", null: false
     t.datetime "updated_at", null: false
     t.datetime "used_at"
     t.bigint "user_id", null: false
+    t.index ["browser_challenge_digest"], name: "index_magic_links_on_browser_challenge_digest", unique: true
+    t.index ["session_id"], name: "index_magic_links_on_session_id"
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
+    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying]::text[])", name: "magic_links_purpose_check"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -331,6 +377,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
   end
 
   create_table "sessions", force: :cascade do |t|
+    t.datetime "authenticated_at"
     t.datetime "created_at", null: false
     t.string "ip_address"
     t.datetime "last_seen_at"
@@ -395,6 +442,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agenda_item_catalog_entries", "organizations"
+  add_foreign_key "agent_access_tokens", "users"
+  add_foreign_key "agent_access_tokens", "users", column: "revoked_by_id"
+  add_foreign_key "agent_api_executions", "agent_access_tokens"
+  add_foreign_key "agent_api_executions", "users"
   add_foreign_key "dated_agenda_items", "agenda_item_catalog_entries"
   add_foreign_key "dated_agenda_items", "dated_agenda_sections"
   add_foreign_key "dated_agenda_items", "dated_agendas"
@@ -408,6 +459,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_010000) do
   add_foreign_key "dated_agendas", "users", column: "approved_by_id"
   add_foreign_key "dated_agendas", "users", column: "published_by_id"
   add_foreign_key "dated_agendas", "users", column: "reopened_by_id"
+  add_foreign_key "magic_links", "sessions"
   add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"
   add_foreign_key "meeting_type_agenda_items", "agenda_item_catalog_entries"

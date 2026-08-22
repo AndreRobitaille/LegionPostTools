@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   end
   resource :setup, only: %i[new create], controller: "setup"
   resource :session, only: %i[new create destroy] do
+    get :code, on: :collection
+    post :code, on: :collection
     get :magic_link, on: :collection
     post :magic_link, on: :collection
   end
@@ -18,6 +20,12 @@ Rails.application.routes.draw do
     end
   end
   resource :profile, only: %i[show]
+  resource :agent_access_reauthentication, only: %i[new create] do
+    post :verify, on: :collection
+  end
+  resources :agent_access_tokens, only: %i[index new create destroy] do
+    get :revoke, on: :member
+  end
   resources :people, only: %i[index show]
   resources :tracked_items, except: %i[destroy] do
     member do
@@ -49,6 +57,9 @@ Rails.application.routes.draw do
     end
     resources :agenda_item_catalog_entries, except: %i[show destroy]
     resources :administrators, only: %i[index]
+    resources :agent_access_tokens, only: %i[index destroy] do
+      get :revoke, on: :member
+    end
     resources :meeting_types, except: %i[show] do
       post :seed_defaults, on: :collection
       post :reset_defaults, on: :collection
