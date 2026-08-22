@@ -89,14 +89,24 @@ AI may draft minutes, summarize transcripts, suggest tracked items, and help pla
 
 AI output is never official. Humans review, approve, attest, distribute, and accept official records.
 
+An officer may also assign a signed-in agent (Grok Bot, later others) to operate
+the existing app on their behalf. That agent uses a private JSON surface and a
+generated handbook at `/api`. It is still not the authority on official records.
+Group chat, email, and other outside channels stay in the agent’s own tools;
+this app only stores post business.
+
 Provider-specific AI integration should stay behind replaceable service boundaries. OpenAI is expected first, but the domain should not depend directly on one provider.
+
+See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`.
 
 ## Deferred Architecture
 
 Do not build these prematurely:
 
 - Multi-tenant SaaS.
-- Public API.
+- Public API (a private, session-authenticated officer API is planned; it is not a public API).
+- MCP or a custom CLI until a client cannot use the private JSON handbook.
+- API tokens until a shell-only agent cannot use the existing session cookie.
 - Full accounting.
 - Broad project management.
 - Generic nonprofit feature set.

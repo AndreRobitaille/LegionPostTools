@@ -24,6 +24,11 @@ The app should help preserve that memory without forcing officers to become soft
 
 AI can draft, summarize, organize, and suggest. It is not the authority.
 
+Officers may also point a signed-in agent at the app to do repetitive Commander
+and Adjutant work (draft agendas, place tracked business, turn outside
+conversation into post records). The agent acts with that officer’s grants. It
+still does not make official records official.
+
 Humans remain responsible for reviewing, approving, attesting, distributing, and accepting official records. The app should make that human responsibility clear in the workflow.
 
 ## What This Is Not

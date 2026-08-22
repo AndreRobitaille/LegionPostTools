@@ -96,6 +96,41 @@ Completed before beginning the minutes lifecycle:
 - Active-state, permission, keyboard, desktop, and phone-width verification.
 - See `docs/AGENDA_PRESENTATION.md`.
 
+## Current: Officer Agent Operability
+
+Let Grok Bot (and later a similar machine-resident agent) operate the app as a
+signed-in Post Commander so repetitive officer work can be handed off. The Bot
+does the thinking. The app stays a predictable operations tool. This track uses
+agendas and tracked items that already exist; it does not wait for minutes.
+
+Immediate jobs this phase must unlock:
+
+- Explicit orders such as “create a basic PEC agenda for next Tuesday” and
+  “add the car show topic to the next meeting agenda.”
+- Morning group-chat triage **in Grok Bot**, which then creates or updates
+  tracked business and draft agenda entries here. Chat never enters this app.
+
+Build:
+
+- Private session-authenticated JSON for meeting bodies, meeting types, dated
+  agendas, and tracked items. Same `can?` rules as the HTML app.
+- Generated handbook at `GET /api` (login required) so the Bot can learn this
+  installation without a human manual, MCP, or public docs.
+- Lists, not search. The Bot matches names from the list.
+- Draft-only creates unless the human explicitly asks to approve or publish.
+- Verify the Agent Computer browser can sign in and reach `/api` (watch
+  `allow_browser`).
+
+Do not build in this phase: TUI, CLI package, MCP, API tokens, public
+`llms.txt`, chat ingest, or minutes endpoints.
+
+See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
+`docs/superpowers/plans/2026-08-22-officer-agent-operability.md`.
+
+When minutes, PDF, or distribution ship, add them to the handbook. A personal
+access token waits until a shell-only agent cannot use the 180-day session
+cookie. MCP waits until a host with no shell needs the same actions.
+
 ## Immediate Next: Minutes Lifecycle
 
 - Transcript paste/upload.
@@ -133,4 +168,7 @@ Completed before beginning the minutes lifecycle:
 - Calendar/events.
 - Lightweight finance records.
 - Officer/member directory.
-- Public read-only API for selected approved records.
+- Public read-only API for selected approved records (distinct from the private
+  officer-agent API).
+- Personal access tokens or MCP wrapping that private API, if a future agent
+  cannot use the session-authenticated handbook.

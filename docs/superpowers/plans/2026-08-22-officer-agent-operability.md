@@ -1,0 +1,54 @@
+# Officer Agent Operability Implementation Plan
+
+**Goal:** Let Grok Bot, signed in as Post Commander, learn this installation from
+`GET /api` and do draft agenda plus tracked-item work through a private JSON
+surface.
+
+**Architecture:** Add an `Api` namespace that reuses existing models and
+`can?` checks. HTML stays HTML. The Bot uses the existing session cookie. A
+generated handbook is the private operator manual. No search, CLI, TUI, MCP, or
+tokens in this phase.
+
+**Design:** Follow `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`.
+
+## Tasks
+
+1. Confirm Grok Bot (or a modern Chrome-equivalent) can load sign-in and will
+   be able to load `/api`. If `allow_browser versions: :modern` 406s the Agent
+   Computer browser, skip or broaden that gate on the HTML the Bot must use.
+   Keep the gate on pages that do not need to be agent-reachable if possible.
+
+2. Add `Api::BaseController` (session required, JSON only, 401/403/404/422
+   error shape, CSRF header documented). Unauthenticated `GET /api` returns
+   401 with the short public sentence and no member data.
+
+3. Build the handbook catalog and `GET /api` (markdown default, JSON on
+   request). Include installation name, caller, grants, product rules, and
+   every v1 endpoint with method, path, required capability, and a short
+   example. Generate it from one catalog so it cannot rot.
+
+4. JSON list/show for meeting bodies, meeting types, dated agendas, and
+   tracked items. Index payloads stay small and complete enough for the Bot
+   to match “PEC” and “car show” without a search endpoint. Include whether
+   a tracked item already appears on an upcoming agenda.
+
+5. JSON writes that call existing model methods: create dated agenda from
+   template as `draft`; snapshot a tracked item onto a draft agenda (422 if
+   locked or duplicate); create tracked item; append update; complete/reopen.
+   Same permission and lock rules as the HTML admin UI.
+
+6. Document approve/publish/reopen in the handbook under “only when asked.”
+   Expose those JSON actions only if they are cheap to add beside the HTML
+   ones; do not make them the default Bot path.
+
+7. Request tests for auth, grants, draft-only create, locked-agenda refusal,
+   duplicate tracked-item on an agenda, list-without-search matching fixtures,
+   and handbook content that stays in sync with the routes.
+
+8. Run `bin/rails test`, `bin/rubocop`, `bin/brakeman`, and `bin/bundler-audit`.
+   Smoke `GET /api` and one create-from-template against a signed-in session
+   (browser or request test). Do not claim Grok Bot works until that session
+   path is verified.
+
+9. After minutes (or tokens, or MCP) exist in later phases, extend the
+   handbook catalog. Do not stub those endpoints now.
