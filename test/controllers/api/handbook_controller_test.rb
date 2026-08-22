@@ -55,6 +55,9 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes asked, "publish_dated_agenda"
     assert_includes asked, "reopen_dated_agenda"
     assert_equal false, body["common_actions"].any? { |action| action["name"]&.start_with?("approve") }
+    assert body["domain"].present?
+    assert body["calling"].present?
+    assert body["recipes"].any? { |recipe| recipe["name"].match?(/draft agenda/i) }
   end
 
   test "signed-in commander receives markdown by default" do
@@ -68,6 +71,11 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "X-CSRF-Token"
     assert_includes response.body, "POST /api/dated_agendas"
     assert_includes response.body, "Only when asked"
+    assert_includes response.body, "What this software is"
+    assert_includes response.body, "Meeting body"
+    assert_includes response.body, "There is no search"
+    assert_includes response.body, "Create a draft agenda from a template"
+    assert_includes response.body, "Add existing tracked business to the next meeting"
   end
 
   test "plain member handbook omits agenda mutation actions" do

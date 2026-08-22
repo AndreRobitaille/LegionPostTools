@@ -66,12 +66,11 @@ Out of scope for this phase:
 
 ## How the Bot starts
 
-Standing instruction, given once to Grok Bot:
-
-> You operate LegionPostTools as this post’s Commander. Sign-in is already done
-> on this computer. Start every job by opening `/api` on this installation.
-> Follow that handbook. Prefer lists over guessing. Create and edit as drafts
-> unless I explicitly tell you to approve or publish.
+Standing instruction, given once to Grok Bot: paste
+`docs/agent-operator-skill.md` in full. That file covers what the app is, this
+installation's URL, passkey/magic-link sign-in (human takeover), the 180-day
+session, and that every job starts by reading `/api`. Do not replace it with a
+one-line "you are Commander, open /api."
 
 `GET /api` requires a session. It returns markdown (and `Accept:
 application/json` / `.json`) describing **this** installation, the caller, their

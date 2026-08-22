@@ -11,6 +11,57 @@ class AgentHandbook
     "Chat content is not stored here. Only enter post business an officer would have typed by hand."
   ].freeze
 
+  DOMAIN = [
+    { name: "Installation", meaning: "This one post (or unit) running the app. Read its name, locality, and timezone from this handbook. Do not assume another post's roster, officers, or meeting night." },
+    { name: "Meeting body", meaning: "A recurring group that meets, such as Post Executive Committee or Membership. Match names from GET /api/meeting_bodies." },
+    { name: "Meeting type", meaning: "A reusable agenda template for a body, such as PEC Meeting or Membership Meeting. Creating a dated agenda copies that template. Match names from GET /api/meeting_types." },
+    { name: "Dated agenda", meaning: "The agenda for one actual meeting date. Status is draft (editable), approved, or published (member-visible). Writes to the order of business require draft. Reopen before editing a locked agenda." },
+    { name: "Tracked item", meaning: "Long-lived post business that outlives one meeting: a Car Show, Buddy Checks, an election. It can appear on many agendas. Adding it to an agenda copies a snapshot; later tracker edits do not rewrite a locked agenda." },
+    { name: "Minutes", meaning: "Not built yet. Do not invent minutes, votes, attestations, or acceptance motions." }
+  ].freeze
+
+  CALLING = {
+    "session" => "You must already be signed in on this browser. The session cookie is httponly; do not use curl on the same machine unless that curl sends this browser's cookies.",
+    "csrf" => "Every POST or PATCH needs header X-CSRF-Token set to csrf_token from this handbook. Refresh the token by GET /api again if a write returns 422 about authenticity.",
+    "json" => "For JSON, send Accept: application/json. Dates and times are ISO 8601. Use this installation's timezone.",
+    "lists" => "There is no search. List the collection, read titles, pick an id. If the name is ambiguous, list everything and decide. Do not create a second Car Show because you skipped the list.",
+    "drafts" => "Creates are drafts. Approve or publish only when the human explicitly asked."
+  }.freeze
+
+  RECIPES = [
+    {
+      name: "Create a draft agenda from a template",
+      when: "The human says something like: create a basic PEC agenda for next Tuesday.",
+      steps: [
+        "GET /api/meeting_bodies and GET /api/meeting_types. Match PEC (or Membership) by name; do not guess ids.",
+        "GET /api/dated_agendas. If an upcoming draft already exists for that body and date, use it instead of creating another.",
+        "Compute starts_at in this installation's timezone. POST /api/dated_agendas with meeting_body_id, meeting_type_id, and starts_at.",
+        "Leave status draft. Do not approve or publish unless asked."
+      ]
+    },
+    {
+      name: "Add existing tracked business to the next meeting",
+      when: "The human says something like: add the car show topic to the next meeting agenda.",
+      steps: [
+        "GET /api/tracked_items. Match the topic by title (Car Show, not a new guess). If nothing fits, keep the full list in mind; do not search.",
+        "If there is no matching tracked item, POST /api/tracked_items with a clear title and summary, then use that id.",
+        "GET /api/dated_agendas. Pick the next upcoming agenda for the right body, or create a draft from the template if none exists.",
+        "If that agenda is approved or published, stop and ask whether to reopen. Do not reopen on your own.",
+        "POST /api/dated_agendas/:id/tracked_items with tracked_item_id. Already on the agenda is 422; that is success enough."
+      ]
+    },
+    {
+      name: "Morning triage from outside conversation",
+      when: "You read an officer group chat or email elsewhere and think some of it is post business.",
+      steps: [
+        "Do not store chat in this app. Only create records an officer would have typed by hand.",
+        "GET /api/tracked_items and GET /api/dated_agendas first.",
+        "If the business already exists, append an update or add it to the next draft agenda. If it is new, create a tracked item.",
+        "When unsure whether it belongs on the next agenda, create or update the tracked item and leave the agenda alone."
+      ]
+    }
+  ].freeze
+
   CATALOG = [
     { name: "list_meeting_bodies", method: "GET", path: "/api/meeting_bodies", capability: "manage_agendas", group: :common,
       summary: "List meeting bodies so you can match PEC or Membership by name.",
@@ -83,6 +134,9 @@ class AgentHandbook
       },
       csrf_token: @csrf_token,
       csrf_header: "X-CSRF-Token",
+      domain: DOMAIN.map { |entry| { "name" => entry[:name], "meaning" => entry[:meaning] } },
+      calling: CALLING,
+      recipes: RECIPES.map { |recipe| recipe.transform_keys(&:to_s) },
       rules: RULES,
       common_actions: actions_for(:common),
       only_when_asked: actions_for(:only_when_asked)
@@ -93,27 +147,56 @@ class AgentHandbook
     lines = []
     lines << "# #{@organization.name}"
     lines << ""
-    lines << "Private officer API. Start here on every job."
+    lines << "Operator handbook for LegionPostTools. Read this whole page before changing anything."
     lines << ""
-    lines << "You are #{@user.person.full_name} (#{@user.email_address})."
-    lines << "Capabilities: #{granted_capabilities.join(", ")}."
-    lines << "Timezone: #{@organization.timezone}."
+    lines << "## What this software is"
     lines << ""
-    lines << "Send writes with header `X-CSRF-Token: #{@csrf_token}`."
-    lines << "JSON `Accept: application/json`. There is no search: list, then choose."
+    lines << "LegionPostTools is the internal operations app for an American Legion post (or similar American Legion Family unit). It is not a public website, not email, and not a chat archive. Officers use it for meeting agendas, long-lived post business, roster-backed membership, and (later) minutes."
+    lines << ""
+    lines << "You are signed in as **#{@user.person.full_name}** (#{@user.email_address}) on **#{@organization.name}**#{locality_clause}."
+    lines << "Timezone for dates and times: **#{@organization.timezone}**."
+    lines << "App grants on this account: #{granted_capabilities.join(", ").presence || "(none beyond signed-in member read)"}."
+    lines << ""
+    lines << "## How to call this API"
+    lines << ""
+    lines << "- Work in this signed-in browser. The session cookie is httponly."
+    lines << "- JSON: send `Accept: application/json`."
+    lines << "- Writes: header `X-CSRF-Token: #{@csrf_token}` (this value is `csrf_token` in the JSON handbook)."
+    lines << "- Datetimes: ISO 8601 in #{@organization.timezone}."
+    lines << "- There is no search. List, read titles, pick an id. If a name is unclear, list everything and decide."
+    lines << "- Creates stay **draft**. Approve or publish only when the human explicitly asked."
+    lines << ""
+    lines << "## Domain"
+    DOMAIN.each do |entry|
+      lines << "- **#{entry[:name]}** — #{entry[:meaning]}"
+    end
     lines << ""
     lines << "## Rules"
     RULES.each { |rule| lines << "- #{rule}" }
+    lines << ""
+    lines << "## Recipes"
+    RECIPES.each do |recipe|
+      lines << ""
+      lines << "### #{recipe[:name]}"
+      lines << recipe[:when]
+      recipe[:steps].each_with_index { |step, index| lines << "#{index + 1}. #{step}" }
+    end
     lines << ""
     lines << "## Common actions"
     actions_for(:common).each { |action| append_action(lines, action) }
     lines << ""
     lines << "## Only when asked"
+    lines << ""
+    lines << "Do not call these unless the human said to approve, publish, or reopen."
     actions_for(:only_when_asked).each { |action| append_action(lines, action) }
     lines.join("\n") << "\n"
   end
 
   private
+
+  def locality_clause
+    @organization.locality.present? ? " (#{@organization.locality})" : ""
+  end
 
   def granted_capabilities
     PermissionGrant::CAPABILITIES.select { |capability| @user.can?(capability) }
