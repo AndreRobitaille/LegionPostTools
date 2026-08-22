@@ -85,20 +85,18 @@ Still pending:
 
 - Human-confirmed merging or splitting if AI suggestions are added later.
 
-## Immediate Next: Agenda Presentation and Navigation
+## Completed: Agenda Presentation and Navigation
 
-Finish the agenda experience before beginning the minutes lifecycle:
+Completed before beginning the minutes lifecycle:
 
-- Refine the published agenda into a polished member-facing document; the current
-  section-aware read-only page is an intentionally functional placeholder.
-- Improve responsive and print presentation so agendas are comfortable to read at a
-  meeting and useful as distributed records.
-- Replace the mostly disabled primary navigation with clear links to working features;
-  remove or clearly separate unavailable destinations instead of presenting a row of
-  greyed-out choices.
-- Verify active states, permissions, keyboard use, and phone-width navigation.
+- Polished member-facing meeting docket and published-agenda document.
+- Responsive and print presentation suitable for reading at a meeting or distributing
+  as a printed handout.
+- Primary navigation links only to working features, including member Meetings access.
+- Active-state, permission, keyboard, desktop, and phone-width verification.
+- See `docs/AGENDA_PRESENTATION.md`.
 
-## After Agenda Presentation: Minutes Lifecycle
+## Immediate Next: Minutes Lifecycle
 
 - Transcript paste/upload.
 - Draft/review/approval/attestation/acceptance workflow.

@@ -1,6 +1,11 @@
 require "test_helper"
 
 class NavigationHelperTest < ActionView::TestCase
+  test "nav_section_for maps member meeting paths" do
+    assert_equal :meetings, nav_section_for("/dated_agendas")
+    assert_equal :meetings, nav_section_for("/dated_agendas/42")
+  end
+
   test "nav_section_for maps people paths" do
     assert_equal :people, nav_section_for("/people")
     assert_equal :people, nav_section_for("/people/42")
@@ -23,5 +28,13 @@ class NavigationHelperTest < ActionView::TestCase
     def self.current_nav_section = :people
     assert_equal "nav-tab nav-tab--active", nav_tab_class(:people)
     assert_equal "nav-tab", nav_tab_class(:settings)
+  end
+
+  test "nav_tab_attributes marks only the active link as current" do
+    def self.current_nav_section = :meetings
+
+    assert_equal({ class: "nav-tab nav-tab--active", aria: { current: "page" } }, nav_tab_attributes(:meetings))
+    assert_equal({ class: "nav-tab", aria: {} }, nav_tab_attributes(:people))
+    assert_equal "nav-tab nav-tab--active nav-tab--admin", nav_tab_attributes(:meetings, extra_class: "nav-tab--admin")[:class]
   end
 end

@@ -21,9 +21,11 @@ The current application foundation includes:
 - Structured agenda catalog, meeting templates, dated agendas, and reusable agenda sections.
 - Tracked post business with dated continuity updates, meeting-priority suggestions, and
   independent agenda snapshots.
+- Polished member agenda navigation, upcoming-meeting docket, and responsive/printable
+  published agendas.
 
-Polished agenda presentation and primary navigation are next, followed by minutes drafting,
-review/attestation, PDF/export, and email distribution.
+Minutes drafting and the human review/approval/attestation/acceptance lifecycle are next,
+followed by PDF/export and email distribution.
 
 ## Who This Is For
 

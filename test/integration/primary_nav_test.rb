@@ -30,16 +30,17 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     user
   end
 
-  test "authenticated shell renders working tracked items navigation and remaining soon tabs" do
+  test "authenticated shell links every available destination and omits unavailable records" do
     prepare_setup_complete_state
     sign_in_admin
     get root_path
     assert_response :success
     assert_select "nav.nav-bar a.nav-tab", text: "Dashboard"
+    assert_select "nav.nav-bar a.nav-tab[href=?]", dated_agendas_path, text: "Meetings"
     assert_select "nav.nav-bar a.nav-tab", text: "Settings"
-    assert_select "nav.nav-bar .nav-tab--soon", text: /Meetings/
-    assert_select "nav.nav-bar .nav-tab--soon", text: /Records/
     assert_select "nav.nav-bar a.nav-tab[href=?]", tracked_items_path, text: "Tracked Items"
+    assert_select "nav.nav-bar", text: /Records/, count: 0
+    assert_select "nav.nav-bar .nav-tab--soon", count: 0
   end
 
   test "admin sees People and Admin tabs" do
@@ -80,5 +81,15 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     get tracked_items_path
 
     assert_select "nav.nav-bar a.nav-tab--active", text: "Tracked Items"
+  end
+
+  test "meetings tab is active and marked current on member agenda pages" do
+    prepare_setup_complete_state
+    sign_in_plain_member
+
+    get dated_agendas_path
+
+    assert_response :success
+    assert_select "nav.nav-bar a.nav-tab--active[aria-current='page'][href=?]", dated_agendas_path, text: "Meetings"
   end
 end

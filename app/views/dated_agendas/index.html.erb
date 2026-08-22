@@ -1,24 +1,36 @@
-<% content_for :title, "Upcoming Published Agendas" %>
+<% content_for :title, "Meetings" %>
 
 <div class="page-lead">
-  <h1 class="page-title">Upcoming Published Agendas</h1>
-  <p class="page-sub">Agendas your post has published for upcoming meetings.</p>
+  <h1 class="page-title">Meetings</h1>
+  <p class="page-sub">Published agendas for upcoming post meetings.</p>
 </div>
 
 <% if @dated_agendas.any? %>
-  <div class="mrow-list">
+  <div class="agenda-docket">
     <% @dated_agendas.each do |dated_agenda| %>
-      <%= link_to dated_agenda_path(dated_agenda), class: "mrow catrow", aria: { label: "View #{dated_agenda.title}" } do %>
-        <span class="mrow-id">
-          <span class="mrow-name"><%= dated_agenda.title %></span>
-          <span class="mrow-sub"><%= dated_agenda.meeting_body.name %> &middot; <%= legion_datetime(dated_agenda.starts_at) %></span>
+      <% day, month, year = legion_date_parts(dated_agenda.starts_at) %>
+      <%= link_to dated_agenda_path(dated_agenda), class: "agenda-docket-row", aria: { label: "Read #{dated_agenda.title}" } do %>
+        <time class="agenda-docket-date" datetime="<%= dated_agenda.starts_at.to_date.iso8601 %>">
+          <span class="agenda-docket-day"><%= day %></span>
+          <span class="agenda-docket-month"><%= month %></span>
+          <span class="agenda-docket-year"><%= year %></span>
+        </time>
+        <span class="agenda-docket-copy">
+          <span class="agenda-docket-title"><%= dated_agenda.title %></span>
+          <span class="agenda-docket-meta"><%= dated_agenda.meeting_body.name %> &middot; <%= legion_time(dated_agenda.starts_at) %></span>
         </span>
-        <span class="catrow-meta">
-          <span class="catrow-edit">View<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
+        <span class="agenda-docket-action">
+          Read agenda <span aria-hidden="true">&rsaquo;</span>
         </span>
       <% end %>
     <% end %>
   </div>
 <% else %>
-  <p class="page-sub">No upcoming published agendas are available yet.</p>
+  <div class="agenda-docket-empty">
+    <span class="agenda-docket-empty-mark" aria-hidden="true">◆</span>
+    <div>
+      <h2>No upcoming agendas</h2>
+      <p>Published agendas will appear here when the next meeting is ready.</p>
+    </div>
+  </div>
 <% end %>

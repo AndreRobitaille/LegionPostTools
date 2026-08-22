@@ -4,23 +4,27 @@
     <% items = agenda_section.agenda_items.select(&:active?) %>
 
     <section class="agenda-chapter">
-      <header class="agenda-chapter-head">
+      <div class="agenda-chapter-rail" aria-hidden="true">
         <span class="agenda-chapter-number"><%= section_index + 1 %></span>
-        <span class="agenda-chapter-diamond" aria-hidden="true">◆</span>
-        <h2><%= agenda_section.title %></h2>
-        <span class="agenda-chapter-rule" aria-hidden="true"></span>
-      </header>
+      </div>
 
-      <div class="agenda-chapter-items">
-        <% items.each do |agenda_item| %>
-          <section class="agenda-item">
-            <h3 class="agenda-item-title"><%= agenda_item.title %></h3>
-            <% if agenda_item.summary.present? %>
-              <p class="agenda-item-summary"><%= agenda_item.summary %></p>
-            <% end %>
-            <div class="agenda-item-body"><%= agenda_item.body %></div>
-          </section>
-        <% end %>
+      <div class="agenda-chapter-content">
+        <header class="agenda-chapter-head">
+          <h2><%= agenda_section.title %></h2>
+          <span class="agenda-chapter-rule" aria-hidden="true"></span>
+        </header>
+
+        <div class="agenda-chapter-items">
+          <% items.each do |agenda_item| %>
+            <section class="agenda-item">
+              <h3 class="agenda-item-title"><%= agenda_item.title %></h3>
+              <% if agenda_item.summary.present? %>
+                <p class="agenda-item-summary"><%= agenda_item.summary %></p>
+              <% end %>
+              <div class="agenda-item-body"><%= agenda_item.body %></div>
+            </section>
+          <% end %>
+        </div>
       </div>
     </section>
   <% end %>

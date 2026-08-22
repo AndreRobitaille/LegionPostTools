@@ -20,6 +20,11 @@ class LegionFormatHelperTest < ActionView::TestCase
     assert_equal "", legion_datetime(nil)
   end
 
+  test "legion_date_parts returns calendar display parts" do
+    assert_equal [ "24", "JUN", "2026" ], legion_date_parts(Date.new(2026, 6, 24))
+    assert_equal [], legion_date_parts(nil)
+  end
+
   test "parse_legion_date parses DD MMM YYYY case-insensitively" do
     assert_equal Date.new(1995, 1, 1), parse_legion_date("01 JAN 1995")
     assert_equal Date.new(2026, 6, 24), parse_legion_date("  24 jun 2026 ")

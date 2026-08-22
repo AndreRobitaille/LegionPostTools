@@ -17,6 +17,13 @@ module LegionFormatHelper
     "#{legion_date(value)} · #{legion_time(value)}"
   end
 
+  def legion_date_parts(value)
+    return [] if value.blank?
+
+    date = value.to_date
+    [ date.strftime("%d"), date.strftime("%b").upcase, date.strftime("%Y") ]
+  end
+
   def parse_legion_date(string)
     normalized = string.to_s.strip
     return nil if normalized.empty?

@@ -1,8 +1,7 @@
 require "application_system_test_case"
 
-# Browser-driven coverage for the dated-agenda management screen: the Stimulus /
-# SortableJS drag reorder and the locked-state hiding of edit controls that
-# request tests can't exercise.
+# Browser-driven coverage for dated-agenda management and the member-facing
+# published-agenda flow that request tests cannot exercise.
 class DatedAgendasSystemTest < ApplicationSystemTestCase
   setup do
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
@@ -17,7 +16,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     report = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report", category: "reports", behavior_type: "report_slot", position: 2, active: true, body: "Report")
     @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: opening, position: 1, title: "Opening Ceremony", active: true, body: "Opening")
     @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: report, position: 2, title: "Commander Report", active: true, body: "Report")
-    @agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    @agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now.change(hour: 19, min: 0))
 
     system_sign_in(@user)
   end
@@ -47,5 +46,45 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".readonly-tip"
     assert_no_selector ".pos-handle"
     assert_no_selector "button.row-del"
+  end
+
+  test "member navigates from meetings to a published agenda at desktop and phone widths" do
+    business_section = @agenda.dated_agenda_sections.create!(title: "Post Business", position: 2)
+    @agenda.dated_agenda_items.create!(
+      agenda_section: business_section,
+      position: 1,
+      title: "Community service report",
+      summary: "Review this month's service work.",
+      behavior_type: "report_slot",
+      active: true,
+      body: "Committee chairs report on completed and upcoming work."
+    )
+    @agenda.approve!(@user)
+    @agenda.publish!(@user)
+
+    visit root_path
+    click_link "Meetings"
+
+    assert_current_path dated_agendas_path
+    assert_selector "a.nav-tab--active[aria-current='page']", text: /Meetings/i
+    assert_no_selector ".nav-tab", text: "Records"
+    assert_selector ".agenda-docket-row", text: @agenda.title
+
+    find(".agenda-docket-row", text: @agenda.title).click
+
+    assert_current_path dated_agenda_path(@agenda)
+    assert_selector ".agenda-masthead h1", text: @agenda.title
+    assert_selector ".agenda-chapter-number", count: 2
+    assert_selector ".agenda-item-title", text: "Community service report"
+    assert_link "Print agenda", href: print_dated_agenda_path(@agenda)
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+
+    page.current_window.resize_to(390, 844)
+
+    assert_selector ".agenda-masthead h1", text: @agenda.title
+    assert_selector ".agenda-chapter-number", count: 2
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+  ensure
+    page.current_window.resize_to(1400, 1400)
   end
 end

@@ -11,7 +11,9 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     @user = user_with_capabilities
     @draft = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 2.days.from_now, title: "Draft Agenda", status: "draft")
     @published = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now, title: "Published Agenda", status: "draft")
-    @published.dated_agenda_items.create!(position: 1, title: "Opening", behavior_type: "scripted_ceremony", active: true, body: "Opening words")
+    @published.dated_agenda_items.create!(position: 1, title: "Opening", summary: "The commander calls the meeting to order.", behavior_type: "scripted_ceremony", active: true, body: "Opening words")
+    business_section = @published.dated_agenda_sections.create!(title: "Post Business", position: 2)
+    @published.dated_agenda_items.create!(agenda_section: business_section, position: 1, title: "Old Business", behavior_type: "business_item", active: true, body: "Review unfinished post business.")
     @published.approve!(user_with_capabilities("manage_agendas"))
     @published.publish!(user_with_capabilities("manage_agendas"))
   end
@@ -34,8 +36,13 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agendas_path
 
     assert_response :success
-    assert_select "h1", text: "Upcoming Published Agendas"
-    assert_select "a[href='#{dated_agenda_path(@published)}'] .mrow-name", text: "Published Agenda"
+    assert_select "h1", text: "Meetings"
+    assert_select ".agenda-docket a.agenda-docket-row[href='#{dated_agenda_path(@published)}']" do
+      assert_select ".agenda-docket-title", text: "Published Agenda"
+      assert_select "time.agenda-docket-date[datetime='#{@published.starts_at.to_date.iso8601}']"
+      assert_select ".agenda-docket-meta", text: /Membership/
+      assert_select ".agenda-docket-action", text: /Read agenda/
+    end
     assert_select "a", text: "Draft Agenda", count: 0
   end
 
@@ -46,9 +53,9 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agendas_path
 
     assert_response :success
-    assert_select "h1", text: "Upcoming Published Agendas"
-    assert_select "p", text: "No upcoming published agendas are available yet.", count: 1
-    assert_select "ul li", count: 0
+    assert_select "h1", text: "Meetings"
+    assert_select ".agenda-docket-empty h2", text: "No upcoming agendas"
+    assert_select ".agenda-docket-row", count: 0
   end
 
   test "show displays published agenda read only" do
@@ -59,8 +66,12 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Published Agenda"
     assert_select "h2", text: "Order of Business"
+    assert_select "h2", text: "Post Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
+    assert_select ".agenda-org-name", text: @organization.name
+    assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "1"
+    assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "2"
     assert_select "a", text: "Edit", count: 0
   end
 
@@ -75,7 +86,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a", text: "Past Published Agenda", count: 0
-    assert_select "a[href='#{dated_agenda_path(@published)}'] .mrow-name", text: "Published Agenda"
+    assert_select "a[href='#{dated_agenda_path(@published)}'] .agenda-docket-title", text: "Published Agenda"
   end
 
   test "draft show returns not found" do
@@ -100,12 +111,13 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "h1.page-title", text: "Published Agenda"
+    assert_select ".agenda-masthead h1", text: "Published Agenda"
     assert_select "h2", text: "Order of Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select "a", text: "Edit", count: 0
     assert_select "nav", count: 0
+    assert_select "body.print-body"
     assert_select "body", text: "Dashboard", count: 0
   end
 
@@ -115,7 +127,8 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "article.agenda-doc .agenda-masthead .page-title", text: @published.title
+    assert_select "article.agenda-doc .agenda-masthead h1", text: @published.title
+    assert_select ".agenda-org-name", text: @organization.name
     assert_select ".agenda-item .agenda-item-title"
     assert_select "a.back", false
   end
@@ -126,10 +139,12 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "article.agenda-doc .agenda-masthead .page-title", text: @published.title
-    assert_select "a.btn-secondary[href='#{print_dated_agenda_path(@published)}']", text: "Print"
+    assert_select "article.agenda-doc .agenda-masthead h1", text: @published.title
+    assert_select "a.btn-secondary[href='#{print_dated_agenda_path(@published)}']", text: "Print agenda"
+    assert_select "a.agenda-back-link[href='#{dated_agendas_path}']", text: /All meetings/
     assert_select ".agenda-item .agenda-item-title"
     assert_select ".agenda-masthead", text: /#{Regexp.escape(legion_datetime(@published.starts_at))}/
+    assert_select "nav.nav-bar a[aria-current='page']", text: "Meetings"
   end
 
   test "member index lists published agendas in the design system" do
@@ -138,8 +153,8 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agendas_path
 
     assert_response :success
-    assert_select ".page-lead .page-title", text: "Upcoming Published Agendas"
-    assert_select ".mrow-list .mrow.catrow .mrow-name", text: @published.title
+    assert_select ".page-lead .page-title", text: "Meetings"
+    assert_select ".agenda-docket .agenda-docket-row .agenda-docket-title", text: @published.title
   end
 
   private
