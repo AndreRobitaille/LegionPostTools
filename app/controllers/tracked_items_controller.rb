@@ -77,15 +77,25 @@ class TrackedItemsController < ApplicationController
   end
 
   def tracked_item_params
-    params.require(:tracked_item).permit(:title, :summary, :details, :importance, :raise_by_on, :meeting_body_id, :lock_version)
+    permitted = params.require(:tracked_item).permit(:title, :summary, :details, :importance, :raise_by_on, :meeting_body_id, :lock_version)
+    # The shared date field submits DD MMM YYYY text, matching how dates read
+    # everywhere else in the app.
+    if permitted.key?(:raise_by_on)
+      raw = permitted[:raise_by_on]
+      permitted[:raise_by_on] = raw.blank? ? nil : (helpers.parse_legion_date(raw) || raw)
+    end
+    permitted
   end
 
   def build_timeline
     updates = @tracked_item.updates.includes(author: :person).map do |update|
       [ update.created_at, :update, update ]
     end
+    # Timestamped by the meeting date, not when the row was created: the entry is
+    # about the meeting the business was carried to, and the reader sees that same
+    # date on the card. Two disagreeing dates on one entry is just confusing.
     appearances = @tracked_item.dated_agenda_items.includes(dated_agenda: :meeting_body).map do |agenda_item|
-      [ agenda_item.created_at, :agenda, agenda_item ]
+      [ agenda_item.dated_agenda.starts_at, :agenda, agenda_item ]
     end
     @timeline_entries = (updates + appearances).sort_by { |time, _, _| time }.reverse
   end

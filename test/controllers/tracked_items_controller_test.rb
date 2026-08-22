@@ -36,7 +36,7 @@ class TrackedItemsControllerTest < ActionDispatch::IntegrationTest
 
     get tracked_item_path(@tracked_item)
     assert_response :success
-    assert_select ".continuity-spine", text: /city received the application/
+    assert_select ".continuity", text: /city received the application/
     assert_select "a[href=?]", edit_tracked_item_path(@tracked_item), count: 0
   end
 

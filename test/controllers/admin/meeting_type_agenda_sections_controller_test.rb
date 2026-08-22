@@ -35,7 +35,7 @@ class Admin::MeetingTypeAgendaSectionsControllerTest < ActionDispatch::Integrati
     post admin_meeting_type_agenda_sections_path(@meeting_type), params: { meeting_type_agenda_section: { title: "" } }
 
     assert_response :unprocessable_entity
-    assert_select ".section-form-panel .error-summary", text: /Title can't be blank/
+    assert_select ".form-panel .error-summary", text: /Title can't be blank/
   end
 
   test "reorder rejects foreign section ids" do

@@ -1,60 +1,65 @@
 <% content_for :title, @dated_agenda.title %>
 <a class="back" href="<%= admin_dated_agendas_path %>">&larr; Dated Agendas</a>
 
-<div class="page-lead">
-  <h1 class="page-title"><%= @dated_agenda.title %></h1>
-  <p class="page-sub"><%= @dated_agenda.meeting_body.name %> &middot; <%= legion_datetime(@dated_agenda.starts_at) %></p>
+<div class="page-lead-row">
+  <div class="page-lead">
+    <h1 class="page-title"><%= @dated_agenda.title %></h1>
+    <p class="page-sub"><%= @dated_agenda.meeting_body.name %> &middot; <%= legion_datetime(@dated_agenda.starts_at) %></p>
+  </div>
 </div>
 
+<%# Status and the actions that change it stay together, next to the record
+    they describe — never a status on one side of the page and its action on
+    the other. %>
 <div class="da-lifecycle">
-  <%= dated_agenda_status_tag(@dated_agenda.status) %>
+  <div class="da-lifecycle-state">
+    <%= dated_agenda_status_tag(@dated_agenda.status) %>
+    <% if @dated_agenda.locked_for_editing? %>
+      <span class="helper">Locked. Reopen it to make changes.</span>
+    <% end %>
+  </div>
   <div class="btnrow">
     <% if @dated_agenda.draft? %>
       <%= button_to "Approve", approve_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-primary" %>
     <% elsif @dated_agenda.approved? %>
-      <%= button_to "Publish", publish_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-primary" %>
+      <%= button_to "Publish", publish_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-confirm" %>
       <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Reopen this approved agenda for editing?" } %>
     <% else %>
       <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Reopen this published agenda for editing? This will unpublish it until you publish again." } %>
     <% end %>
     <%= link_to "Print", print_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>
   </div>
-  <% if @dated_agenda.locked_for_editing? %>
-    <p class="readonly-tip">This agenda is <%= @dated_agenda.status %> and locked. Reopen it to make changes.</p>
-  <% end %>
 </div>
 
-<%= render "form", dated_agenda: @dated_agenda %>
+<section class="agenda-build-section agenda-build-section--form">
+  <%= render "shared/section_header", label: "Meeting details" %>
+  <%= render "form", dated_agenda: @dated_agenda %>
+</section>
 
-<div class="agenda-builder-intro agenda-builder-intro--dated">
-  <div>
-    <span class="agenda-builder-kicker">Meeting agenda</span>
-    <h2><%= @dated_agenda.draft? ? "Arrange this meeting" : "Meeting order" %></h2>
-    <p><%= @dated_agenda.draft? ? "Sections make the meeting easier to lead and give the later minutes a durable structure." : "This section order is part of the locked agenda." %></p>
-  </div>
+<section class="agenda-build-section">
+  <%= render "shared/section_header",
+        label: @dated_agenda.draft? ? "Order of business" : "Meeting order",
+        meta: pluralize(@agenda_sections.size, "section"),
+        action: (@dated_agenda.draft? ? link_to("Add a section", new_admin_dated_agenda_agenda_section_path(@dated_agenda), class: "sec-head-action") : nil) %>
+
   <% if @dated_agenda.draft? %>
-    <div class="agenda-builder-actions">
-      <%= link_to "New section", new_admin_dated_agenda_agenda_section_path(@dated_agenda), class: "btn-primary" %>
+    <p class="agenda-build-hint">Drag a section by its grip to change the meeting order, or drag items within a section. Changes save as you go.</p>
+    <div data-controller="reorder"
+         data-reorder-url-value="<%= reorder_admin_dated_agenda_agenda_sections_path(@dated_agenda) %>"
+         data-reorder-handle-value=".section-handle">
+      <div class="agenda-sections" data-reorder-target="list">
+        <% @agenda_sections.each_with_index do |agenda_section, index| %>
+          <%= render "agenda_section", dated_agenda: @dated_agenda, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size, editable: true %>
+        <% end %>
+      </div>
+      <span class="pos-status section-order-status" data-reorder-target="status" role="status" aria-live="polite"></span>
     </div>
-  <% end %>
-</div>
-
-<% if @dated_agenda.draft? %>
-  <p class="page-sub reorder-hint">Drag section headings to change the meeting order. Drag items within a section. Changes save automatically.</p>
-  <div class="agenda-section-reorder" data-controller="reorder"
-       data-reorder-url-value="<%= reorder_admin_dated_agenda_agenda_sections_path(@dated_agenda) %>"
-       data-reorder-handle-value=".section-handle">
-    <div class="agenda-section-stack" data-reorder-target="list">
+  <% else %>
+    <p class="agenda-build-hint">This section order is part of the locked agenda.</p>
+    <div class="agenda-sections">
       <% @agenda_sections.each_with_index do |agenda_section, index| %>
-        <%= render "agenda_section", dated_agenda: @dated_agenda, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size, editable: true %>
+        <%= render "agenda_section", dated_agenda: @dated_agenda, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size, editable: false %>
       <% end %>
     </div>
-    <span class="pos-status section-order-status" data-reorder-target="status" role="status" aria-live="polite"></span>
-  </div>
-<% else %>
-  <div class="agenda-section-stack agenda-section-stack--readonly">
-    <% @agenda_sections.each_with_index do |agenda_section, index| %>
-      <%= render "agenda_section", dated_agenda: @dated_agenda, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size, editable: false %>
-    <% end %>
-  </div>
-<% end %>
+  <% end %>
+</section>

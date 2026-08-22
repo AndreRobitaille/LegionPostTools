@@ -1,10 +1,9 @@
 <% content_for :title, "New agenda section" %>
 <a class="back" href="<%= edit_admin_dated_agenda_path(@dated_agenda) %>">&larr; <%= @dated_agenda.title %></a>
 <div class="page-lead">
-  <span class="agenda-builder-kicker">Meeting agenda</span>
   <h1 class="page-title">New agenda section</h1>
   <p class="page-sub">Add a clear stage to this specific meeting.</p>
 </div>
-<div class="panel form-panel section-form-panel">
+<div class="panel form-panel">
   <%= render "form", dated_agenda: @dated_agenda, section: @section %>
 </div>

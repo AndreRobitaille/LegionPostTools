@@ -41,8 +41,8 @@
     </div>
   <% else %>
     <div class="fl">
-      <%= form.label :starts_at, "Date & time" %>
-      <%= form.datetime_local_field :starts_at, class: "f" %>
+      <span class="fl-label-inline">Date and start time</span>
+      <%= render "shared/datetime_field", prefix: "dated_agenda", attribute: :starts_at, value: dated_agenda.starts_at %>
     </div>
 
     <div class="fl">

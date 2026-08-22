@@ -1,0 +1,16 @@
+<%# app/views/shared/_datetime_field.html.erb
+    A meeting date and start time, shown the way the whole app shows them:
+    DD MMM YYYY and a 24-hour clock. Locals: prefix: (String) form param prefix,
+    attribute: (Symbol), value: (Time|nil).
+    The controller recombines the two fields with combine_legion_datetime. %>
+<div class="datetime-field">
+  <%= render "shared/date_field", name: "#{prefix}[#{attribute}_date]", value: value&.to_date %>
+  <span class="datetime-field-at">at</span>
+  <%# A plain text field, not <input type="time">: the native control renders in
+      the browser's locale, which shows 12-hour AM/PM for most people here and
+      would contradict the 24-hour clock used everywhere else in the app. %>
+  <input type="text" name="<%= prefix %>[<%= attribute %>_time]" class="timefield-input"
+         value="<%= value&.strftime("%H:%M") %>" placeholder="HH:MM"
+         inputmode="numeric" autocomplete="off" pattern="[0-2][0-9]:[0-5][0-9]"
+         aria-label="Start time on a 24-hour clock, for example 19:00">
+</div>

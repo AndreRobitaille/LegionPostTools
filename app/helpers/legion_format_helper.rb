@@ -32,4 +32,15 @@ module LegionFormatHelper
   rescue ArgumentError
     nil
   end
+
+  # Recombines the two halves of shared/_datetime_field back into one Time.
+  # Returns nil when the date is missing or unparseable, so the model's own
+  # presence validation reports the problem rather than a silent default.
+  def combine_legion_datetime(date_string, time_string)
+    date = parse_legion_date(date_string)
+    return nil if date.nil?
+
+    hour, minute = time_string.to_s.strip.split(":")
+    Time.zone.local(date.year, date.month, date.day, hour.to_i, minute.to_i)
+  end
 end

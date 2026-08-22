@@ -269,8 +269,8 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", admin_meeting_type_path(meeting_type)
     # instant toggle posts only the active flag via PATCH
     assert_select "form.mt-active-form input[name=?][value=?]", "meeting_type[active]", "false"
-    assert_select ".agenda-builder-intro", text: /Build the agenda in clear sections/
-    assert_select ".agenda-section-editor .agenda-section-title-block", text: /Order of Business/
+    assert_select ".agenda-build-section .sec-head-label", text: "Order of business"
+    assert_select ".agenda-section .agenda-section-name", text: /Order of Business/
   end
 
   test "edit page shows reset agenda only for suggested types" do

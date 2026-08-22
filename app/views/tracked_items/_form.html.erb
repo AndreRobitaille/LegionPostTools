@@ -1,4 +1,4 @@
-<div class="panel form-panel tracked-form-panel">
+<div class="panel form-panel">
   <%= form_with model: tracked_item, class: "stacked-form" do |form| %>
     <% if tracked_item.errors.any? %>
       <div class="error-summary">
@@ -27,11 +27,11 @@
         <%= form.label :importance %>
         <%= form.select :importance, TrackedItem::IMPORTANCE_LEVELS.map { |value, label| [ label, value ] }, {}, class: "f" %>
       </div>
-      <div class="fl">
-        <%= form.label :raise_by_on, "Raise by" %>
-        <%= form.date_field :raise_by_on, class: "f" %>
-        <span class="form-help">Items due within 30 days are treated as time-sensitive.</span>
-      </div>
+    </div>
+    <div class="fl">
+      <%= form.label :raise_by_on, "Raise by" %>
+      <%= render "shared/date_field", name: "tracked_item[raise_by_on]", value: tracked_item.raise_by_on %>
+      <span class="form-help">Leave blank if no date forces it. Anything due within 30 days is treated as time-sensitive.</span>
     </div>
     <div class="fl">
       <%= form.label :details, "Background and context" %>

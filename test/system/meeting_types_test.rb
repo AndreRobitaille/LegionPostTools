@@ -66,8 +66,8 @@ class MeetingTypesSystemTest < ApplicationSystemTestCase
     original_first = items.first
     original_last = items.last
 
-    source = find(".agenda-section-editor[data-reorder-id='#{section.id}'] .section-item-row[data-reorder-id='#{original_first.id}'] .pos-handle")
-    target = find(".agenda-section-editor[data-reorder-id='#{section.id}'] .section-item-row[data-reorder-id='#{original_last.id}']")
+    source = find(".agenda-section[data-reorder-id='#{section.id}'] .agenda-item-row[data-reorder-id='#{original_first.id}'] .pos-handle")
+    target = find(".agenda-section[data-reorder-id='#{section.id}'] .agenda-item-row[data-reorder-id='#{original_last.id}']")
     source.drag_to(target, html5: true)
 
     assert_selector ".pos-status", text: /saved/i

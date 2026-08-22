@@ -28,8 +28,8 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     first = items.first
     last = items.last
 
-    source = find(".section-item-row[data-reorder-id='#{first.id}'] .pos-handle")
-    target = find(".section-item-row[data-reorder-id='#{last.id}']")
+    source = find(".agenda-item-row[data-reorder-id='#{first.id}'] .pos-handle")
+    target = find(".agenda-item-row[data-reorder-id='#{last.id}']")
     source.drag_to(target, html5: true)
 
     assert_selector ".pos-status", text: /saved/i

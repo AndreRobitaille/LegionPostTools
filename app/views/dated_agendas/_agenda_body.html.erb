@@ -16,12 +16,17 @@
 
         <div class="agenda-chapter-items">
           <% items.each do |agenda_item| %>
+            <%# The summary is guidance for whoever builds the agenda; the body is
+                what the meeting actually needs. Showing both makes the printed
+                agenda say everything twice, so the summary only stands in when
+                an item has no body of its own. %>
             <section class="agenda-item">
               <h3 class="agenda-item-title"><%= agenda_item.title %></h3>
-              <% if agenda_item.summary.present? %>
+              <% if agenda_item.body.present? %>
+                <div class="agenda-item-body"><%= agenda_item.body %></div>
+              <% elsif agenda_item.summary.present? %>
                 <p class="agenda-item-summary"><%= agenda_item.summary %></p>
               <% end %>
-              <div class="agenda-item-body"><%= agenda_item.body %></div>
             </section>
           <% end %>
         </div>

@@ -90,7 +90,17 @@ module Admin
     end
 
     def dated_agenda_params
-      params.require(:dated_agenda).permit(:meeting_body_id, :meeting_type_id, :starts_at, :title, :lock_version)
+      permitted = params.require(:dated_agenda)
+        .permit(:meeting_body_id, :meeting_type_id, :starts_at, :starts_at_date, :starts_at_time, :title, :lock_version)
+
+      # shared/_datetime_field submits the date and time separately so both read
+      # in the app's own formats (DD MMM YYYY, 24-hour clock).
+      if permitted.key?(:starts_at_date)
+        combined = helpers.combine_legion_datetime(permitted.delete(:starts_at_date), permitted.delete(:starts_at_time))
+        permitted[:starts_at] = combined if combined
+      end
+
+      permitted
     end
 
     def default_starts_at

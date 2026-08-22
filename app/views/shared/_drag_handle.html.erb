@@ -1,0 +1,13 @@
+<%# app/views/shared/_drag_handle.html.erb
+    The one drag grip in the app. Locals: label: (String) naming what moves,
+    extra_class: (String, optional) when a nested list needs its own handle
+    selector so an outer sortable does not also grab the inner rows. %>
+<button type="button" class="pos-handle <%= local_assigns[:extra_class] %>" aria-label="Drag to reorder <%= label %>">
+  <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
+    <g fill="currentColor">
+      <circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/>
+      <circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/>
+      <circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/>
+    </g>
+  </svg>
+</button>

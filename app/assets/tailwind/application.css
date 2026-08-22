@@ -19,6 +19,28 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Layout and surface tokens. Screens compose from these rather than inventing
+   a new border colour, radius or column width each time. Widths are bounded on
+   purpose: no working screen is ever full-bleed (see the visual design system
+   spec, "No full-width / 100% layouts").
+   --------------------------------------------------------------------------- */
+:root {
+  /* Warm rules, darkest to lightest. Three values, not thirteen. */
+  --rule-strong: #d3c391;   /* card and panel borders */
+  --rule: #e6dcbe;          /* inner dividers, field borders */
+  --rule-soft: #eadfbf;     /* row separators inside a list */
+
+  --radius-card: 11px;      /* cards, panels, lists */
+  --radius-control: 6px;    /* buttons, inputs, small controls */
+
+  --w-shell: 1060px;        /* header, nav, main column */
+  --w-main: 940px;          /* working content stacks */
+  --w-form: 660px;          /* forms (matches .stacked-form) */
+  --w-doc: 756px;           /* rendered official documents */
+  --w-rail: 292px;          /* context rail */
+}
+
+/* ---------------------------------------------------------------------------
    Entry screens (sign-in / magic-link confirm): the reserved monumental hero.
    Deco: sunburst rays, stepped gold, tracked capitals, warm cream sign-in card.
    --------------------------------------------------------------------------- */
@@ -69,7 +91,8 @@
 .entry-field textarea { width: 100%; font-size: 17px; padding: 15px 15px; border: 1.5px solid #cbb98c; border-radius: 6px; background: #fff; color: var(--color-ink); font-family: inherit; }
 .entry-field textarea { resize: vertical; line-height: 1.5; }
 .entry-field select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%236a5320' stroke-width='2'/></svg>"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
-.entry-opt { font-size: 12px; letter-spacing: .04em; font-weight: 600; color: #9a8659; text-transform: none; }
+/* Meaningful text never drops below the 13px label floor — 12px here failed it. */
+.entry-opt { font-size: 13px; letter-spacing: .04em; font-weight: 600; color: #8a7647; text-transform: none; }
 .entry-help { font-size: 14px; color: #6b7684; margin: 7px 2px 0; line-height: 1.45; }
 .entry-col-wide { max-width: 520px; }
 .entry-row { display: flex; gap: 14px; }
@@ -80,7 +103,7 @@
 .setup-sec-note { font-weight: 600; letter-spacing: .02em; text-transform: none; color: #6b7684; font-size: 13px; }
 .entry-btn { width: 100%; margin-top: 16px; background: var(--color-navy); color: #fff; border: 0; padding: 16px; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
 .entry-reassure { font-size: 14px; color: #5b6b7e; margin: 14px 2px 0; line-height: 1.55; text-align: center; }
-.entry-orline { display: flex; align-items: center; gap: 12px; color: #8a7a53; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; margin: 20px 0; }
+.entry-orline { display: flex; align-items: center; gap: 12px; color: #7d6c45; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; margin: 20px 0; }
 .entry-orline::before, .entry-orline::after { content: ""; flex: 1; height: 1px; background: #d8caa2; }
 .entry-passkey { width: 100%; background: #fff; border: 1.5px solid var(--color-navy); color: var(--color-navy); padding: 14px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; }
 .entry-passkey:disabled { opacity: .55; cursor: default; }
@@ -149,7 +172,11 @@
 .pk-row-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .pk-row-remove { margin: 0; }
 .btn-secondary { display: inline-block; background: #fff; color: var(--color-navy); border: 1.5px solid var(--color-navy); padding: 9px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; text-decoration: none; }
-.btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: 6px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-return { background: #fff; color: var(--color-legionred); border: 1.5px solid var(--color-legionred); padding: 9px 16px; border-radius: var(--radius-control); font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+/* Gold fill means one thing only: this is the confirm/finalise step. Never use
+   it to make an ordinary action look important. */
+.btn-confirm { display: inline-block; background: var(--color-gold); color: var(--color-navy-deep); border: 1.5px solid var(--color-gold-ink); padding: 13px 22px; border-radius: var(--radius-control); font-size: 16px; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; }
+.btn-confirm:hover { background: var(--color-gold-hi); }
 .pk-empty { color: #4f5f72; font-size: 16px; line-height: 1.55; margin: 0 0 24px; }
 
 /* Distinct "add a new passkey" block, set apart from the existing list ------- */
@@ -190,6 +217,18 @@
 .sec-head-dia { color: var(--color-gold); font-size: 14px; }
 .sec-head-label { font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; white-space: nowrap; }
 .sec-head-rule { flex: 1; height: 2px; background: linear-gradient(90deg, var(--color-gold), rgba(198,161,91,.15)); }
+/* Optional trailing slots. The rule stays between the label and whatever
+   follows, so a count or an action never floats loose at the far right. */
+.sec-head-meta { font-size: 14px; color: var(--color-muted); white-space: nowrap; }
+.sec-head-action { font-size: 16px; font-weight: 700; color: var(--color-navy); text-decoration: none; white-space: nowrap; }
+.sec-head-action:hover { text-decoration: underline; }
+
+/* Shared empty state: one component, used wherever a list has nothing in it -- */
+.empty { display: flex; align-items: flex-start; gap: 16px; max-width: var(--w-form); padding: 22px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-left: 4px solid var(--color-gold); border-radius: var(--radius-card); }
+.empty-mark { flex: 0 0 auto; color: var(--color-gold); font-size: 20px; line-height: 1.2; }
+.empty h2 { margin: 0 0 6px; color: var(--color-navy); font-size: 19px; font-weight: 800; }
+.empty p { margin: 0; color: #4f5f72; font-size: 16px; line-height: 1.55; }
+.empty .btnrow { margin-top: 14px; }
 
 /* Membership status word (calm colored word + dot, never a boxed pill) ---- */
 .st { font-size: 14px; font-weight: 600; white-space: nowrap; }
@@ -207,6 +246,12 @@
 .st--approved .st-dot { background: var(--color-gold); }
 .st--published { color: var(--color-green); }
 .st--published .st-dot { background: var(--color-green); }
+
+/* Tracked business: still open (gold, outstanding) vs finished (green). */
+.st--tracking { color: var(--color-gold-ink); }
+.st--tracking .st-dot { background: var(--color-gold); }
+.st--done { color: var(--color-green); }
+.st--done .st-dot { background: var(--color-green); }
 
 /* De-noised member row: identity left, quiet status column at a divider --- */
 .mrow { display: flex; align-items: center; gap: 0; padding: 14px 16px; border-top: 1px solid #eadfbf; text-decoration: none; color: inherit; }
@@ -254,7 +299,10 @@
 .stacked-form .fl { margin-bottom: 18px; }
 .stacked-form .fl .f { width: 100%; box-sizing: border-box; }
 .stacked-form .error-summary { margin-bottom: 18px; }
-.stacked-form .btnrow { margin-top: 6px; padding-top: 18px; border-top: 1px solid #e6dcbe; }
+.stacked-form .btnrow { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+/* Several screens wrap a .stacked-form in a .panel. Both are cards, so nested
+   they draw two borders around one form. Flatten the inner one. */
+.panel > .stacked-form { max-width: none; background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
 
 /* Active/inactive toggle row (replaces the lonely uppercase checkbox) ------- */
 .form-toggle { display: flex; gap: 11px; align-items: flex-start; margin-bottom: 18px; padding: 14px 16px; background: var(--color-ivory); border: 1px solid #e6dcbe; border-radius: 8px; cursor: pointer; }
@@ -416,92 +464,78 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .whatnext ul { margin: 8px 0 0; padding-left: 20px; }
 .whatnext li { margin: 5px 0; }
 
-/* Tracked business — a meeting-shaped docket with a visible continuity record. */
-.tracked-page-lead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
-.tracked-kicker { display: block; color: var(--color-gold-ink); font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 7px; }
-.tracked-docket { margin-top: 28px; }
-.tracked-bucket { margin-top: 30px; }
-.tracked-bucket:first-child { margin-top: 0; }
-.tracked-bucket-head { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 10px; padding: 0 4px 10px; border-bottom: 2px solid var(--color-gold); }
-.tracked-bucket-head h2 { margin: 0; color: var(--color-navy); font-size: 16px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-.tracked-bucket-head > span:last-child { color: var(--color-muted); font-size: 14px; }
-.tracked-bucket-diamond { color: var(--color-gold); font-size: 13px; }
-.tracked-row-list { border-left: 1px solid #d9cda9; border-right: 1px solid #d9cda9; }
-.tracked-row { display: grid; grid-template-columns: 18px minmax(220px, 1fr) minmax(180px, .75fr) minmax(130px, .45fr) 18px; align-items: center; gap: 12px; min-height: 74px; padding: 13px 16px; color: var(--color-ink); background: var(--color-paper); border-bottom: 1px solid #e2d8bc; text-decoration: none; }
-.tracked-row:hover { background: #fffaf0; }
-.tracked-row:focus-visible { position: relative; z-index: 1; outline: 3px solid var(--color-gold); outline-offset: 2px; }
-.tracked-row-mark { color: var(--color-gold); font-size: 10px; }
-.tracked-row-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.tracked-row-copy strong { color: var(--color-navy); font-size: 17px; line-height: 1.3; }
-.tracked-row-copy span { color: var(--color-muted); font-size: 14px; line-height: 1.4; }
-.tracked-row-reason, .tracked-row-body { color: #4e5966; font-size: 14px; line-height: 1.4; }
-.tracked-row-caret { color: var(--color-gold-ink); font-size: 28px; font-weight: 300; }
-.tracked-row--completed { opacity: .68; }
-.tracked-row--completed .tracked-row-mark { color: var(--color-green); }
-.tracked-completed { margin-top: 44px; }
-.tracked-empty { display: flex; align-items: flex-start; gap: 18px; padding: 28px; border: 1px dashed #bcae82; background: var(--color-paper); }
-.tracked-empty > span { color: var(--color-gold); font-size: 22px; }
-.tracked-empty h2 { margin: 0 0 6px; color: var(--color-navy); font-size: 19px; }
-.tracked-empty p { margin: 0 0 16px; color: var(--color-muted); font-size: 16px; }
+/* ---------------------------------------------------------------------------
+   Tracked business. Built from the shared row grammar (.mrow-list / .mrow /
+   .catrow): identity on the left, the one fact that matters in a quiet column
+   at a divider, and the action on that same row — never stranded across the
+   page. Importance is the subtle gold left edge the design system already
+   uses for officers, not a badge.
 
-.tracked-detail-lead { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin: 20px 0 28px; }
-.tracked-summary { max-width: 720px; margin: 10px 0 0; color: #46515e; font-size: 18px; line-height: 1.55; }
-.tracked-status { display: inline-flex; align-items: center; min-height: 32px; padding: 5px 12px; color: var(--color-navy); background: #f7edcf; border: 1px solid var(--color-gold); border-radius: 999px; font-size: 14px; font-weight: 800; }
-.tracked-status--completed { color: #274b2b; background: #e5f0e2; border-color: #79a174; }
-.tracked-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 285px; gap: 32px; align-items: start; }
+   Only the continuity spine below is bespoke, because nothing else in the app
+   shows a single piece of business moving across meetings and officers.
+   --------------------------------------------------------------------------- */
+.page-lead-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; max-width: var(--w-main); }
+.page-lead-row .page-lead { margin-top: 0; }
+
+.tracked-docket { max-width: var(--w-main); }
+.tracked-bucket { margin-top: 32px; }
+.mrow--important { border-left: 3px solid var(--color-gold); }
+.mrow--done .mrow-name { color: var(--color-muted); font-weight: 500; }
+.mrow--done .mrow-sub { color: #8b95a1; }
+
+/* Why this piece of business sits in this bucket, in plain words. */
+.tracked-why { display: block; margin-top: 6px; font-size: 15px; line-height: 1.45; color: #4e5966; }
+
+/* Detail page ------------------------------------------------------------- */
+.tracked-lead { max-width: var(--w-main); margin-bottom: 26px; }
+.tracked-lead .idmeta { margin-top: 10px; }
+.tracked-summary { max-width: 680px; margin: 12px 0 0; color: #46515e; font-size: 17px; line-height: 1.6; }
+.tracked-grid { display: grid; grid-template-columns: minmax(0, 1fr) var(--w-rail); gap: 30px; align-items: start; max-width: var(--w-main); }
 .tracked-record { min-width: 0; }
-.tracked-context, .tracked-continuity { margin-bottom: 38px; }
-.tracked-context .prose { margin-top: 16px; padding: 20px 22px; background: var(--color-paper); border: 1px solid #e1d6b7; border-left: 4px solid var(--color-gold); }
-.continuity-spine { position: relative; list-style: none; margin: 20px 0 0; padding: 0; }
-.continuity-spine::before { content: ""; position: absolute; top: 14px; bottom: 20px; left: 9px; width: 2px; background: linear-gradient(var(--color-gold), #dacba4); }
-.continuity-entry { position: relative; display: grid; grid-template-columns: 20px 108px minmax(0, 1fr); gap: 12px; padding: 0 0 28px; }
-.continuity-node { position: relative; z-index: 1; display: grid; place-items: center; width: 20px; height: 28px; color: var(--color-gold); background: var(--color-cream); font-size: 11px; }
-.continuity-entry time { padding-top: 4px; color: var(--color-muted); font-size: 14px; font-weight: 700; }
-.continuity-copy { padding: 16px 18px; background: var(--color-paper); border: 1px solid #e1d6b7; }
-.continuity-copy strong { display: block; margin-bottom: 7px; color: var(--color-navy); font-size: 16px; }
-.continuity-copy > span { display: block; color: var(--color-muted); font-size: 14px; line-height: 1.45; }
-.continuity-copy > a { display: inline-block; margin-top: 9px; color: var(--color-navy); font-size: 14px; font-weight: 700; }
-.continuity-empty { margin-top: 18px; padding: 20px; color: var(--color-muted); background: var(--color-paper); border: 1px dashed #bcae82; font-size: 16px; line-height: 1.5; }
-.tracked-update-form { margin-top: 36px; padding: 22px; background: #eee5cd; border-top: 3px solid var(--color-gold); }
-.tracked-update-form h2 { margin: 0 0 6px; color: var(--color-navy); font-size: 20px; }
-.tracked-update-form > p { margin: 0 0 18px; color: #53606b; font-size: 15px; line-height: 1.5; }
-.tracked-facts { position: sticky; top: 18px; padding: 0 18px 18px; background: var(--color-paper); border: 1px solid #d9cda9; border-top: 4px solid var(--color-gold); }
-.tracked-fact-head { margin: 0 -18px; padding: 13px 18px; color: var(--color-navy); background: #eee5cd; font-size: 13px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
-.tracked-facts dl { margin: 0; }
-.tracked-facts dl > div { padding: 15px 0; border-bottom: 1px solid #e4dac0; }
-.tracked-facts dt { margin-bottom: 5px; color: var(--color-muted); font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
-.tracked-facts dd { margin: 0; color: var(--color-ink); font-size: 15px; line-height: 1.45; }
-.tracked-fact-actions { display: grid; gap: 10px; margin-top: 18px; }
-.tracked-fact-actions .btn-secondary, .tracked-fact-actions .btn-primary { width: 100%; justify-content: center; text-align: center; }
-.tracked-form-panel { max-width: 820px; }
-.tracked-form-grid { display: grid; grid-template-columns: 1.25fr .8fr .9fr; gap: 16px; }
-.tracked-picker { margin-top: 28px; }
-.tracked-picker-row { grid-template-columns: 18px minmax(220px, 1fr) minmax(160px, .65fr) minmax(120px, .4fr) auto; }
-.tracked-picker-row:hover { background: var(--color-paper); }
-.section-add-link--tracked span { color: var(--color-gold); font-size: 11px; }
-.section-item-source { color: var(--color-gold-ink); font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.tracked-record > section { margin-bottom: 34px; }
+.tracked-record > section:last-child { margin-bottom: 0; }
+/* Line the first section header up with the top of the rail card beside it. */
+.tracked-record > section:first-child > .sec-head { margin-top: 0; }
+.tracked-context .prose { margin-top: 14px; padding: 18px 20px; background: var(--color-paper); border: 1px solid var(--rule); border-left: 4px solid var(--color-gold); border-radius: var(--radius-control); font-size: 16px; line-height: 1.6; }
 
-@media (max-width: 760px) {
-  .tracked-page-lead, .tracked-detail-lead { align-items: stretch; flex-direction: column; }
-  .tracked-page-lead .btn-primary { align-self: flex-start; }
-  .tracked-row, .tracked-picker-row { grid-template-columns: 16px minmax(0, 1fr) 18px; gap: 8px 10px; padding: 15px 13px; }
-  .tracked-row-copy { grid-column: 2; }
-  .tracked-row-reason, .tracked-row-body { grid-column: 2; }
-  .tracked-row-caret { grid-column: 3; grid-row: 1 / span 3; }
-  .tracked-picker-row form, .tracked-picker-row .catrow-flag { grid-column: 2; }
-  .tracked-detail-grid { grid-template-columns: 1fr; }
-  .tracked-facts { position: static; grid-row: 1; }
-  .tracked-form-grid { grid-template-columns: 1fr; gap: 0; }
-  .continuity-entry { grid-template-columns: 20px minmax(0, 1fr); }
-  .continuity-entry time { grid-column: 2; }
-  .continuity-copy { grid-column: 2; }
-}
+.continuity { position: relative; list-style: none; margin: 18px 0 0; padding: 0; }
+.continuity::before { content: ""; position: absolute; top: 16px; bottom: 22px; left: 9px; width: 2px; background: linear-gradient(var(--color-gold), #dacba4); }
+.continuity-entry { position: relative; display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 16px; padding-bottom: 20px; }
+.continuity-node { position: relative; z-index: 1; display: grid; place-items: center; width: 20px; height: 26px; color: var(--color-gold); background: var(--color-cream); font-size: 13px; }
+.continuity-copy { padding: 15px 18px; background: var(--color-paper); border: 1px solid var(--rule); border-radius: var(--radius-control); }
+.continuity-when { display: block; margin-bottom: 5px; color: var(--color-muted); font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+.continuity-copy strong { display: block; margin-bottom: 4px; color: var(--color-navy); font-size: 17px; }
+.continuity-meta { display: block; color: var(--color-muted); font-size: 15px; line-height: 1.45; }
+.continuity-copy .prose { margin-top: 6px; font-size: 16px; line-height: 1.6; }
+.continuity-copy .lnk { display: inline-block; margin-top: 9px; }
+
+.tracked-update { max-width: var(--w-form); }
+.tracked-update .panel-lead { margin-bottom: 16px; }
+
+/* Rail: the established .card, made sticky beside a long record. */
+.tracked-facts { position: sticky; top: 18px; margin-bottom: 0; }
+.tracked-facts .card-body { padding: 4px 20px 18px; }
+.tracked-facts dl { margin: 0; }
+.tracked-facts dl > div { padding: 14px 0; border-bottom: 1px solid var(--rule-soft); }
+.tracked-facts dl > div:last-child { border-bottom: 0; }
+.tracked-facts dt { margin-bottom: 4px; color: var(--color-muted); font-size: 13px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.tracked-facts dd { margin: 0; color: var(--color-ink); font-size: 16px; line-height: 1.45; }
+.tracked-fact-actions { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.tracked-fact-actions form { margin: 0; }
+.tracked-fact-actions .btn-primary, .tracked-fact-actions .btn-secondary, .tracked-fact-actions button { width: 100%; box-sizing: border-box; text-align: center; }
+
+.tracked-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.tracked-form-grid .fl { min-width: 0; }
 
 /* Type-or-pick date field: text input (DD MMM YYYY) + hidden native picker - */
 .datefield { position: relative; display: inline-flex; align-items: center; }
 .datefield-input { font-size: 16px; padding: 10px 44px 10px 12px; border: 1px solid #cdbf98; border-radius: 6px; background: #fff; color: var(--color-ink); width: 170px; letter-spacing: .06em; text-transform: uppercase; }
 .datefield-native { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; right: 40px; }
 .datefield-cal { position: absolute; right: 5px; width: 32px; height: 32px; border: none; background: #efe5cb; border-radius: 5px; cursor: pointer; font-size: 16px; line-height: 1; }
+/* Date + 24-hour time, side by side, both in the app's own formats. */
+.datetime-field { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.datetime-field-at { color: var(--color-muted); font-size: 16px; }
+.timefield-input { flex: 0 0 auto; width: 96px; font-size: 16px; padding: 10px 12px; border: 1px solid #cdbf98; border-radius: var(--radius-control); background: #fff; color: var(--color-ink); font-family: inherit; letter-spacing: .06em; }
 
 /* Person page: identity header, back link ---------------------------------- */
 .back { font-size: 16px; color: var(--color-navy); text-decoration: none; display: inline-block; margin-bottom: 10px; }
@@ -623,94 +657,106 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .mt-active-form { margin: 0; }
 .mt-active-help { font-size: 14px; color: var(--color-muted); }
 
-/* Agenda section builder: a calm, chapter-based working surface ----------- */
-.agenda-builder-intro { max-width: 980px; display: flex; align-items: center; justify-content: space-between; gap: 28px; margin: 24px 0 14px; padding: 22px 24px 22px 27px; color: #fff; background: linear-gradient(118deg, var(--color-navy-deep), var(--color-navy-2)); border-left: 4px solid var(--color-gold); border-radius: 4px 12px 12px 4px; box-shadow: 0 12px 28px rgba(8,26,52,.14); }
-.agenda-builder-intro--dated { margin-top: 28px; }
-.agenda-builder-kicker { display: block; margin-bottom: 5px; color: var(--color-gold-hi); font-size: 13px; font-weight: 800; letter-spacing: .19em; text-transform: uppercase; }
-.page-lead > .agenda-builder-kicker { color: var(--color-gold-ink); }
-.agenda-builder-intro h2 { margin: 0 0 5px; font-size: 23px; line-height: 1.25; }
-.agenda-builder-intro p { max-width: 650px; margin: 0; color: #d7e0eb; font-size: 16px; line-height: 1.5; }
-.agenda-builder-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; flex-wrap: wrap; }
-.agenda-builder-intro .btn-primary { background: var(--color-gold-hi); color: var(--color-navy-deep); border-color: var(--color-gold-hi); }
-.agenda-builder-intro .btn-primary:hover { background: #f4dda1; }
-.agenda-builder-intro .btn-secondary { background: transparent; color: #fff; border-color: rgba(255,255,255,.58); }
-.agenda-builder-intro .btn-secondary:hover { background: rgba(255,255,255,.1); }
+/* ---------------------------------------------------------------------------
+   Agenda section builder. A stack of the standard .card, one per section, with
+   the established tinted head strip — not a navy slab. Six sections down a page
+   should read as a calm outline the officer can scan, not six banners each
+   shouting as loudly as the page title.
 
-.agenda-section-reorder, .agenda-section-stack { max-width: 980px; }
-.agenda-section-stack { display: flex; flex-direction: column; gap: 20px; }
-.agenda-section-editor { overflow: hidden; background: var(--color-ivory); border: 1px solid #d8c99c; border-radius: 11px; box-shadow: 0 8px 22px rgba(29,38,52,.07); }
-.agenda-section-editor-head { display: grid; grid-template-columns: auto auto minmax(180px, 1fr) auto auto; align-items: center; gap: 13px; min-height: 76px; padding: 12px 16px 12px 12px; color: #fff; background: linear-gradient(90deg, var(--color-navy-deep), var(--color-navy)); border-bottom: 3px solid var(--color-gold); }
-.section-handle { display: inline-flex; align-items: center; justify-content: center; align-self: stretch; width: 34px; color: var(--color-gold-hi); background: rgba(255,255,255,.06); border: 1px solid rgba(230,205,139,.35); border-radius: 6px; cursor: grab; }
-.section-handle:active { cursor: grabbing; }
-.section-handle:focus-visible { outline: 3px solid var(--color-gold-hi); outline-offset: 2px; }
-.section-lock-mark { display: inline-flex; align-items: center; justify-content: center; width: 34px; color: var(--color-gold); font-size: 11px; }
-.agenda-section-number { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; color: var(--color-gold-hi); background: rgba(230,205,139,.12); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); font-family: var(--font-serif); font-size: 18px; }
-.agenda-section-title-block { min-width: 0; padding-left: 3px; }
-.agenda-section-eyebrow { display: block; margin-bottom: 2px; color: #c6d1df; font-size: 13px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
-.agenda-section-title-block h3 { margin: 0; color: #fff; font-size: 21px; line-height: 1.25; overflow-wrap: anywhere; }
-.agenda-section-count { color: #dbe2eb; font-size: 14px; white-space: nowrap; }
-.agenda-section-actions { display: flex; align-items: center; gap: 7px; }
+   The working screen never uses the monumental navy treatment; that is reserved
+   for the entry/login moment (see the visual design system spec).
+   --------------------------------------------------------------------------- */
+.agenda-build-hint { max-width: var(--w-main); margin: 0 0 16px; color: var(--color-muted); font-size: 15px; line-height: 1.5; }
+.agenda-sections { display: flex; flex-direction: column; gap: 18px; max-width: var(--w-main); }
+.agenda-section { margin-bottom: 0; }
+.agenda-section > .card-head { flex-wrap: wrap; gap: 10px 12px; padding: 11px 16px; }
+.agenda-section .card-body { padding: 0; }
+.agenda-section-num { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; color: var(--color-navy); background: var(--color-ivory); border: 1px solid var(--color-gold); border-radius: 50%; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.agenda-section-name { flex: 1 1 220px; min-width: 0; margin: 0; color: var(--color-navy); font-size: 18px; font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; }
+.agenda-section-count { flex: 0 0 auto; color: var(--color-muted); font-size: 14px; white-space: nowrap; }
+.agenda-section-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
 .agenda-section-actions form { margin: 0; }
-.section-action { display: inline-flex; align-items: center; min-height: 38px; box-sizing: border-box; padding: 7px 11px; color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.35); border-radius: 6px; font-family: inherit; font-size: 16px; font-weight: 700; text-decoration: none; cursor: pointer; }
-.section-action:hover, .section-action:focus-visible { color: var(--color-navy-deep); background: var(--color-gold-hi); border-color: var(--color-gold-hi); outline: none; }
-.section-action--danger:hover, .section-action--danger:focus-visible { color: #fff; background: var(--color-legionred); border-color: #bf5b64; }
-.section-action--move { color: var(--color-gold-hi); background: transparent; border-color: rgba(230,205,139,.4); }
-.agenda-section-editor-body { padding: 0 18px; }
-.section-item-list { background: #fff; border-right: 1px solid #e7dcc0; border-left: 1px solid #e7dcc0; }
-.section-item-row { display: flex; align-items: center; gap: 12px; min-height: 70px; padding: 10px 12px; border-top: 1px solid #eadfbf; transition: background .12s ease; }
-.section-item-row:first-child { border-top: none; }
-.section-item-row:hover { background: #f3f6fa; }
-.section-item-row .pos-handle { flex: 0 0 auto; }
-.section-item-copy { flex: 1; min-width: 0; }
-.section-item-title { display: block; color: var(--color-navy); font-size: 17px; font-weight: 750; line-height: 1.35; }
-.section-item-summary { display: block; margin-top: 4px; color: var(--color-muted); font-size: 14px; line-height: 1.4; }
-.agenda-section-empty { display: flex; align-items: center; gap: 13px; margin: 18px 0 10px; padding: 18px; color: var(--color-muted); background: rgba(255,255,255,.55); border: 1.5px dashed #cdbd91; border-radius: 8px; }
-.agenda-section-empty-mark { color: var(--color-gold-ink); font-size: 28px; line-height: 1; }
-.agenda-section-empty strong { display: block; color: var(--color-navy); font-size: 16px; }
-.agenda-section-empty span:not(.agenda-section-empty-mark) { display: block; margin-top: 3px; font-size: 14px; }
-.agenda-section-footer { display: flex; align-items: center; min-height: 52px; border-top: 1px solid #e8ddbe; }
-.section-add-link { display: inline-flex; align-items: center; gap: 7px; color: var(--color-legionred); font-size: 16px; font-weight: 800; text-decoration: none; }
-.section-add-link span { color: var(--color-gold-ink); font-size: 21px; }
-.section-add-link:hover { text-decoration: underline; }
-.section-order-status { display: block; min-height: 24px; }
-.agenda-section-editor--readonly .agenda-section-editor-head { grid-template-columns: auto auto minmax(180px, 1fr) auto; }
-.agenda-section-stack--readonly { margin-top: 14px; }
-.picker-destination { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 20px; padding: 9px 14px; color: var(--color-navy); background: #f2e7c9; border-left: 3px solid var(--color-gold-ink); border-radius: 3px 7px 7px 3px; font-size: 16px; }
-.picker-destination span { color: var(--color-muted); font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.section-form-panel { border-top: 3px solid var(--color-gold); }
+.section-action { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; box-sizing: border-box; padding: 6px 13px; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: var(--radius-control); font-family: inherit; font-size: 16px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.section-action:hover, .section-action:focus-visible { color: #fff; background: var(--color-navy); border-color: var(--color-navy); outline: none; }
+/* Spelled out, not an arrow glyph: this audience should never have to guess
+   what a control does, and the drag grip is the shortcut for those who want it. */
+.section-action--move { font-weight: 600; }
+.section-action--danger { color: var(--color-legionred); border-color: #ddb0b0; }
+.section-action--danger:hover, .section-action--danger:focus-visible { color: #fff; background: var(--color-legionred); border-color: var(--color-legionred); }
 
-/* Dated agenda management -------------------------------------------------- */
-.da-lifecycle { margin: 8px 0 22px; }
-.da-lifecycle .st { display: inline-block; margin-bottom: 12px; }
+.agenda-items { background: var(--color-ivory); }
+.agenda-item-row { display: flex; align-items: center; gap: 12px; min-height: 66px; padding: 11px 16px; border-top: 1px solid var(--rule-soft); transition: background .12s ease; }
+.agenda-item-row:first-child { border-top: none; }
+.agenda-item-row:hover { background: #f3f6fa; }
+.agenda-item-row .pos-handle { flex: 0 0 auto; }
+.agenda-item-copy { flex: 1; min-width: 0; }
+.agenda-item-name { display: block; color: var(--color-navy); font-size: 17px; font-weight: 700; line-height: 1.35; }
+.agenda-item-note { display: block; margin-top: 4px; color: var(--color-muted); font-size: 15px; line-height: 1.45; }
+.agenda-item-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+.section-item-source { display: inline-block; margin-top: 4px; color: var(--color-gold-ink); font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+
+.agenda-section-empty { display: flex; align-items: flex-start; gap: 13px; padding: 20px 18px; background: var(--color-ivory); color: #4f5f72; font-size: 16px; line-height: 1.5; }
+.agenda-section-empty-mark { flex: 0 0 auto; color: var(--color-gold); font-size: 18px; line-height: 1.4; }
+.agenda-section-empty strong { display: block; margin-bottom: 3px; color: var(--color-navy); font-size: 17px; }
+
+/* Additive actions are quiet navy links. Red is reserved for attention and for
+   destructive/return actions only — an "add" link must never be loud. */
+.agenda-section-foot { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 8px 16px; border-top: 1px solid var(--rule); background: var(--color-paper); }
+.section-add { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--color-navy); font-size: 16px; font-weight: 700; text-decoration: none; }
+.section-add:hover { text-decoration: underline; }
+.section-add-mark { color: var(--color-gold-ink); font-size: 17px; line-height: 1; }
+/* Live region for drag-to-reorder feedback. It is empty almost always, so it
+   must not reserve a band of dead space inside the card. */
+.section-order-status { display: block; min-height: 0; }
+.section-order-status:not(:empty) { padding: 8px 16px 10px; }
+
+.picker-destination { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 20px; padding: 10px 14px; color: var(--color-navy); background: var(--color-paper); border: 1px solid var(--rule); border-left: 3px solid var(--color-gold); border-radius: var(--radius-control); font-size: 16px; }
+.picker-destination span { color: var(--color-muted); font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+/* Dated agenda management --------------------------------------------------
+   The record's state and the actions that change it sit in one bounded block,
+   so the officer never reads a status on one side of the screen and hunts for
+   its action on the other. */
+.da-lifecycle { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; max-width: var(--w-main); margin: 14px 0 30px; padding: 14px 18px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-left: 4px solid var(--color-gold); border-radius: var(--radius-card); }
+.da-lifecycle-state { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.da-lifecycle-state .st { font-size: 16px; }
 .da-lifecycle .btnrow { margin: 0; }
+.agenda-build-section { margin-bottom: 34px; }
+.agenda-build-section:last-child { margin-bottom: 0; }
+/* A section whose only content is a form takes the form's measure, so the
+   header rule does not overhang the card beneath it. */
+.agenda-build-section--form { max-width: var(--w-form); }
 
-/* Upcoming published meetings --------------------------------------------- */
-.agenda-docket { max-width: 860px; margin-top: 28px; overflow: hidden; background: var(--color-paper); border: 1px solid #d8c99c; border-top: 3px solid var(--color-gold); border-radius: 9px; box-shadow: 0 8px 22px rgba(29,38,52,.06); }
-.agenda-docket-row { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto; align-items: center; gap: 20px; min-height: 106px; padding: 14px 20px; color: inherit; text-decoration: none; border-top: 1px solid #e4d8b8; }
+/* Upcoming published meetings ----------------------------------------------
+   The date plate earns its place: on a list of meetings the date is what the
+   member is looking for, so it leads. Sans throughout — this is the tool, not
+   the record. Serif is reserved for the document itself, which is how an
+   official record stays instantly distinguishable from the app around it. */
+.agenda-docket { max-width: var(--w-form); margin-top: 24px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 3px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.agenda-docket-row { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 18px; padding: 16px 20px; color: inherit; text-decoration: none; border-top: 1px solid var(--rule-soft); }
 .agenda-docket-row:first-child { border-top: 0; }
 .agenda-docket-row:hover, .agenda-docket-row:focus-visible { background: #eef2f7; outline: none; }
 .agenda-docket-row:focus-visible { position: relative; z-index: 1; box-shadow: inset 0 0 0 3px var(--color-gold); }
-.agenda-docket-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 76px; padding: 4px 7px 6px; color: var(--color-navy); background: var(--color-ivory); border: 1px solid #d8c99c; border-top: 4px solid var(--color-navy); text-align: center; }
-.agenda-docket-day { font-family: var(--font-serif); font-size: 32px; font-weight: 700; line-height: .95; }
-.agenda-docket-month, .agenda-docket-year { font-size: 13px; font-weight: 800; line-height: 1.1; letter-spacing: .08em; }
+.agenda-docket-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 74px; padding: 5px 7px 7px; color: var(--color-navy); background: var(--color-ivory); border: 1px solid var(--rule-strong); border-top: 4px solid var(--color-navy); border-radius: 3px; text-align: center; }
+.agenda-docket-day { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.agenda-docket-month, .agenda-docket-year { font-size: 13px; font-weight: 800; line-height: 1.1; letter-spacing: .09em; }
 .agenda-docket-month { margin-top: 5px; color: var(--color-gold-ink); }
 .agenda-docket-year { color: var(--color-muted); }
 .agenda-docket-copy { min-width: 0; }
-.agenda-docket-title { display: block; color: var(--color-navy); font-family: var(--font-serif); font-size: 20px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
-.agenda-docket-meta { display: block; margin-top: 6px; color: var(--color-muted); font-size: 16px; line-height: 1.4; }
-.agenda-docket-action { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; color: var(--color-navy); border: 1.5px solid var(--color-navy); border-radius: 6px; font-size: 16px; font-weight: 750; white-space: nowrap; }
-.agenda-docket-row:hover .agenda-docket-action, .agenda-docket-row:focus-visible .agenda-docket-action { color: #fff; background: var(--color-navy); }
-.agenda-docket-empty { display: flex; align-items: flex-start; gap: 16px; max-width: 680px; margin-top: 28px; padding: 24px; background: var(--color-paper); border: 1px solid #d8c99c; border-left: 4px solid var(--color-gold); border-radius: 8px; }
-.agenda-docket-empty-mark { color: var(--color-gold-ink); font-size: 16px; }
-.agenda-docket-empty h2 { margin: 0 0 6px; color: var(--color-navy); font-size: 20px; }
-.agenda-docket-empty p { margin: 0; color: var(--color-muted); font-size: 16px; line-height: 1.55; }
+/* Underlined at rest, not only on hover: the row is the link, and a member who
+   is not confident with computers should not have to hover to discover that. */
+.agenda-docket-title { display: block; color: var(--color-navy); font-size: 19px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; text-decoration: underline; text-decoration-color: #c3ac77; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.agenda-docket-row:hover .agenda-docket-title, .agenda-docket-row:focus-visible .agenda-docket-title { text-decoration-color: var(--color-navy); }
+.agenda-docket-meta { display: block; margin-top: 5px; color: var(--color-muted); font-size: 16px; line-height: 1.4; }
+.agenda-docket-next { display: inline-block; margin-bottom: 5px; color: var(--color-gold-ink); font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 
-/* Published / printable agenda document ------------------------------------ */
-.agenda-page-actions { display: flex; align-items: center; justify-content: space-between; max-width: 820px; margin: 0 0 18px; }
+/* Published / printable agenda document ------------------------------------
+   The action bar matches the paper width exactly so their edges line up. */
+.agenda-page-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: var(--w-doc); margin: 0 auto 18px; }
 .agenda-back-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--color-navy); font-size: 16px; font-weight: 700; text-decoration: none; }
 .agenda-back-link:hover { text-decoration: underline; }
 .agenda-back-link:focus-visible, .agenda-print-link:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 3px; }
-.agenda-doc { max-width: 756px; padding: 42px 32px 44px; background: var(--color-ivory); border: 1px solid #d9cba5; border-top: 5px solid var(--color-gold); box-shadow: 0 14px 34px rgba(27,34,43,.1); }
+.agenda-doc { max-width: var(--w-doc); margin: 0 auto; padding: 42px 32px 44px; background: var(--color-ivory); border: 1px solid var(--rule-strong); border-top: 5px solid var(--color-gold); box-shadow: 0 14px 34px rgba(27,34,43,.1); }
 .agenda-masthead { margin-bottom: 34px; text-align: center; }
 .agenda-org-name { margin: 0; color: var(--color-navy); font-size: 14px; font-weight: 850; letter-spacing: .18em; line-height: 1.45; text-transform: uppercase; }
 .agenda-document-label { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0 20px; color: var(--color-gold-ink); font-size: 13px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
@@ -725,7 +771,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-chapter-rail { position: relative; display: flex; justify-content: center; }
 .agenda-chapter-rail::after { content: ""; position: absolute; top: 38px; bottom: -1px; left: 50%; width: 2px; background: linear-gradient(var(--color-gold), #decda3); transform: translateX(-50%); }
 .agenda-chapter:last-child .agenda-chapter-rail::after { display: none; }
-.agenda-chapter-number { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; color: #fff; background: var(--color-navy); clip-path: polygon(16% 0, 84% 0, 100% 16%, 100% 84%, 84% 100%, 16% 100%, 0 84%, 0 16%); font-family: var(--font-serif); font-size: 17px; font-weight: 700; }
+.agenda-chapter-number { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: #fff; background: var(--color-navy); clip-path: polygon(16% 0, 84% 0, 100% 16%, 100% 84%, 84% 100%, 16% 100%, 0 84%, 0 16%); font-family: var(--font-serif); font-size: 19px; font-weight: 700; }
 .agenda-chapter-content { min-width: 0; padding: 5px 0 34px; }
 .agenda-chapter-head { display: flex; align-items: center; gap: 12px; color: var(--color-navy); }
 .agenda-chapter-head h2 { margin: 0; font-size: 16px; font-weight: 850; letter-spacing: .12em; line-height: 1.35; text-transform: uppercase; overflow-wrap: anywhere; }
@@ -734,7 +780,9 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-item { padding: 18px 0; border-top: 1px solid #eadfbf; }
 .agenda-item:first-child { border-top: none; }
 .agenda-item-title { font-family: var(--font-serif); font-size: 21px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }
-.agenda-item-summary { font-size: 16px; color: var(--color-muted); margin: 0 0 8px; }
+/* Shown only when an item has no body of its own, so the document never says
+   the same thing twice. Serif, like everything else on the paper. */
+.agenda-item-summary { font-family: var(--font-serif); font-size: 17px; line-height: 1.6; color: #4a5462; margin: 0; }
 .agenda-item-body { color: var(--color-ink); font-family: var(--font-serif); font-size: 17px; line-height: 1.65; overflow-wrap: anywhere; }
 .agenda-item-body img { max-width: 100%; height: auto; }
 .agenda-item-body > :first-child { margin-top: 0; }
@@ -742,9 +790,27 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .print-body { margin: 0; background: #fff; }
 .print-body .agenda-doc { margin: 0 auto; }
 
-/* Responsive app shell -----------------------------------------------------
-   Preserve every available destination and full-size tap target. Phones
-   receive a calm 2-column nav instead of a clipped desktop strip. */
+/* Responsive -----------------------------------------------------------------
+   Two steps, used consistently everywhere: 900px drops side rails and multi-
+   column forms to a single column, 560px reshapes the shell for phones. Every
+   destination and full-size tap target survives both. */
+
+@media (max-width: 900px) {
+  /* Between phone and desktop the tab strip no longer fits on one line. Let it
+     wrap onto a second row rather than clip: every destination must stay
+     reachable, and Admin was falling off the right edge. */
+  .nav-inner { flex-wrap: wrap; padding: 0 8px; }
+  .nav-tab { padding: 0 14px; }
+  .nav-spacer { display: none; }
+  .nav-tab--admin { border-left: 0; }
+
+  .tracked-grid { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .tracked-facts { position: static; grid-row: 1; }
+  .tracked-form-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .page-lead-row { align-items: stretch; flex-direction: column; gap: 16px; }
+  .page-lead-row > .btn-primary, .page-lead-row > a { align-self: flex-start; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
 
 @media (max-width: 560px) {
   .app-header-inner { flex-wrap: wrap; gap: 9px 12px; padding: 10px 16px; }
@@ -762,24 +828,29 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 
   .app-main { min-width: 0; padding: 20px 16px 48px; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .agenda-builder-intro { align-items: flex-start; flex-direction: column; gap: 18px; margin-top: 18px; padding: 20px; }
-  .agenda-builder-actions { width: 100%; }
-  .agenda-builder-actions .btn-primary, .agenda-builder-actions .btn-secondary, .agenda-builder-actions form { width: 100%; box-sizing: border-box; text-align: center; }
-  .agenda-builder-actions button { width: 100%; }
-  .agenda-section-editor-head { grid-template-columns: auto auto minmax(0, 1fr); gap: 11px; padding: 12px; }
-  .agenda-section-count { grid-column: 3; }
-  .agenda-section-actions { grid-column: 1 / -1; justify-content: flex-end; padding-top: 4px; border-top: 1px solid rgba(255,255,255,.16); }
-  .agenda-section-editor-body { padding: 0 10px; }
-  .section-item-row { align-items: flex-start; flex-wrap: wrap; gap: 9px; padding: 12px 8px; }
-  .section-item-copy { flex-basis: calc(100% - 48px); }
-  .section-item-row .catrow-edit { margin-left: 42px; }
-  .agenda-section-editor--readonly .agenda-section-editor-head { grid-template-columns: auto auto minmax(0, 1fr); }
+  /* Section head wraps: title first, then count and controls on their own row. */
+  .agenda-section > .card-head { padding: 11px 12px; }
+  .agenda-section-actions { flex: 1 0 100%; justify-content: flex-end; }
+  .agenda-item-row { align-items: flex-start; flex-wrap: wrap; gap: 9px; padding: 12px 10px; }
+  .agenda-item-copy { flex-basis: calc(100% - 48px); }
+  .agenda-item-actions { margin-left: 40px; }
+  .agenda-section-foot { gap: 0 20px; padding: 6px 12px; }
+  /* Long bucket names ("Important and urgent — Necessity") must not force the
+     page sideways. The label wraps and the gold rule drops to its own line,
+     where it reads as an underline. */
+  .sec-head { flex-wrap: wrap; gap: 6px 10px; }
+  .sec-head-label { white-space: normal; flex: 1 1 auto; min-width: 0; }
+  .sec-head-meta, .sec-head-action { order: 5; }
+  .sec-head-rule { flex: 1 0 100%; order: 9; }
+
+  .mrow { flex-wrap: wrap; gap: 10px 0; padding: 14px 13px; }
+  .mrow-id { flex-basis: 100%; padding-right: 0; }
+  .mrow-status { flex: 1 1 auto; border-left: 0; padding-left: 0; }
+  .catrow-meta { padding-left: 0; }
   .agenda-docket { margin-top: 22px; }
-  .agenda-docket-row { grid-template-columns: 72px minmax(0, 1fr); gap: 14px; min-height: 112px; padding: 14px 12px; }
-  .agenda-docket-date { min-height: 68px; padding-right: 6px; padding-left: 6px; }
-  .agenda-docket-day { font-size: 30px; }
-  .agenda-docket-action { grid-column: 2; justify-self: start; min-height: 40px; margin-top: -4px; padding: 0; border: 0; }
-  .agenda-docket-row:hover .agenda-docket-action, .agenda-docket-row:focus-visible .agenda-docket-action { color: var(--color-navy); background: transparent; text-decoration: underline; }
+  .agenda-docket-row { grid-template-columns: 66px minmax(0, 1fr); gap: 14px; padding: 14px 12px; }
+  .agenda-docket-date { min-height: 66px; padding-right: 5px; padding-left: 5px; }
+  .agenda-docket-day { font-size: 27px; }
   .agenda-page-actions { align-items: stretch; flex-direction: column; gap: 10px; }
   .agenda-back-link { align-self: flex-start; }
   .agenda-print-link { box-sizing: border-box; min-height: 48px; padding: 11px 18px; text-align: center; }

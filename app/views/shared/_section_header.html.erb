@@ -1,6 +1,14 @@
-<%# app/views/shared/_section_header.html.erb  Locals: label: (String) %>
+<%# app/views/shared/_section_header.html.erb
+    The one section header in the working UI: diamond + tracked label + gold rule.
+    Locals: label: (String), meta: (String, optional), action: (html, optional).
+    The rule sits between the label and any trailing slot, so a count or an
+    action is never stranded at the far edge of the page. %>
+<% meta = local_assigns[:meta] %>
+<% action = local_assigns[:action] %>
 <div class="sec-head">
   <span class="sec-head-dia" aria-hidden="true">&#9670;</span>
   <span class="sec-head-label"><%= label %></span>
   <span class="sec-head-rule"></span>
+  <% if meta.present? %><span class="sec-head-meta"><%= meta %></span><% end %>
+  <%= action %>
 </div>

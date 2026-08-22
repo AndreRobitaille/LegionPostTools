@@ -139,6 +139,48 @@ low confidence:
   red tint and red dotted underline. Each marker maps one-to-one to a short review list in
   the rail. This is the single, consistent way AI uncertainty is surfaced.
 
+## Compose, Don't Invent (added 2026-08-22)
+
+A consistency pass on 2026-08-22 found that new screens had been growing their own
+near-duplicate components — five different section headers, three card treatments, radii from
+0 to 11px, and thirteen slightly different "warm border" hex values. The correction, and the
+standing rule:
+
+**Build a new screen out of the vocabulary below. Only add a component when the screen needs
+something the vocabulary genuinely cannot express, and then add it to this list.**
+
+| Need | Use |
+|------|-----|
+| Section heading | `shared/_section_header` (◆ + tracked caps + gold rule; optional `meta:` count and `action:` slots). This is the *only* section header in working UI. |
+| Boxed panel with a heading strip | `.card` + `.card-head` (+ `.card-dia`, `.card-head-label`) |
+| List of records | `.mrow-list` > `.mrow` (identity left, quiet status column at a divider, action on the same row). Add `.catrow` when the whole row is a link. |
+| Row importance | `.mrow--important` (subtle gold left edge). Never a badge. |
+| Record status | `.st` + `.st-dot` — a coloured word with a dot, **never a boxed pill** |
+| Drag grip | `shared/_drag_handle` (`.pos-handle`); pass `extra_class:` when a nested list needs its own selector |
+| Destructive row action | `.row-del` + `shared/_trash_icon` |
+| Empty state | `.empty` |
+| Form | `.stacked-form` (inside `.panel form-panel` where the page wraps it) |
+| Date entry | `shared/_date_field`; date + time together: `shared/_datetime_field` |
+
+Tokens live at the top of `application.css`: `--rule-strong` / `--rule` / `--rule-soft` for
+warm borders, `--radius-card` / `--radius-control`, and the column measures `--w-shell`,
+`--w-main`, `--w-form`, `--w-doc`, `--w-rail`. Use them instead of new literals.
+
+Two colour rules that were being broken and are worth restating:
+
+- **Red is the only loud colour**, and appears only where a human decision is required or on
+  a destructive/return action. An "add" link is never red.
+- **Gold fill means confirm/finalize** (`.btn-confirm`). Do not use it to make an ordinary
+  action look important; primary actions are navy (`.btn-primary`).
+
+**Serif stays inside documents.** The meetings list, agenda builder and every other working
+screen are sans. Serif on a working list erodes the signal that makes an official record look
+different from the tool that edited it.
+
+Responsive steps are **900px** (drop rails and multi-column forms to one column; wrap the nav
+strip) and **560px** (phone shell). Use those two, not new ad-hoc breakpoints, and verify no
+page scrolls horizontally at either.
+
 ## Prioritization Model (choosing what to bring to a meeting)
 
 Prioritization earns its place on the **selection side** (deciding what to pull onto an

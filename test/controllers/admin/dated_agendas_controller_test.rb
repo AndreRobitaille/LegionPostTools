@@ -74,7 +74,8 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "select[name=?]", "dated_agenda[meeting_body_id]"
     assert_select "select[name=?]", "dated_agenda[meeting_type_id]"
-    assert_select "input[name=?]", "dated_agenda[starts_at]"
+    assert_select "input[name=?]", "dated_agenda[starts_at_date]"
+    assert_select "input[name=?]", "dated_agenda[starts_at_time]"
     assert_select "input[name=?]", "dated_agenda[title]"
   end
 
@@ -87,7 +88,8 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "form.stacked-form"
     assert_select "form.stacked-form select[name='dated_agenda[meeting_body_id]']"
     assert_select "form.stacked-form select[name='dated_agenda[meeting_type_id]']"
-    assert_select "form.stacked-form input[name='dated_agenda[starts_at]']"
+    assert_select "form.stacked-form input[name='dated_agenda[starts_at_date]']"
+    assert_select "form.stacked-form input[name='dated_agenda[starts_at_time]']"
     assert_select "form.stacked-form input.btn-primary"
   end
 
@@ -299,7 +301,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get edit_admin_dated_agenda_path(agenda)
 
     assert_response :success
-    assert_select "body", text: /This agenda does not have any items yet. Add items from the catalog to build this meeting agenda./
+    assert_select ".agenda-section-empty", text: /Nothing in this section yet/
   end
 
   test "failed template copy rolls back dated agenda creation" do
@@ -334,8 +336,8 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".da-lifecycle .st.st--draft"
     assert_select "form[action='#{approve_admin_dated_agenda_path(@agenda)}']"
     assert_select "[data-controller='reorder'][data-reorder-url-value^='#{reorder_admin_dated_agenda_agenda_items_path(@agenda)}']"
-    assert_select ".section-item-list[data-reorder-target='list'] .section-item-row[data-reorder-item] .pos-handle"
-    assert_select ".section-item-row button.row-del"
+    assert_select ".agenda-items[data-reorder-target='list'] .agenda-item-row[data-reorder-item] .pos-handle"
+    assert_select ".agenda-item-row button.row-del"
   end
 
   test "edit locks the item list and shows Publish + Reopen when approved" do

@@ -41,7 +41,6 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
       assert_select ".agenda-docket-title", text: "Published Agenda"
       assert_select "time.agenda-docket-date[datetime='#{@published.starts_at.to_date.iso8601}']"
       assert_select ".agenda-docket-meta", text: /Membership/
-      assert_select ".agenda-docket-action", text: /Read agenda/
     end
     assert_select "a", text: "Draft Agenda", count: 0
   end
@@ -54,7 +53,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Meetings"
-    assert_select ".agenda-docket-empty h2", text: "No upcoming agendas"
+    assert_select ".empty h2", text: "No upcoming agendas"
     assert_select ".agenda-docket-row", count: 0
   end
 
