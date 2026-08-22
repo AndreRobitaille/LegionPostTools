@@ -1,6 +1,20 @@
 class RosterImport < ApplicationRecord
   STATUSES = %w[completed failed pending_confirmation discarded].freeze
   STALE_AFTER = 30.days
+  FIELD_CHANGE_LABELS = {
+    "roster_name" => "Name",
+    "roster_post" => "Post or squadron number",
+    "roster_membership_type" => "Membership type",
+    "roster_address" => "Address",
+    "roster_undeliverable" => "Undeliverable status",
+    "roster_email_address" => "Roster email",
+    "roster_phone_number" => "Phone number",
+    "roster_branch" => "Service branch",
+    "roster_war_era" => "War era",
+    "roster_continuous_years" => "Continuous years",
+    "roster_paid_through_year" => "Paid-through year",
+    "roster_member_status" => "Member status"
+  }.freeze
 
   has_one_attached :pending_csv
 
@@ -46,6 +60,22 @@ class RosterImport < ApplicationRecord
 
   def access_effects
     summary&.fetch("access_effects", {}) || {}
+  end
+
+  def field_changes
+    summary&.fetch("field_changes", {}) || {}
+  end
+
+  def created_members
+    Array(summary&.fetch("created_members", nil))
+  end
+
+  def returned_count
+    summary&.fetch("returned_count", 0).to_i
+  end
+
+  def detailed_change_summary?
+    field_changes.any? || created_members.any? || returned_count.positive?
   end
 
   def sign_in_exceptions

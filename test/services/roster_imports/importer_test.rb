@@ -10,6 +10,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal 0, result.problem_count
     assert_equal 2, Person.where(member_number: %w[000204540637 000204540638]).count
     assert_equal "completed", result.roster_import.status
+    assert_equal [ "Smith, John", "Jones, Mary" ], result.roster_import.reload.created_members.pluck("name")
   end
 
   test "reimport updates roster fields without changing user login email" do
@@ -62,6 +63,44 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert result.success?
     assert_equal 0, result.updated_count
     assert_equal 1, result.unchanged_count
+  end
+
+  test "reimport records aggregate field changes without retaining contact values" do
+    Person.create!(
+      first_name: "John",
+      last_name: "Smith",
+      member_number: "000204540637",
+      roster_name: "Smith, John",
+      roster_post: 165,
+      roster_membership_type: "Post Transfer",
+      roster_address: "456 Elm St",
+      roster_undeliverable: false,
+      roster_email_address: "old-roster@example.com",
+      roster_phone_number: "555-2222",
+      roster_branch: "Navy",
+      roster_war_era: "OTHER",
+      roster_continuous_years: 13,
+      roster_paid_through_year: 2026,
+      roster_member_status: "Active",
+      roster_imported_at: 1.day.ago
+    )
+
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540637,"Smith, John",165,1 Year Membership,456 Elm St,,new-roster@example.com,555-2222,Navy,PERSIAN_GULF,15,2027,Active
+    CSV
+
+    roster_import = RosterImports::Importer.new(csv_text: csv, filename: "changes.csv").import.roster_import.reload
+
+    assert_equal 1, roster_import.updated_count
+    assert_equal({ "count" => 1, "deltas" => { "2" => 1 } }, roster_import.field_changes["roster_continuous_years"])
+    assert_equal [ { "from" => "2026", "to" => "2027", "count" => 1 } ],
+      roster_import.field_changes.dig("roster_paid_through_year", "transitions")
+    assert_equal 1, roster_import.field_changes.dig("roster_email_address", "count")
+    assert_equal 1, roster_import.field_changes.dig("roster_membership_type", "count")
+    assert_equal 1, roster_import.field_changes.dig("roster_war_era", "count")
+    assert_not_includes roster_import.summary.to_json, "old-roster@example.com"
+    assert_not_includes roster_import.summary.to_json, "new-roster@example.com"
   end
 
   test "row with missing member id is a problem but does not fail the whole import" do
@@ -240,10 +279,11 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
       Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
       000204540637,"Back, Again",165,Member,2 B St,,b@x.com,555,Navy,Korea,6,2026,Active
     CSV
-    RosterImports::Importer.new(csv_text: csv, filename: "return.csv").import
+    result = RosterImports::Importer.new(csv_text: csv, filename: "return.csv").import
     back.reload; back_user.reload
     assert_nil back.roster_removed_at
     assert_nil back_user.disabled_at
+    assert_equal 1, result.roster_import.reload.returned_count
   end
 
   test "a file with zero valid rows never mass-removes" do

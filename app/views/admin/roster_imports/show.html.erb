@@ -65,6 +65,41 @@
       <%= render "shared/stat_tile", count: @roster_import.removed_count, label: "Removed", variant: "removed" %>
       <%= render "shared/stat_tile", count: @roster_import.problem_count, label: "Problems", variant: @roster_import.problem_count.positive? ? "problems" : "neutral" %>
     </div>
+
+    <% if @roster_import.detailed_change_summary? %>
+      <%= render "shared/section_panel", label: "Import details" do %>
+        <% @roster_import.created_members.each do |member| %>
+          <div class="item">
+            <span class="who">New member: <%= member["name"] %></span>
+            <span class="meta">· #<%= member["member_number"] %></span>
+          </div>
+        <% end %>
+        <% unlisted_created_count = @roster_import.created_count - @roster_import.created_members.size %>
+        <% if unlisted_created_count.positive? %>
+          <div class="item"><%= pluralize(unlisted_created_count, "additional new member") %></div>
+        <% end %>
+
+        <% if @roster_import.returned_count.positive? %>
+          <div class="item"><b><%= pluralize(@roster_import.returned_count, "member") %></b> returned to the roster.</div>
+        <% end %>
+
+        <% RosterImport::FIELD_CHANGE_LABELS.each do |field, label| %>
+          <% change = @roster_import.field_changes[field] %>
+          <% next unless change %>
+          <div class="item">
+            <span class="who"><%= label %></span>
+            <span class="meta">· <%= pluralize(change["count"], "member") %></span>
+            <% details = roster_change_details(change) %>
+            <% if details.present? %>
+              <div class="fix"><%= details %></div>
+            <% end %>
+          </div>
+        <% end %>
+        <% if @roster_import.field_changes.many? %>
+          <p class="ownernote">One member can appear in more than one line when several roster fields changed.</p>
+        <% end %>
+      <% end %>
+    <% end %>
   <% end %>
 
   <% effect_lines = [

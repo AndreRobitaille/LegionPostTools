@@ -99,6 +99,12 @@ Place the asset in `app/assets/images/` during implementation.
   ("John Doe · Adjutant") plus a gold avatar. Configurable — no hard-coded Post 165.
 - **Primary nav** (navy-2 tab bar): uppercase tracked labels, gold underline on the active
   tab. Sections: **Dashboard, Meetings, Records, Tracked Items, People, Settings.**
+- **Responsive shell:** the shell must never widen the document or require horizontal
+  page scrolling. At narrower tablet widths, hide non-interactive "Soon" placeholders
+  before compressing real destinations. At phone widths, arrange the available primary
+  destinations in a two-column grid with 48px tap targets; keep the active gold underline
+  and place Admin in the same grid when the signed-in user can access it. Header identity
+  and account controls may wrap into two rows, but remain visible and readable.
 - **Page bar:** breadcrumb + page title + a record-status pill where relevant.
 - **Working area:** cream background; a main column plus a context **rail** on the right.
 

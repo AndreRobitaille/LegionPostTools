@@ -359,6 +359,44 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", /Exception Member/
   end
 
+  test "completed show explains created, returned, and field-level changes" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.create!(
+      status: "completed",
+      imported_at: Time.current,
+      uploaded_filename: "changes.csv",
+      created_count: 2,
+      updated_count: 3,
+      summary: {
+        created_members: [ { name: "New Member", member_number: "0001" } ],
+        returned_count: 1,
+        field_changes: {
+          roster_continuous_years: { count: 3, deltas: { "1" => 1, "2" => 2 } },
+          roster_paid_through_year: {
+            count: 2,
+            transitions: [ { from: "2026", to: "2027", count: 2 } ]
+          },
+          roster_email_address: { count: 1 }
+        }
+      }
+    )
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select ".card", text: /Import details/
+    assert_select "body", text: /New member: New Member/
+    assert_select "body", text: /1 additional new member/
+    assert_select "body", text: /1 member returned to the roster/
+    assert_select "body", text: /Continuous years · 3 members/
+    assert_select "body", text: /1 member increased by 1; 2 members increased by 2/
+    assert_select "body", text: /Paid-through year · 2 members/
+    assert_select "body", text: /2 members changed from 2026 to 2027/
+    assert_select "body", text: /Roster email · 1 member/
+    assert_select "body", text: /One member can appear in more than one line/
+  end
+
   test "pending show does not render the completed-style change tiles and offers a discard" do
     prepare_setup_complete_state
     sign_in_admin

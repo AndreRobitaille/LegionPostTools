@@ -30,6 +30,10 @@ class RosterImportTest < ActiveSupport::TestCase
     blank = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "y.csv")
     assert_equal [], blank.problems
     assert_equal [], blank.removed_members
+    assert_equal({}, blank.field_changes)
+    assert_equal [], blank.created_members
+    assert_equal 0, blank.returned_count
+    assert_not blank.detailed_change_summary?
   end
 
   test "history orders newest first" do

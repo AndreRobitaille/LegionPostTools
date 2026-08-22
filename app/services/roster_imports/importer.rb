@@ -1,6 +1,28 @@
 module RosterImports
   class Importer
     LARGE_REMOVAL_THRESHOLD = 10
+    CREATED_MEMBER_EXAMPLE_LIMIT = 10
+    ROSTER_ATTRIBUTES = {
+      roster_name: :name,
+      roster_post: :post,
+      roster_membership_type: :membership_type,
+      roster_address: :address,
+      roster_undeliverable: :undeliverable,
+      roster_email_address: :email_address,
+      roster_phone_number: :phone_number,
+      roster_branch: :branch,
+      roster_war_era: :war_era,
+      roster_continuous_years: :continuous_years,
+      roster_paid_through_year: :paid_through_year,
+      roster_member_status: :member_status
+    }.freeze
+    NUMERIC_DELTA_ATTRIBUTES = %i[roster_continuous_years].freeze
+    SAFE_TRANSITION_ATTRIBUTES = %i[
+      roster_membership_type
+      roster_war_era
+      roster_paid_through_year
+      roster_member_status
+    ].freeze
 
     Result = Struct.new(
       :roster_import,
@@ -40,10 +62,12 @@ module RosterImports
     private
 
     def import_rows(rows, row_problems)
-      created = updated = unchanged = removed = 0
+      created = updated = unchanged = removed = returned = 0
       imported_member_numbers = []
       problems = row_problems.map { |p| { row: p.row, kind: p.kind, message: p.message } }
       removed_members = []
+      created_members = []
+      field_changes = {}
       access_effects = Hash.new(0)
       roster_import = nil
 
@@ -51,14 +75,25 @@ module RosterImports
         rows.each do |row|
           person = Person.find_or_initialize_by(member_number: row.member_number)
           was_new = person.new_record?
+          was_returning = !was_new && person.roster_removed_at.present?
+          changes = was_new ? {} : roster_field_changes(person, row)
           assign_roster_fields(person, row)
           split_name(person, row.name) if was_new
-          person.roster_removed_at = nil if person.roster_removed_at.present?
+          person.roster_removed_at = nil if was_returning
 
           if person.changed?
             person.roster_imported_at = Time.current
             person.save!
-            was_new ? created += 1 : updated += 1
+            if was_new
+              created += 1
+              if created_members.size < CREATED_MEMBER_EXAMPLE_LIMIT
+                created_members << { name: person.roster_display_name, member_number: person.member_number }
+              end
+            else
+              updated += 1
+              returned += 1 if was_returning
+              record_field_changes(field_changes, changes)
+            end
           else
             person.update_column(:roster_imported_at, Time.current) if person.persisted?
             unchanged += 1
@@ -111,7 +146,8 @@ module RosterImports
           removed_count: removed, problem_count: problems.size,
           summary: { rows: rows.size, created: created, updated: updated, unchanged: unchanged,
                      removed: removed, problems: problems, removed_members: removed_members,
-                     access_effects: access_effects }
+                     access_effects: access_effects, field_changes: field_changes,
+                     returned_count: returned, created_members: created_members }
         )
       end
 
@@ -204,18 +240,50 @@ module RosterImports
     end
 
     def assign_roster_fields(person, row)
-      person.roster_name = row.name
-      person.roster_post = row.post
-      person.roster_membership_type = row.membership_type
-      person.roster_address = row.address
-      person.roster_undeliverable = row.undeliverable
-      person.roster_email_address = row.email_address
-      person.roster_phone_number = row.phone_number
-      person.roster_branch = row.branch
-      person.roster_war_era = row.war_era
-      person.roster_continuous_years = row.continuous_years
-      person.roster_paid_through_year = row.paid_through_year
-      person.roster_member_status = row.member_status
+      person.assign_attributes(roster_attributes(row))
+    end
+
+    def roster_attributes(row)
+      ROSTER_ATTRIBUTES.to_h { |attribute, row_attribute| [ attribute, row.public_send(row_attribute) ] }
+    end
+
+    def roster_field_changes(person, row)
+      roster_attributes(row).filter_map do |attribute, new_value|
+        old_value = person.public_send(attribute)
+        [ attribute, [ old_value, new_value ] ] unless old_value == new_value
+      end.to_h
+    end
+
+    def record_field_changes(field_changes, changes)
+      changes.each do |attribute, (old_value, new_value)|
+        change = field_changes[attribute.to_s] ||= { "count" => 0 }
+        change["count"] += 1
+
+        if NUMERIC_DELTA_ATTRIBUTES.include?(attribute) && old_value.present? && new_value.present?
+          record_numeric_delta(change, old_value, new_value)
+        elsif SAFE_TRANSITION_ATTRIBUTES.include?(attribute)
+          record_transition(change, old_value, new_value)
+        end
+      end
+    end
+
+    def record_numeric_delta(change, old_value, new_value)
+      delta = (new_value - old_value).to_s
+      deltas = change["deltas"] ||= {}
+      deltas[delta] = deltas.fetch(delta, 0) + 1
+    end
+
+    def record_transition(change, old_value, new_value)
+      transitions = change["transitions"] ||= []
+      from = old_value.presence&.to_s || "blank"
+      to = new_value.presence&.to_s || "blank"
+      transition = transitions.find { |entry| entry["from"] == from && entry["to"] == to }
+
+      if transition
+        transition["count"] += 1
+      else
+        transitions << { "from" => from, "to" => to, "count" => 1 }
+      end
     end
 
     def split_name(person, name)

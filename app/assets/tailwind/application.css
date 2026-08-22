@@ -165,7 +165,7 @@
 .app-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
 
 /* Primary navigation (navy-2 tab strip; tracked caps; gold active underline) --- */
-.nav-bar { background: var(--color-navy-2); border-bottom: 1px solid rgba(198,161,91,.35); }
+.nav-bar { background: var(--color-navy-2); border-bottom: 1px solid rgba(198,161,91,.35); overflow-x: clip; }
 .nav-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: stretch; padding: 0 12px; }
 .nav-tab { display: flex; align-items: center; gap: 8px; padding: 0 18px; height: 48px; text-decoration: none; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c8d3e3; border-bottom: 3px solid transparent; }
 .nav-tab:hover { color: #fff; }
@@ -558,6 +558,31 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-item-title { font-size: 20px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }
 .agenda-item-summary { font-size: 16px; color: var(--color-muted); margin: 0 0 8px; }
 .agenda-item-body { font-size: 16px; line-height: 1.6; color: var(--color-ink); }
+
+/* Responsive app shell -----------------------------------------------------
+   Preserve every available destination and full-size tap target. Placeholder
+   tabs disappear before real links compress; phones receive a calm 2-column
+   nav instead of a clipped desktop strip. */
+@media (max-width: 1280px) {
+  .nav-tab--soon { display: none; }
+}
+
+@media (max-width: 560px) {
+  .app-header-inner { flex-wrap: wrap; gap: 9px 12px; padding: 10px 16px; }
+  .app-brand { min-width: 0; }
+  .app-brand-text { min-width: 0; }
+  .app-brand-name, .app-user-name { overflow-wrap: anywhere; }
+  .app-user { flex: 1 0 100%; justify-content: space-between; gap: 10px; padding-top: 9px; border-top: 1px solid rgba(198,161,91,.28); }
+  .app-user-name { min-width: 0; }
+
+  .nav-inner { max-width: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
+  .nav-tab { justify-content: center; width: 100%; padding: 0 10px; box-sizing: border-box; }
+  .nav-spacer { display: none; }
+  .nav-tab--admin { border-left: 0; }
+
+  .app-main { min-width: 0; padding: 20px 16px 48px; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media print {
   .back, .btnrow, .app-header, .app-main > .app-flash, .nav-bar, .nav-inner { display: none !important; }

@@ -54,6 +54,20 @@ Import behavior:
 6. Record when the import happened.
 7. Present a summary of created, updated, unchanged, and problematic rows.
 
+### Successful import change summary
+
+The completed-import screen should explain an unexpectedly large updated count without requiring a database comparison. Each successful import should persist and display:
+
+- how many existing members changed in each imported field,
+- numeric deltas for continuous-years changes,
+- aggregate old-to-new transitions for safe roster categories such as paid-through year, membership type, war era, and member status,
+- how many previously removed members returned to the roster, and
+- a capped set of names and Member IDs for newly created members, with the total count remaining authoritative.
+
+Field counts may overlap because one member can change in several fields. The interface must say so plainly.
+
+The change summary is operational evidence, not a second roster archive. Do not copy old or new addresses, phone numbers, or email addresses into the import record. For those fields, retain only the number of members changed. Continue to preserve removed-member details and sign-in effects under their existing safety workflows.
+
 Imported roster fields are not locally editable. Corrections to membership information should happen through the National Legion system and enter this app through a later import.
 
 ## Roster Freshness
