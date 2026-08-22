@@ -1,14 +1,16 @@
-<%# app/views/shared/_primary_nav.html.erb %>
+<%# app/views/shared/_primary_nav.html.erb
+    The tab strip. Hidden at phone widths, where the same destinations are
+    carried by the header's Menu instead (see _app_header). %>
 <nav class="nav-bar">
   <div class="nav-inner">
-    <%= link_to "Dashboard", root_path, nav_tab_attributes(:dashboard) %>
-    <%= link_to "Meetings", dated_agendas_path, nav_tab_attributes(:meetings) %>
-    <%= link_to "Tracked Items", tracked_items_path, nav_tab_attributes(:tracked_items) %>
-    <%= link_to "People", people_path, nav_tab_attributes(:people) %>
-    <%= link_to "Settings", settings_security_path, nav_tab_attributes(:settings) %>
+    <% primary_destinations.each do |destination| %>
+      <%= link_to destination[:label], destination[:path], nav_tab_attributes(destination[:section]) %>
+    <% end %>
     <span class="nav-spacer"></span>
-    <% if current_user.can?("manage_settings") || current_user.can?("manage_agendas") %>
-      <%= link_to admin_root_path, nav_tab_attributes(:admin, extra_class: "nav-tab--admin") do %><span class="nav-dia">◆</span> Admin<% end %>
+    <% if (admin = admin_destination) %>
+      <%= link_to admin[:path], nav_tab_attributes(admin[:section], extra_class: "nav-tab--admin") do %>
+        <span class="nav-dia">&#9670;</span> <%= admin[:label] %>
+      <% end %>
     <% end %>
   </div>
 </nav>

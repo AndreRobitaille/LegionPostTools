@@ -138,7 +138,7 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
 
     patch passkey_path(credential), params: { nickname: "  Kitchen iPad  " }
 
-    assert_redirected_to settings_security_path
+    assert_redirected_to profile_path
     assert_equal "Passkey name updated.", flash[:notice]
     assert_equal "Kitchen iPad", credential.reload.nickname
   end
@@ -151,7 +151,7 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
 
     patch passkey_path(credential), params: { nickname: "   " }
 
-    assert_redirected_to settings_security_path
+    assert_redirected_to profile_path
     assert_nil credential.reload.nickname
   end
 
@@ -177,7 +177,7 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
       delete passkey_path(credential)
     end
 
-    assert_redirected_to settings_security_path
+    assert_redirected_to profile_path
     assert_equal "Passkey removed.", flash[:notice]
   end
 

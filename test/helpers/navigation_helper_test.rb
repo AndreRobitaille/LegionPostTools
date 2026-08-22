@@ -17,7 +17,7 @@ class NavigationHelperTest < ActionView::TestCase
   end
 
   test "nav_section_for maps settings paths" do
-    assert_equal :settings, nav_section_for("/settings/security")
+    assert_equal :profile, nav_section_for("/profile")
   end
 
   test "nav_section_for defaults to dashboard" do

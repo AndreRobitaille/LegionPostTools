@@ -95,16 +95,25 @@ Place the asset in `app/assets/images/` during implementation.
 ## Application Shell
 
 - **Compact header** (~54–56px, navy, gold bottom rule): small emblem, post name +
-  location ("Post 165 / Two Rivers, WI"), and the current user with their **role**
-  ("John Doe · Adjutant") plus a gold avatar. Configurable — no hard-coded Post 165.
+  location ("Post 165 / Two Rivers, WI"), the signed-in member's name, a gold avatar
+  token, and the account **Menu** button. Configurable — no hard-coded Post 165.
 - **Primary nav** (navy-2 tab bar): uppercase tracked labels, gold underline on the active
-  tab. Sections: **Dashboard, Meetings, Records, Tracked Items, People, Settings.**
+  tab. Sections: **Dashboard, Meetings, Records, Tracked Items, People.**
+- **Account menu** (revised 2026-08-22): a labelled `☰ Menu` **button** at the far right —
+  never a bare glyph, which is abstract for members who are not confident with computers.
+  It opens on **click only** (hover menus are punishing with a tremor and meaningless on
+  touch), closes on Escape with focus returned to the button, and closes on an outside
+  click. The panel leads with an identity block — avatar, full name, and the member's
+  **officer role** — then Your profile and Sign out. The officer role lives here rather
+  than in the top bar: it is still the answer to "which hat am I wearing, and why can I
+  see Admin", but it does not need to crowd the header to do that job.
 - **Responsive shell:** the shell must never widen the document or require horizontal
-  page scrolling. At narrower tablet widths, hide non-interactive "Soon" placeholders
-  before compressing real destinations. At phone widths, arrange the available primary
-  destinations in a two-column grid with 48px tap targets; keep the active gold underline
-  and place Admin in the same grid when the signed-in user can access it. Header identity
-  and account controls may wrap into two rows, but remain visible and readable.
+  page scrolling. At narrower tablet widths (≤900px) the tab strip wraps onto a second row
+  rather than clipping — every destination stays reachable. At phone widths (≤560px) the
+  tab strip stands down entirely and the **Menu carries the destinations**, which is what
+  earns that button its position and returns roughly 100px of a small screen to content.
+  The member's name drops from the header there too, because the menu panel opens with it.
+  Exactly one set of destination links is ever in the accessibility tree.
 - **Page bar:** breadcrumb + page title + a record-status pill where relevant.
 - **Working area:** cream background; a main column plus a context **rail** on the right.
 
@@ -161,6 +170,8 @@ something the vocabulary genuinely cannot express, and then add it to this list.
 | Empty state | `.empty` |
 | Form | `.stacked-form` (inside `.panel form-panel` where the page wraps it) |
 | Date entry | `shared/_date_field`; date + time together: `shared/_datetime_field` |
+| Member avatar | `shared/_avatar` (`person:`, `size:` `:sm`/`:lg`) — initials now, a photo later, one place to change |
+| Destination list | `primary_destinations` / `admin_destination` in `NavigationHelper` — the tab strip and the account menu both render from these, so a new destination cannot reach one surface and miss the other |
 
 Tokens live at the top of `application.css`: `--rule-strong` / `--rule` / `--rule-soft` for
 warm borders, `--radius-card` / `--radius-control`, and the column measures `--w-shell`,
@@ -266,8 +277,10 @@ like carving a name into the wall.
   as-is. Principles to keep: bounded columns, status-with-action, lead with a role-aware
   view of what needs the officer — but find a non-templated layout. Needs its own short
   design pass.
-- **Records/archive, Tracked Items index, People, Settings** screens: apply the system;
-  not yet mocked.
+- **Records/archive** and **People** screens: apply the system; not yet mocked.
+  (Tracked Items was built and reworked on 2026-08-22; the former "Settings" screen is
+  now **Your profile** at `/profile`, reached from the account menu.)
+- **Member photo** on Your profile, replacing the initials token in `shared/_avatar`.
 - **Simplified brand-mark** for tiny emblem sizes.
 - **Deco display webfont** selection vs. the system stack.
 - **Printed/PDF templates** for finalized agendas and minutes (may borrow an engraved

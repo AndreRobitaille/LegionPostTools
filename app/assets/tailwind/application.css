@@ -126,7 +126,7 @@
 .app-brand-text { display: flex; flex-direction: column; line-height: 1.15; }
 .app-brand-name { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: .04em; }
 .app-brand-loc { color: var(--color-gold-hi); font-size: 13px; letter-spacing: .16em; text-transform: uppercase; }
-.app-user { display: flex; align-items: center; gap: 14px; }
+.app-user { display: flex; align-items: center; gap: 12px; }
 .app-user-name { color: #dfe6ef; font-size: 16px; }
 .app-user-link { color: var(--color-gold-hi); font-size: 16px; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
 .app-user-link:hover { text-decoration: underline; }
@@ -151,7 +151,12 @@
 .pk-card-dismiss { background: none; border: 0; color: var(--color-muted); font-size: 22px; line-height: 1; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
 .pk-card-dismiss:hover { color: var(--color-ink); }
 
-/* Settings page bar + tab strip + panel + passkey list ---------------------- */
+/* Your profile: self-service account controls ------------------------------ */
+.profile-lead { display: flex; align-items: center; gap: 16px; max-width: var(--w-form); }
+.profile-section { max-width: var(--w-form); margin-top: 26px; }
+.profile-crosslink { max-width: var(--w-form); margin: 22px 0 0; font-size: 16px; }
+
+/* Page bar + tab strip + panel + passkey list ------------------------------- */
 .page-bar { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--color-muted); margin-bottom: 10px; }
 .page-bar-here { color: var(--color-ink); font-weight: 600; }
 .page-bar-sep { color: #c9bd9c; }
@@ -202,7 +207,43 @@
 .nav-tab--admin { color: var(--color-gold); border-left: 1px solid rgba(198,161,91,.28); }
 .nav-tab--admin:hover { color: var(--color-gold-hi); }
 .nav-dia { font-size: 13px; }
-.app-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(160deg, var(--color-gold-hi), var(--color-gold)); color: var(--color-navy); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-gold-hi); }
+/* Avatar token. Initials today, a photo later — one component either way. */
+.avatar { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; border-radius: 50%; background: linear-gradient(160deg, var(--color-gold-hi), var(--color-gold)); color: var(--color-navy); font-weight: 700; border: 1px solid var(--color-gold-hi); }
+.avatar--sm { width: 34px; height: 34px; font-size: 14px; }
+.avatar--lg { width: 46px; height: 46px; font-size: 18px; }
+
+/* Account menu -------------------------------------------------------------
+   A labelled button, not a bare glyph: members who are not confident with
+   computers should not have to already know what three lines mean. Opens on
+   click only — hover menus are punishing with a tremor and meaningless on
+   touch. */
+.app-menu { position: relative; }
+.app-menu-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 7px 15px; color: #fff; background: rgba(255,255,255,.08); border: 1.5px solid rgba(230,205,139,.55); border-radius: var(--radius-control); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.app-menu-btn:hover { background: rgba(255,255,255,.16); border-color: var(--color-gold-hi); }
+.app-menu-btn:focus-visible { outline: 3px solid var(--color-gold-hi); outline-offset: 2px; }
+.app-menu-btn[aria-expanded="true"] { color: var(--color-navy-deep); background: var(--color-gold-hi); border-color: var(--color-gold-hi); }
+.app-menu-bars { display: inline-flex; flex-direction: column; justify-content: center; gap: 3px; width: 18px; }
+.app-menu-bars span { display: block; height: 2px; background: currentColor; border-radius: 1px; }
+
+.app-menu-panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 40; min-width: 268px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 4px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 18px 40px rgba(8,26,52,.28); }
+.app-menu-panel[hidden] { display: none; }
+.app-menu-id { display: flex; align-items: center; gap: 13px; padding: 16px 18px; background: #efe5cb; border-bottom: 1px solid var(--rule); }
+.app-menu-id-text { display: flex; flex-direction: column; min-width: 0; gap: 3px; }
+.app-menu-id-text strong { color: var(--color-navy); font-size: 17px; line-height: 1.25; overflow-wrap: anywhere; }
+.app-menu-id-role { color: var(--color-gold-ink); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+/* The destinations ride in the menu only at phone widths, where the tab strip
+   is hidden. Never both at once, so assistive tech meets one set of links. */
+.app-menu-nav { display: none; }
+.app-menu-actions { display: flex; flex-direction: column; }
+.app-menu-actions form { margin: 0; }
+.app-menu-link { display: block; width: 100%; box-sizing: border-box; padding: 14px 18px; color: var(--color-navy); background: none; border: 0; border-top: 1px solid var(--rule-soft); font-family: inherit; font-size: 17px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
+.app-menu-nav > .app-menu-link:first-child, .app-menu-actions > :first-child .app-menu-link { border-top: 0; }
+.app-menu-link:hover { background: var(--color-ivory); text-decoration: underline; }
+.app-menu-link:focus-visible { outline: 3px solid var(--color-gold); outline-offset: -3px; }
+/* Where you are now, marked the way the tab strip marks it: gold edge, tinted
+   ground, heavier weight. A hairline alone is too quiet to be useful. */
+.app-menu-link--active { padding-left: 14px; background: #f3e9d0; border-left: 4px solid var(--color-gold); font-weight: 800; }
+.app-menu-link--signout { color: var(--color-legionred); border-top: 1px solid var(--rule); }
 
 /* Section panel: boxed unit with a tinted header strip -------------------- */
 .card { border: 1px solid #d3c391; border-radius: 11px; background: var(--color-paper); overflow: hidden; margin-bottom: 22px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
@@ -813,18 +854,21 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 }
 
 @media (max-width: 560px) {
-  .app-header-inner { flex-wrap: wrap; gap: 9px 12px; padding: 10px 16px; }
+  /* Phone header: brand on the left, avatar and Menu on the right, one row.
+     The name is dropped here because it is the first thing inside the menu —
+     repeating it in a cramped bar buys nothing. */
+  .app-header-inner { gap: 10px; padding: 10px 14px; }
   .app-brand { min-width: 0; }
   .app-brand-text { min-width: 0; }
-  .app-brand-name, .app-user-name { overflow-wrap: anywhere; }
-  .app-user { flex: 1 0 100%; justify-content: space-between; gap: 10px; padding-top: 9px; border-top: 1px solid rgba(198,161,91,.28); }
-  .app-user-name { min-width: 0; }
+  .app-brand-name { overflow-wrap: anywhere; }
+  .app-user-name { display: none; }
+  .app-menu-btn { padding: 7px 13px; }
 
-  .nav-inner { max-width: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
-  .nav-tab { justify-content: center; width: 100%; padding: 0 10px; box-sizing: border-box; }
-  .nav-spacer { display: none; }
-  .nav-tab--admin { border-left: 0; }
-  .nav-inner > .nav-tab:nth-last-child(2):nth-child(odd) { grid-column: 1 / -1; }
+  /* The tab strip stands down and the Menu carries the destinations, which
+     keeps roughly a hundred pixels of a small screen for actual content. */
+  .nav-bar { display: none; }
+  .app-menu-nav { display: block; }
+  .app-menu-panel { min-width: 244px; max-width: calc(100vw - 28px); }
 
   .app-main { min-width: 0; padding: 20px 16px 48px; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }

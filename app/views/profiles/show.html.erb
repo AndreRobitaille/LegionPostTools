@@ -1,0 +1,71 @@
+<% content_for :title, "Your profile" %>
+
+<div class="page-lead profile-lead">
+  <%= render "shared/avatar", person: @person, size: :lg %>
+  <div>
+    <h1 class="page-title">Your profile</h1>
+    <p class="page-sub">
+      <%= @person.full_name %><% if @person.current_role_label %> &middot; <%= @person.current_role_label %><% end %>
+    </p>
+  </div>
+</div>
+
+<section class="profile-section">
+  <%= render "shared/section_header", label: "How you sign in" %>
+
+  <div class="panel">
+    <p class="panel-lead">
+      You always have the email link. A passkey is a faster second way in: it uses your
+      fingerprint, face, or device PIN instead of waiting for an email. Give each one a name
+      so you can tell your devices apart.
+    </p>
+
+    <% if @passkey_credentials.any? %>
+      <ul class="pk-list">
+        <% @passkey_credentials.each do |credential| %>
+          <li class="pk-row" data-controller="rename">
+            <div class="pk-row-info">
+              <%= form_with url: passkey_path(credential), method: :patch, id: "rename-#{credential.id}" do |form| %>
+                <%= form.text_field :nickname, value: credential.nickname, id: "pk-name-#{credential.id}",
+                      class: "pk-name-field", autocomplete: "off", placeholder: "Unnamed passkey",
+                      aria: { label: "Passkey name" }, data: { rename_target: "field" } %>
+              <% end %>
+              <p class="pk-row-meta">
+                Added <%= legion_date(credential.created_at) %><% if credential.last_used_at %> &middot; last used <%= legion_date(credential.last_used_at) %><% end %>
+              </p>
+            </div>
+            <div class="pk-row-actions">
+              <button type="submit" form="rename-<%= credential.id %>" class="btn-secondary"
+                      data-rename-target="button" data-action="rename#toggle">Rename</button>
+              <%= button_to "Remove", passkey_path(credential), method: :delete,
+                    class: "btn-return", form: { class: "pk-row-remove" },
+                    data: { turbo_confirm: "Remove this passkey? You'll need the email link or another passkey to sign in on this device." } %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="pk-empty">You have no passkeys yet. Add one below to sign in faster next time.</p>
+    <% end %>
+
+    <div class="pk-add-block" data-controller="passkey" data-passkey-redirect-value="<%= profile_path %>">
+      <div class="panel-head panel-head--add">&#9670; Add a passkey</div>
+      <p class="panel-lead pk-add-lead">
+        Register the device you're using right now — you'll be asked for your fingerprint, face, or device PIN.
+      </p>
+      <label class="pk-add-label" for="new-passkey-nickname">Name for this passkey (optional)</label>
+      <input class="pk-add-input" id="new-passkey-nickname" type="text" data-passkey-nickname
+             placeholder="e.g. My iPhone or Office laptop" autocomplete="off">
+      <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
+        Add a passkey
+      </button>
+      <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<%# The post's own record of you lives in the directory, not here: roster data,
+    post roles, and who may sign in are the post's business, not self-service. %>
+<p class="profile-crosslink">
+  <%= link_to "See how you appear in the post directory", person_path(@person), class: "lnk" %>
+</p>

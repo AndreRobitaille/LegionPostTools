@@ -86,4 +86,14 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal "Paid through: 2027", Person.new(roster_paid_through_year: 2027).roster_paid_through_display
     assert_equal "", Person.new.roster_paid_through_display
   end
+
+  test "initials take the first letter of the first two names, uppercased" do
+    assert_equal "AR", Person.new(first_name: "Andre", last_name: "Robitaille").initials
+    assert_equal "AR", Person.new(first_name: "andre", last_name: "robitaille").initials
+  end
+
+  test "initials cope with middle names and a missing surname" do
+    assert_equal "JQ", Person.new(first_name: "John Quincy", last_name: "Adams").initials
+    assert_equal "C", Person.new(first_name: "Cher", last_name: "").initials
+  end
 end

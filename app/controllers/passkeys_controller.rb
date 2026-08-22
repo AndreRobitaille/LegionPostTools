@@ -92,12 +92,12 @@ class PasskeysController < ApplicationController
   def update
     credential = current_user.passkey_credentials.find(params[:id])
     credential.update!(nickname: params[:nickname].to_s.strip.presence)
-    redirect_to settings_security_path, notice: "Passkey name updated."
+    redirect_to profile_path, notice: "Passkey name updated."
   end
 
   def destroy
     current_user.passkey_credentials.find(params[:id]).destroy!
-    redirect_to settings_security_path, notice: "Passkey removed."
+    redirect_to profile_path, notice: "Passkey removed."
   end
 
   private

@@ -1,10 +1,32 @@
 module NavigationHelper
+  # One source of truth for the primary destinations. The tab strip and the
+  # account menu both render this list, so adding a destination in one place
+  # cannot leave the other behind.
+  def primary_destinations
+    [
+      { section: :dashboard, label: "Dashboard", path: root_path },
+      { section: :meetings, label: "Meetings", path: dated_agendas_path },
+      { section: :tracked_items, label: "Tracked Items", path: tracked_items_path },
+      { section: :people, label: "People", path: people_path }
+    ]
+  end
+
+  # Admin is capability-gated and rendered apart from the others, so it is
+  # returned separately rather than folded into the list above.
+  def admin_destination
+    return nil unless current_user.can?("manage_settings") || current_user.can?("manage_agendas")
+
+    { section: :admin, label: "Admin", path: admin_root_path }
+  end
+
   def nav_section_for(path)
     return :meetings if path == "/dated_agendas" || path.start_with?("/dated_agendas/")
     return :people if path == "/people" || path.start_with?("/people/")
     return :tracked_items if path == "/tracked_items" || path.start_with?("/tracked_items/")
     return :admin if path.start_with?("/admin")
-    return :settings if path.start_with?("/settings")
+    # Profile has no tab of its own; naming it stops the Dashboard tab from
+    # falsely highlighting while you are on it.
+    return :profile if path.start_with?("/profile")
 
     :dashboard
   end
@@ -21,6 +43,15 @@ module NavigationHelper
     {
       class: [ nav_tab_class(section), extra_class ].compact.join(" "),
       aria: section == current_nav_section ? { current: "page" } : {}
+    }
+  end
+
+  # Same active marking as the tab strip, for the destinations inside the menu.
+  def menu_link_attributes(section)
+    active = section == current_nav_section
+    {
+      class: [ "app-menu-link", ("app-menu-link--active" if active) ].compact.join(" "),
+      aria: active ? { current: "page" } : {}
     }
   end
 end

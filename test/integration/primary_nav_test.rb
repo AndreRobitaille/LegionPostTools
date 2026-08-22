@@ -37,10 +37,65 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "nav.nav-bar a.nav-tab", text: "Dashboard"
     assert_select "nav.nav-bar a.nav-tab[href=?]", dated_agendas_path, text: "Meetings"
-    assert_select "nav.nav-bar a.nav-tab", text: "Settings"
     assert_select "nav.nav-bar a.nav-tab[href=?]", tracked_items_path, text: "Tracked Items"
     assert_select "nav.nav-bar", text: /Records/, count: 0
     assert_select "nav.nav-bar .nav-tab--soon", count: 0
+    # Profile and Sign out moved off the tab strip into the account menu.
+    assert_select "nav.nav-bar a.nav-tab", text: "Settings", count: 0
+    assert_select ".app-menu-panel a.app-menu-link[href=?]", profile_path, text: "Your profile"
+  end
+
+  test "account menu names the signed-in member and their office" do
+    prepare_setup_complete_state
+    sign_in_admin
+    get root_path
+
+    assert_response :success
+    assert_select ".app-menu-btn[aria-haspopup='true'][aria-expanded='false']", text: /Menu/
+    assert_select ".app-menu-id .app-menu-id-text strong", text: "Jane Doe"
+    # The officer label left the top bar; only the menu carries it now.
+    assert_select ".app-user .app-user-name", text: "Jane Doe"
+    assert_select ".app-user", text: /Commander/, count: 0
+  end
+
+  test "account menu carries the same destinations as the tab strip" do
+    prepare_setup_complete_state
+    sign_in_admin
+    get root_path
+
+    assert_response :success
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", dated_agendas_path, text: "Meetings"
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", tracked_items_path, text: "Tracked Items"
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", admin_root_path, text: "Admin"
+  end
+
+  test "account menu omits Admin for a plain member" do
+    prepare_setup_complete_state
+    sign_in_plain_member
+    get root_path
+
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", admin_root_path, count: 0
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", people_path, text: "People"
+  end
+
+  test "menu marks the current destination" do
+    prepare_setup_complete_state
+    sign_in_admin
+
+    get people_path
+
+    assert_select ".app-menu-nav a.app-menu-link--active[aria-current='page'][href=?]", people_path
+  end
+
+  test "sign out posts from inside the menu" do
+    prepare_setup_complete_state
+    sign_in_admin
+    get root_path
+
+    assert_select ".app-menu-actions form[action=?][method='post']", session_path do
+      assert_select "input[name='_method'][value='delete']", visible: false
+      assert_select "button.app-menu-link--signout", text: "Sign out"
+    end
   end
 
   test "admin sees People and Admin tabs" do

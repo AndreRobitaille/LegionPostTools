@@ -45,8 +45,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     visit magic_link_session_path(token: magic_link.token)
     click_button "Finish signing in"
     # Wait for the sign-in POST + redirect to finish before returning, so the
-    # session cookie is set before the caller navigates away. "Sign out" only
-    # appears in the authenticated nav.
-    assert_text "Sign out"
+    # session cookie is set before the caller navigates away. The header's Menu
+    # button only renders in the authenticated shell, and unlike "Sign out" it is
+    # visible without opening anything.
+    assert_selector ".app-menu-btn", text: "Menu"
   end
 end

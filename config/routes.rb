@@ -17,9 +17,7 @@ Rails.application.routes.draw do
       post :authentication
     end
   end
-  namespace :settings do
-    resource :security, only: %i[show], controller: "security"
-  end
+  resource :profile, only: %i[show]
   resources :people, only: %i[index show]
   resources :tracked_items, except: %i[destroy] do
     member do

@@ -17,6 +17,12 @@ class Person < ApplicationRecord
     roster_name.presence || full_name
   end
 
+  # Up to two letters for the avatar token. Kept on the model because the header
+  # and the account menu both render it, and a photo will replace it later.
+  def initials
+    full_name.split.filter_map { |word| word[0] }.first(2).join.upcase
+  end
+
   def current_role_label
     today = Date.current
     position_assignments

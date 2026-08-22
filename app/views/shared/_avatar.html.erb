@@ -1,0 +1,5 @@
+<%# app/views/shared/_avatar.html.erb
+    The member's avatar token. Locals: person:, size: (:sm default, :lg).
+    Initials today; when photo upload lands, swap the span for an <img> here and
+    every placement picks it up. %>
+<span class="avatar avatar--<%= local_assigns.fetch(:size, :sm) %>" aria-hidden="true"><%= person.initials %></span>

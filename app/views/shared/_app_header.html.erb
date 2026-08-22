@@ -1,4 +1,5 @@
 <% organization = Organization.first %>
+<% person = current_user.person %>
 <header class="app-header">
   <div class="app-header-inner">
     <a href="<%= root_path %>" class="app-brand">
@@ -11,12 +12,55 @@
       </span>
     </a>
 
+    <%# Name and token identify who is signed in; the officer role lives inside
+        the menu rather than crowding the top bar. %>
     <div class="app-user">
-      <span class="app-user-name">
-        <%= current_user.person.full_name %><% if current_user.person.current_role_label %> &middot; <%= current_user.person.current_role_label %><% end %>
-      </span>
-      <span class="app-user-avatar" aria-hidden="true"><%= current_user.person.full_name.to_s.split.map { |w| w[0] }.first(2).join.upcase %></span>
-      <%= button_to "Sign out", session_path, method: :delete, class: "app-user-link app-user-signout" %>
+      <span class="app-user-name"><%= person.full_name %></span>
+      <%= render "shared/avatar", person: person %>
+
+      <div class="app-menu" data-controller="account-menu"
+           data-action="keydown.esc->account-menu#closeAndRefocus
+                        keydown.down->account-menu#moveNext
+                        keydown.up->account-menu#movePrevious">
+        <button type="button" class="app-menu-btn"
+                data-account-menu-target="button"
+                data-action="account-menu#toggle"
+                aria-haspopup="true" aria-expanded="false" aria-controls="app-menu-panel">
+          <span class="app-menu-bars" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          Menu
+        </button>
+
+        <div class="app-menu-panel" id="app-menu-panel" data-account-menu-target="panel" hidden>
+          <div class="app-menu-id">
+            <%= render "shared/avatar", person: person, size: :lg %>
+            <span class="app-menu-id-text">
+              <strong><%= person.full_name %></strong>
+              <% if person.current_role_label %>
+                <span class="app-menu-id-role"><%= person.current_role_label %></span>
+              <% end %>
+            </span>
+          </div>
+
+          <%# Destinations appear here only at phone widths, where the tab strip
+              is hidden. CSS hides one or the other, so a screen reader never
+              meets both sets of links. %>
+          <div class="app-menu-nav">
+            <% primary_destinations.each do |destination| %>
+              <%= link_to destination[:label], destination[:path], menu_link_attributes(destination[:section]) %>
+            <% end %>
+            <% if (admin = admin_destination) %>
+              <%= link_to admin[:label], admin[:path], menu_link_attributes(admin[:section]) %>
+            <% end %>
+          </div>
+
+          <div class="app-menu-actions">
+            <%= link_to "Your profile", profile_path, class: "app-menu-link" %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "app-menu-link app-menu-link--signout" %>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </header>
