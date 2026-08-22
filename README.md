@@ -48,6 +48,7 @@ Prerequisites:
 
 - Ruby 4.0.0, or the version in `.ruby-version`.
 - PostgreSQL available locally for Rails development and test databases.
+- libvips for Active Storage image processing. On Omarchy/Arch, install it with `omarchy pkg add libvips`.
 
 ```bash
 bundle install

@@ -73,6 +73,8 @@ Use unique names for Kamal service names, Docker image names, databases, volumes
 
 The Hetzner VPS throttles repeated SSH connections heavily. Before running Kamal or other SSH-heavy production operations against that server, set up a persistent SSH connection/tunnel/control master and route the work through it. Tear the persistent connection down when the production work is finished. Do not run repeated fresh SSH/Kamal commands directly against the production box.
 
+Codex's restricted command sandbox can expose root-owned host files under `/etc` and `/usr` as `nobody:nobody`. OpenSSH 10.5 rejects that synthetic ownership with `Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf`. For Codex sessions, run SSH, Kamal, and `bin/sync_prod_db` with host access outside the restricted sandbox. Confirm ownership outside the sandbox before diagnosing a host permissions problem, and never `chown` system SSH files based only on their sandbox-visible ownership.
+
 ## Documentation Map
 
 - `README.md` — overview for operators and repo visitors.

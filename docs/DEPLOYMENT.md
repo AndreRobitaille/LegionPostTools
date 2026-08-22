@@ -209,6 +209,8 @@ Before running it, stop local Rails processes and establish the documented persi
 
 It does not copy Active Storage files or the production cache/queue databases.
 
+When Codex runs this command, it must use host access outside the restricted command sandbox. The sandbox can remap root-owned OpenSSH configuration files to `nobody:nobody`, causing OpenSSH 10.5 to report `Bad owner or permissions` even though the host files are correctly owned by `root:root`. Verify system-file ownership outside the sandbox; do not change host ownership based on the sandbox view.
+
 ## Verification commands
 
 Run the usual app checks before production deploys:
