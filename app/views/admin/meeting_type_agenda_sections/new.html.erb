@@ -1,0 +1,10 @@
+<% content_for :title, "New agenda section" %>
+<a class="back" href="<%= edit_admin_meeting_type_path(@meeting_type) %>">&larr; <%= @meeting_type.name %></a>
+<div class="page-lead">
+  <span class="agenda-builder-kicker">Meeting framework</span>
+  <h1 class="page-title">New agenda section</h1>
+  <p class="page-sub">Add a clear stage to this reusable meeting agenda.</p>
+</div>
+<div class="panel form-panel section-form-panel">
+  <%= render "form", meeting_type: @meeting_type, section: @section %>
+</div>

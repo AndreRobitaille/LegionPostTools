@@ -7,16 +7,16 @@ import Sortable from "sortablejs"
 // persists immediately. On failure the pre-drag order is restored.
 export default class extends Controller {
   static targets = ["list", "status"]
-  static values = { url: String }
+  static values = { url: String, handle: { type: String, default: ".pos-handle" } }
 
   connect() {
     this.sortable = Sortable.create(this.listTarget, {
-      handle: ".pos-handle",
+      handle: this.handleValue,
       animation: 150,
       ghostClass: "pos-ghost",
       dragClass: "pos-drag",
       onStart: () => { this.snapshot = this.rows() },
-      onEnd: () => this.save(),
+      onUpdate: () => this.save(),
     })
   }
 
@@ -25,7 +25,7 @@ export default class extends Controller {
   }
 
   rows() {
-    return Array.from(this.listTarget.querySelectorAll("[data-reorder-item]"))
+    return Array.from(this.listTarget.children).filter((element) => element.matches("[data-reorder-item]"))
   }
 
   async save() {

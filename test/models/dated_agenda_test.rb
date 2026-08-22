@@ -25,6 +25,30 @@ class DatedAgendaTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "Template body"
   end
 
+  test "create_from_template copies section structure and item membership" do
+    opening = @meeting_type.default_agenda_section
+    opening.update!(title: "Opening Ceremony")
+    business = @meeting_type.meeting_type_agenda_sections.create!(title: "Post Business", position: 2)
+    business_entry = @organization.agenda_item_catalog_entries.create!(title: "New Business", category: "business", behavior_type: "business_item", position: 2, active: true)
+    business_item = @meeting_type.meeting_type_agenda_items.create!(agenda_section: business, agenda_item_catalog_entry: business_entry, position: 1, title: "New Business", active: true)
+
+    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+
+    assert_equal [ "Opening Ceremony", "Post Business" ], agenda.dated_agenda_sections.ordered.pluck(:title)
+    assert_equal [ [ "Opening" ], [ "New Business" ] ], agenda.dated_agenda_sections.ordered.map { |section| section.agenda_items.pluck(:title) }
+    assert_equal business, agenda.dated_agenda_sections.find_by!(title: "Post Business").meeting_type_agenda_section
+    assert_equal business_item, agenda.dated_agenda_items.find_by!(title: "New Business").meeting_type_agenda_item
+  end
+
+  test "copied dated agenda sections are independent from template sections" do
+    @meeting_type.default_agenda_section.update!(title: "Opening Ceremony")
+    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+
+    @meeting_type.default_agenda_section.update!(title: "Changed Template Section")
+
+    assert_equal "Opening Ceremony", agenda.default_agenda_section.reload.title
+  end
+
   test "copied dated agenda items are independent from later template edits" do
     agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     item = agenda.dated_agenda_items.first

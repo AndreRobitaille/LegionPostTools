@@ -58,7 +58,8 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Published Agenda"
-    assert_select "h2", text: "Opening"
+    assert_select "h2", text: "Order of Business"
+    assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select "a", text: "Edit", count: 0
   end
@@ -100,7 +101,8 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1.page-title", text: "Published Agenda"
-    assert_select "h2", text: "Opening"
+    assert_select "h2", text: "Order of Business"
+    assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select "a", text: "Edit", count: 0
     assert_select "nav", count: 0

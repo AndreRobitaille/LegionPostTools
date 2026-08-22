@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_22_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
     t.string "behavior_type", null: false
     t.datetime "created_at", null: false
     t.bigint "dated_agenda_id", null: false
+    t.bigint "dated_agenda_section_id", null: false
     t.integer "lock_version", default: 0, null: false
     t.bigint "meeting_type_agenda_item_id"
     t.integer "position", default: 0, null: false
@@ -90,10 +91,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
     t.index ["agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_item_catalog_entry_id"
     t.index ["dated_agenda_id", "agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_and_catalog_entry", unique: true
     t.index ["dated_agenda_id", "meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_agenda_and_mt_item", unique: true, where: "(meeting_type_agenda_item_id IS NOT NULL)"
-    t.index ["dated_agenda_id", "position"], name: "index_dated_agenda_items_on_dated_agenda_id_and_position", unique: true
     t.index ["dated_agenda_id", "source_key"], name: "index_dated_agenda_items_on_agenda_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["dated_agenda_id"], name: "index_dated_agenda_items_on_dated_agenda_id"
+    t.index ["dated_agenda_section_id", "position"], name: "idx_dated_agenda_items_section_position", unique: true
     t.index ["meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_meeting_type_agenda_item_id"
+  end
+
+  create_table "dated_agenda_sections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "dated_agenda_id", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_type_agenda_section_id"
+    t.integer "position", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dated_agenda_id", "meeting_type_agenda_section_id"], name: "idx_dated_sections_source", unique: true, where: "(meeting_type_agenda_section_id IS NOT NULL)"
+    t.index ["dated_agenda_id", "position"], name: "idx_dated_agenda_sections_position", unique: true
+    t.index ["dated_agenda_id", "title"], name: "idx_dated_agenda_sections_title", unique: true
+    t.index ["dated_agenda_id"], name: "index_dated_agenda_sections_on_dated_agenda_id"
+    t.index ["meeting_type_agenda_section_id"], name: "index_dated_agenda_sections_on_meeting_type_agenda_section_id"
   end
 
   create_table "dated_agendas", force: :cascade do |t|
@@ -160,6 +176,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
     t.boolean "active", default: true, null: false
     t.bigint "agenda_item_catalog_entry_id", null: false
     t.datetime "created_at", null: false
+    t.bigint "meeting_type_agenda_section_id", null: false
     t.bigint "meeting_type_id", null: false
     t.integer "position", default: 0, null: false
     t.datetime "seeded_at"
@@ -169,10 +186,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["agenda_item_catalog_entry_id"], name: "idx_on_agenda_item_catalog_entry_id_af09cfc728"
+    t.index ["meeting_type_agenda_section_id", "position"], name: "idx_mt_agenda_items_section_position", unique: true
     t.index ["meeting_type_id", "agenda_item_catalog_entry_id"], name: "index_mt_agenda_items_on_type_and_catalog_entry", unique: true
-    t.index ["meeting_type_id", "position"], name: "index_mt_agenda_items_on_meeting_type_and_position", unique: true
     t.index ["meeting_type_id", "source_key"], name: "index_mt_agenda_items_on_type_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["meeting_type_id"], name: "index_meeting_type_agenda_items_on_meeting_type_id"
+  end
+
+  create_table "meeting_type_agenda_sections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "meeting_type_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meeting_type_id", "position"], name: "idx_mt_agenda_sections_position", unique: true
+    t.index ["meeting_type_id", "title"], name: "idx_mt_agenda_sections_title", unique: true
+    t.index ["meeting_type_id"], name: "index_meeting_type_agenda_sections_on_meeting_type_id"
   end
 
   create_table "meeting_types", force: :cascade do |t|
@@ -332,8 +360,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agenda_item_catalog_entries", "organizations"
   add_foreign_key "dated_agenda_items", "agenda_item_catalog_entries"
+  add_foreign_key "dated_agenda_items", "dated_agenda_sections"
   add_foreign_key "dated_agenda_items", "dated_agendas"
   add_foreign_key "dated_agenda_items", "meeting_type_agenda_items"
+  add_foreign_key "dated_agenda_sections", "dated_agendas"
+  add_foreign_key "dated_agenda_sections", "meeting_type_agenda_sections"
   add_foreign_key "dated_agendas", "meeting_bodies"
   add_foreign_key "dated_agendas", "meeting_types"
   add_foreign_key "dated_agendas", "organizations"
@@ -343,7 +374,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_001000) do
   add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"
   add_foreign_key "meeting_type_agenda_items", "agenda_item_catalog_entries"
+  add_foreign_key "meeting_type_agenda_items", "meeting_type_agenda_sections"
   add_foreign_key "meeting_type_agenda_items", "meeting_types"
+  add_foreign_key "meeting_type_agenda_sections", "meeting_types"
   add_foreign_key "meeting_types", "organizations"
   add_foreign_key "passkey_credentials", "users"
   add_foreign_key "permission_grants", "users"

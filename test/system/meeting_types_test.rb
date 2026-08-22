@@ -61,17 +61,31 @@ class MeetingTypesSystemTest < ApplicationSystemTestCase
     pec = pec_meeting
     visit edit_admin_meeting_type_path(pec)
 
-    items = pec.meeting_type_agenda_items.ordered.to_a
+    section = pec.meeting_type_agenda_sections.find_by!(title: "Call to Order")
+    items = section.agenda_items.to_a
     original_first = items.first
     original_last = items.last
 
-    source = find("[data-reorder-id='#{original_first.id}'] .pos-handle")
-    target = find("[data-reorder-id='#{original_last.id}']")
+    source = find(".agenda-section-editor[data-reorder-id='#{section.id}'] .section-item-row[data-reorder-id='#{original_first.id}'] .pos-handle")
+    target = find(".agenda-section-editor[data-reorder-id='#{section.id}'] .section-item-row[data-reorder-id='#{original_last.id}']")
     source.drag_to(target, html5: true)
 
     assert_selector ".pos-status", text: /saved/i
     assert_not_equal original_first.id,
-      pec.meeting_type_agenda_items.ordered.first.id,
+      section.agenda_items.reload.first.id,
       "the first item should no longer be first after dragging it down"
+  end
+
+  test "moving agenda sections saves the meeting order" do
+    pec = pec_meeting
+    visit edit_admin_meeting_type_path(pec)
+
+    sections = pec.meeting_type_agenda_sections.ordered.to_a
+    original_first = sections.first
+
+    click_button "Move down"
+
+    assert_text "Agenda section moved."
+    assert_not_equal original_first.id, pec.meeting_type_agenda_sections.ordered.first.id
   end
 end

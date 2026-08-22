@@ -7,6 +7,8 @@ module Admin
     before_action :ensure_draft_agenda, only: %i[new create edit update destroy reorder]
 
     def new
+      set_agenda_sections
+      @agenda_section = selected_agenda_section
       existing_ids = @dated_agenda.dated_agenda_items.pluck(:agenda_item_catalog_entry_id).to_set
       grouped = @organization.agenda_item_catalog_entries.active.ordered.group_by(&:category)
       @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.filter_map do |category|
@@ -19,29 +21,38 @@ module Admin
 
     def create
       catalog_entry = @organization.agenda_item_catalog_entries.active.find(params[:agenda_item_catalog_entry_id])
+      agenda_section = selected_agenda_section
       @dated_agenda.with_lock do
         return redirect_locked_agenda if @dated_agenda.locked_for_editing?
 
-        DatedAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position, dated_agenda: @dated_agenda)
+        DatedAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position(agenda_section), dated_agenda: @dated_agenda, agenda_section: agenda_section)
       end
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Catalog item added."
     rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
       redirect_to new_admin_dated_agenda_agenda_item_path(@dated_agenda), alert: "Catalog item could not be added."
     end
 
-    def edit; end
+    def edit
+      set_agenda_sections
+    end
 
     def update
       @dated_agenda.with_lock do
         @dated_agenda.reload
         return redirect_locked_agenda if @dated_agenda.locked_for_editing?
 
-        @item.update!(item_params)
+        attributes = item_params
+        agenda_section_id = attributes.delete(:dated_agenda_section_id)
+        agenda_section = agenda_section_id.present? ? @dated_agenda.dated_agenda_sections.find(agenda_section_id) : @item.agenda_section
+        @item.position = next_position(agenda_section) if @item.agenda_section != agenda_section
+        @item.agenda_section = agenda_section
+        @item.update!(attributes)
       end
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Agenda item updated."
     rescue ActiveRecord::StaleObjectError
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "This agenda item was changed by someone else. Review the latest version before saving."
     rescue ActiveRecord::RecordInvalid
+      set_agenda_sections
       render :edit, status: :unprocessable_entity
     end
 
@@ -57,7 +68,8 @@ module Admin
     end
 
     def reorder
-      DatedAgendaItem.reorder!(@dated_agenda, params.require(:ids))
+      agenda_section = selected_agenda_section
+      DatedAgendaItem.reorder!(agenda_section, params.require(:ids))
       head :ok
     rescue ActiveRecord::RecordNotFound
       head :unprocessable_entity
@@ -89,12 +101,22 @@ module Admin
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "Reopen this agenda before editing items."
     end
 
-    def next_position
-      @dated_agenda.dated_agenda_items.maximum(:position).to_i + 1
+    def next_position(agenda_section)
+      agenda_section.agenda_items.maximum(:position).to_i + 1
     end
 
     def item_params
-      params.require(:dated_agenda_item).permit(:title, :summary, :body, :behavior_type, :lock_version)
+      params.require(:dated_agenda_item).permit(:title, :summary, :body, :behavior_type, :lock_version, :dated_agenda_section_id)
+    end
+
+    def set_agenda_sections
+      @agenda_sections = @dated_agenda.dated_agenda_sections.ordered
+    end
+
+    def selected_agenda_section
+      return @dated_agenda.default_agenda_section if params[:dated_agenda_section_id].blank?
+
+      @dated_agenda.dated_agenda_sections.find(params[:dated_agenda_section_id])
     end
   end
 end

@@ -1,0 +1,71 @@
+<article class="agenda-section-editor<%= ' agenda-section-editor--readonly' unless editable %>" <% if editable %>data-reorder-item data-reorder-id="<%= agenda_section.id %>"<% end %>>
+  <header class="agenda-section-editor-head">
+    <% if editable %>
+      <button type="button" class="section-handle" aria-label="Drag to reorder <%= agenda_section.title %>">
+        <svg width="14" height="20" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
+          <g fill="currentColor"><circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/><circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/><circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/></g>
+        </svg>
+      </button>
+    <% else %>
+      <span class="section-lock-mark" aria-hidden="true">◆</span>
+    <% end %>
+    <span class="agenda-section-number"><%= section_number.to_s.rjust(2, "0") %></span>
+    <div class="agenda-section-title-block">
+      <span class="agenda-section-eyebrow">Agenda section</span>
+      <h3><%= agenda_section.title %></h3>
+    </div>
+    <span class="agenda-section-count"><%= pluralize(agenda_section.agenda_items.count(&:active?), "item") %></span>
+    <% if editable %>
+      <div class="agenda-section-actions">
+        <% if section_number > 1 %>
+          <%= button_to "Move up", move_admin_dated_agenda_agenda_section_path(dated_agenda, agenda_section, direction: "up"), method: :patch,
+                class: "section-action section-action--move", aria: { label: "Move #{agenda_section.title} up" } %>
+        <% end %>
+        <% if section_number < section_count %>
+          <%= button_to "Move down", move_admin_dated_agenda_agenda_section_path(dated_agenda, agenda_section, direction: "down"), method: :patch,
+                class: "section-action section-action--move", aria: { label: "Move #{agenda_section.title} down" } %>
+        <% end %>
+        <%= link_to "Rename", edit_admin_dated_agenda_agenda_section_path(dated_agenda, agenda_section), class: "section-action" %>
+        <% if agenda_section.agenda_items.empty? && section_count > 1 %>
+          <%= button_to "Remove", admin_dated_agenda_agenda_section_path(dated_agenda, agenda_section), method: :delete, class: "section-action section-action--danger",
+                data: { turbo_confirm: "Remove the empty “#{agenda_section.title}” section?" } %>
+        <% end %>
+      </div>
+    <% end %>
+  </header>
+
+  <div class="agenda-section-editor-body">
+    <% items = agenda_section.agenda_items.select(&:active?) %>
+    <% if items.any? %>
+      <% if editable %>
+        <div data-controller="reorder" data-reorder-url-value="<%= reorder_admin_dated_agenda_agenda_items_path(dated_agenda, dated_agenda_section_id: agenda_section.id) %>">
+          <div class="section-item-list" data-reorder-target="list">
+            <% items.each do |item| %>
+              <%= render "admin/dated_agendas/agenda_item_row", dated_agenda: dated_agenda, item: item, editable: true %>
+            <% end %>
+          </div>
+          <span class="pos-status" data-reorder-target="status" role="status" aria-live="polite"></span>
+        </div>
+      <% else %>
+        <div class="section-item-list">
+          <% items.each do |item| %>
+            <%= render "admin/dated_agendas/agenda_item_row", dated_agenda: dated_agenda, item: item, editable: false %>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="agenda-section-empty">
+        <span class="agenda-section-empty-mark" aria-hidden="true">◇</span>
+        <div><strong>No agenda items in this section.</strong><% if editable %><span>This agenda does not have any items yet. Add items from the catalog to build this meeting agenda.</span><% end %></div>
+      </div>
+    <% end %>
+
+    <% if editable %>
+      <div class="agenda-section-footer">
+        <%= link_to new_admin_dated_agenda_agenda_item_path(dated_agenda, dated_agenda_section_id: agenda_section.id), class: "section-add-link" do %>
+          <span aria-hidden="true">＋</span> Add catalog item
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</article>

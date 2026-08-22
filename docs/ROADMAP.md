@@ -66,10 +66,10 @@ Completed for Structured Agendas foundation:
 - Admin management for catalog categories, behavior types, active status, and rich text/script bodies.
 - Meeting type templates: seeded PEC Meeting and Membership Meeting, admin-created meeting types, catalog-item picker, template-specific rich text wording overrides, and item ordering/removal.
 - Dated agendas: officer-created agendas for actual meeting dates, copied from meeting type templates, editable before approval/publication, with member read-only and printable HTML views.
+- Structured agenda sections: reusable section chapters in meeting type templates, copied independently into dated agendas, with guided item placement, accessible ordering controls, and section-aware member/print views.
 
 Still pending:
 
-- Agenda sections.
 - Later guided workflow to create a new catalog item from the meeting type/template editor and add it directly to that template.
 
 ## Tracked Items

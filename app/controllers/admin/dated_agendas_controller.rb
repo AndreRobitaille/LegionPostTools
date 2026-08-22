@@ -32,7 +32,9 @@ module Admin
       render :new, status: :unprocessable_entity
     end
 
-    def edit; end
+    def edit
+      @agenda_sections = @dated_agenda.dated_agenda_sections.ordered.includes(agenda_items: [ :agenda_item_catalog_entry, :rich_text_body ])
+    end
 
     def update
       if @dated_agenda.locked_for_editing?
@@ -40,6 +42,7 @@ module Admin
       elsif @dated_agenda.update(dated_agenda_params.except(:meeting_body_id, :meeting_type_id))
         redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Dated agenda updated."
       else
+        @agenda_sections = @dated_agenda.dated_agenda_sections.ordered.includes(agenda_items: [ :agenda_item_catalog_entry, :rich_text_body ])
         render :edit, status: :unprocessable_entity
       end
     rescue ActiveRecord::StaleObjectError

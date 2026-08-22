@@ -333,9 +333,9 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".da-lifecycle .st.st--draft"
     assert_select "form[action='#{approve_admin_dated_agenda_path(@agenda)}']"
-    assert_select "[data-controller='reorder'][data-reorder-url-value='#{reorder_admin_dated_agenda_agenda_items_path(@agenda)}']"
-    assert_select ".mrow-list[data-reorder-target='list'] .mrow.catrow[data-reorder-item] .pos-handle"
-    assert_select ".mrow.catrow .catrow-meta button.row-del"
+    assert_select "[data-controller='reorder'][data-reorder-url-value^='#{reorder_admin_dated_agenda_agenda_items_path(@agenda)}']"
+    assert_select ".section-item-list[data-reorder-target='list'] .section-item-row[data-reorder-item] .pos-handle"
+    assert_select ".section-item-row button.row-del"
   end
 
   test "edit locks the item list and shows Publish + Reopen when approved" do

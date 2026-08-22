@@ -71,7 +71,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
     singleton = class << MeetingTypeAgendaItem; self; end
     singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
-    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:|
+    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:, agenda_section:|
       raise ActiveRecord::RecordInvalid.new(meeting_type.meeting_type_agenda_items.build(position: position))
     end
 
@@ -89,7 +89,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy 2", category: "ceremony", behavior_type: "scripted_ceremony", position: 4, active: true)
     singleton = class << MeetingTypeAgendaItem; self; end
     singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
-    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:|
+    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:, agenda_section:|
       raise ActiveRecord::RecordNotUnique.new(
         'duplicate key value violates unique constraint "index_mt_agenda_items_on_meeting_type_and_position"'
       )
@@ -109,7 +109,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     duplicate_entry = @organization.agenda_item_catalog_entries.create!(title: "Duplicate Copy", category: "ceremony", behavior_type: "scripted_ceremony", position: 5, active: true)
     singleton = class << MeetingTypeAgendaItem; self; end
     singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
-    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:|
+    singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:, agenda_section:|
       raise ActiveRecord::RecordNotUnique.new(
         'duplicate key value violates unique constraint "index_mt_agenda_items_on_type_and_catalog_entry"'
       )
@@ -188,10 +188,26 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_select "textarea[name='meeting_type_agenda_item[summary]']"
     assert_select "lexxy-editor[input='meeting_type_agenda_item_body_trix_input_meeting_type_agenda_item_#{item.id}']"
     assert_select "input[name='meeting_type_agenda_item[active]'][type='checkbox']"
+    assert_select "select[name='meeting_type_agenda_item[meeting_type_agenda_section_id]']"
     assert_select "body", text: /source_key/i, count: 0
     assert_select "body", text: /source_label/i, count: 0
     assert_select "body", text: /catalog entry/i, count: 0
     assert_select "body", text: /developer/i, count: 0
+  end
+
+  test "update can move an item to another section" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    original_section = @meeting_type.default_agenda_section
+    new_section = @meeting_type.meeting_type_agenda_sections.create!(title: "Post Business", position: 2)
+    item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, agenda_section: original_section, position: 1, title: "Opening", active: true)
+
+    patch admin_meeting_type_agenda_item_path(@meeting_type, item), params: {
+      meeting_type_agenda_item: { title: item.title, summary: item.summary, active: true, meeting_type_agenda_section_id: new_section.id }
+    }
+
+    assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
+    assert_equal new_section, item.reload.agenda_section
+    assert_equal 1, item.position
   end
 
   test "cannot use another organization's catalog entry or meeting type" do

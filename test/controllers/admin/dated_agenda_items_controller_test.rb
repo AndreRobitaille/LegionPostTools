@@ -41,6 +41,20 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Opening Ceremony", @catalog_entry.reload.title
   end
 
+  test "update can move an item to another agenda section" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @agenda.dated_agenda_items.first
+    new_section = @agenda.dated_agenda_sections.create!(title: "Post Business", position: 2)
+
+    patch admin_dated_agenda_agenda_item_path(@agenda, item), params: {
+      dated_agenda_item: { title: item.title, summary: item.summary, behavior_type: item.behavior_type, lock_version: item.lock_version, dated_agenda_section_id: new_section.id }
+    }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal new_section, item.reload.agenda_section
+    assert_equal 1, item.position
+  end
+
   test "stale lock_version redirects with latest-version alert" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @agenda.dated_agenda_items.first

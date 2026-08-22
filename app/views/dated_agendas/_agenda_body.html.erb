@@ -1,9 +1,27 @@
-<% dated_agenda.dated_agenda_items.active.ordered.each do |agenda_item| %>
-  <section class="agenda-item">
-    <h2 class="agenda-item-title"><%= agenda_item.title %></h2>
-    <% if agenda_item.summary.present? %>
-      <p class="agenda-item-summary"><%= agenda_item.summary %></p>
-    <% end %>
-    <div class="agenda-item-body"><%= agenda_item.body %></div>
-  </section>
-<% end %>
+<div class="agenda-outline">
+  <% visible_sections = dated_agenda.dated_agenda_sections.ordered.select { |section| section.agenda_items.any?(&:active?) } %>
+  <% visible_sections.each_with_index do |agenda_section, section_index| %>
+    <% items = agenda_section.agenda_items.select(&:active?) %>
+
+    <section class="agenda-chapter">
+      <header class="agenda-chapter-head">
+        <span class="agenda-chapter-number"><%= section_index + 1 %></span>
+        <span class="agenda-chapter-diamond" aria-hidden="true">◆</span>
+        <h2><%= agenda_section.title %></h2>
+        <span class="agenda-chapter-rule" aria-hidden="true"></span>
+      </header>
+
+      <div class="agenda-chapter-items">
+        <% items.each do |agenda_item| %>
+          <section class="agenda-item">
+            <h3 class="agenda-item-title"><%= agenda_item.title %></h3>
+            <% if agenda_item.summary.present? %>
+              <p class="agenda-item-summary"><%= agenda_item.summary %></p>
+            <% end %>
+            <div class="agenda-item-body"><%= agenda_item.body %></div>
+          </section>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

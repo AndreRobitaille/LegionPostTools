@@ -6,6 +6,8 @@ module Admin
     before_action :set_item, only: %i[edit update destroy]
 
     def new
+      set_agenda_sections
+      @agenda_section = selected_agenda_section
       existing_ids = @meeting_type.meeting_type_agenda_items.pluck(:agenda_item_catalog_entry_id).to_set
       grouped = @organization.agenda_item_catalog_entries.active.ordered.group_by(&:category)
       @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.filter_map do |category|
@@ -18,8 +20,9 @@ module Admin
 
     def create
       catalog_entry = @organization.agenda_item_catalog_entries.active.find(params[:agenda_item_catalog_entry_id])
+      agenda_section = selected_agenda_section
       @meeting_type.with_lock do
-        MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position, meeting_type: @meeting_type)
+        MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: next_position(agenda_section), meeting_type: @meeting_type, agenda_section: agenda_section)
       end
       redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Catalog item added."
     rescue ActiveRecord::RecordNotUnique => error
@@ -30,12 +33,20 @@ module Admin
       redirect_to new_admin_meeting_type_agenda_item_path(@meeting_type), alert: alert
     end
 
-    def edit; end
+    def edit
+      set_agenda_sections
+    end
 
     def update
-      if @item.update(item_params)
+      attributes = item_params
+      agenda_section_id = attributes.delete(:meeting_type_agenda_section_id)
+      agenda_section = agenda_section_id.present? ? @meeting_type.meeting_type_agenda_sections.find(agenda_section_id) : @item.agenda_section
+      @item.position = next_position(agenda_section) if @item.agenda_section != agenda_section
+      @item.agenda_section = agenda_section
+      if @item.update(attributes)
         redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Template item updated."
       else
+        set_agenda_sections
         render :edit, status: :unprocessable_entity
       end
     end
@@ -46,7 +57,8 @@ module Admin
     end
 
     def reorder
-      MeetingTypeAgendaItem.reorder!(@meeting_type, params.require(:ids))
+      agenda_section = selected_agenda_section
+      MeetingTypeAgendaItem.reorder!(agenda_section, params.require(:ids))
       head :ok
     rescue ActiveRecord::RecordNotFound
       head :unprocessable_entity
@@ -66,8 +78,8 @@ module Admin
       @item = @meeting_type.meeting_type_agenda_items.find(params[:id])
     end
 
-    def next_position
-      @meeting_type.meeting_type_agenda_items.maximum(:position).to_i + 1
+    def next_position(agenda_section)
+      agenda_section.agenda_items.maximum(:position).to_i + 1
     end
 
     def duplicate_catalog_entry_error?(record)
@@ -80,7 +92,17 @@ module Admin
     end
 
     def item_params
-      params.require(:meeting_type_agenda_item).permit(:title, :summary, :active, :body)
+      params.require(:meeting_type_agenda_item).permit(:title, :summary, :active, :body, :meeting_type_agenda_section_id)
+    end
+
+    def set_agenda_sections
+      @agenda_sections = @meeting_type.meeting_type_agenda_sections.ordered
+    end
+
+    def selected_agenda_section
+      return @meeting_type.default_agenda_section if params[:meeting_type_agenda_section_id].blank?
+
+      @meeting_type.meeting_type_agenda_sections.find(params[:meeting_type_agenda_section_id])
     end
   end
 end

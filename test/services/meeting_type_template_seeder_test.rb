@@ -64,6 +64,18 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     ], titles
   end
 
+  test "seeds meeting-shaped sections for the supplied templates" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+
+    pec = @organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting")
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+
+    assert_equal [ "Call to Order", "Post Business" ], pec.meeting_type_agenda_sections.ordered.pluck(:title)
+    assert_equal [ "Opening Ceremony", "Administration & Membership", "Reports & Member Welfare", "Post Business", "Closing Ceremony" ], membership.meeting_type_agenda_sections.ordered.pluck(:title)
+    assert_equal [ 2, 3 ], pec.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
+    assert_equal [ 5, 3, 4, 4, 1 ], membership.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
+  end
+
   test "reseeding does not overwrite local edits" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
@@ -105,6 +117,25 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
         MeetingTypeTemplateSeeder.seed_for!(@organization)
       end
     end
+  end
+
+  test "reseeding upgrades existing seeded items from the migration fallback section" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+    fallback = membership.meeting_type_agenda_sections.create!(title: "Order of Business", position: 6)
+
+    membership.meeting_type_agenda_items.ordered.each_with_index do |item, index|
+      item.update!(agenda_section: fallback, position: index + 1)
+    end
+    membership.meeting_type_agenda_sections.where.not(id: fallback.id).destroy_all
+    fallback.update!(position: 1)
+
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+
+    assert_equal [ "Opening Ceremony", "Administration & Membership", "Reports & Member Welfare", "Post Business", "Closing Ceremony" ],
+      membership.meeting_type_agenda_sections.ordered.pluck(:title)
+    assert_equal [ 5, 3, 4, 4, 1 ],
+      membership.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
   end
 
   test "seeding is independent by organization" do
@@ -157,7 +188,10 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
 
     reseeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
     assert_not_equal canonical_position, reseeded_item.position
-    assert_equal membership.meeting_type_agenda_items.pluck(:position).uniq.sort, membership.meeting_type_agenda_items.pluck(:position).sort
+    membership.meeting_type_agenda_sections.each do |section|
+      positions = section.agenda_items.pluck(:position)
+      assert_equal positions.uniq.sort, positions.sort
+    end
   end
 
   test "reset_for! restores suggested meeting types to defaults and leaves custom types" do
@@ -182,7 +216,8 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
 
     assert MeetingTypeTemplateSeeder.reset_agenda_for!(pec)
     assert_equal 5, pec.reload.meeting_type_agenda_items.count
-    assert_equal (1..5).to_a, pec.meeting_type_agenda_items.ordered.pluck(:position)
+    assert_equal [ "Call to Order", "Post Business" ], pec.meeting_type_agenda_sections.ordered.pluck(:title)
+    assert_equal [ [ 1, 2 ], [ 1, 2, 3 ] ], pec.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.pluck(:position) }
   end
 
   test "reset_agenda_for! is a no-op for a non-suggested meeting type" do

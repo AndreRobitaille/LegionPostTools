@@ -1,0 +1,18 @@
+<% form_url = section.persisted? ? admin_meeting_type_agenda_section_path(meeting_type, section) : admin_meeting_type_agenda_sections_path(meeting_type) %>
+<%= form_with model: section, url: form_url, class: "stacked-form" do |form| %>
+  <% if section.errors.any? %>
+    <div class="error-summary">
+      <h2><%= pluralize(section.errors.count, "error") %> prohibited this section from being saved:</h2>
+      <ul><% section.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+  <p class="form-help">Use a short meeting-stage name such as “Officer Reports,” “Post Business,” or “Closing Ceremony.”</p>
+  <div class="fl">
+    <%= form.label :title, "Section name" %>
+    <%= form.text_field :title, class: "f", autofocus: true, autocomplete: "off" %>
+  </div>
+  <div class="btnrow">
+    <%= form.submit section.persisted? ? "Save section" : "Add section", class: "btn-primary" %>
+    <%= link_to "Cancel", edit_admin_meeting_type_path(meeting_type), class: "btn-secondary" %>
+  </div>
+<% end %>

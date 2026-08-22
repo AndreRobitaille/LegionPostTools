@@ -3,7 +3,10 @@
 
 <div class="page-lead">
   <h1 class="page-title">Add catalog item</h1>
+  <p class="page-sub">Choose an item for <strong><%= @agenda_section.title %></strong>.</p>
 </div>
+
+<div class="picker-destination"><span>Adding to</span><strong><%= @agenda_section.title %></strong></div>
 
 <div class="mrow-list">
   <% @entries_by_category.each do |category, entries| %>
@@ -20,7 +23,7 @@
           <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>
           <% if already_added %><span class="catrow-flag">Already added</span><% end %>
           <% unless already_added %>
-            <%= button_to "Add", admin_meeting_type_agenda_items_path(@meeting_type, agenda_item_catalog_entry_id: entry.id), method: :post, class: "btn-secondary" %>
+            <%= button_to "Add", admin_meeting_type_agenda_items_path(@meeting_type, agenda_item_catalog_entry_id: entry.id, meeting_type_agenda_section_id: @agenda_section.id), method: :post, class: "btn-secondary" %>
           <% end %>
         </div>
       </div>

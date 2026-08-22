@@ -26,66 +26,35 @@
 
 <%= render "form", dated_agenda: @dated_agenda %>
 
-<div class="sec-head-row" style="margin-top: 22px">
-  <%= render "shared/section_header", label: "Agenda items" %>
+<div class="agenda-builder-intro agenda-builder-intro--dated">
+  <div>
+    <span class="agenda-builder-kicker">Meeting agenda</span>
+    <h2><%= @dated_agenda.draft? ? "Arrange this meeting" : "Meeting order" %></h2>
+    <p><%= @dated_agenda.draft? ? "Sections make the meeting easier to lead and give the later minutes a durable structure." : "This section order is part of the locked agenda." %></p>
+  </div>
+  <% if @dated_agenda.draft? %>
+    <div class="agenda-builder-actions">
+      <%= link_to "New section", new_admin_dated_agenda_agenda_section_path(@dated_agenda), class: "btn-primary" %>
+    </div>
+  <% end %>
 </div>
 
-<% items = @dated_agenda.dated_agenda_items.active.ordered %>
-
 <% if @dated_agenda.draft? %>
-  <div class="btnrow" style="margin-top: 12px">
-    <%= link_to "Add from catalog", new_admin_dated_agenda_agenda_item_path(@dated_agenda), class: "btn-primary" %>
-  </div>
-
-  <% if items.any? %>
-    <p class="page-sub reorder-hint">Drag a row by its handle to change the order. Changes save automatically.</p>
-    <div data-controller="reorder" data-reorder-url-value="<%= reorder_admin_dated_agenda_agenda_items_path(@dated_agenda) %>">
-      <div class="mrow-list" data-reorder-target="list">
-        <% items.each do |item| %>
-          <div class="mrow catrow" data-reorder-item data-reorder-id="<%= item.id %>">
-            <button type="button" class="pos-handle" aria-label="Drag to reorder <%= item.title %>">
-              <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
-                <g fill="currentColor">
-                  <circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/>
-                  <circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/>
-                  <circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/>
-                </g>
-              </svg>
-            </button>
-            <span class="mrow-id">
-              <span class="mrow-name"><%= item.title %></span>
-              <% if item.summary.present? %><span class="mrow-sub"><%= item.summary %></span><% end %>
-            </span>
-            <div class="catrow-meta">
-              <%= link_to "Edit", edit_admin_dated_agenda_agenda_item_path(@dated_agenda, item), class: "catrow-edit" %>
-              <%= button_to admin_dated_agenda_agenda_item_path(@dated_agenda, item), method: :delete, class: "row-del", aria: { label: "Remove #{item.title}" }, data: { turbo_confirm: "Remove “#{item.title}” from this agenda?" } do %>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
-                  <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M10 11v6M14 11v6" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-      <span class="pos-status" data-reorder-target="status" role="status" aria-live="polite"></span>
-    </div>
-  <% else %>
-    <p class="page-sub">This agenda does not have any items yet. Add items from the catalog to build this meeting agenda.</p>
-  <% end %>
-<% else %>
-  <% if items.any? %>
-    <div class="mrow-list">
-      <% items.each do |item| %>
-        <div class="mrow">
-          <span class="mrow-id">
-            <span class="mrow-name"><%= item.title %></span>
-            <% if item.summary.present? %><span class="mrow-sub"><%= item.summary %></span><% end %>
-          </span>
-        </div>
+  <p class="page-sub reorder-hint">Drag section headings to change the meeting order. Drag items within a section. Changes save automatically.</p>
+  <div class="agenda-section-reorder" data-controller="reorder"
+       data-reorder-url-value="<%= reorder_admin_dated_agenda_agenda_sections_path(@dated_agenda) %>"
+       data-reorder-handle-value=".section-handle">
+    <div class="agenda-section-stack" data-reorder-target="list">
+      <% @agenda_sections.each_with_index do |agenda_section, index| %>
+        <%= render "agenda_section", dated_agenda: @dated_agenda, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size, editable: true %>
       <% end %>
     </div>
-  <% else %>
-    <p class="page-sub">This agenda has no items.</p>
-  <% end %>
+    <span class="pos-status section-order-status" data-reorder-target="status" role="status" aria-live="polite"></span>
+  </div>
+<% else %>
+  <div class="agenda-section-stack agenda-section-stack--readonly">
+    <% @agenda_sections.each_with_index do |agenda_section, index| %>
+      <%= render "agenda_section", dated_agenda: @dated_agenda, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size, editable: false %>
+    <% end %>
+  </div>
 <% end %>

@@ -13,50 +13,56 @@ items a post reuses across its meetings (e.g. "Roll Call", "Reading of Minutes",
 everything above it.
 
 **Meeting Type** — a reusable *agenda template* for a kind of meeting (e.g. **PEC
-Meeting**, **Membership Meeting**). An admin builds a meeting type by pulling
-catalog items into it, ordering them, and customizing their wording **for that
+Meeting**, **Membership Meeting**). An admin arranges named sections, pulls
+catalog items into those sections, and customizes their wording **for that
 template only**. When an item is added, its title/summary/rich-text body are
 *copied* from the catalog into a template item; later edits to the template item
 do not touch the catalog, and later catalog edits do not overwrite template
 customizations.
 
-**Meeting Instance** *(future — not built yet)* — an actual dated meeting's
-agenda. It is *started from* a meeting-type template as a convenience, but is not
-bound to it: an instance agenda may also include catalog items that are not in
-the template (and, later, one-off items). A meeting instance is an official
-record; a meeting type is not.
+**Dated Agenda** — an actual meeting's agenda. It is *started from* a meeting-type
+template as a convenience, copying both the section structure and its items, but
+is not bound to it afterward. Officers may rearrange sections and items or add
+catalog items directly while the agenda is a draft. Approval and publication
+lock the agenda until an authorized officer explicitly reopens it.
 
 ## How they relate
 
 ```
-Agenda Item Catalog        Meeting Types              Meeting Instances (future)
-(reusable items)     ──▶   (templates built     ──▶   (a meeting's actual agenda,
-                            from catalog items)         seeded from a template, but
-                                                        free to draw from the catalog
-                                                        directly too)
+Agenda Item Catalog        Meeting Types              Dated Agendas
+(reusable items)     ──▶   (sectioned templates  ──▶   (a meeting's sectioned agenda,
+                            built from catalog items)   copied from a template, then
+                                                        independently editable)
 ```
 
 Key points that are easy to get wrong:
 
-- It is **not** a one-to-one mapping. A meeting instance's agenda is not required
+- It is **not** a one-to-one mapping. A dated agenda is not required
   to match any meeting type, and can contain catalog items that no template uses.
 - Meeting types do **not** subsume or replace the catalog. They are distinct tools
   at different levels — *items* vs. *arrangements of items*. The catalog stays
-  independently reachable because meeting instances (and admins) draw from it
+  independently reachable because dated agendas (and admins) draw from it
   directly, not only through templates.
-- The copy is deliberate: templates capture a snapshot so a post can tune wording
-  per meeting type without disturbing the shared catalog.
+- Each level owns its copy. Templates can tune wording without disturbing the
+  shared catalog, and dated agendas can adapt a meeting without altering the
+  reusable template.
+- Sections are first-class records at both the meeting-type and dated-agenda
+  levels. Item positions are meaningful within a section, not across the entire
+  agenda.
 
 ## In the app today
 
-- Both the **Agenda Catalog** and **Meeting Types** are managed from the Admin hub
-  (Meetings & Roster section), each as its own tile, gated on the `manage_agendas`
-  capability. Catalog first, Meeting Types second — the order a user builds things.
-- Meeting instances are a later roadmap phase and are not implemented yet.
+- The **Agenda Catalog**, **Meeting Types**, and **Dated Agendas** are managed from
+  the Admin hub, gated on the `manage_agendas` capability.
+- Meeting-type and dated-agenda editors present sections as numbered chapters.
+  Officers can add, rename, remove, and reorder sections; add or move items within
+  them; and use direct move controls as an accessible alternative to dragging.
+- Approved and published dated agendas are read-only until explicitly reopened.
 
 ## Related
 
 - Meeting Types design: `docs/superpowers/specs/2026-07-13-meeting-type-templates-design.md`
+- Agenda Sections design: `docs/superpowers/specs/2026-08-22-agenda-sections-design.md`
 - Admin hub design: `docs/superpowers/specs/2026-07-13-admin-hub-reorganization-design.md`
 - `MeetingBody` is intentionally **not** used in this workflow (premature structure;
   see the meeting-type spec's Non-Goals).

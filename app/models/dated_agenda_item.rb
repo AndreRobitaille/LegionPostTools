@@ -2,29 +2,38 @@ class DatedAgendaItem < ApplicationRecord
   include Reorderable
 
   belongs_to :dated_agenda
+  belongs_to :agenda_section,
+    class_name: "DatedAgendaSection",
+    foreign_key: :dated_agenda_section_id,
+    inverse_of: :agenda_items
   belongs_to :meeting_type_agenda_item, optional: true
   belongs_to :agenda_item_catalog_entry, optional: true
 
   has_rich_text :body
 
   before_validation :normalize_optional_fields
+  before_validation :assign_default_agenda_section
   validate :catalog_entry_belongs_to_same_organization
   validate :meeting_type_agenda_item_belongs_to_same_meeting_type
+  validate :agenda_section_belongs_to_same_dated_agenda
   validate :agenda_is_editable, on: %i[create update]
   before_destroy :prevent_destroy_when_locked
 
   validates :title, :behavior_type, presence: true
   validates :behavior_type, inclusion: { in: AgendaItemCatalogEntry::BEHAVIOR_TYPES.keys }, allow_blank: true
   validates :position, numericality: { only_integer: true }
-  validates :position, uniqueness: { scope: :dated_agenda_id }
+  validates :position, uniqueness: { scope: :dated_agenda_section_id }
   validates :agenda_item_catalog_entry_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
 
-  scope :ordered, -> { order(:position, :title) }
+  scope :ordered, -> {
+    joins(:agenda_section).order("dated_agenda_sections.position", "dated_agenda_items.position", "dated_agenda_items.title")
+  }
   scope :active, -> { where(active: true) }
 
-  def self.attributes_from_template_item(template_item, position:, dated_agenda:)
+  def self.attributes_from_template_item(template_item, position:, dated_agenda:, agenda_section:)
     {
       dated_agenda: dated_agenda,
+      agenda_section: agenda_section,
       meeting_type_agenda_item: template_item,
       agenda_item_catalog_entry: template_item.agenda_item_catalog_entry,
       position: position,
@@ -39,9 +48,10 @@ class DatedAgendaItem < ApplicationRecord
     }
   end
 
-  def self.create_from_catalog_entry!(catalog_entry, position:, dated_agenda:, meeting_type_agenda_item: nil)
+  def self.create_from_catalog_entry!(catalog_entry, position:, dated_agenda:, agenda_section: nil, meeting_type_agenda_item: nil)
     attrs = {
       dated_agenda: dated_agenda,
+      agenda_section: agenda_section || dated_agenda.default_agenda_section,
       agenda_item_catalog_entry: catalog_entry,
       position: position,
       title: catalog_entry.title,
@@ -54,8 +64,9 @@ class DatedAgendaItem < ApplicationRecord
     create!(attrs)
   end
 
-  def self.reorder!(dated_agenda, ordered_ids)
-    active_scope = dated_agenda.dated_agenda_items.active
+  def self.reorder!(container, ordered_ids)
+    agenda_section = container.is_a?(DatedAgendaSection) ? container : container.default_agenda_section
+    active_scope = agenda_section.agenda_items.active
     ids = Array(ordered_ids).map(&:to_i)
     records = active_scope.where(id: ids).index_by(&:id)
     active_ids = active_scope.pluck(:id)
@@ -63,7 +74,7 @@ class DatedAgendaItem < ApplicationRecord
 
     target_positions = active_scope.order(:position).pluck(:position)
     transaction do
-      offset = (dated_agenda.dated_agenda_items.maximum(:position) || 0) + 1
+      offset = (agenda_section.agenda_items.maximum(:position) || 0) + 1
       ids.each_with_index { |id, index| records.fetch(id).update!(position: offset + index) }
       ids.each_with_index { |id, index| records.fetch(id).update!(position: target_positions[index]) }
     end
@@ -74,6 +85,10 @@ class DatedAgendaItem < ApplicationRecord
   def normalize_optional_fields
     self.summary = summary.to_s
     self.source_key = source_key&.strip.presence
+  end
+
+  def assign_default_agenda_section
+    self.agenda_section ||= dated_agenda&.default_agenda_section
   end
 
   def agenda_is_editable
@@ -101,5 +116,12 @@ class DatedAgendaItem < ApplicationRecord
     return if meeting_type_agenda_item.meeting_type_id == dated_agenda.meeting_type_id
 
     errors.add(:meeting_type_agenda_item, "must belong to the same meeting type")
+  end
+
+  def agenda_section_belongs_to_same_dated_agenda
+    return if agenda_section.blank? || dated_agenda.blank?
+    return if agenda_section.dated_agenda_id == dated_agenda_id
+
+    errors.add(:agenda_section, "must belong to the same dated agenda")
   end
 end

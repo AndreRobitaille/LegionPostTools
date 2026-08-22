@@ -17,9 +17,7 @@
     <% if @meeting_type.errors.any? %>
       <div class="error-summary">
         <h2><%= pluralize(@meeting_type.errors.count, "error") %> prohibited this meeting type from being saved:</h2>
-        <ul>
-          <% @meeting_type.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
-        </ul>
+        <ul><% @meeting_type.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
       </div>
     <% end %>
     <%= form.label :name, "Meeting name", class: "fl-label-inline" %>
@@ -38,53 +36,30 @@
   </div>
 </div>
 
-<div class="sec-head-row" style="margin-top: 22px">
-  <%= render "shared/section_header", label: "Template agenda" %>
-</div>
-
-<div class="btnrow" style="margin-top: 12px">
-  <%= link_to "Add catalog item", new_admin_meeting_type_agenda_item_path(@meeting_type), class: "btn-primary" %>
-  <% if @meeting_type.seeded? %>
-    <%= button_to "Reset agenda to default", reset_agenda_admin_meeting_type_path(@meeting_type), method: :post, class: "btn-secondary",
-          data: { turbo_confirm: "Reset this agenda back to the default items? Your changes to this agenda will be lost." } %>
-  <% end %>
-</div>
-
-<% if @template_items.present? %>
-  <p class="page-sub reorder-hint">Drag a row by its handle to change the order. Changes save automatically.</p>
-  <div data-controller="reorder" data-reorder-url-value="<%= reorder_admin_meeting_type_agenda_items_path(@meeting_type) %>">
-    <div class="mrow-list" data-reorder-target="list">
-      <% @template_items.each do |item| %>
-        <div class="mrow catrow" data-reorder-item data-reorder-id="<%= item.id %>">
-          <button type="button" class="pos-handle" aria-label="Drag to reorder <%= item.title %>">
-            <svg width="12" height="18" viewBox="0 0 12 18" aria-hidden="true" focusable="false">
-              <g fill="currentColor">
-                <circle cx="3" cy="3" r="1.6"/><circle cx="9" cy="3" r="1.6"/>
-                <circle cx="3" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/>
-                <circle cx="3" cy="15" r="1.6"/><circle cx="9" cy="15" r="1.6"/>
-              </g>
-            </svg>
-          </button>
-          <span class="mrow-id">
-            <span class="mrow-name"><%= item.title %></span>
-            <% if item.summary.present? %><span class="mrow-sub"><%= item.summary %></span><% end %>
-          </span>
-          <div class="catrow-meta">
-            <%= link_to "Edit", edit_admin_meeting_type_agenda_item_path(@meeting_type, item), class: "catrow-edit" %>
-            <%= button_to admin_meeting_type_agenda_item_path(@meeting_type, item), method: :delete, class: "row-del",
-                  aria: { label: "Remove #{item.title}" },
-                  data: { turbo_confirm: "Remove “#{item.title}” from the agenda?" } do %>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
-                <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10 11v6M14 11v6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
-    <span class="pos-status" data-reorder-target="status" role="status" aria-live="polite"></span>
+<div class="agenda-builder-intro">
+  <div>
+    <span class="agenda-builder-kicker">Meeting framework</span>
+    <h2>Build the agenda in clear sections</h2>
+    <p>Sections carry forward when an officer creates a dated agenda. Arrange the meeting here; each dated agenda remains independent afterward.</p>
   </div>
-<% else %>
-  <p class="page-sub">No template items yet. Use “Add catalog item” to build this agenda.</p>
-<% end %>
+  <div class="agenda-builder-actions">
+    <%= link_to "New section", new_admin_meeting_type_agenda_section_path(@meeting_type), class: "btn-primary" %>
+    <% if @meeting_type.seeded? %>
+      <%= button_to "Reset suggested structure", reset_agenda_admin_meeting_type_path(@meeting_type), method: :post, class: "btn-secondary",
+            data: { turbo_confirm: "Reset this agenda to the suggested sections and items? Your template changes will be lost." } %>
+    <% end %>
+  </div>
+</div>
+
+<p class="page-sub reorder-hint">Drag section headings to change the meeting order. Drag items within a section. Changes save automatically.</p>
+
+<div class="agenda-section-reorder" data-controller="reorder"
+     data-reorder-url-value="<%= reorder_admin_meeting_type_agenda_sections_path(@meeting_type) %>"
+     data-reorder-handle-value=".section-handle">
+  <div class="agenda-section-stack" data-reorder-target="list">
+    <% @agenda_sections.each_with_index do |agenda_section, index| %>
+      <%= render "agenda_section", meeting_type: @meeting_type, agenda_section: agenda_section, section_number: index + 1, section_count: @agenda_sections.size %>
+    <% end %>
+  </div>
+  <span class="pos-status section-order-status" data-reorder-target="status" role="status" aria-live="polite"></span>
+</div>

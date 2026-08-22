@@ -68,8 +68,8 @@ Setup completion is persisted through `Installation`. Once setup is complete, an
 Meeting records are the core product direction.
 
 - `MeetingBody` represents recurring groups such as Post Executive Committee or Membership Meeting.
-- Future agenda templates should contain structured sections.
-- Future agenda items should be structured records, not one large freeform document.
+- Agenda templates and dated agendas contain structured sections, with agenda items scoped and ordered inside each section.
+- Agenda items are structured records, not one large freeform document.
 - Rich text belongs inside structured records for notes, bullets, ceremony text, and printable context.
 - Tracked items should capture long-lived business such as Car Show, Buddy Checks, elections, or ceremonies.
 

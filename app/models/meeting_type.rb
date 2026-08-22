@@ -1,6 +1,7 @@
 class MeetingType < ApplicationRecord
   belongs_to :organization
   has_many :meeting_type_agenda_items, dependent: :destroy
+  has_many :meeting_type_agenda_sections, -> { ordered }, dependent: :destroy
   has_many :dated_agendas, dependent: :restrict_with_exception
 
   include Reorderable
@@ -8,6 +9,7 @@ class MeetingType < ApplicationRecord
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }
   before_validation :normalize_optional_fields
   before_validation :ensure_slug
+  after_create :create_default_agenda_section!
 
   validates :name, :slug, presence: true
   validates :name, uniqueness: { scope: :organization_id }
@@ -25,6 +27,10 @@ class MeetingType < ApplicationRecord
 
   def seeded?
     source_key.present?
+  end
+
+  def default_agenda_section
+    meeting_type_agenda_sections.ordered.first
   end
 
   private
@@ -47,5 +53,9 @@ class MeetingType < ApplicationRecord
       suffix += 1
     end
     self.slug = candidate
+  end
+
+  def create_default_agenda_section!
+    meeting_type_agenda_sections.create!(title: "Order of Business", position: 1)
   end
 end

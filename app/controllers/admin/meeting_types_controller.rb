@@ -34,14 +34,14 @@ module Admin
     end
 
     def edit
-      @template_items = @meeting_type.meeting_type_agenda_items.ordered
+      set_agenda_sections
     end
 
     def update
       if @meeting_type.update(meeting_type_params)
         redirect_to edit_admin_meeting_type_path(@meeting_type), notice: "Meeting type updated."
       else
-        @template_items = @meeting_type.meeting_type_agenda_items.ordered
+        set_agenda_sections
         render :edit, status: :unprocessable_entity
       end
     end
@@ -83,6 +83,10 @@ module Admin
 
     def meeting_type_params
       params.require(:meeting_type).permit(:name, :active)
+    end
+
+    def set_agenda_sections
+      @agenda_sections = @meeting_type.meeting_type_agenda_sections.ordered.includes(agenda_items: :agenda_item_catalog_entry)
     end
 
     def next_position

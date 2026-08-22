@@ -11,6 +11,11 @@
   <% end %>
   <p class="form-help">This changes this meeting type only and will not change the Agenda Item Catalog.</p>
   <div class="fl">
+    <%= form.label :meeting_type_agenda_section_id, "Agenda section" %>
+    <%= form.collection_select :meeting_type_agenda_section_id, @agenda_sections, :id, :title, {}, class: "f" %>
+    <span class="form-help">Choose where this item appears. Moving it places it at the end of that section.</span>
+  </div>
+  <div class="fl">
     <%= form.label :title %>
     <%= form.text_field :title, class: "f" %>
   </div>

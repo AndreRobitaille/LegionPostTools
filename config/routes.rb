@@ -49,6 +49,10 @@ Rails.application.routes.draw do
       post :reset_defaults, on: :collection
       post :reorder, on: :collection
       post :reset_agenda, on: :member
+      resources :agenda_sections, controller: "meeting_type_agenda_sections", except: %i[index show] do
+        post :reorder, on: :collection
+        patch :move, on: :member
+      end
       resources :agenda_items, controller: "meeting_type_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         post :reorder, on: :collection
       end
@@ -59,6 +63,10 @@ Rails.application.routes.draw do
         patch :publish
         patch :reopen
         get :print
+      end
+      resources :agenda_sections, controller: "dated_agenda_sections", except: %i[index show] do
+        post :reorder, on: :collection
+        patch :move, on: :member
       end
       resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         post :reorder, on: :collection

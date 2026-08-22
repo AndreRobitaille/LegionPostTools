@@ -1,0 +1,10 @@
+<% content_for :title, "Rename #{@section.title}" %>
+<a class="back" href="<%= edit_admin_dated_agenda_path(@dated_agenda) %>">&larr; <%= @dated_agenda.title %></a>
+<div class="page-lead">
+  <span class="agenda-builder-kicker">Agenda section</span>
+  <h1 class="page-title">Rename section</h1>
+  <p class="page-sub">This changes this meeting agenda only. The reusable meeting type is unchanged.</p>
+</div>
+<div class="panel form-panel section-form-panel">
+  <%= render "form", dated_agenda: @dated_agenda, section: @section %>
+</div>

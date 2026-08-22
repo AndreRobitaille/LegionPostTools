@@ -19,6 +19,11 @@
     <% end %>
     <%= form.hidden_field :lock_version %>
     <div class="fl">
+      <%= form.label :dated_agenda_section_id, "Agenda section" %>
+      <%= form.collection_select :dated_agenda_section_id, @agenda_sections, :id, :title, {}, class: "f" %>
+      <span class="form-help">Choose where this item appears. Moving it places it at the end of that section.</span>
+    </div>
+    <div class="fl">
       <%= form.label :title %>
       <%= form.text_field :title, class: "f" %>
     </div>
