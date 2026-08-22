@@ -40,7 +40,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # Modern Action Text rich-text editor (replaces the default Trix editor)
-gem "lexxy", "~> 0.9.21"
+gem "lexxy", "~> 0.9.30"
 gem "csv"
 gem "webauthn"
 
