@@ -5,8 +5,8 @@
   <p class="page-sub"><%= pluralize(@officers.size + @members.size, "member") %></p>
 </div>
 
-<% if officer? %>
-  <%= render "officer_directory" %>
+<% if full_membership_access? %>
+  <%= render "membership_directory" %>
 <% else %>
   <%= render "member_directory" %>
 <% end %>

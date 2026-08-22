@@ -26,6 +26,8 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
 
     assert_equal [ true, true, true, true, true, true, true, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:required_by_default)
+    assert_equal [ true, true, false, true, false, false, false, false, false, false, false ],
+      organization.position_titles.order(:display_order).pluck(:grants_full_membership_access)
 
     assert_equal [ "membership", "pec" ], organization.meeting_bodies.order(:slug).pluck(:slug)
     assert_equal [ "Membership Meeting", "Post Executive Committee" ], organization.meeting_bodies.order(:slug).pluck(:name)
@@ -54,7 +56,9 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
 
     AmericanLegionPostPreset.apply_to(organization)
 
-    organization.position_titles.find_by!(name: "Commander").update!(display_order: 99, required_by_default: false)
+    organization.position_titles.find_by!(name: "Commander").update!(
+      display_order: 99, required_by_default: false, grants_full_membership_access: false
+    )
     organization.position_titles.find_by!(name: "Assistant Chaplain").update!(display_order: 1, required_by_default: true)
     organization.meeting_bodies.find_by!(slug: "pec").update!(name: "Wrong Name", default_distribution: "sms")
 
@@ -78,6 +82,8 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
 
     assert_equal [ true, true, true, true, true, true, true, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:required_by_default)
+    assert_equal [ true, true, false, true, false, false, false, false, false, false, false ],
+      organization.position_titles.order(:display_order).pluck(:grants_full_membership_access)
 
     assert_equal "Post Executive Committee", organization.meeting_bodies.find_by!(slug: "pec").name
     assert_equal "print", organization.meeting_bodies.find_by!(slug: "pec").default_distribution

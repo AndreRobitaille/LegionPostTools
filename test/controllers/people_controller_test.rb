@@ -19,6 +19,18 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(user)
   end
 
+  def sign_in_membership_leader
+    person = Person.create!(first_name: "Morgan", last_name: "Leader")
+    user = User.create!(person: person, email_address: "morgan@example.com", email_verified_at: Time.current)
+    title = PositionTitle.create!(
+      organization: Organization.first,
+      name: "Membership Chair",
+      grants_full_membership_access: true
+    )
+    PositionAssignment.create!(person: person, position_title: title, starts_on: Date.current)
+    sign_in_as(user)
+  end
+
   test "officer index lists members with membership status column" do
     prepare_setup_complete_state
     sign_in_officer
@@ -67,7 +79,7 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     prepare_setup_complete_state
     sign_in_plain_member
     Person.create!(first_name: "Zed", last_name: "Zephyr", member_number: "001", roster_paid_through_year: 2027, roster_member_status: "Active")
-    Person.create!(first_name: "Amy", last_name: "Adams", member_number: "002", roster_paid_through_year: 2024, roster_member_status: "Expired")
+    Person.create!(first_name: "Amy", last_name: "Adams", member_number: "002", roster_paid_through_year: 2024, roster_member_status: "Active")
 
     get people_path, params: { sort: "paid_through" }
 
@@ -76,6 +88,22 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     adams_index = names.index { |n| n.include?("Adams") }
     zephyr_index = names.index { |n| n.include?("Zephyr") }
     assert_operator adams_index, :<, zephyr_index
+  end
+
+  test "plain member directory excludes expired deceased and removed people" do
+    prepare_setup_complete_state
+    sign_in_plain_member
+    Person.create!(first_name: "Current", last_name: "Member", roster_member_status: "Active")
+    Person.create!(first_name: "Expired", last_name: "Member", roster_member_status: "Expired")
+    Person.create!(first_name: "Deceased", last_name: "Member", roster_member_status: "Deceased")
+    Person.create!(first_name: "Removed", last_name: "Member", roster_member_status: "Active", roster_removed_at: Time.current)
+
+    get people_path
+
+    assert_select ".mrow-name", text: /Current/
+    assert_select ".mrow-name", text: /Expired/, count: 0
+    assert_select ".mrow-name", text: /Deceased/, count: 0
+    assert_select ".mrow-name", text: /Removed/, count: 0
   end
 
   test "officer index sorts by member number when requested" do
@@ -130,5 +158,20 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "form.people-filters[action='#{people_path}'][method='get'] input[type=hidden][name=sort][value=member_id]", 1
     assert_select "a.clear[href=?]", people_path(q: "Vincent", sort: "member_id")
+  end
+
+  test "membership leader sees roster details but not login-account status" do
+    prepare_setup_complete_state
+    sign_in_membership_leader
+    person = Person.create!(first_name: "Vincent", last_name: "Alber", member_number: "000204540637", roster_member_status: "Active")
+    User.create!(person: person, email_address: "vincent@example.com", email_verified_at: Time.current)
+
+    get people_path, params: { login_status: "no_login" }
+
+    assert_response :success
+    assert_select ".mrow-name", text: /Alber/
+    assert_select "body", text: /000204540637/
+    assert_select "select[name=login_status]", count: 0
+    assert_select ".mrow-status", text: /Can sign in/, count: 0
   end
 end

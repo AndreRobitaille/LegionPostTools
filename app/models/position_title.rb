@@ -4,6 +4,7 @@ class PositionTitle < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :organization_id }
   validates :display_order, numericality: { only_integer: true }
+  validates :grants_full_membership_access, inclusion: { in: [ true, false ] }
 
   # Rewrites display_order to a contiguous 1-based sequence matching ordered_ids.
   # Raises ActiveRecord::RecordNotFound if any id is not one of the organization's

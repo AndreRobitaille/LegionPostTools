@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :current_user, :authenticated?, :officer?
+  helper_method :current_user, :authenticated?, :full_membership_access?
 
   before_action :redirect_to_setup_if_needed
   before_action :resume_session
@@ -22,8 +22,10 @@ class ApplicationController < ActionController::Base
     current_user.present?
   end
 
-  def officer?
-    current_user&.can?("manage_people") || current_user&.can?("manage_settings")
+  def full_membership_access?
+    return @full_membership_access if defined?(@full_membership_access)
+
+    @full_membership_access = current_user&.full_membership_access? || false
   end
 
   def require_authentication

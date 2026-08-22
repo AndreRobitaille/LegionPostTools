@@ -40,6 +40,7 @@ Most ordinary post members are not expected to log in during early versions. The
 - `AGENTS.md` and `CLAUDE.md` — general agent instructions and Claude-specific collaboration guidance.
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
+- `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/ARCHITECTURE.md` — architecture and durable product decisions.
 - `docs/ROADMAP.md` — planned development phases.
 - `docs/DEPLOYMENT.md` — deployment and operator notes.

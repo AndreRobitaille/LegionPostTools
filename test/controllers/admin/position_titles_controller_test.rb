@@ -24,6 +24,7 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".pos .pn", text: "Commander"
     assert_select ".pos .pn", text: "Adjutant"
+    assert_select ".position-access-note", text: /complete membership and renewal information/
     assert_select "a[href=?]", admin_root_path, text: /Back to Administration/
   end
 
@@ -61,6 +62,24 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     patch admin_position_title_path(title), params: { position_title: { active: "0" } }
     assert_not title.reload.active
     assert_redirected_to admin_position_titles_path
+  end
+
+  test "update can grant and remove full membership access" do
+    prepare_setup_complete_state
+    sign_in_admin
+    title = PositionTitle.create!(organization: @org, name: "Membership Chair", display_order: 9)
+
+    patch admin_position_title_path(title), params: { position_title: { grants_full_membership_access: "1" } }
+
+    assert title.reload.grants_full_membership_access?
+    assert_redirected_to admin_position_titles_path
+
+    get admin_position_titles_path
+    assert_select ".pos-access", text: /Full membership access/
+    assert_select "input[type=submit][value=?], button", "Remove membership access"
+
+    patch admin_position_title_path(title), params: { position_title: { grants_full_membership_access: "0" } }
+    assert_not title.reload.grants_full_membership_access?
   end
 
   test "reorder persists the new order" do

@@ -213,4 +213,48 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.can?("manage_settings")
     assert_not user.can?("manage_people")
   end
+
+  test "full membership access follows a current configured position assignment" do
+    organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Current", last_name: "Commander")
+    user = User.create!(person: person, email_address: "current-commander@example.com")
+    title = PositionTitle.create!(
+      organization: organization, name: "Membership Leader", display_order: 1,
+      grants_full_membership_access: true
+    )
+    assignment = PositionAssignment.create!(person: person, position_title: title, starts_on: Date.current - 1)
+
+    assert user.full_membership_access?
+
+    assignment.update!(ends_on: Date.current)
+    assert user.full_membership_access?, "the assignment remains active through its inclusive end date"
+
+    assignment.update!(ends_on: Date.current - 1)
+    assert_not user.full_membership_access?
+  end
+
+  test "future and inactive positions do not grant full membership access" do
+    organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Future", last_name: "Officer")
+    user = User.create!(person: person, email_address: "future-officer@example.com")
+    title = PositionTitle.create!(
+      organization: organization, name: "Future Leader", display_order: 1,
+      grants_full_membership_access: true
+    )
+    assignment = PositionAssignment.create!(person: person, position_title: title, starts_on: Date.current + 1)
+
+    assert_not user.full_membership_access?
+
+    assignment.update!(starts_on: Date.current)
+    title.update!(active: false)
+    assert_not user.full_membership_access?
+  end
+
+  test "manage_people grants full membership access without a Post office" do
+    person = Person.create!(first_name: "Membership", last_name: "Helper")
+    user = User.create!(person: person, email_address: "membership-helper@example.com")
+    PermissionGrant.create!(user: user, capability: "manage_people")
+
+    assert user.full_membership_access?
+  end
 end

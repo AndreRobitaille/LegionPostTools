@@ -34,7 +34,7 @@ module Admin
     private
 
     def position_title_params
-      params.require(:position_title).permit(:name, :active)
+      params.require(:position_title).permit(:name, :active, :grants_full_membership_access)
     end
   end
 end

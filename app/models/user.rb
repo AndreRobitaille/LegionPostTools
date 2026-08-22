@@ -22,6 +22,17 @@ class User < ApplicationRecord
     permission_grants.exists?(capability: "manage_settings")
   end
 
+  def full_membership_access?(on: Date.current)
+    return true if can?("manage_people")
+
+    person.position_assignments
+      .joins(:position_title)
+      .where(position_titles: { active: true, grants_full_membership_access: true })
+      .where("position_assignments.starts_on <= ?", on)
+      .where("position_assignments.ends_on IS NULL OR position_assignments.ends_on >= ?", on)
+      .exists?
+  end
+
   def roster_email_mismatch?
     person.roster_email_address.present? && person.roster_email_address != email_address
   end

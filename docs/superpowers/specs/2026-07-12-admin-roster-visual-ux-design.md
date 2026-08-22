@@ -11,6 +11,12 @@ It builds on two existing documents and does not restate them:
 - Visual language ("The 1919" Art Deco), palette, type, readability floors, component
   vocabulary: `docs/superpowers/specs/2026-07-11-visual-design-system-design.md`
 
+**Current access-policy note (22 AUG 2026):** `docs/ROLES.md` and
+`docs/superpowers/specs/2026-08-22-people-api-design.md` supersede this document's broad
+"officer view" terminology. Complete membership visibility follows configured current
+assignments or explicit grants. Login-account and permission details require
+`manage_settings`; membership visibility alone no longer reveals them.
+
 Interactive mockups for every screen below persist (gitignored) under
 `.superpowers/brainstorm/` and are the visual source of truth where wording here is
 ambiguous.

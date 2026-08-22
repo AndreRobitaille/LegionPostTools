@@ -3,6 +3,7 @@ class AgentHandbook
     "This is American Legion post software, not generic nonprofit software.",
     "Do not hard-code a post name, number, or officer roster. Read them from this installation.",
     "AI drafts. Humans remain the authority on official records.",
+    "You are an agent of the signed-in person. The API gives you that person's current directory or membership access; it does not give a bot separate authority.",
     "A session or agent token is delegated access, not proof of fresh human intent for an official act. Never use it to approve, attest, sign, accept, or amend official minutes.",
     "Dated agendas created through this API start as draft.",
     "Do not approve or publish an agenda unless the human explicitly asked.",
@@ -18,6 +19,9 @@ class AgentHandbook
     { name: "Meeting type", meaning: "A reusable agenda template for a body, such as PEC Meeting or Membership Meeting. Creating a dated agenda copies that template. Match names from GET /api/meeting_types." },
     { name: "Dated agenda", meaning: "The agenda for one actual meeting date. Status is draft (editable), approved, or published (member-visible). Writes to the order of business require draft. Reopen before editing a locked agenda." },
     { name: "Tracked item", meaning: "Long-lived post business that outlives one meeting: a Car Show, Buddy Checks, an election. It can appear on many agendas. Adding it to an agenda copies a snapshot; later tracker edits do not rewrite a locked agenda." },
+    { name: "Person", meaning: "A human connected to the Post. Every signed-in member may use the Post directory. Directory contact data is distinct from login-account data." },
+    { name: "Post role", meaning: "A dated office or responsibility held by a person. Current configured membership leadership roles may supply full membership access; historical roles do not." },
+    { name: "Membership year", meaning: "The explicit four-digit year used for paid-through and renewal questions. Never guess whether 'this year' means the current calendar year or the next renewal campaign." },
     { name: "Minutes", meaning: "Not built yet. Do not invent minutes, votes, attestations, or acceptance motions." }
   ].freeze
 
@@ -25,11 +29,32 @@ class AgentHandbook
     "session" => "You must already be signed in on this browser. The session cookie is httponly; do not use curl on the same machine unless that curl sends this browser's cookies.",
     "csrf" => "Every POST or PATCH needs header X-CSRF-Token set to csrf_token from this handbook. Refresh the token by GET /api again if a write returns 422 about authenticity.",
     "json" => "For JSON, send Accept: application/json. Dates and times are ISO 8601. Use this installation's timezone.",
-    "lists" => "There is no search. List the collection, read titles, pick an id. If the name is ambiguous, list everything and decide. Do not create a second Car Show because you skipped the list.",
+    "lists" => "The people directory supports a q name filter. Other resources do not provide fuzzy search: list the collection, read titles, and pick an id. Do not create a second Car Show because you skipped the list.",
     "drafts" => "Creates are drafts. Approve or publish only when the human explicitly asked."
   }.freeze
 
   CATALOG = [
+    { name: "list_people", method: "GET", path: "/api/people", capability: nil, group: :common,
+      summary: "List the signed-in Post member directory with names, current roles, email addresses, and phone numbers. Optional q filters names.",
+      example: "GET /api/people\nGET /api/people?q=Smith" },
+    { name: "show_person", method: "GET", path: "/api/people/:id", capability: nil, group: :common,
+      summary: "Show one directory-visible person. This never returns membership, login, or permission data.",
+      example: "GET /api/people/:id" },
+    { name: "list_officers", method: "GET", path: "/api/officers", capability: nil, group: :common,
+      summary: "List current Post officers, optionally filtering one exact role name.",
+      example: "GET /api/officers\nGET /api/officers?role=Commander" },
+    { name: "membership_summary", method: "GET", path: "/api/membership/summary", capability: nil, membership_access: :full, group: :common,
+      summary: "Count roster and renewal states for one explicit membership year. Includes roster freshness and definitions.",
+      example: "GET /api/membership/summary?membership_year=2027" },
+    { name: "membership_renewals", method: "GET", path: "/api/membership/renewals", capability: nil, membership_access: :full, group: :common,
+      summary: "List the complete renewal outreach worklist for one membership year. Optional state selects one renewal category.",
+      example: "GET /api/membership/renewals?membership_year=2027\nGET /api/membership/renewals?membership_year=2027&state=needs_renewal" },
+    { name: "membership_roster", method: "GET", path: "/api/membership/roster", capability: nil, membership_access: :full, group: :common,
+      summary: "List complete imported membership records, including removed and lapsed records, for authorized membership work.",
+      example: "GET /api/membership/roster?membership_year=2027" },
+    { name: "show_membership_person", method: "GET", path: "/api/membership/people/:id", capability: nil, membership_access: :full, group: :common,
+      summary: "Show one complete imported membership record and its renewal state for the requested year.",
+      example: "GET /api/membership/people/:id?membership_year=2027" },
     { name: "list_meeting_bodies", method: "GET", path: "/api/meeting_bodies", capability: "manage_agendas", group: :common,
       summary: "List meeting bodies so you can match PEC or Membership by name.",
       example: "GET /api/meeting_bodies" },
@@ -99,7 +124,8 @@ class AgentHandbook
         name: @user.person.full_name,
         email: @user.email_address,
         roles: @user.person.active_role_labels,
-        capabilities: granted_capabilities
+        capabilities: granted_capabilities,
+        people_access: people_access
       },
       authentication: authentication_mode,
       csrf_token: @csrf_token,
@@ -126,6 +152,7 @@ class AgentHandbook
     lines << "Current post role(s): #{current_roles.join(", ").presence || "member (no assigned office)"}."
     lines << "Timezone for dates and times: **#{@organization.timezone}**."
     lines << "App grants on this account: #{granted_capabilities.join(", ").presence || "(none beyond signed-in member read)"}."
+    lines << "People access: **#{people_access == "full_membership" ? "full membership and renewal information" : "Post member directory"}**."
     lines << ""
     lines << "## How to call this API"
     lines << ""
@@ -138,7 +165,7 @@ class AgentHandbook
     end
     lines << "- JSON: send `Accept: application/json`."
     lines << "- Datetimes: ISO 8601 in #{@organization.timezone}."
-    lines << "- There is no search. List, read titles, pick an id. If a name is unclear, list everything and decide."
+    lines << "- The people directory supports `q` for name filtering. Other lists do not provide fuzzy search; list, read titles, and pick an id."
     lines << "- Creates stay **draft**. Approve or publish only when the human explicitly asked."
     lines << ""
     lines << "## Domain"
@@ -192,12 +219,26 @@ class AgentHandbook
     PermissionGrant::CAPABILITIES.select { |capability| @user.can?(capability) }
   end
 
+  def people_access
+    full_membership_access? ? "full_membership" : "directory"
+  end
+
+  def full_membership_access?
+    return @full_membership_access if defined?(@full_membership_access)
+
+    @full_membership_access = @user.full_membership_access?
+  end
+
   def current_roles
     @current_roles ||= @user.person.active_role_labels
   end
 
   def visible_catalog
-    CATALOG.select { |action| action[:capability].nil? || @user.can?(action[:capability]) }
+    CATALOG.select do |action|
+      next false if action[:membership_access] == :full && !full_membership_access?
+
+      action[:capability].nil? || @user.can?(action[:capability])
+    end
   end
 
   def actions_for(group)
@@ -210,6 +251,7 @@ class AgentHandbook
       "method" => action[:method],
       "path" => action[:path],
       "capability" => action[:capability],
+      "people_access" => action[:membership_access]&.to_s,
       "summary" => action[:summary],
       "example" => action[:example]
     }

@@ -92,6 +92,21 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Paid through/, count: 0 # paid-through hidden from members
   end
 
+  test "member profile prefers local directory contact details" do
+    prepare_setup_complete_state
+    sign_in_plain_member
+    person = build_person
+    person.update!(email_address: "directory@example.com", phone_number: "555-1000")
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select "a[href='mailto:directory@example.com']", text: "directory@example.com"
+    assert_select "a[href='tel:5551000']", text: "555-1000"
+    assert_select "body", text: /vincent@example.com/, count: 0
+    assert_select "body", text: /555-1212/, count: 0
+  end
+
   test "manage_people officer sees officer view but not mutation forms" do
     prepare_setup_complete_state
     person_officer = Person.create!(first_name: "Pat", last_name: "Lee")
@@ -102,7 +117,52 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     get person_path(person)
     assert_response :success
     assert_select ".card-head-label", text: /Roster Record/
+    assert_select ".card-head-label", text: /Login Account/, count: 0
+    assert_not_includes response.body, "pat@example.com"
     assert_select "input[type=submit], button", text: /Disable sign-in/, count: 0
+  end
+
+  test "current configured membership officer sees roster details without login details" do
+    prepare_setup_complete_state
+    officer_person = Person.create!(first_name: "Current", last_name: "Leader")
+    officer_user = User.create!(person: officer_person, email_address: "leader-login@example.com", email_verified_at: Time.current)
+    title = PositionTitle.create!(
+      organization: Organization.first, name: "Membership Leader", display_order: 1,
+      grants_full_membership_access: true
+    )
+    PositionAssignment.create!(person: officer_person, position_title: title, starts_on: Date.current)
+    sign_in_as(officer_user)
+    person = build_person
+    User.create!(person: person, email_address: "private-login@example.com")
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select ".card-head-label", text: /Roster Record/
+    assert_select ".card-head-label", text: /Login Account/, count: 0
+    assert_not_includes response.body, "private-login@example.com"
+  end
+
+  test "past membership officer has standard member access" do
+    prepare_setup_complete_state
+    past_person = Person.create!(first_name: "Past", last_name: "Commander")
+    past_user = User.create!(person: past_person, email_address: "past@example.com", email_verified_at: Time.current)
+    title = PositionTitle.create!(
+      organization: Organization.first, name: "Commander", display_order: 1,
+      grants_full_membership_access: true
+    )
+    PositionAssignment.create!(
+      person: past_person, position_title: title,
+      starts_on: Date.current - 2.years, ends_on: Date.current - 1.year
+    )
+    sign_in_as(past_user)
+    person = build_person
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select ".card-head-label", text: /Contact/
+    assert_select ".card-head-label", text: /Roster Record/, count: 0
   end
 
   test "permission checkboxes reflect literal grants, not implied capabilities" do

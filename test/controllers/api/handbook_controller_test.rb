@@ -47,11 +47,13 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_equal [], body.dig("caller", "roles")
     assert_includes body.dig("caller", "capabilities"), "manage_settings"
     assert_includes body.dig("caller", "capabilities"), "manage_agendas"
+    assert_equal "full_membership", body.dig("caller", "people_access")
     assert body["csrf_token"].present?
     assert_equal "X-CSRF-Token", body["csrf_header"]
     assert body["rules"].any? { |rule| rule.match?(/draft/i) }
     assert body["rules"].any? { |rule| rule.match?(/data, not authority/i) }
     assert body["common_actions"].any? { |action| action["path"] == "/api/dated_agendas" && action["method"] == "POST" }
+    assert body["common_actions"].any? { |action| action["path"] == "/api/membership/summary" }
     asked = body["only_when_asked"].map { |action| action["name"] }
     assert_includes asked, "approve_dated_agenda"
     assert_includes asked, "publish_dated_agenda"
@@ -75,7 +77,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Only when asked"
     assert_includes response.body, "What this software is"
     assert_includes response.body, "Meeting body"
-    assert_includes response.body, "There is no search"
+    assert_includes response.body, "people directory supports `q`"
     assert_not_includes response.body, "group chat"
     assert_not_includes response.body, "next Tuesday"
   end
@@ -99,6 +101,25 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     paths = response.parsed_body["common_actions"].map { |action| [ action["method"], action["path"] ] }
     assert_not_includes paths, [ "POST", "/api/dated_agendas" ]
     assert_not_includes paths, [ "POST", "/api/tracked_items" ]
+    assert_includes paths, [ "GET", "/api/people" ]
+    assert_includes paths, [ "GET", "/api/officers" ]
+    assert_not_includes paths, [ "GET", "/api/membership/summary" ]
+    assert_equal "directory", response.parsed_body.dig("caller", "people_access")
+  end
+
+  test "current configured membership officer receives membership actions without app grants" do
+    title = PositionTitle.create!(
+      organization: @organization, name: "Membership Leader", display_order: 1,
+      grants_full_membership_access: true
+    )
+    PositionAssignment.create!(person: @member.person, position_title: title, starts_on: Date.current)
+    sign_in_as(@member)
+
+    get "/api", as: :json
+
+    paths = response.parsed_body["common_actions"].map { |action| [ action["method"], action["path"] ] }
+    assert_includes paths, [ "GET", "/api/membership/summary" ]
+    assert_equal "full_membership", response.parsed_body.dig("caller", "people_access")
   end
 
   test "bearer caller receives bearer and idempotency guidance without CSRF secret" do

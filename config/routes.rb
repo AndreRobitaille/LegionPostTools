@@ -97,6 +97,12 @@ Rails.application.routes.draw do
   resource :dashboard, only: %i[show], controller: "dashboard"
   namespace :api do
     get "/", to: "handbook#show"
+    resources :people, only: %i[index show]
+    resources :officers, only: %i[index]
+    get "membership/summary", to: "membership#summary"
+    get "membership/renewals", to: "membership#renewals"
+    get "membership/roster", to: "membership#roster"
+    get "membership/people/:id", to: "membership#person"
     resources :meeting_bodies, only: %i[index]
     resources :meeting_types, only: %i[index]
     resources :dated_agendas, only: %i[index show create] do

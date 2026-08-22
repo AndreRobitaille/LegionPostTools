@@ -19,6 +19,33 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal "Jane Doe", person.roster_display_name
   end
 
+  test "directory contact prefers local fields and falls back to roster fields" do
+    local = Person.new(
+      first_name: "Local", last_name: "Contact",
+      email_address: "local@example.com", phone_number: "555-1000",
+      roster_email_address: "roster@example.com", roster_phone_number: "555-2000"
+    )
+    roster = Person.new(
+      first_name: "Roster", last_name: "Contact",
+      roster_email_address: "roster@example.com", roster_phone_number: "555-2000"
+    )
+
+    assert_equal "local@example.com", local.directory_email_address
+    assert_equal "555-1000", local.directory_phone_number
+    assert_equal "roster@example.com", roster.directory_email_address
+    assert_equal "555-2000", roster.directory_phone_number
+  end
+
+  test "directory visibility excludes removed expired and deceased people but keeps local people" do
+    visible = Person.create!(first_name: "Active", last_name: "Member", roster_member_status: " Active ")
+    local = Person.create!(first_name: "Local", last_name: "Officer")
+    Person.create!(first_name: "Expired", last_name: "Member", roster_member_status: "EXPIRED")
+    Person.create!(first_name: "Deceased", last_name: "Member", roster_member_status: "deceased")
+    Person.create!(first_name: "Removed", last_name: "Member", roster_member_status: "Active", roster_removed_at: Time.current)
+
+    assert_equal [ visible.id, local.id ].sort, Person.directory_visible.ids.sort
+  end
+
   test "requires first_name and last_name" do
     person = Person.new
 

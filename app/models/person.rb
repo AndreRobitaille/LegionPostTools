@@ -1,4 +1,6 @@
 class Person < ApplicationRecord
+  DIRECTORY_HIDDEN_STATUSES = %w[deceased expired].freeze
+
   has_one :user, dependent: :destroy
   has_many :position_assignments, dependent: :destroy
   has_many :position_titles, through: :position_assignments
@@ -9,12 +11,30 @@ class Person < ApplicationRecord
   validates :first_name, :last_name, presence: true
   validates :member_number, uniqueness: { allow_blank: true }
 
+  scope :directory_visible, -> {
+    where(roster_removed_at: nil)
+      .where("LOWER(TRIM(COALESCE(roster_member_status, ''))) NOT IN (?)", DIRECTORY_HIDDEN_STATUSES)
+  }
+  scope :roster_backed, -> { where.not(member_number: nil) }
+
   def full_name
     [ first_name, last_name ].compact_blank.join(" ")
   end
 
   def roster_display_name
     roster_name.presence || full_name
+  end
+
+  def directory_email_address
+    email_address.presence || roster_email_address.presence
+  end
+
+  def directory_phone_number
+    phone_number.presence || roster_phone_number.presence
+  end
+
+  def normalized_roster_status
+    roster_member_status.to_s.strip.downcase
   end
 
   # Up to two letters for the avatar token. Kept on the model because the header

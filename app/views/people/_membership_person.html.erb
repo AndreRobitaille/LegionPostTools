@@ -1,4 +1,4 @@
-<%# app/views/people/_officer_person.html.erb
+<%# app/views/people/_membership_person.html.erb
     Locals (from PeopleController#show, via show.html.erb): @person, @user, @can_manage, @position_titles %>
 
 <div class="idhead">
@@ -38,8 +38,10 @@
   <p class="readonly-tip"><span class="lock" aria-hidden="true">&#128274;</span> These fields come from the National roster and can't be edited here. Corrections are made through National, then picked up on the next import.</p>
 <% end %>
 
-<%= render "shared/section_panel", label: "Login Account" do %>
-  <%= render "login_account" %>
+<% if @can_manage %>
+  <%= render "shared/section_panel", label: "Login Account" do %>
+    <%= render "login_account" %>
+  <% end %>
 <% end %>
 
 <%= render "shared/section_panel", label: "Post Roles" do %>

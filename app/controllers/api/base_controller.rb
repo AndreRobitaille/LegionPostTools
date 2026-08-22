@@ -30,11 +30,70 @@ module Api
       render_error("You do not have permission to open that.", status: :forbidden)
     end
 
+    def require_full_membership_access
+      require_authentication
+      return if performed?
+      return if current_user.full_membership_access?
+
+      render_error("You do not have permission to open membership information.", status: :forbidden)
+    end
+
     def organization
       Organization.first!
     end
 
     private
+
+    def prevent_private_data_caching
+      response.cache_control.replace(no_store: true)
+    end
+
+    def directory_person_payload(person)
+      {
+        id: person.id,
+        name: person.roster_display_name,
+        roles: person.active_role_labels,
+        email_address: person.directory_email_address,
+        phone_number: person.directory_phone_number
+      }
+    end
+
+    def collection_page(scope, default_limit: 500, max_limit: 500)
+      limit = integer_parameter(:limit, default: default_limit)
+      offset = integer_parameter(:offset, default: 0)
+      raise ArgumentError, "limit must be between 1 and #{max_limit}." unless limit.between?(1, max_limit)
+      raise ArgumentError, "offset must be zero or greater." if offset.negative?
+
+      total = scope.size
+      records = if scope.is_a?(Array)
+        scope.slice(offset, limit) || []
+      else
+        scope.limit(limit).offset(offset).to_a
+      end
+
+      {
+        records: records,
+        metadata: {
+          count: total,
+          returned_count: records.size,
+          offset: offset,
+          limit: limit,
+          truncated: offset + records.size < total
+        }
+      }
+    rescue ArgumentError => error
+      render_error(error.message, status: :unprocessable_entity, details: [ error.message ])
+      nil
+    end
+
+    def integer_parameter(name, default:)
+      value = params[name]
+      return default if value.blank?
+
+      Integer(value.to_s, 10)
+    rescue ArgumentError, TypeError
+      raise ArgumentError, "#{name} must be an integer."
+    end
 
     def authenticate_api_request
       authorization = request.headers["Authorization"].to_s
