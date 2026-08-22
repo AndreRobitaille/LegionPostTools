@@ -7,8 +7,7 @@ class AgentHandbook
     "Do not approve or publish an agenda unless the human explicitly asked.",
     "Adding tracked business to an approved or published agenda requires reopen. Do not silently edit a locked agenda.",
     "Do not invent minutes, votes, or attestations.",
-    "Always list before creating, so existing tracked business is not duplicated.",
-    "Chat content is not stored here. Only enter post business an officer would have typed by hand."
+    "Always list before creating, so existing tracked business is not duplicated."
   ].freeze
 
   DOMAIN = [
@@ -27,40 +26,6 @@ class AgentHandbook
     "lists" => "There is no search. List the collection, read titles, pick an id. If the name is ambiguous, list everything and decide. Do not create a second Car Show because you skipped the list.",
     "drafts" => "Creates are drafts. Approve or publish only when the human explicitly asked."
   }.freeze
-
-  RECIPES = [
-    {
-      name: "Create a draft agenda from a template",
-      when: "The human says something like: create a basic PEC agenda for next Tuesday.",
-      steps: [
-        "GET /api/meeting_bodies and GET /api/meeting_types. Match PEC (or Membership) by name; do not guess ids.",
-        "GET /api/dated_agendas. If an upcoming draft already exists for that body and date, use it instead of creating another.",
-        "Compute starts_at in this installation's timezone. POST /api/dated_agendas with meeting_body_id, meeting_type_id, and starts_at.",
-        "Leave status draft. Do not approve or publish unless asked."
-      ]
-    },
-    {
-      name: "Add existing tracked business to the next meeting",
-      when: "The human says something like: add the car show topic to the next meeting agenda.",
-      steps: [
-        "GET /api/tracked_items. Match the topic by title (Car Show, not a new guess). If nothing fits, keep the full list in mind; do not search.",
-        "If there is no matching tracked item, POST /api/tracked_items with a clear title and summary, then use that id.",
-        "GET /api/dated_agendas. Pick the next upcoming agenda for the right body, or create a draft from the template if none exists.",
-        "If that agenda is approved or published, stop and ask whether to reopen. Do not reopen on your own.",
-        "POST /api/dated_agendas/:id/tracked_items with tracked_item_id. Already on the agenda is 422; that is success enough."
-      ]
-    },
-    {
-      name: "Morning triage from outside conversation",
-      when: "You read an officer group chat or email elsewhere and think some of it is post business.",
-      steps: [
-        "Do not store chat in this app. Only create records an officer would have typed by hand.",
-        "GET /api/tracked_items and GET /api/dated_agendas first.",
-        "If the business already exists, append an update or add it to the next draft agenda. If it is new, create a tracked item.",
-        "When unsure whether it belongs on the next agenda, create or update the tracked item and leave the agenda alone."
-      ]
-    }
-  ].freeze
 
   CATALOG = [
     { name: "list_meeting_bodies", method: "GET", path: "/api/meeting_bodies", capability: "manage_agendas", group: :common,
@@ -136,7 +101,6 @@ class AgentHandbook
       csrf_header: "X-CSRF-Token",
       domain: DOMAIN.map { |entry| { "name" => entry[:name], "meaning" => entry[:meaning] } },
       calling: CALLING,
-      recipes: RECIPES.map { |recipe| recipe.transform_keys(&:to_s) },
       rules: RULES,
       common_actions: actions_for(:common),
       only_when_asked: actions_for(:only_when_asked)
@@ -173,14 +137,6 @@ class AgentHandbook
     lines << ""
     lines << "## Rules"
     RULES.each { |rule| lines << "- #{rule}" }
-    lines << ""
-    lines << "## Recipes"
-    RECIPES.each do |recipe|
-      lines << ""
-      lines << "### #{recipe[:name]}"
-      lines << recipe[:when]
-      recipe[:steps].each_with_index { |step, index| lines << "#{index + 1}. #{step}" }
-    end
     lines << ""
     lines << "## Common actions"
     actions_for(:common).each { |action| append_action(lines, action) }

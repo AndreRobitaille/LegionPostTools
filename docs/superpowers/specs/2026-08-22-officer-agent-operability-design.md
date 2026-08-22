@@ -66,11 +66,10 @@ Out of scope for this phase:
 
 ## How the Bot starts
 
-Standing instruction, given once to Grok Bot: paste
-`docs/agent-operator-skill.md` in full. That file covers what the app is, this
-installation's URL, passkey/magic-link sign-in (human takeover), the 180-day
-session, and that every job starts by reading `/api`. Do not replace it with a
-one-line "you are Commander, open /api."
+Standing instruction, given once to Grok Bot: the short brief in
+`docs/agent-operator-skill.md` (what the app is, this URL, how to sign in,
+then read `/api`). Job design (group chat, morning routines, standing orders)
+belongs in the Bot, not in the app handbook.
 
 `GET /api` requires a session. It returns markdown (and `Accept:
 application/json` / `.json`) describing **this** installation, the caller, their

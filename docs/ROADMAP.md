@@ -117,7 +117,7 @@ Build:
 - Generated handbook at `GET /api` (login required) so the Bot can learn this
   installation without a human manual, MCP, or public docs. Standing
   instructions to paste into the Bot live in `docs/agent-operator-skill.md`
-  (URL, sign-in, then `/api`).
+  (what the app is, URL, sign-in, then `/api`). Job routines stay in the Bot.
 - Lists, not search. The Bot matches names from the list.
 - Draft-only creates unless the human explicitly asks to approve or publish.
 - Verify the Agent Computer browser can sign in and reach `/api` (watch
