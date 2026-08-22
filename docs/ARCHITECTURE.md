@@ -71,7 +71,11 @@ Meeting records are the core product direction.
 - Agenda templates and dated agendas contain structured sections, with agenda items scoped and ordered inside each section.
 - Agenda items are structured records, not one large freeform document.
 - Rich text belongs inside structured records for notes, bullets, ceremony text, and printable context.
-- Tracked items should capture long-lived business such as Car Show, Buddy Checks, elections, or ceremonies.
+- `TrackedItem` captures long-lived post business such as a Car Show, Buddy Checks,
+  elections, or ceremonies. Its officer updates are append-only, and agenda appearances
+  form a continuity record across meetings.
+- Adding tracked business to a dated agenda creates an independent agenda-item snapshot.
+  Later tracker edits cannot silently rewrite an approved or published agenda.
 
 ## Official Records
 

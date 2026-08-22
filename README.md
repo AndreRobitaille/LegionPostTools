@@ -18,8 +18,12 @@ The current application foundation includes:
   and sign-in, with a first-login "add a passkey" prompt and a Settings › Security page to
   name, rename, and remove passkeys.
 - Compact authenticated app shell and a minimal authenticated dashboard.
+- Structured agenda catalog, meeting templates, dated agendas, and reusable agenda sections.
+- Tracked post business with dated continuity updates, meeting-priority suggestions, and
+  independent agenda snapshots.
 
-Structured agendas, tracked items, minutes drafting, review/attestation, PDF/export, and email distribution are planned next.
+Polished agenda presentation and primary navigation are next, followed by minutes drafting,
+review/attestation, PDF/export, and email distribution.
 
 ## Who This Is For
 

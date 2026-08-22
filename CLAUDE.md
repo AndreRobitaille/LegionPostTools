@@ -12,6 +12,8 @@ Use strong product and UX judgment. The app serves American Legion officers, adj
 
 When design and implementation trade off, preserve the design intent and simplify implementation only where it does not flatten the user experience.
 
+Every feature needs deliberate product and UX design work appropriate to its scope. For any feature that adds or changes user-facing UI, invoke the available frontend-design or equivalent visual design skill during planning and implementation. State the visual direction before coding, build within the established system, and critique the rendered desktop and narrow-screen result before completion. Do not defer design until after functionality is implemented.
+
 ### Readability (hard rule)
 
 Members are often in their 70s, so type must be large: body and interactive text ≥ 16px,

@@ -40,9 +40,11 @@ The first real installation is Robert E. Burns Post 165 in Two Rivers, Wisconsin
 
 ## Design Before Implementation
 
-For meaningful product changes, write or update a design/spec before implementation. This is especially important for meeting workflows, official records, AI drafting, permissions, deployment, or user-facing flows.
+Every feature requires deliberate product and UX design work appropriate to its scope. For meaningful product changes, write or update a design/spec before implementation. This is especially important for meeting workflows, official records, AI drafting, permissions, deployment, or user-facing flows.
 
 Do not jump directly from idea to code when the change affects product behavior or long-term architecture.
+
+For every feature that adds or changes user-facing UI, invoke an available frontend or visual design skill while planning and implementing it. Record the intended visual direction before coding, follow the established visual system, and critique the rendered result at desktop and narrow widths before calling the feature complete. Design is part of implementation, not optional polish after the feature works.
 
 ## Local Development Servers
 
