@@ -3,7 +3,8 @@ class ApplicationController < ActionController::Base
   SESSION_TOUCH_INTERVAL = 15.minutes
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  # JSON agent clients are not browsers; keep the gate on human HTML, not /api.
+  allow_browser versions: :modern, unless: -> { request.path.start_with?("/api") }
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes

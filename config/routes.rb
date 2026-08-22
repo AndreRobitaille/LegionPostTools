@@ -82,5 +82,25 @@ Rails.application.routes.draw do
   resource :passkey_invitation, only: %i[destroy]
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
+  namespace :api do
+    get "/", to: "handbook#show"
+    resources :meeting_bodies, only: %i[index]
+    resources :meeting_types, only: %i[index]
+    resources :dated_agendas, only: %i[index show create] do
+      member do
+        patch :approve
+        patch :publish
+        patch :reopen
+      end
+      resources :tracked_items, only: :create, controller: "dated_agenda_tracked_items"
+    end
+    resources :tracked_items, only: %i[index show create] do
+      member do
+        patch :complete
+        patch :reopen
+      end
+      resources :updates, only: :create, controller: "tracked_item_updates"
+    end
+  end
   root "dashboard#show"
 end
