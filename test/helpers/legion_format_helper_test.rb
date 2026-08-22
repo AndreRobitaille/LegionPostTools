@@ -36,4 +36,15 @@ class LegionFormatHelperTest < ActionView::TestCase
     assert_nil parse_legion_date("not a date")
     assert_nil parse_legion_date("32 JAN 1995")
   end
+
+  test "combine_legion_datetime parses a strict 24-hour time" do
+    assert_equal Time.zone.local(2026, 6, 24, 19, 5), combine_legion_datetime("24 JUN 2026", "19:05")
+  end
+
+  test "combine_legion_datetime rejects missing malformed and out-of-range times" do
+    assert_nil combine_legion_datetime("24 JUN 2026", nil)
+    assert_nil combine_legion_datetime("24 JUN 2026", "evening")
+    assert_nil combine_legion_datetime("24 JUN 2026", "24:00")
+    assert_nil combine_legion_datetime("24 JUN 2026", "19:60")
+  end
 end

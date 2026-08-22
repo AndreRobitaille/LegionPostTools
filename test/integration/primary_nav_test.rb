@@ -51,7 +51,8 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select ".app-menu-btn[aria-haspopup='true'][aria-expanded='false']", text: /Menu/
+    assert_select ".app-menu-btn[aria-expanded='false'][aria-controls='app-menu-panel']", text: /Menu/
+    assert_select ".app-menu-btn[aria-haspopup]", count: 0
     assert_select ".app-menu-id .app-menu-id-text strong", text: "Jane Doe"
     # The officer label left the top bar; only the menu carries it now.
     assert_select ".app-user .app-user-name", text: "Jane Doe"

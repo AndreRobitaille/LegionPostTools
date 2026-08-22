@@ -42,7 +42,7 @@ Primary navigation contains only real destinations:
 - Meetings
 - Tracked Items
 - People
-- Settings
+- Profile
 - Admin, when the user has an administrative capability
 
 Meetings links to the signed-in member list of upcoming published agendas and remains

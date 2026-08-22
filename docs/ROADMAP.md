@@ -12,7 +12,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - Passwordless authentication (complete, end-to-end): magic-link email sign-in; passkey
   WebAuthn **registration and sign-in** wired in the browser (feature-detected, with graceful
   fallback to the email link); a first-login "add a passkey" invitation card; and a
-  Settings › Security page to name, rename, and remove passkeys. Dev email is viewable via
+  Profile page to name, rename, and remove passkeys. Dev email is viewable via
   `letter_opener_web`; production email runs behind a replaceable delivery boundary (Loops.so).
   See `docs/superpowers/specs/2026-07-11-authentication-flow-design.md`.
 - Compact authenticated app shell (header) + minimal authenticated dashboard.
@@ -110,6 +110,12 @@ Immediate jobs this phase must unlock:
 - Morning group-chat triage **in Grok Bot**, which then creates or updates
   tracked business and draft agenda entries here. Chat never enters this app.
 
+Grok Bot is intended to be the signed-in officer's delegate for ordinary work, not a
+weaker integration account. Session cookies and future API keys are credential choices;
+either may represent the officer's delegated grants. Official minutes are different:
+approval, attestation, signature, acceptance, and amendment will require app-enforced
+proof of fresh human intent that the Bot cannot infer or create for itself.
+
 Build:
 
 - Private session-authenticated JSON for meeting bodies, meeting types, dated
@@ -122,18 +128,36 @@ Build:
 - Draft-only creates unless the human explicitly asks to approve or publish.
 - Verify the Agent Computer browser can sign in and reach `/api` (watch
   `allow_browser`).
+- Add idempotency keys before unattended jobs or automatic retries perform writes.
+- Before any official-minutes mutation is exposed to an agent, add one-use,
+  record-and-action-bound human confirmation plus agent-execution audit provenance.
 
-Do not build in this phase: TUI, CLI package, MCP, API tokens, public
+The first slice deliberately did not build: TUI, CLI package, MCP, API tokens, public
 `llms.txt`, chat ingest, or minutes endpoints.
 
 See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
 `docs/superpowers/plans/2026-08-22-officer-agent-operability.md`.
 
-When minutes, PDF, or distribution ship, add them to the handbook. A personal
-access token waits until a shell-only agent cannot use the 180-day session
-cookie. MCP waits until a host with no shell needs the same actions.
+When minutes, PDF, or distribution ship, add them to the handbook. MCP still waits
+until connector-style onboarding is worth another protocol surface.
 
-## Immediate Next: Minutes Lifecycle
+## Immediate Next: Agent Sign-in and Access
+
+- Add a browser-bound, eight-digit code to magic-link email so an officer can receive
+  email on one device and finish sign-in on Grok Agent Computer.
+- Add Profile-managed, named, expiring, revocable personal agent tokens for reliable
+  bearer-authenticated API work, plus administrative revocation without impersonation.
+- Require recent human authentication before token creation.
+- Require idempotency keys for token-authenticated mutations and record agent execution
+  provenance.
+- Update the generated handbook and Grok standing instructions for both credential paths.
+- Live-verify code sign-in, token access, and revocation on Agent Computer before enabling
+  unattended routines.
+
+See `docs/superpowers/specs/2026-08-22-agent-sign-in-and-access-design.md` and
+`docs/superpowers/plans/2026-08-22-agent-sign-in-and-access.md`.
+
+## Next After Agent Access: Minutes Lifecycle
 
 - Transcript paste/upload.
 - Draft/review/approval/attestation/acceptance workflow.
@@ -158,8 +182,8 @@ cookie. MCP waits until a host with no shell needs the same actions.
 
 ## Security and Account Continuity
 
-- Full session/device management system: list signed-in browsers/devices in Settings ›
-  Security, show last seen/browser/IP context, revoke one session, sign out all other
+- Full session/device management system on Profile: list signed-in browsers/devices,
+  show last seen/browser/IP context, revoke one session, sign out all other
   sessions, clean up sessions after 180 days of inactivity, revoke sessions on risk
   events, and later support step-up authentication for sensitive actions.
 

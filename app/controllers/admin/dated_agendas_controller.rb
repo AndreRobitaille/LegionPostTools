@@ -97,7 +97,7 @@ module Admin
       # in the app's own formats (DD MMM YYYY, 24-hour clock).
       if permitted.key?(:starts_at_date)
         combined = helpers.combine_legion_datetime(permitted.delete(:starts_at_date), permitted.delete(:starts_at_time))
-        permitted[:starts_at] = combined if combined
+        permitted[:starts_at] = combined
       end
 
       permitted

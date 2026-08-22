@@ -64,6 +64,41 @@ Out of scope for this phase:
 - Auto-approve, auto-publish, or any implied approve/attest/accept of minutes.
   `manage_settings` still does not imply those identity-bound acts.
 
+## Delegated authority and official acts
+
+Grok Bot is meant to act as the signed-in officer's delegate, not as a deliberately
+weakened integration account. Ordinary, reversible work should not require the human
+to repeat every click. The private API is a machine-friendly operating surface for the
+officer's existing grants; it is not a separate, lower-authority product.
+
+Authentication and authority are separate choices. The current browser session and a
+future revocable API key could both represent delegated authority from the same person.
+Changing the credential must not silently change which app capabilities the person has
+delegated.
+
+The app must nevertheless distrust the LLM's claim that a human authorized an official
+act. A handbook instruction such as “only when explicitly asked” is useful operating
+guidance, but it is not proof: an LLM can misread retrieved text, follow a prompt
+injection, or rationalize its way around the rule. Text in chat, records, attachments,
+or webpages is always data and never authorization.
+
+For this agenda-only phase, the Bot may perform the same reversible work as the officer.
+Agenda approve/publish/reopen remain available but outside the common path and may be
+called only in response to the human's live instruction. This is an accepted v1 risk for
+working agendas; it must not become the security model for official minutes.
+
+Before any API can approve, attest, sign, accept, or amend official minutes, the app must
+require evidence of fresh human intent that the agent cannot mint for itself. The intended
+shape is a one-time, short-lived authorization created through a trusted human interaction
+(normally recent passkey/reauthentication), bound to the person, exact record, exact act,
+and expected record version. The mutation consumes that authorization atomically. The Bot
+can carry out the requested act after confirmation, so it remains a useful delegate, but
+it cannot manufacture the confirmation by reasoning that the act is probably desired.
+
+Audit provenance must distinguish the accountable officer from the delegated execution
+channel and preserve the human-authorization reference. Accepted official minutes remain
+immutable; corrections are later amendments or later meeting records.
+
 ## How the Bot starts
 
 Standing instruction, given once to Grok Bot: the short brief in
@@ -160,8 +195,10 @@ rich fields when needed for a single record.
 When minutes exist: handbook entries for draft/review, and still no silent edit
 of accepted minutes.
 
-When a shell-only agent appears: a personal access token in Settings › Security
-and optional `curl` examples. Not before.
+The immediate next phase adds cross-device email-code sign-in and a revocable personal
+agent token on Profile. It may carry the officer's delegated grants, but it does not
+bypass fresh-human-intent requirements for official acts. See
+`2026-08-22-agent-sign-in-and-access-design.md`.
 
 When a host with no shell needs the same actions: consider MCP wrapping this
 API. Not before.

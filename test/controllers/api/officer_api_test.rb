@@ -230,6 +230,39 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_includes created.updates.first.body.to_s, "Five calls completed."
   end
 
+  test "malformed tracked item date is 422 JSON and creates nothing" do
+    sign_in_as(@commander)
+
+    assert_no_difference -> { @organization.tracked_items.count } do
+      post "/api/tracked_items", params: {
+        title: "Buddy Checks",
+        importance: "standard",
+        raise_by_on: "next Thursday"
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal "application/json", response.media_type
+    assert_match(/YYYY-MM-DD/, response.parsed_body["error"])
+    assert_match(/raise_by_on/, response.parsed_body.fetch("details").first)
+  end
+
+  test "missing CSRF token is 422 JSON when forgery protection is enabled" do
+    sign_in_as(@commander)
+
+    with_forgery_protection do
+      post "/api/tracked_items", params: {
+        title: "Buddy Checks",
+        importance: "standard"
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal "application/json", response.media_type
+    assert_match(/security token/i, response.parsed_body["error"])
+    assert_equal [], response.parsed_body["details"]
+  end
+
   test "complete and reopen tracked business" do
     sign_in_as(@commander)
 
@@ -280,5 +313,13 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     user = User.create!(person: person, email_address: "#{label.downcase}-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
     capabilities.each { |capability| PermissionGrant.create!(user: user, capability: capability) }
     user
+  end
+
+  def with_forgery_protection
+    previous = Api::BaseController.allow_forgery_protection
+    Api::BaseController.allow_forgery_protection = true
+    yield
+  ensure
+    Api::BaseController.allow_forgery_protection = previous
   end
 end

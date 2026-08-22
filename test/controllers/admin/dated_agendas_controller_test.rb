@@ -93,6 +93,15 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "form.stacked-form input.btn-primary"
   end
 
+  test "new form requires a valid 24-hour start time" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    get new_admin_dated_agenda_path
+
+    assert_response :success
+    assert_select "input[name='dated_agenda[starts_at_time]'][required][pattern='(?:[01][0-9]|2[0-3]):[0-5][0-9]']"
+  end
+
   test "create copies meeting type agenda items" do
     sign_in_as(user_with_capabilities("manage_agendas"))
 
@@ -115,6 +124,25 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
       post admin_dated_agendas_path, params: {}
       assert_response :bad_request
     end
+  end
+
+  test "create rejects an out-of-range split start time" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+
+    assert_no_difference -> { DatedAgenda.where(organization_id: @organization.id).count } do
+      post admin_dated_agendas_path, params: {
+        dated_agenda: {
+          meeting_body_id: @meeting_body.id,
+          meeting_type_id: @meeting_type.id,
+          starts_at_date: "04 AUG 2026",
+          starts_at_time: "24:00",
+          title: ""
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select ".error-summary", text: /Starts at can't be blank/
   end
 
   test "create rejects another organization's meeting type" do
@@ -151,6 +179,24 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_equal @meeting_type.id, agenda.meeting_type_id
     assert_equal "Updated Title", agenda.title
     assert_equal Time.zone.parse("2026-08-11 19:00"), agenda.starts_at
+  end
+
+  test "update rejects an out-of-range split start time" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    original_starts_at = @agenda.starts_at
+
+    patch admin_dated_agenda_path(@agenda), params: {
+      dated_agenda: {
+        starts_at_date: "11 AUG 2026",
+        starts_at_time: "24:00",
+        title: @agenda.title,
+        lock_version: @agenda.lock_version
+      }
+    }
+
+    assert_response :unprocessable_entity
+    assert_equal original_starts_at, @agenda.reload.starts_at
+    assert_select ".error-summary", text: /Starts at can't be blank/
   end
 
   test "approve locks agenda and records approver" do

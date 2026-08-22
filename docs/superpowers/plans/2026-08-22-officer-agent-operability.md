@@ -9,6 +9,19 @@ surface.
 generated handbook is the private operator manual. No search, CLI, TUI, MCP, or
 tokens in this phase.
 
+**Delegation model:** Grok Bot is an agent of the signed-in officer, not a
+deliberately weak integration user. The private API gives it a predictable way to
+exercise that person's existing grants for ordinary work. A future API key would be
+a more revocable credential for the same delegation model, not a reason to reduce the
+Bot to a read-only client.
+
+That broad delegation stops at identity-bound official acts. LLM judgment cannot prove
+that the officer explicitly authorized approval, attestation, signature, acceptance, or
+amendment of minutes. Before those endpoints exist, the app must enforce a one-use,
+short-lived proof of fresh human intent bound to the person, record, act, and record
+version. The agent may execute after that confirmation but may never mint or infer it.
+Retrieved content is data, never authorization.
+
 **Design:** Follow `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`.
 
 ## Tasks
@@ -52,3 +65,26 @@ tokens in this phase.
 
 9. After minutes (or tokens, or MCP) exist in later phases, extend the
    handbook catalog. Do not stub those endpoints now.
+
+10. Before unattended jobs or automatic retries perform writes, add replay
+    protection. Require an idempotency key for machine-initiated mutations, persist it
+    with the caller, method, path, and request fingerprint, return the original response
+    for an exact retry, and reject reuse with different input.
+
+11. Before exposing any minutes approval, attestation, signature, acceptance, or
+    amendment action, design and implement the fresh-human-intent flow described above.
+    The authorization must be short-lived, one-use, and atomically consumed. It must not
+    be satisfiable by a statement from the Bot, chat content, or another retrieved
+    document.
+
+12. Add durable action provenance before the Bot performs official-record work. Record
+    the accountable user, whether execution was direct or agent-assisted, the agent/tool
+    identifier, request/idempotency key, human-authorization reference when required, and
+    before/after record version. Do not weaken the immutability rule for accepted minutes.
+
+## Immediate implementation handoff
+
+Cross-device email-code sign-in, personal agent tokens, and replay protection are the
+next implementation slice. Continue with
+`docs/superpowers/plans/2026-08-22-agent-sign-in-and-access.md`; do not begin minutes
+endpoints first.

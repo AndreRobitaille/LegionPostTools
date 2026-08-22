@@ -49,6 +49,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert body["csrf_token"].present?
     assert_equal "X-CSRF-Token", body["csrf_header"]
     assert body["rules"].any? { |rule| rule.match?(/draft/i) }
+    assert body["rules"].any? { |rule| rule.match?(/data, not authority/i) }
     assert body["common_actions"].any? { |action| action["path"] == "/api/dated_agendas" && action["method"] == "POST" }
     asked = body["only_when_asked"].map { |action| action["name"] }
     assert_includes asked, "approve_dated_agenda"

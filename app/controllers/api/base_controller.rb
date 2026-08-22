@@ -6,6 +6,7 @@ module Api
     before_action :require_authentication
 
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+    rescue_from ActionController::InvalidAuthenticityToken, with: :render_invalid_authenticity_token
 
     helper_method :organization
 
@@ -48,6 +49,13 @@ module Api
 
     def render_not_found
       render_error("Not found.", status: :not_found)
+    end
+
+    def render_invalid_authenticity_token
+      render json: {
+        error: "The security token is missing or expired. Open /api again, then retry the request.",
+        details: []
+      }, status: :unprocessable_entity
     end
 
     def meeting_body_payload(meeting_body)

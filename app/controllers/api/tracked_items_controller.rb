@@ -4,8 +4,13 @@ module Api
     before_action :set_tracked_item, only: %i[show complete reopen]
 
     def index
-      items = organization.tracked_items.includes(:meeting_body, :dated_agendas).order(:status, :title)
-      render json: { tracked_items: items.map { |item| tracked_item_summary(item) } }
+      items = organization.tracked_items.includes(:meeting_body).order(:status, :title).to_a
+      upcoming_agenda_ids = upcoming_agenda_ids_by_tracked_item_id(items)
+      render json: {
+        tracked_items: items.map do |item|
+          tracked_item_summary(item, upcoming_agenda_ids: upcoming_agenda_ids.fetch(item.id, []))
+        end
+      }
     end
 
     def show
@@ -21,6 +26,13 @@ module Api
       else
         render_error(tracked_item.errors.full_messages.to_sentence, status: :unprocessable_entity, details: tracked_item.errors.full_messages)
       end
+    rescue Date::Error
+      message = "raise_by_on must be an ISO 8601 date in YYYY-MM-DD form."
+      render_error(
+        message,
+        status: :unprocessable_entity,
+        details: [ message ]
+      )
     end
 
     def complete
@@ -55,7 +67,20 @@ module Api
       item.dated_agendas.merge(DatedAgenda.upcoming).ids
     end
 
-    def tracked_item_summary(item)
+    def upcoming_agenda_ids_by_tracked_item_id(items)
+      ids = items.map(&:id)
+      return {} if ids.empty?
+
+      DatedAgendaItem.joins(:dated_agenda)
+        .where(tracked_item_id: ids)
+        .where("dated_agendas.starts_at >= ?", Time.zone.today.beginning_of_day)
+        .order("dated_agendas.starts_at ASC", "dated_agendas.title ASC")
+        .pluck(:tracked_item_id, :dated_agenda_id)
+        .group_by(&:first)
+        .transform_values { |pairs| pairs.map(&:last) }
+    end
+
+    def tracked_item_summary(item, upcoming_agenda_ids: upcoming_agenda_ids_for(item))
       {
         id: item.id,
         title: item.title,
@@ -64,7 +89,7 @@ module Api
         importance: item.importance,
         raise_by_on: item.raise_by_on&.iso8601,
         meeting_body: meeting_body_payload(item.meeting_body),
-        upcoming_agenda_ids: upcoming_agenda_ids_for(item)
+        upcoming_agenda_ids: upcoming_agenda_ids
       }
     end
 

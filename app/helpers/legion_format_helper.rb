@@ -38,9 +38,9 @@ module LegionFormatHelper
   # presence validation reports the problem rather than a silent default.
   def combine_legion_datetime(date_string, time_string)
     date = parse_legion_date(date_string)
-    return nil if date.nil?
+    time = /\A(?<hour>[01]\d|2[0-3]):(?<minute>[0-5]\d)\z/.match(time_string.to_s.strip)
+    return nil if date.nil? || time.nil?
 
-    hour, minute = time_string.to_s.strip.split(":")
-    Time.zone.local(date.year, date.month, date.day, hour.to_i, minute.to_i)
+    Time.zone.local(date.year, date.month, date.day, time[:hour].to_i, time[:minute].to_i)
   end
 end
