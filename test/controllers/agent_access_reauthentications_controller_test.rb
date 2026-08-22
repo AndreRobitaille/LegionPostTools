@@ -8,6 +8,15 @@ class AgentAccessReauthenticationsControllerTest < ActionDispatch::IntegrationTe
     @session_record = sign_in_as(@user, authenticated_at: 1.hour.ago)
   end
 
+  test "request page describes the consolidated code and link email" do
+    get new_agent_access_reauthentication_path
+
+    assert_response :success
+    assert_select "form[action=?] button", agent_access_reauthentication_path,
+      text: "Email me a code and link"
+    assert_select ".panel-lead", text: /code and secure link/
+  end
+
   test "email code reauthentication refreshes the same session" do
     perform_enqueued_jobs { post agent_access_reauthentication_path }
 
@@ -16,14 +25,60 @@ class AgentAccessReauthenticationsControllerTest < ActionDispatch::IntegrationTe
     assert_equal @session_record, challenge.session
 
     delivered_email = ActionMailer::Base.deliveries.last
-    assert_equal "Confirm agent access in LegionPostTools", delivered_email.subject
-    assert_no_match(/sign[ -]in link/i, delivered_email.html_part.body.to_s)
+    assert_equal "Your LegionPostTools code and link", delivered_email.subject
+    assert_match(/continue/i, delivered_email.html_part.body.to_s)
+    assert_match(%r{/agent_access_reauthentication/magic_link}, delivered_email.html_part.body.to_s)
     code = delivered_email.text_part.body.to_s[/\b\d{4} \d{4}\b/]
     post verify_agent_access_reauthentication_path, params: { code: code }
 
     assert_redirected_to new_agent_access_token_path
     assert_operator @session_record.reload.authenticated_at, :>, 1.minute.ago
     assert_equal 1, Session.where(user: @user).count
+  end
+
+  test "email link reauthentication confirms before refreshing the same session" do
+    perform_enqueued_jobs { post agent_access_reauthentication_path }
+    challenge = MagicLink.order(:created_at).last
+    token = ActionMailer::Base.deliveries.last.html_part.body.to_s[%r{magic_link\?token=([^"<]+)}, 1]
+    assert token.present?
+
+    get magic_link_agent_access_reauthentication_path(token: token)
+
+    assert_response :success
+    assert_select "form[action=?][method=post]", magic_link_agent_access_reauthentication_path
+    assert_nil challenge.reload.used_at
+
+    post magic_link_agent_access_reauthentication_path, params: { token: token }
+
+    assert_redirected_to new_agent_access_token_path
+    assert_operator @session_record.reload.authenticated_at, :>, 1.minute.ago
+    assert challenge.reload.used_at
+    assert_nil MagicLink.consume_code!(
+      browser_challenge: challenge.browser_challenge,
+      code: challenge.login_code,
+      purpose: "create_agent_access_token",
+      session: @session_record
+    )
+    assert_equal 1, Session.where(user: @user).count
+  end
+
+  test "email link reauthentication rejects a different signed-in session" do
+    perform_enqueued_jobs { post agent_access_reauthentication_path }
+    challenge = MagicLink.order(:created_at).last
+    token = ActionMailer::Base.deliveries.last.html_part.body.to_s[%r{magic_link\?token=([^"<]+)}, 1]
+    assert token.present?
+
+    open_session do |other_browser|
+      other_session = Session.create!(user: @user, authenticated_at: 1.hour.ago, last_seen_at: Time.current)
+      jar = ActionDispatch::TestRequest.create.cookie_jar
+      jar.signed[:session_id] = other_session.id
+      other_browser.cookies[:session_id] = jar["session_id"]
+      other_browser.post magic_link_agent_access_reauthentication_path, params: { token: token }
+      assert_equal 302, other_browser.response.status
+      assert_equal new_agent_access_reauthentication_url, other_browser.response.location
+    end
+
+    assert_nil challenge.reload.used_at
   end
 
   test "sign-in code cannot be used for token reauthentication" do

@@ -14,15 +14,6 @@ module MailDelivery
         dataVariables: { login_url: login_url, login_code: login_code, name: user.person.full_name }
       )
     end
-
-    def deliver_agent_access_confirmation(user:, confirmation_code:)
-      post(
-        transactionalId: ENV.fetch("LOOPS_AGENT_ACCESS_CONFIRMATION_TEMPLATE_ID"),
-        email: user.email_address,
-        dataVariables: { confirmation_code: confirmation_code, name: user.person.full_name }
-      )
-    end
-
     private
 
     def post(payload)

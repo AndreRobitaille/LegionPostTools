@@ -1,0 +1,19 @@
+<% content_for :title, "Confirm your identity" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Confirm your identity</h1>
+  <p class="page-sub">Finish the confirmation you requested for agent access.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Email link received" %>
+  <div class="panel">
+    <p class="panel-lead">Use the button below to confirm in this browser. The link works once and expires after 15 minutes.</p>
+    <%= form_with url: magic_link_agent_access_reauthentication_path, method: :post do |form| %>
+      <%= hidden_field_tag :token, params[:token] %>
+      <%= form.button "Confirm identity", class: "btn-primary" %>
+    <% end %>
+  </div>
+</section>
+
+<p class="profile-crosslink"><%= link_to "Back to agent access", agent_access_tokens_path, class: "lnk" %></p>

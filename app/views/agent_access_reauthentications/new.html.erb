@@ -11,7 +11,7 @@
     <% if cookies.encrypted[AgentAccessReauthenticationsController::PENDING_COOKIE].present? %>
       <div class="agent-reauth-code">
         <h2>Enter the emailed code</h2>
-        <p class="panel-lead">Find the code in your email and enter it in this browser. It works once and expires after 15 minutes.</p>
+        <p class="panel-lead">Find the code in your email and enter it in this browser. You may use the secure link from that same email instead.</p>
         <%= form_with url: verify_agent_access_reauthentication_path, method: :post, class: "stacked-form" do |form| %>
           <div class="fl">
             <%= form.label :code, "8-digit confirmation code" %>
@@ -21,12 +21,12 @@
           </div>
           <%= form.button "Confirm identity", class: "btn-primary" %>
         <% end %>
-        <%= button_to "Send a new code", agent_access_reauthentication_path,
+        <%= button_to "Send a new code and link", agent_access_reauthentication_path,
               method: :post, class: "lnk agent-reauth-resend" %>
       </div>
     <% else %>
-      <p class="panel-lead">Send a one-time code to <strong><%= current_user.email_address %></strong>. Keep this page open while you check your email.</p>
-      <%= button_to "Email me a confirmation code", agent_access_reauthentication_path,
+      <p class="panel-lead">Send a one-time code and secure link to <strong><%= current_user.email_address %></strong>. Keep this page open while you check your email.</p>
+      <%= button_to "Email me a code and link", agent_access_reauthentication_path,
             method: :post, class: "btn-primary" %>
     <% end %>
 

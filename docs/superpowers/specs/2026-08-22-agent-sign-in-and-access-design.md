@@ -131,9 +131,10 @@ rather than treating an old 180-day session as sufficient proof to mint another
 long-lived credential.
 
 Email reauthentication is a separate challenge purpose bound to the current session
-and token-creation action. It sends a code for entry on the requesting browser; it
-does not create a new session when consumed. The existing sign-in challenge continues
-to create a session. Keeping purpose and session binding in persisted challenge state
+and token-creation action. Its code and continuation link work only with the requesting
+browser; consuming either refreshes that session rather than creating a new one. The
+existing sign-in challenge continues to create a session. Keeping purpose and session
+binding in persisted challenge state
 prevents a sign-in code from being reinterpreted as token-creation approval.
 
 The creation form asks for a plain name such as “Grok Agent Computer” and offers
@@ -239,10 +240,19 @@ gets one gold top rule and a selectable field, not a new illustration, badge sys
 or animation. This avoids the generic “developer credential dashboard” look while
 preserving the established passkey vocabulary and no-JavaScript operation.
 
+The sign-in and recent-authentication paths use one recognizable email: a grouped code
+plus one continuation link, backed by the same challenge row. For recent authentication,
+the link opens a quiet, non-consuming confirmation panel in the existing signed-in app
+shell and works only in the session that requested it. This preserves email-scanner
+safety, purpose binding, and the familiar “use either one” interaction without creating
+a second email vocabulary or Loops template.
+
 ## Failure behavior
 
 - Invalid, expired, already-used, wrong-browser, or exhausted codes use the same
   message: “That code is invalid or expired. Request a new email and try again.”
+- Invalid, expired, already-used, or wrong-browser reauthentication links use the
+  corresponding generic link message and do not disclose challenge state.
 - Invalid, expired, revoked, malformed, or disabled-user bearer tokens return the
   normal API `401` JSON shape and never redirect.
 - A missing idempotency key on a token-authenticated mutation returns `422`; reuse

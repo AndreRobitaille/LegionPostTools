@@ -105,4 +105,37 @@ class MagicLinkTest < ActiveSupport::TestCase
       session: session_record
     )
   end
+
+  test "reauthentication link works once only for its bound session and invalidates the code" do
+    session_record = Session.create!(user: @user, authenticated_at: 1.hour.ago, last_seen_at: Time.current)
+    other_session = Session.create!(user: @user, authenticated_at: 1.hour.ago, last_seen_at: Time.current)
+    challenge = MagicLink.create_for!(
+      @user,
+      purpose: "create_agent_access_token",
+      session: session_record
+    )
+
+    assert_nil MagicLink.consume!(challenge.token)
+    assert_nil MagicLink.consume!(
+      challenge.token,
+      purpose: "create_agent_access_token",
+      session: other_session
+    )
+    assert_equal @user, MagicLink.consume!(
+      challenge.token,
+      purpose: "create_agent_access_token",
+      session: session_record
+    )
+    assert_nil MagicLink.consume!(
+      challenge.token,
+      purpose: "create_agent_access_token",
+      session: session_record
+    )
+    assert_nil MagicLink.consume_code!(
+      browser_challenge: challenge.browser_challenge,
+      code: challenge.login_code,
+      purpose: "create_agent_access_token",
+      session: session_record
+    )
+  end
 end

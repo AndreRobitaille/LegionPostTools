@@ -4,13 +4,6 @@ class MagicLinksMailer < ApplicationMailer
     @login_url = login_url
     @login_code = login_code
 
-    mail to: user.email_address, subject: "Sign in to LegionPostTools"
-  end
-
-  def agent_access_confirmation(user, confirmation_code)
-    @user = user
-    @confirmation_code = confirmation_code
-
-    mail to: user.email_address, subject: "Confirm agent access in LegionPostTools"
+    mail to: user.email_address, subject: "Your LegionPostTools code and link"
   end
 end

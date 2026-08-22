@@ -22,6 +22,8 @@ Rails.application.routes.draw do
   resource :profile, only: %i[show]
   resource :agent_access_reauthentication, only: %i[new create] do
     post :verify, on: :collection
+    get :magic_link, on: :collection
+    post :magic_link, on: :collection
   end
   resources :agent_access_tokens, only: %i[index new create destroy] do
     get :revoke, on: :member

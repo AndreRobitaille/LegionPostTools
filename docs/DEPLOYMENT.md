@@ -46,7 +46,6 @@ Required Kamal secrets:
 - `LEGION_POST_TOOLS_DATABASE_PASSWORD`
 - `LOOPS_API_KEY`
 - `LOOPS_MAGIC_LINK_TEMPLATE_ID`
-- `LOOPS_AGENT_ACCESS_CONFIRMATION_TEMPLATE_ID`
 
 Kamal aliases `LEGION_POST_TOOLS_DATABASE_PASSWORD` to the container's `POSTGRES_PASSWORD`; do not list `POSTGRES_PASSWORD` as a separate required secret.
 
@@ -126,8 +125,7 @@ Treat this as the accessory's persistent directory. Active Storage uses the Dock
 ## Email and WebAuthn
 
 - `MAIL_PROVIDER=loops` uses the Loops transactional API and is the preferred/default Post 165 path.
-- Set `LOOPS_API_KEY`, `LOOPS_MAGIC_LINK_TEMPLATE_ID`, and
-  `LOOPS_AGENT_ACCESS_CONFIRMATION_TEMPLATE_ID` when using Loops.
+- Set `LOOPS_API_KEY` and `LOOPS_MAGIC_LINK_TEMPLATE_ID` when using Loops.
 - `MAIL_PROVIDER=action_mailer` uses Action Mailer/SMTP for production email.
 - `WEBAUTHN_ORIGIN` must be the HTTPS origin, such as `https://members.wipost165.org`.
 - `WEBAUTHN_RP_ID` must be the exact host for this deployment, such as `members.wipost165.org`, without scheme or port. Future operators may choose a parent registrable domain only if they deliberately want credentials to work across subdomains.
