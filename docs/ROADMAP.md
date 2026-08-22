@@ -92,6 +92,8 @@ Still pending:
 
 ## Export and Distribution
 
+- Refine the published agenda into a polished member-facing document; the current
+  section-aware read-only page is an intentionally functional placeholder.
 - PDF generation for finalized records.
 - Email distribution of finalized documents.
 - Delivery records for sent documents.
