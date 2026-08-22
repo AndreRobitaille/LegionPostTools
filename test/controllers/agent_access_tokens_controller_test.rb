@@ -20,6 +20,8 @@ class AgentAccessTokensControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, own.name
     assert_not_includes response.body, "Someone else's Grok"
+    assert_select "textarea#agent-operator-instructions[readonly]", text: /You assist Jane Doe, a member of/
+    assert_select "button", text: "Copy instructions"
   end
 
   test "creation requires authentication within ten minutes" do

@@ -19,11 +19,29 @@ module MailDelivery
     def post(payload)
       http = Net::HTTP.new(ENDPOINT.host, ENDPOINT.port)
       http.use_ssl = true
+      http.open_timeout = 5
+      http.read_timeout = 10
       request = Net::HTTP::Post.new(ENDPOINT)
       request["Authorization"] = "Bearer #{ENV.fetch('LOOPS_API_KEY')}"
       request["Content-Type"] = "application/json"
+      request["Idempotency-Key"] = SecureRandom.uuid
       request.body = JSON.generate(payload)
-      http.request(request)
+      response = http.request(request)
+      validate_response!(response)
+      Rails.logger.info("Loops transactional email accepted template_id=#{payload[:transactionalId]} status=#{response.code}")
+      true
+    rescue Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError => error
+      raise DeliveryError.new("Loops request failed (#{error.class.name}).")
+    end
+
+    def validate_response!(response)
+      body = JSON.parse(response.body)
+      return body if response.is_a?(Net::HTTPSuccess) && body["success"] == true
+
+      message = body["message"].presence || "Loops rejected the transactional email."
+      raise DeliveryError.new(message, status: response.code.to_i)
+    rescue JSON::ParserError
+      raise DeliveryError.new("Loops returned an unreadable response.", status: response.code.to_i)
     end
   end
 end

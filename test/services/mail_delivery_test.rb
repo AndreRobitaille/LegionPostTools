@@ -55,4 +55,18 @@ class MailDeliveryTest < ActiveSupport::TestCase
     ENV.delete("LOOPS_API_KEY")
     ENV.delete("LOOPS_MAGIC_LINK_TEMPLATE_ID")
   end
+
+  test "loops backend raises a diagnosable error when the provider rejects delivery" do
+    response = Struct.new(:body, :code).new(
+      JSON.generate(success: false, message: "Missing data variable"),
+      "400"
+    )
+
+    error = assert_raises MailDelivery::DeliveryError do
+      MailDelivery::LoopsBackend.new.send(:validate_response!, response)
+    end
+
+    assert_equal 400, error.status
+    assert_equal "Missing data variable", error.message
+  end
 end

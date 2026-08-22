@@ -44,6 +44,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_equal @organization.locality, body.dig("installation", "locality")
     assert_equal @organization.timezone, body.dig("installation", "timezone")
     assert_equal @commander.person.full_name, body.dig("caller", "name")
+    assert_equal [], body.dig("caller", "roles")
     assert_includes body.dig("caller", "capabilities"), "manage_settings"
     assert_includes body.dig("caller", "capabilities"), "manage_agendas"
     assert body["csrf_token"].present?
@@ -77,6 +78,16 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "There is no search"
     assert_not_includes response.body, "group chat"
     assert_not_includes response.body, "next Tuesday"
+  end
+
+  test "handbook identifies current assigned post roles" do
+    commander_title = PositionTitle.create!(organization: @organization, name: "Commander", display_order: 1)
+    PositionAssignment.create!(person: @commander.person, position_title: commander_title, starts_on: Date.current)
+    sign_in_as(@commander)
+
+    get "/api", as: :json
+
+    assert_equal [ "Commander" ], response.parsed_body.dig("caller", "roles")
   end
 
   test "plain member handbook omits agenda mutation actions" do

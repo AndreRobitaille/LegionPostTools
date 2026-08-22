@@ -98,6 +98,7 @@ class AgentHandbook
       caller: {
         name: @user.person.full_name,
         email: @user.email_address,
+        roles: @user.person.active_role_labels,
         capabilities: granted_capabilities
       },
       authentication: authentication_mode,
@@ -122,6 +123,7 @@ class AgentHandbook
     lines << "LegionPostTools is the internal operations app for an American Legion post (or similar American Legion Family unit). It is not a public website, not email, and not a chat archive. Officers use it for meeting agendas, long-lived post business, roster-backed membership, and (later) minutes."
     lines << ""
     lines << "You are signed in as **#{@user.person.full_name}** (#{@user.email_address}) on **#{@organization.name}**#{locality_clause}."
+    lines << "Current post role(s): #{current_roles.join(", ").presence || "member (no assigned office)"}."
     lines << "Timezone for dates and times: **#{@organization.timezone}**."
     lines << "App grants on this account: #{granted_capabilities.join(", ").presence || "(none beyond signed-in member read)"}."
     lines << ""
@@ -188,6 +190,10 @@ class AgentHandbook
 
   def granted_capabilities
     PermissionGrant::CAPABILITIES.select { |capability| @user.can?(capability) }
+  end
+
+  def current_roles
+    @current_roles ||= @user.person.active_role_labels
   end
 
   def visible_catalog

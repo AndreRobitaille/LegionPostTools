@@ -74,6 +74,29 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "provider failure does not reveal that a sign-in account exists" do
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Known", last_name: "Member"), email_address: "known@example.com")
+    failing_backend = Object.new
+    failing_backend.define_singleton_method(:deliver_magic_link) do |**|
+      raise MailDelivery::DeliveryError.new("Provider unavailable", status: 503)
+    end
+
+    original_backend = MailDelivery.backend
+    MailDelivery.backend = failing_backend
+    post session_path, params: { email_address: user.email_address }
+    known_result = [ response.status, response.location, flash[:notice], cookies[:pending_sign_in].length ]
+
+    open_session do |unknown_browser|
+      unknown_browser.post session_path, params: { email_address: "missing@example.com" }
+      unknown_result = [ unknown_browser.response.status, unknown_browser.response.location,
+        unknown_browser.flash[:notice], unknown_browser.cookies[:pending_sign_in].length ]
+      assert_equal known_result, unknown_result
+    end
+  ensure
+    MailDelivery.backend = original_backend
+  end
+
   test "matching requesting browser can sign in with emailed code" do
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)

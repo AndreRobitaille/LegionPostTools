@@ -36,4 +36,17 @@
   </div>
 </section>
 
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Instructions for your Bot" %>
+  <div class="panel agent-instructions" data-controller="copy-text">
+    <p class="panel-lead">Paste these standing instructions into your Bot. They identify you and direct it to the live handbook for current access and endpoints.</p>
+    <label class="agent-token-label" for="agent-operator-instructions">Standing instructions for <%= current_user.person.full_name %></label>
+    <textarea id="agent-operator-instructions" class="agent-instructions-value" rows="13" readonly data-copy-text-target="source"><%= @agent_operator_instructions %></textarea>
+    <div class="btnrow">
+      <button type="button" class="btn-primary" data-copy-text-target="button" data-action="copy-text#copy" hidden>Copy instructions</button>
+    </div>
+    <p class="pk-card-status" data-copy-text-target="status" role="status" aria-live="polite">Without JavaScript, select the instructions above and copy them manually.</p>
+  </div>
+</section>
+
 <p class="profile-crosslink"><%= link_to "Back to your profile", profile_path, class: "lnk" %></p>

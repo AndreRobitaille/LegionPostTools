@@ -8,6 +8,11 @@ class AgentAccessTokensController < ApplicationController
 
   def index
     @agent_access_tokens = current_user.agent_access_tokens.newest_first
+    @agent_operator_instructions = AgentOperatorInstructions.new(
+      user: current_user,
+      organization: Organization.first!,
+      base_url: request.base_url
+    ).to_s
   end
 
   def new

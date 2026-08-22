@@ -208,6 +208,8 @@
 .agent-token-reveal { border-top: 4px solid var(--color-gold); }
 .agent-token-label { display: block; margin-bottom: 8px; color: #6a5320; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .agent-token-value { box-sizing: border-box; width: 100%; resize: vertical; padding: 16px; border: 1.5px solid var(--color-gold-ink); border-radius: var(--radius-control); background: #fff; color: var(--color-navy-deep); font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace; font-size: 16px; line-height: 1.55; overflow-wrap: anywhere; word-break: break-all; }
+.agent-instructions { border-top: 4px solid var(--color-gold); }
+.agent-instructions-value { box-sizing: border-box; width: 100%; min-height: 340px; resize: vertical; padding: 16px; border: 1.5px solid #cbb98c; border-radius: var(--radius-control); background: #fff; color: var(--color-navy-deep); font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
 .agent-shared-warning { margin-top: 18px; padding: 13px 15px; border: 1px dashed #cbb98c; border-left: 4px solid var(--color-gold-ink); border-radius: var(--radius-control); background: #f6efe0; color: #5c4a24; font-size: 16px; line-height: 1.5; }
 .agent-reauth-code h2 { margin: 0 0 6px; color: var(--color-navy); font-size: 20px; }
 .agent-reauth-passkey { margin-top: 22px; }
@@ -902,6 +904,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .agent-token-list .pk-row { align-items: stretch; flex-direction: column; gap: 14px; }
   .agent-token-list .btn-return { align-self: flex-start; box-sizing: border-box; min-height: 44px; }
   .agent-token-value { min-height: 132px; }
+  .agent-instructions-value { min-height: 430px; }
   .agent-access-section .btnrow > * { width: 100%; box-sizing: border-box; text-align: center; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* Section head wraps: title first, then count and controls on their own row. */

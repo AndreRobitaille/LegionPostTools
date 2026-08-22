@@ -41,6 +41,10 @@ class AgentAccessReauthenticationsController < ApplicationController
     )
     redirect_to new_agent_access_reauthentication_path,
       notice: "Check your email for the 8-digit code or secure link."
+  rescue MailDelivery::DeliveryError => error
+    Rails.logger.error("Agent access reauthentication email delivery failed status=#{error.status || "unavailable"} message=#{error.message.inspect}")
+    redirect_to new_agent_access_reauthentication_path,
+      alert: "We could not send that email. Try again in a few minutes."
   end
 
   def verify

@@ -36,6 +36,22 @@ class AgentAccessReauthenticationsControllerTest < ActionDispatch::IntegrationTe
     assert_equal 1, Session.where(user: @user).count
   end
 
+  test "provider failure gives a signed-in user an actionable error" do
+    failing_backend = Object.new
+    failing_backend.define_singleton_method(:deliver_magic_link) do |**|
+      raise MailDelivery::DeliveryError.new("Provider unavailable", status: 503)
+    end
+    original_backend = MailDelivery.backend
+    MailDelivery.backend = failing_backend
+
+    post agent_access_reauthentication_path
+
+    assert_redirected_to new_agent_access_reauthentication_path
+    assert_equal "We could not send that email. Try again in a few minutes.", flash[:alert]
+  ensure
+    MailDelivery.backend = original_backend
+  end
+
   test "email link reauthentication confirms before refreshing the same session" do
     perform_enqueued_jobs { post agent_access_reauthentication_path }
     challenge = MagicLink.order(:created_at).last

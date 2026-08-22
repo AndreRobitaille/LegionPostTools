@@ -42,14 +42,18 @@ class SessionsController < ApplicationController
     browser_challenge = SecureRandom.urlsafe_base64(32)
 
     if user && user.disabled_at.blank?
-      magic_link = MagicLink.create_for!(user)
-      browser_challenge = magic_link.browser_challenge
-      login_url = magic_link_session_url(token: magic_link.token)
-      MailDelivery.deliver_magic_link(
-        user: user,
-        login_url: login_url,
-        login_code: MagicLink.format_code(magic_link.login_code)
-      )
+      begin
+        magic_link = MagicLink.create_for!(user)
+        browser_challenge = magic_link.browser_challenge
+        login_url = magic_link_session_url(token: magic_link.token)
+        MailDelivery.deliver_magic_link(
+          user: user,
+          login_url: login_url,
+          login_code: MagicLink.format_code(magic_link.login_code)
+        )
+      rescue MailDelivery::DeliveryError => error
+        Rails.logger.error("Sign-in email delivery failed status=#{error.status || "unavailable"} message=#{error.message.inspect}")
+      end
     end
 
     set_pending_cookie(PENDING_SIGN_IN_COOKIE, browser_challenge)

@@ -27,6 +27,8 @@ class LoginPageTest < ActionDispatch::IntegrationTest
       assert_select "input[type=email][name=email_address]"
       assert_select "button", text: /Send my sign-in email/
     end
+    assert_select ".entry-lead", text: "Enter your email address and we'll send you a login email."
+    assert_select ".entry-reassure", count: 0
     assert_select "button.entry-passkey", text: /passkey/i
   end
 
