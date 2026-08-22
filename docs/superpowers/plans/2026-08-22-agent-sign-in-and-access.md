@@ -1,5 +1,9 @@
 # Agent Sign-in and Access Implementation Plan
 
+**Status:** Completed August 22, 2026. The final implementation also generates a
+personalized, copyable standing brief under Profile → Agent access and includes the
+caller's current assigned roles in `/api`.
+
 ## Selected design and constraints
 
 **Goal:** Make Grok Agent Computer sign-in work when email is received on another

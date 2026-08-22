@@ -96,12 +96,13 @@ Completed before beginning the minutes lifecycle:
 - Active-state, permission, keyboard, desktop, and phone-width verification.
 - See `docs/AGENDA_PRESENTATION.md`.
 
-## Current: Officer Agent Operability
+## Completed: Officer Agent Operability
 
 Let Grok Bot (and later a similar machine-resident agent) operate the app as a
-signed-in Post Commander so repetitive officer work can be handed off. The Bot
-does the thinking. The app stays a predictable operations tool. This track uses
-agendas and tracked items that already exist; it does not wait for minutes.
+delegate for the particular signed-in member, using that user's current grants.
+When the member holds an assigned office, the generated instructions identify it;
+otherwise they identify the user as a post member. The Bot does the thinking. The
+app stays a predictable operations tool.
 
 Immediate jobs this phase must unlock:
 
@@ -110,9 +111,9 @@ Immediate jobs this phase must unlock:
 - Morning group-chat triage **in Grok Bot**, which then creates or updates
   tracked business and draft agenda entries here. Chat never enters this app.
 
-Grok Bot is intended to be the signed-in officer's delegate for ordinary work, not a
-weaker integration account. Session cookies and future API keys are credential choices;
-either may represent the officer's delegated grants. Official minutes are different:
+Grok Bot is intended to be the signed-in user's delegate for ordinary work, not a
+weaker integration account. Browser sessions and personal agent tokens are credential
+choices; either represents the user's current delegated grants. Official minutes are different:
 approval, attestation, signature, acceptance, and amendment will require app-enforced
 proof of fresh human intent that the Bot cannot infer or create for itself.
 
@@ -128,12 +129,14 @@ Build:
 - Draft-only creates unless the human explicitly asks to approve or publish.
 - Verify the Agent Computer browser can sign in and reach `/api` (watch
   `allow_browser`).
-- Add idempotency keys before unattended jobs or automatic retries perform writes.
+- Bearer-authenticated mutations require persisted idempotency keys and record agent-token
+  execution provenance.
 - Before any official-minutes mutation is exposed to an agent, add one-use,
   record-and-action-bound human confirmation plus agent-execution audit provenance.
 
-The first slice deliberately did not build: TUI, CLI package, MCP, API tokens, public
-`llms.txt`, chat ingest, or minutes endpoints.
+The first slice deliberately did not build TUI, CLI package, MCP, public `llms.txt`,
+chat ingest, or minutes endpoints. The completed access phase added personal agent
+tokens without adding those broader protocol surfaces.
 
 See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
 `docs/superpowers/plans/2026-08-22-officer-agent-operability.md`.
@@ -141,18 +144,17 @@ See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
 When minutes, PDF, or distribution ship, add them to the handbook. MCP still waits
 until connector-style onboarding is worth another protocol surface.
 
-## Immediate Next: Agent Sign-in and Access
+## Completed: Agent Sign-in and Access
 
-- Add a browser-bound, eight-digit code to magic-link email so an officer can receive
-  email on one device and finish sign-in on Grok Agent Computer.
-- Add Profile-managed, named, expiring, revocable personal agent tokens for reliable
-  bearer-authenticated API work, plus administrative revocation without impersonation.
-- Require recent human authentication before token creation.
-- Require idempotency keys for token-authenticated mutations and record agent execution
-  provenance.
-- Update the generated handbook and Grok standing instructions for both credential paths.
-- Live-verify code sign-in, token access, and revocation on Agent Computer before enabling
-  unattended routines.
+- Added a browser-bound, eight-digit code to the same email as the one-click link.
+- Added Profile-managed, named, expiring, revocable personal agent tokens, plus
+  administrative revocation without impersonation.
+- Token creation requires recent human authentication.
+- Token-authenticated mutations require idempotency keys and record execution provenance.
+- `/api` adapts to session or bearer authentication, and Agent access generates a
+  personalized, copyable standing brief that directs the Bot to reread `/api` each session.
+- Code sign-in, token access, revocation, negative security cases, and desktop/phone UI
+  were verified before deployment.
 
 See `docs/superpowers/specs/2026-08-22-agent-sign-in-and-access-design.md` and
 `docs/superpowers/plans/2026-08-22-agent-sign-in-and-access.md`.

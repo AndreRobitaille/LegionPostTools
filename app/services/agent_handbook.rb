@@ -120,7 +120,7 @@ class AgentHandbook
     lines << ""
     lines << "## What this software is"
     lines << ""
-    lines << "LegionPostTools is the internal operations app for an American Legion post (or similar American Legion Family unit). It is not a public website, not email, and not a chat archive. Officers use it for meeting agendas, long-lived post business, roster-backed membership, and (later) minutes."
+    lines << "LegionPostTools is the internal operations app for an American Legion post (or similar American Legion Family unit). It is not a public website, not email, and not a chat archive. Members and officers use it for meeting agendas, long-lived post business, roster-backed membership, and (later) minutes."
     lines << ""
     lines << "You are signed in as **#{@user.person.full_name}** (#{@user.email_address}) on **#{@organization.name}**#{locality_clause}."
     lines << "Current post role(s): #{current_roles.join(", ").presence || "member (no assigned office)"}."

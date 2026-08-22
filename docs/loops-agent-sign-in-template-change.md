@@ -40,7 +40,7 @@ The consolidated template was published and tested on August 22, 2026:
 - provider preview and transactional delivery: accepted with safe non-production data
 - required variables read back as exactly `login_code`, `login_url`, and `name`
 
-The encrypted Rails credential `LOOPS_MAGIC_LINK_TEMPLATE_ID` now selects this
-template. The currently deployed application keeps its prior template ID,
-`cmriet2vp0coo0j3q3vtgwtbz`, until the new application is deployed. Preserve that
-prior ID for application rollback.
+The encrypted Rails credential `LOOPS_MAGIC_LINK_TEMPLATE_ID` selects this template,
+and production was switched to it with the consolidated sign-in release on August 22,
+2026. Preserve the prior template ID, `cmriet2vp0coo0j3q3vtgwtbz`, for application
+rollback.

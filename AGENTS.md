@@ -83,5 +83,5 @@ Codex's restricted command sandbox can expose root-owned host files under `/etc`
 - `docs/ARCHITECTURE.md` — architecture and durable decisions.
 - `docs/ROADMAP.md` — planned development phases.
 - `docs/DEPLOYMENT.md` — deployment/operator notes.
-- `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` — private JSON + handbook so Grok Bot can operate the app as a signed-in officer.
+- `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` — private JSON + handbook so Grok Bot can operate the app for the signed-in user with that user's current grants.
 - `docs/agent-operator-skill.md` — short standing brief to paste into Grok Bot (what, where, auth, then `/api`). Deeper operator detail is the signed-in `GET /api` handbook.

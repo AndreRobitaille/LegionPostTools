@@ -42,7 +42,8 @@ National American Legion roster CSV imports populate read-only roster fields on 
 Authentication is passwordless.
 
 - Passkeys are preferred.
-- Magic links are the fallback.
+- The fallback login email contains both a one-click link and a browser-bound
+  eight-digit code; either one consumes the same single-use challenge.
 - Passwords are intentionally not supported.
 
 The flow is complete end-to-end (registration, sign-in, and passkey management). See
@@ -51,9 +52,12 @@ The flow is complete end-to-end (registration, sign-in, and passkey management).
 - Each user has a stable, opaque, base64url `webauthn_id` used as the WebAuthn user handle —
   never the sequential primary key (which is PII/enumerable and not valid base64url).
 - Passkeys require a secure context (HTTPS or `localhost`); they are feature-detected and
-  disabled otherwise, always leaving the magic-link fallback available.
+  disabled otherwise, always leaving the link-or-code email fallback available.
 - Email delivery is swappable behind the `MailDelivery` seam (`MAIL_PROVIDER`); the WebAuthn
   relying-party origin/id are environment-configured (`WEBAUTHN_*`).
+- Personal agent tokens are named, expiring, revocable bearer credentials. Only a digest
+  is stored, creation requires recent human authentication, and API authorization always
+  re-evaluates the owner's current grants.
 
 Disabled users must not be able to create new sessions through magic links, passkeys, or existing session cookies.
 
@@ -89,9 +93,10 @@ AI may draft minutes, summarize transcripts, suggest tracked items, and help pla
 
 AI output is never official. Humans review, approve, attest, distribute, and accept official records.
 
-An officer may also assign a signed-in agent (Grok Bot, later others) to operate
-the existing app on their behalf. That agent uses a private JSON surface and a
-generated handbook at `/api`. It is still not the authority on official records.
+The signed-in user may also assign an agent (Grok Bot, later others) to operate
+the existing app on their behalf. The generated standing brief identifies that
+particular member and their current assigned office, if any. The agent uses a private
+JSON surface and a generated handbook at `/api`. It is still not the authority on official records.
 Group chat, email, and other outside channels stay in the agent’s own tools;
 this app only stores post business.
 
@@ -104,9 +109,8 @@ See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`.
 Do not build these prematurely:
 
 - Multi-tenant SaaS.
-- Public API (a private, session-authenticated officer API is planned; it is not a public API).
+- Public API. The existing session-or-bearer JSON API remains private to signed-in users.
 - MCP or a custom CLI until a client cannot use the private JSON handbook.
-- API tokens until a shell-only agent cannot use the existing session cookie.
 - Full accounting.
 - Broad project management.
 - Generic nonprofit feature set.

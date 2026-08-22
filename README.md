@@ -62,7 +62,13 @@ Open `http://localhost:3000`. On a fresh database, the app shows the first-run s
 
 ## Authentication
 
-LegionPostTools is passwordless. Users sign in with passkeys or a magic link sent by email. Passwords are intentionally not supported.
+LegionPostTools is passwordless. Users sign in with passkeys or a login email that
+contains both a one-click link and a browser-bound eight-digit code. Passwords are
+intentionally not supported.
+
+Signed-in users may create named, expiring personal agent tokens under
+**Profile → Agent access**. The app shows each token once, stores only its digest,
+and applies the user's current grants on every API request.
 
 Required production auth environment variables:
 

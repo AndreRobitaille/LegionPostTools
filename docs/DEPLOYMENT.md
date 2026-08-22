@@ -126,6 +126,10 @@ Treat this as the accessory's persistent directory. Active Storage uses the Dock
 
 - `MAIL_PROVIDER=loops` uses the Loops transactional API and is the preferred/default Post 165 path.
 - Set `LOOPS_API_KEY` and `LOOPS_MAGIC_LINK_TEMPLATE_ID` when using Loops.
+- The selected transactional template must accept scalar `name`, `login_url`, and
+  `login_code` variables and present the code and continuation link in one email.
+- The Loops backend validates provider success responses, uses short network timeouts,
+  and logs acceptance or a safe delivery error without logging the recipient or credentials.
 - `MAIL_PROVIDER=action_mailer` uses Action Mailer/SMTP for production email.
 - `WEBAUTHN_ORIGIN` must be the HTTPS origin, such as `https://members.wipost165.org`.
 - `WEBAUTHN_RP_ID` must be the exact host for this deployment, such as `members.wipost165.org`, without scheme or port. Future operators may choose a parent registrable domain only if they deliberately want credentials to work across subdomains.
@@ -170,7 +174,7 @@ The first real Post 165 production setup was completed on `members.wipost165.org
   - Initial administrator email: `andre@xyzmodem.com`
 - The authenticated dashboard loaded after setup and showed the Post 165 identity, primary navigation, admin access, and the passkey invitation card.
 - Sign-out worked from the production dashboard.
-- A production magic-link email was delivered to `andre@xyzmodem.com` through Loops.
+- A production passwordless login email was delivered to `andre@xyzmodem.com` through Loops.
 - Opening the magic-link confirmation screen and choosing **Finish signing in** returned to the authenticated production dashboard.
 - Passkey registration and passkey sign-in worked on the real production hostname with the administrator's browser/device.
 - Roster import and admin access-control workflows worked with production-safe data.
@@ -237,7 +241,7 @@ For deployment-specific checks, also confirm:
 - if auth offers too many keys, verify `IdentitiesOnly yes`
 - if runtime secrets fail, inspect `.kamal/secrets`
 - if registry auth fails, inspect `KAMAL_REGISTRY_PASSWORD`
-- a real sign-in email reaches inbox
+- a real sign-in email reaches the inbox and both its code and link paths work
 - a passkey sign-in works at `APP_HOST`
 - storage survives a container restart
 - restore rehearsal evidence exists for the install

@@ -1,5 +1,9 @@
 # Agent Sign-in and Access Design
 
+**Status:** Implemented August 22, 2026. The standing brief is generated on the
+signed-in user's Agent access page and identifies that particular member plus their
+current assigned office, when present.
+
 ## Purpose
 
 The first officer-agent API assumed that Grok Bot could use the same magic-link
@@ -19,7 +23,7 @@ This phase adds both paths:
 2. a personal agent access token for ordinary delegated API work.
 
 Neither path changes the authority model. Grok Bot acts with the signed-in
-officer's current grants. Identity-bound official acts still require separate,
+user's current grants. Identity-bound official acts still require separate,
 fresh proof of human intent.
 
 ## Selected approach

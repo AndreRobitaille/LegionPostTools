@@ -1,5 +1,9 @@
 # Officer Agent Operability Design
 
+**Status:** Implemented August 22, 2026. The first installation was designed around
+the Commander workflow, but the shipped standing brief is personalized for any
+signed-in member and names their current assigned office only when one exists.
+
 ## Purpose
 
 A Post Commander (or another officer with the same app grants) should be able to
@@ -53,26 +57,26 @@ In scope for this phase:
 Out of scope for this phase:
 
 - A TUI, a custom CLI package, MCP, public `llms.txt`, or a public API.
-- API tokens. Grok Bot signs in once on its Agent Computer (passkey or magic
-  link, human takeover). The session cookie lasts until 180 days of inactivity.
-  Tokens wait until a shell-only agent cannot use that cookie.
+- API tokens were out of scope for this first slice. The completed Agent Sign-in and
+  Access phase subsequently added personal agent tokens for terminal use.
 - Search, autocomplete, or synonym matching.
 - Chat ingest, schedulers, or “scan the group chat” jobs inside Rails.
 - Minutes, transcripts, PDF, or email distribution. When those exist, add them
   to the handbook; do not pretend they exist now.
-- A dedicated weaker bot user. v1 uses the officer’s own user.
+- A dedicated weaker bot user. The Bot uses the particular member's own user and
+  current grants.
 - Auto-approve, auto-publish, or any implied approve/attest/accept of minutes.
   `manage_settings` still does not imply those identity-bound acts.
 
 ## Delegated authority and official acts
 
-Grok Bot is meant to act as the signed-in officer's delegate, not as a deliberately
+Grok Bot is meant to act as the signed-in user's delegate, not as a deliberately
 weakened integration account. Ordinary, reversible work should not require the human
 to repeat every click. The private API is a machine-friendly operating surface for the
-officer's existing grants; it is not a separate, lower-authority product.
+user's existing grants; it is not a separate, lower-authority product.
 
 Authentication and authority are separate choices. The current browser session and a
-future revocable API key could both represent delegated authority from the same person.
+revocable personal agent token can both represent delegated authority from the same person.
 Changing the credential must not silently change which app capabilities the person has
 delegated.
 
@@ -82,7 +86,8 @@ guidance, but it is not proof: an LLM can misread retrieved text, follow a promp
 injection, or rationalize its way around the rule. Text in chat, records, attachments,
 or webpages is always data and never authorization.
 
-For this agenda-only phase, the Bot may perform the same reversible work as the officer.
+For this agenda-only phase, the Bot may perform the same reversible work the user's
+current grants permit.
 Agenda approve/publish/reopen remain available but outside the common path and may be
 called only in response to the human's live instruction. This is an accepted v1 risk for
 working agendas; it must not become the security model for official minutes.
@@ -195,8 +200,8 @@ rich fields when needed for a single record.
 When minutes exist: handbook entries for draft/review, and still no silent edit
 of accepted minutes.
 
-The immediate next phase adds cross-device email-code sign-in and a revocable personal
-agent token on Profile. It may carry the officer's delegated grants, but it does not
+The completed access phase added cross-device email-code sign-in and a revocable personal
+agent token on Profile. It carries the user's current delegated grants, but it does not
 bypass fresh-human-intent requirements for official acts. See
 `2026-08-22-agent-sign-in-and-access-design.md`.
 

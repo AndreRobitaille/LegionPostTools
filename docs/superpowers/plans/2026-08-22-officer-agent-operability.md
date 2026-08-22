@@ -1,18 +1,21 @@
 # Officer Agent Operability Implementation Plan
 
-**Goal:** Let Grok Bot, signed in as Post Commander, learn this installation from
-`GET /api` and do draft agenda plus tracked-item work through a private JSON
-surface.
+**Status:** Completed August 22, 2026. The later Agent Sign-in and Access phase
+expanded the same delegation model to any signed-in member and added bearer tokens.
+
+**Goal:** Let Grok Bot, acting for a signed-in user, learn this installation from
+`GET /api` and do permitted draft agenda plus tracked-item work through a private
+JSON surface.
 
 **Architecture:** Add an `Api` namespace that reuses existing models and
 `can?` checks. HTML stays HTML. The Bot uses the existing session cookie. A
 generated handbook is the private operator manual. No search, CLI, TUI, MCP, or
 tokens in this phase.
 
-**Delegation model:** Grok Bot is an agent of the signed-in officer, not a
+**Delegation model:** Grok Bot is an agent of the signed-in user, not a
 deliberately weak integration user. The private API gives it a predictable way to
-exercise that person's existing grants for ordinary work. A future API key would be
-a more revocable credential for the same delegation model, not a reason to reduce the
+exercise that person's existing grants for ordinary work. A personal agent token is
+the revocable credential for the same delegation model, not a reason to reduce the
 Bot to a read-only client.
 
 That broad delegation stops at identity-bound official acts. LLM judgment cannot prove
