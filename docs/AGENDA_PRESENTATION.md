@@ -110,7 +110,7 @@ separates that identity from the order of business.
   |  [1]── Opening Ceremony                                  |
   |   │    Call to Order                                     |
   |   │    ...                                               |
-  |  [2]── Administration & Membership                       |
+  |  [2]── Roll Call, Minutes & Guests                       |
   +----------------------------------------------------------+
 ```
 

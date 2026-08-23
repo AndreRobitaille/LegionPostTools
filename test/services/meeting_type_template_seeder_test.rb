@@ -9,14 +9,14 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
   test "seeds default meeting types for an unseeded organization" do
     organization = Organization.create!(name: "Fresh Post", unit_type: "american_legion_post", timezone: "America/Chicago")
 
-    assert_difference -> { organization.agenda_item_catalog_entries.count }, 17 do
+    assert_difference -> { organization.agenda_item_catalog_entries.count }, 29 do
       assert_difference -> { organization.meeting_types.count }, 2 do
         MeetingTypeTemplateSeeder.seed_for!(organization)
       end
     end
 
     assert_equal [ "PEC Meeting", "Membership Meeting" ], organization.meeting_types.ordered.pluck(:name)
-    assert_equal 17, organization.agenda_item_catalog_entries.count
+    assert_equal 29, organization.agenda_item_catalog_entries.count
     assert_equal 2, organization.meeting_types.count
     assert organization.meeting_types.find_by!(source_key: "american_legion_post:pec_meeting").seeded?
     assert organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting").seeded?
@@ -29,23 +29,30 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     titles = membership.meeting_type_agenda_items.ordered.pluck(:title)
 
     assert_equal [
-      "Opening Ceremony",
-      "Opening Prayer",
+      "Hand Salute / Colors",
+      "Chaplain's Prayer",
       "POW/MIA Empty Chair",
       "Pledge of Allegiance",
       "American Legion Preamble",
+      "Declare the Post in Session",
       "Roll Call and Quorum",
-      "Previous Meeting Minutes",
-      "Introduction of Guests and Prospective/New Members",
-      "Committee Reports",
-      "Balloting on Applications",
-      "Sick Call, Relief, and Employment",
-      "Post Service Officer Report",
-      "Unfinished / Old Business",
-      "New Business and Correspondence",
-      "Memorial to a Departed Post Member",
+      "Approval of Minutes",
+      "Guests and New Members",
+      "Finance Officer Report",
+      "Adjutant Report",
+      "Commander Report",
+      "Historian Report",
+      "Chaplain / Honor Guard Report",
+      "Programs & Activities",
+      "Sick Call",
+      "Service Officer Report",
+      "Unfinished Business",
+      "New Business",
       "Good of The American Legion",
-      "Closing Ceremony"
+      "Announcements",
+      "Retrieve the POW/MIA Flag",
+      "Hand Salute / Colors",
+      "Declare the Meeting Adjourned"
     ], titles
   end
 
@@ -57,9 +64,9 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
 
     assert_equal [
       "Roll Call and Quorum",
-      "Previous Meeting Minutes",
-      "Unfinished / Old Business",
-      "New Business and Correspondence",
+      "Approval of Minutes",
+      "Unfinished Business",
+      "New Business",
       "Good of The American Legion"
     ], titles
   end
@@ -71,9 +78,18 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
 
     assert_equal [ "Call to Order", "Post Business" ], pec.meeting_type_agenda_sections.ordered.pluck(:title)
-    assert_equal [ "Opening Ceremony", "Administration & Membership", "Reports & Member Welfare", "Post Business", "Closing Ceremony" ], membership.meeting_type_agenda_sections.ordered.pluck(:title)
+    assert_equal [
+      "Opening Ceremony",
+      "Roll Call, Minutes & Guests",
+      "Reports",
+      "Sick Call / Service Officer",
+      "Unfinished Business",
+      "New Business",
+      "Good of The American Legion & Announcements",
+      "Closing Ceremony & Adjournment"
+    ], membership.meeting_type_agenda_sections.ordered.pluck(:title)
     assert_equal [ 2, 3 ], pec.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
-    assert_equal [ 5, 3, 4, 4, 1 ], membership.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
+    assert_equal [ 6, 3, 6, 2, 1, 1, 2, 3 ], membership.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
   end
 
   test "reseeding does not overwrite local edits" do
@@ -98,7 +114,7 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
   test "reseeding does not reactivate a removed seeded template item" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
-    item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+    item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_salute_colors")
 
     item.update!(active: false)
 
@@ -122,7 +138,7 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
   test "reseeding upgrades existing seeded items from the migration fallback section" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
-    fallback = membership.meeting_type_agenda_sections.create!(title: "Order of Business", position: 6)
+    fallback = membership.meeting_type_agenda_sections.create!(title: "Order of Business", position: 9)
 
     membership.meeting_type_agenda_items.ordered.each_with_index do |item, index|
       item.update!(agenda_section: fallback, position: index + 1)
@@ -132,9 +148,18 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
 
     MeetingTypeTemplateSeeder.seed_for!(@organization)
 
-    assert_equal [ "Opening Ceremony", "Administration & Membership", "Reports & Member Welfare", "Post Business", "Closing Ceremony" ],
+    assert_equal [
+      "Opening Ceremony",
+      "Roll Call, Minutes & Guests",
+      "Reports",
+      "Sick Call / Service Officer",
+      "Unfinished Business",
+      "New Business",
+      "Good of The American Legion & Announcements",
+      "Closing Ceremony & Adjournment"
+    ],
       membership.meeting_type_agenda_sections.ordered.pluck(:title)
-    assert_equal [ 5, 3, 4, 4, 1 ],
+    assert_equal [ 6, 3, 6, 2, 1, 1, 2, 3 ],
       membership.meeting_type_agenda_sections.ordered.map { |section| section.agenda_items.count }
   end
 
@@ -169,7 +194,7 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
   test "reseeding a missing template item appends when its canonical position is occupied locally" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
-    seeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+    seeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_salute_colors")
     canonical_position = seeded_item.position
 
     seeded_item.destroy!
@@ -186,7 +211,7 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
       MeetingTypeTemplateSeeder.seed_for!(@organization)
     end
 
-    reseeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+    reseeded_item = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_salute_colors")
     assert_not_equal canonical_position, reseeded_item.position
     membership.meeting_type_agenda_sections.each do |section|
       positions = section.agenda_items.pluck(:position)

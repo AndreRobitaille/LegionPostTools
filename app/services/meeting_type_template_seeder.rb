@@ -32,15 +32,16 @@ class MeetingTypeTemplateSeeder
         {
           title: "Opening Ceremony",
           item_source_keys: [
-            "regular_meeting.opening_ceremony",
+            "regular_meeting.opening_salute_colors",
             "regular_meeting.opening_prayer",
             "regular_meeting.pow_mia_empty_chair",
             "regular_meeting.pledge_of_allegiance",
-            "regular_meeting.preamble"
+            "regular_meeting.preamble",
+            "regular_meeting.opening_declaration"
           ]
         },
         {
-          title: "Administration & Membership",
+          title: "Roll Call, Minutes & Guests",
           item_source_keys: [
             "regular_meeting.roll_call_quorum",
             "regular_meeting.previous_minutes",
@@ -48,26 +49,45 @@ class MeetingTypeTemplateSeeder
           ]
         },
         {
-          title: "Reports & Member Welfare",
+          title: "Reports",
           item_source_keys: [
-            "regular_meeting.committee_reports",
-            "regular_meeting.balloting_on_applications",
+            "regular_meeting.finance_officer_report",
+            "regular_meeting.adjutant_report",
+            "regular_meeting.commander_report",
+            "regular_meeting.historian_report",
+            "regular_meeting.chaplain_honor_guard_report",
+            "regular_meeting.programs_activities"
+          ]
+        },
+        {
+          title: "Sick Call / Service Officer",
+          item_source_keys: [
             "regular_meeting.sick_call_relief_employment",
             "regular_meeting.service_officer_report"
           ]
         },
         {
-          title: "Post Business",
+          title: "Unfinished Business",
+          item_source_keys: [ "regular_meeting.unfinished_old_business" ]
+        },
+        {
+          title: "New Business",
+          item_source_keys: [ "regular_meeting.new_business_correspondence" ]
+        },
+        {
+          title: "Good of The American Legion & Announcements",
           item_source_keys: [
-            "regular_meeting.unfinished_old_business",
-            "regular_meeting.new_business_correspondence",
-            "regular_meeting.memorial_departed_member",
-            "regular_meeting.good_of_legion"
+            "regular_meeting.good_of_legion",
+            "regular_meeting.announcements"
           ]
         },
         {
-          title: "Closing Ceremony",
-          item_source_keys: [ "regular_meeting.closing_ceremony" ]
+          title: "Closing Ceremony & Adjournment",
+          item_source_keys: [
+            "regular_meeting.pow_mia_flag_retrieval",
+            "regular_meeting.closing_salute_colors",
+            "regular_meeting.adjournment_declaration"
+          ]
         }
       ]
     }

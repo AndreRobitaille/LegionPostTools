@@ -105,7 +105,7 @@ Examples:
 
 - POW/MIA Empty Chair: Ceremony, Scripted ceremony
 - Finance Officer Report: Reports, Report slot
-- Old/Unfinished Business: Business, Section heading
+- Unfinished Business: Business, Section heading
 - American Legion Preamble: Ceremony, Reading/recitation
 
 The first phase should not over-automate behavior types. They are structural metadata for later phases.
@@ -185,26 +185,38 @@ Seed a lean regular-meeting set based on The American Legion Officer's Guide and
 
 Ceremony and readings:
 
-- Opening Ceremony
-- Opening Prayer
+- Opening Ceremony (compact alternative)
+- Hand Salute / Colors (opening)
+- Chaplain's Prayer
 - POW/MIA Empty Chair
 - Pledge of Allegiance
 - American Legion Preamble
-- Closing Ceremony
+- Declare the Post in Session
+- Closing Ceremony (compact alternative)
+- Retrieve the POW/MIA Flag
+- Hand Salute / Colors (closing)
+- Declare the Meeting Adjourned
 
 Order-of-business and standard business items:
 
 - Roll Call and Quorum
-- Previous Meeting Minutes
-- Introduction of Guests and Prospective/New Members
+- Approval of Minutes
+- Guests and New Members
+- Finance Officer Report
+- Adjutant Report
+- Commander Report
+- Historian Report
+- Chaplain / Honor Guard Report
+- Programs & Activities
 - Committee Reports
 - Balloting on Applications
-- Sick Call, Relief, and Employment
-- Post Service Officer Report
-- Unfinished / Old Business
-- New Business and Correspondence
+- Sick Call
+- Service Officer Report
+- Unfinished Business
+- New Business
 - Memorial to a Departed Post Member
 - Good of The American Legion
+- Announcements
 
 Full-script entries should include the relevant ceremony, reading, or recitation text in the rich text body. Business/order items should include concise guidance explaining what the item is for.
 
