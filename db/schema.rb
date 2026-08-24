@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_22_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -186,6 +186,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_050000) do
     t.string "singleton_key", null: false
     t.datetime "updated_at", null: false
     t.index ["singleton_key"], name: "index_installations_on_singleton_key", unique: true
+  end
+
+  create_table "loops_roster_syncs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "eligible_count", default: 0, null: false
+    t.text "error_message"
+    t.integer "failed_count", default: 0, null: false
+    t.jsonb "failures", default: [], null: false
+    t.datetime "finished_at"
+    t.integer "invalid_email_count", default: 0, null: false
+    t.integer "missing_email_count", default: 0, null: false
+    t.bigint "requested_by_id"
+    t.bigint "roster_import_id", null: false
+    t.integer "shared_email_count", default: 0, null: false
+    t.datetime "started_at"
+    t.string "status", default: "queued", null: false
+    t.integer "synced_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_loops_roster_syncs_on_created_at"
+    t.index ["requested_by_id"], name: "index_loops_roster_syncs_on_requested_by_id"
+    t.index ["roster_import_id"], name: "index_loops_roster_syncs_on_roster_import_id"
+    t.index ["status"], name: "idx_one_active_loops_roster_sync", unique: true, where: "((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying])::text[]))"
   end
 
   create_table "magic_links", force: :cascade do |t|
@@ -460,6 +482,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_050000) do
   add_foreign_key "dated_agendas", "users", column: "approved_by_id"
   add_foreign_key "dated_agendas", "users", column: "published_by_id"
   add_foreign_key "dated_agendas", "users", column: "reopened_by_id"
+  add_foreign_key "loops_roster_syncs", "roster_imports"
+  add_foreign_key "loops_roster_syncs", "users", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "magic_links", "sessions"
   add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"

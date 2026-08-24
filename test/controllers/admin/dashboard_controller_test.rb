@@ -31,6 +31,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select ".hub-sec-h", text: "Setup & Administration"
     assert_select ".tile .tile-t", text: "Roster"
     assert_select "a[href=?]", new_admin_roster_import_path, text: /Import roster/
+    assert_select "a[href=?]", new_admin_loops_roster_sync_path, text: /Sync email audience/
     assert_select "a[href=?]", admin_roster_imports_path, text: /View imports/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/

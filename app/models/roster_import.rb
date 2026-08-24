@@ -17,6 +17,7 @@ class RosterImport < ApplicationRecord
   }.freeze
 
   has_one_attached :pending_csv
+  has_many :loops_roster_syncs, dependent: :restrict_with_exception
 
   validates :uploaded_filename, :status, :imported_at, presence: true
   validates :status, inclusion: { in: STATUSES }

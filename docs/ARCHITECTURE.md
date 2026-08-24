@@ -37,6 +37,8 @@ People can hold multiple positions at once. Position assignments must be histori
 
 National American Legion roster CSV imports populate read-only roster fields on people, keyed by Member ID. Roster data is dated and refreshed by later imports rather than edited locally. Login accounts remain separate: a person may or may not have a user, roster email remains separate from login email, and app permissions are granted to users rather than imported roster rows. Post positions and committee-lead-style roles are assigned to people with effective dates so officer history is preserved.
 
+Administrators can synchronize current Active and Grace roster members to the Post's Loops audience after reviewing exclusions for missing, invalid, or shared roster email addresses. The Loops upsert sends roster identity fields but never sends subscription state, user group, or mailing-list choices, preserving existing opt-outs and audience organization. See `docs/LOOPS_ROSTER_SYNC.md`.
+
 ## Authentication
 
 Authentication is passwordless.

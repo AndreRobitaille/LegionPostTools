@@ -1,0 +1,73 @@
+<% content_for :title, "Roster email sync" %>
+<% content_for :head do %>
+  <% if @roster_sync.active? %><meta http-equiv="refresh" content="3"><% end %>
+<% end %>
+
+<a class="back" href="<%= new_admin_loops_roster_sync_path %>">&larr; Email audience</a>
+
+<% case @roster_sync.status %>
+<% when "queued", "running" %>
+  <div class="done done--confirm" role="status">
+    <div class="done-seal" aria-hidden="true">&#8635;</div>
+    <div>
+      <h1 class="done-title"><%= @roster_sync.status == "queued" ? "Roster sync queued" : "Roster sync in progress" %></h1>
+      <div class="done-sub">This page refreshes while Loops is being updated. You can safely leave and return.</div>
+    </div>
+  </div>
+<% when "completed" %>
+  <div class="done<%= " done--fail" if @roster_sync.failed_count.positive? %>">
+    <div class="done-seal" aria-hidden="true"><%= @roster_sync.failed_count.positive? ? "!" : "✓" %></div>
+    <div>
+      <h1 class="done-title"><%= @roster_sync.failed_count.positive? ? "Roster sync finished with problems" : "Roster sync complete" %></h1>
+      <div class="done-sub">Finished <%= legion_datetime(@roster_sync.finished_at) %>. Existing email opt-outs were left unchanged.</div>
+    </div>
+  </div>
+<% else %>
+  <div class="done done--fail">
+    <div class="done-seal" aria-hidden="true">!</div>
+    <div>
+      <h1 class="done-title">Roster sync could not be completed</h1>
+      <div class="done-sub"><%= @roster_sync.error_message.presence || "The sync stopped before it could finish." %></div>
+    </div>
+  </div>
+<% end %>
+
+<div class="sec-head">
+  <span class="sec-head-dia" aria-hidden="true">&#9670;</span>
+  <span class="sec-head-label">Sync summary</span>
+  <span class="sec-head-rule"></span>
+</div>
+<div class="tiles">
+  <%= render "shared/stat_tile", count: @roster_sync.synced_count, label: "Synced", variant: "created" %>
+  <%= render "shared/stat_tile", count: @roster_sync.failed_count, label: "Failed", variant: @roster_sync.failed_count.positive? ? "problems" : "neutral" %>
+  <%= render "shared/stat_tile", count: @roster_sync.missing_email_count + @roster_sync.invalid_email_count, label: "Email skipped", variant: "neutral" %>
+  <%= render "shared/stat_tile", count: @roster_sync.shared_email_count, label: "Shared skipped", variant: "neutral" %>
+</div>
+
+<%= render "shared/section_panel", label: "Source and safety" do %>
+  <div class="item">
+    <span class="who"><%= @roster_sync.roster_import.uploaded_filename %></span>
+    <span class="meta">· imported <%= legion_datetime(@roster_sync.roster_import.imported_at) %></span>
+  </div>
+  <p class="ownernote">The sync does not send Loops a subscription value, user group, or mailing-list choice. Existing opt-outs remain unchanged.</p>
+<% end %>
+
+<% if @roster_sync.failures.any? %>
+  <%= render "shared/section_panel", label: "Contacts that need attention", class: "card--alert" do %>
+    <% @roster_sync.failures.each do |failure| %>
+      <div class="item">
+        <span class="who"><%= failure["name"] %></span>
+        <span class="meta">· #<%= failure["member_number"] %> · <%= failure["email"] %></span>
+        <div class="fix"><%= failure["message"] %></div>
+      </div>
+    <% end %>
+    <p class="ownernote">Correct roster data at National and import it again, or review the contact in Loops, then run the sync again.</p>
+  <% end %>
+<% end %>
+
+<div class="btnrow">
+  <% unless @roster_sync.active? %>
+    <%= link_to "Review another sync", new_admin_loops_roster_sync_path, class: "btn-primary" %>
+  <% end %>
+  <%= link_to "View roster imports", admin_roster_imports_path, class: "btn-secondary" %>
+</div>

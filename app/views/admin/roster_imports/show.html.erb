@@ -203,6 +203,9 @@
 
 <div class="btnrow">
   <%= link_to "View People", people_path, class: "btn-primary" %>
+  <% if status == "completed" %>
+    <%= link_to "Sync email audience", new_admin_loops_roster_sync_path, class: "btn-secondary" %>
+  <% end %>
   <%= link_to "Import another roster", new_admin_roster_import_path, class: "btn-secondary" %>
   <%= link_to "View import history", admin_roster_imports_path, class: "histlink" %>
 </div>

@@ -1,0 +1,59 @@
+<% content_for :title, "Sync roster to Loops" %>
+<a class="back" href="<%= admin_root_path %>">&larr; Administration</a>
+
+<div class="page-lead">
+  <h1 class="page-title">Sync roster to Loops</h1>
+  <p class="page-sub">Update the Post’s email audience from the latest National roster.</p>
+</div>
+
+<% if @roster_import %>
+  <p class="page-sub">Source roster imported <%= legion_datetime(@roster_import.imported_at) %> from <b><%= @roster_import.uploaded_filename %></b>.</p>
+<% else %>
+  <p role="alert" class="app-flash app-flash-alert">No completed roster import is available. Import the current National roster first.</p>
+<% end %>
+
+<% if @roster_import && @roster_stale %>
+  <p role="alert" class="app-flash app-flash-alert">This roster is more than 30 days old. Import a current National roster before syncing if newer data is available.</p>
+<% end %>
+
+<div class="sec-head">
+  <span class="sec-head-dia" aria-hidden="true">&#9670;</span>
+  <span class="sec-head-label">Who will be included</span>
+  <span class="sec-head-rule"></span>
+</div>
+<div class="tiles">
+  <%= render "shared/stat_tile", count: @audience.eligible_count, label: "Ready to sync", variant: "created" %>
+  <%= render "shared/stat_tile", count: @audience.missing_email_count, label: "No email", variant: "neutral" %>
+  <%= render "shared/stat_tile", count: @audience.invalid_email_count, label: "Invalid email", variant: "neutral" %>
+  <%= render "shared/stat_tile", count: @audience.shared_email_count, label: "Shared email", variant: "neutral" %>
+</div>
+
+<%= render "shared/section_panel", label: "Before you sync" do %>
+  <div class="item">
+    <span class="who">Current members only</span>
+    <div class="fix">Includes roster-present members whose status is Active or Grace.</div>
+  </div>
+  <div class="item">
+    <span class="who">Names and contact identity</span>
+    <div class="fix">Updates email, first name, last name, and the stable National member ID. Members with blank, invalid, or shared email addresses are left out.</div>
+  </div>
+  <div class="whatnext">
+    <b>Existing email choices stay in Loops.</b>
+    The sync never sends a subscription setting, user group, or mailing-list choice. An existing Loops contact who opted out stays opted out. Keep unsubscribed contacts in Loops so that history remains available.
+  </div>
+<% end %>
+
+<% if @active_sync %>
+  <p role="status" class="app-flash app-flash-notice">A roster email sync is already in progress.</p>
+  <div class="btnrow">
+    <%= link_to "View current sync", admin_loops_roster_sync_path(@active_sync), class: "btn-primary" %>
+  </div>
+<% elsif !@loops_configured %>
+  <p role="alert" class="app-flash app-flash-alert">Loops is not configured for this installation. Set the Loops API key before syncing.</p>
+<% elsif @roster_import && @audience.eligible_count.positive? %>
+  <%= button_to "Sync #{@audience.eligible_count} members to Loops", admin_loops_roster_syncs_path, method: :post, class: "btn-primary" %>
+<% end %>
+
+<% if @latest_sync && @latest_sync != @active_sync %>
+  <p class="page-sub">Last sync: <%= link_to legion_datetime(@latest_sync.created_at), admin_loops_roster_sync_path(@latest_sync), class: "go" %>.</p>
+<% end %>

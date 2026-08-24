@@ -54,6 +54,7 @@ Rails.application.routes.draw do
       post :confirm, on: :member
       delete :discard, on: :member
     end
+    resources :loops_roster_syncs, only: %i[new create show]
     resources :position_titles, only: %i[index create update] do
       post :reorder, on: :collection
     end
