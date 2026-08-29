@@ -16,9 +16,22 @@ class AgendaItemCatalogSeederTest < ActiveSupport::TestCase
     assert_equal true, entry.active
     assert_equal 1, entry.position
 
+    roll_call = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.roll_call_quorum")
+    assert_equal "roll_call", roll_call.behavior_type
+
     assert_no_difference -> { @organization.agenda_item_catalog_entries.count } do
       AgendaItemCatalogSeeder.seed_for!(@organization)
     end
+  end
+
+  test "upgrades the untouched roll call item to structured behavior" do
+    AgendaItemCatalogSeeder.seed_for!(@organization)
+    entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.roll_call_quorum")
+    entry.update_columns(behavior_type: "business_item")
+
+    AgendaItemCatalogSeeder.seed_for!(@organization)
+
+    assert_equal "roll_call", entry.reload.behavior_type
   end
 
   test "stores full script text for ceremony entries" do

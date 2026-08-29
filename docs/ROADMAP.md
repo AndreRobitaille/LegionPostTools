@@ -96,6 +96,16 @@ Completed before beginning the minutes lifecycle:
 - Active-state, permission, keyboard, desktop, and phone-width verification.
 - See `docs/AGENDA_PRESENTATION.md`.
 
+## Completed: Commander Working Copy and Officer Roll Call
+
+- Independent controls for wording shown on member agendas and carried into draft minutes.
+- Private rich-text Commander scripts copied through catalog, template, and dated snapshots.
+- Separate member and Commander print documents with no private-content leakage.
+- Meeting-date officer roll-call snapshots with required-office vacancies and deliberate
+  draft refresh.
+- Compact Present, Absent, and Excused worksheet treatment for desktop, phone, and print.
+- See `docs/COMMANDER_AGENDA_AND_ROLL_CALL.md`.
+
 ## Completed: Officer Agent Operability
 
 Let Grok Bot (and later a similar machine-resident agent) operate the app as a

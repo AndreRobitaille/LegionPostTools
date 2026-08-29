@@ -9,8 +9,14 @@ class DatedAgendaItem < ApplicationRecord
   belongs_to :meeting_type_agenda_item, optional: true
   belongs_to :agenda_item_catalog_entry, optional: true
   belongs_to :tracked_item, optional: true
+  has_many :roll_call_entries,
+    -> { order(:position) },
+    class_name: "DatedAgendaRollCallEntry",
+    inverse_of: :dated_agenda_item,
+    dependent: :destroy
 
   has_rich_text :body
+  has_rich_text :commander_notes
 
   before_validation :normalize_optional_fields
   before_validation :assign_default_agenda_section
@@ -20,6 +26,7 @@ class DatedAgendaItem < ApplicationRecord
   validate :tracked_item_belongs_to_same_organization
   validate :agenda_is_editable, on: %i[create update]
   before_destroy :prevent_destroy_when_locked
+  after_save :sync_roll_call_snapshot
 
   validates :title, :behavior_type, presence: true
   validates :behavior_type, inclusion: { in: AgendaItemCatalogEntry::BEHAVIOR_TYPES.keys }, allow_blank: true
@@ -45,6 +52,9 @@ class DatedAgendaItem < ApplicationRecord
       behavior_type: template_item.agenda_item_catalog_entry.behavior_type,
       active: template_item.active,
       body: template_item.body.to_s,
+      commander_notes: template_item.commander_notes.to_s,
+      show_wording_on_agenda: template_item.show_wording_on_agenda,
+      show_wording_in_minutes: template_item.show_wording_in_minutes,
       source_key: template_item.source_key,
       source_label: template_item.source_label,
       seeded_at: template_item.seeded_at
@@ -61,7 +71,10 @@ class DatedAgendaItem < ApplicationRecord
       summary: catalog_entry.summary,
       behavior_type: catalog_entry.behavior_type,
       active: true,
-      body: catalog_entry.body.to_s
+      body: catalog_entry.body.to_s,
+      commander_notes: catalog_entry.commander_notes.to_s,
+      show_wording_on_agenda: catalog_entry.show_wording_on_agenda,
+      show_wording_in_minutes: catalog_entry.show_wording_in_minutes
     }
     attrs[:meeting_type_agenda_item] = meeting_type_agenda_item if meeting_type_agenda_item
     create!(attrs)
@@ -97,11 +110,60 @@ class DatedAgendaItem < ApplicationRecord
     end
   end
 
+  def roll_call?
+    behavior_type == "roll_call"
+  end
+
+  def refresh_roll_call!
+    unless dated_agenda.draft?
+      errors.add(:base, "roll call can only be refreshed while the agenda is a draft")
+      raise ActiveRecord::RecordInvalid, self
+    end
+
+    transaction do
+      roll_call_entries.destroy_all
+      create_roll_call_snapshot!
+    end
+  end
+
   private
 
   def normalize_optional_fields
     self.summary = summary.to_s
     self.source_key = source_key&.strip.presence
+  end
+
+  def sync_roll_call_snapshot
+    if roll_call?
+      create_roll_call_snapshot! if roll_call_entries.empty?
+    elsif roll_call_entries.exists?
+      roll_call_entries.destroy_all
+    end
+  end
+
+  def create_roll_call_snapshot!
+    meeting_date = dated_agenda.starts_at.in_time_zone.to_date
+    position = 0
+    titles = dated_agenda.organization.position_titles.where(active: true).order(:display_order, :name).includes(position_assignments: :person)
+
+    titles.each do |title|
+      assignments = title.position_assignments
+        .select { |assignment| assignment.active_on?(meeting_date) }
+        .sort_by { |assignment| [ assignment.person.last_name, assignment.person.first_name, assignment.person_id ] }
+      next if assignments.empty? && !title.required_by_default?
+
+      assignments = [ nil ] if assignments.empty?
+      assignments.each do |assignment|
+        position += 1
+        roll_call_entries.create!(
+          position_title: title,
+          person: assignment&.person,
+          office_name: title.name,
+          person_name: assignment&.person&.full_name,
+          position: position
+        )
+      end
+    end
   end
 
   def assign_default_agenda_section

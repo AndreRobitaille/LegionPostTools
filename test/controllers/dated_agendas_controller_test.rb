@@ -12,6 +12,15 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     @draft = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 2.days.from_now, title: "Draft Agenda", status: "draft")
     @published = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now, title: "Published Agenda", status: "draft")
     @published.dated_agenda_items.create!(position: 1, title: "Opening", summary: "The commander calls the meeting to order.", behavior_type: "scripted_ceremony", active: true, body: "Opening words")
+    @published.dated_agenda_items.create!(
+      position: 2,
+      title: "Private Ceremony",
+      behavior_type: "scripted_ceremony",
+      active: true,
+      body: "Withheld ceremony wording",
+      show_wording_on_agenda: false,
+      commander_notes: "Private Commander instruction"
+    )
     business_section = @published.dated_agenda_sections.create!(title: "Post Business", position: 2)
     @published.dated_agenda_items.create!(agenda_section: business_section, position: 1, title: "Old Business", behavior_type: "business_item", active: true, body: "Review unfinished post business.")
     @published.approve!(user_with_capabilities("manage_agendas"))
@@ -68,6 +77,10 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Post Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
+    assert_select "body", text: /Withheld ceremony wording/, count: 0
+    assert_select "body", text: /Private Commander instruction/, count: 0
+    assert_select ".commander-cue", count: 0
+    assert_select ".roll-call-table", count: 0
     assert_select ".agenda-org-name", text: @organization.name
     assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "1"
     assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "2"

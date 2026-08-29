@@ -92,7 +92,16 @@ module Admin
     end
 
     def item_params
-      params.require(:meeting_type_agenda_item).permit(:title, :summary, :active, :body, :meeting_type_agenda_section_id)
+      params.require(:meeting_type_agenda_item).permit(
+        :title,
+        :summary,
+        :active,
+        :body,
+        :commander_notes,
+        :show_wording_on_agenda,
+        :show_wording_in_minutes,
+        :meeting_type_agenda_section_id
+      )
     end
 
     def set_agenda_sections

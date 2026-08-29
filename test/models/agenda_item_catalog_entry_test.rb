@@ -151,4 +151,30 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
 
     assert_includes entry.body.to_plain_text, "For God and Country"
   end
+
+  test "defaults document wording to the agenda and draft minutes" do
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Call to Order",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true
+    )
+
+    assert entry.show_wording_on_agenda?
+    assert entry.show_wording_in_minutes?
+  end
+
+  test "supports private Commander notes" do
+    entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Call to Order",
+      category: "ceremony",
+      behavior_type: "scripted_ceremony",
+      position: 1,
+      active: true,
+      commander_notes: "Give three raps of the gavel."
+    )
+
+    assert_includes entry.commander_notes.to_plain_text, "three raps"
+  end
 end

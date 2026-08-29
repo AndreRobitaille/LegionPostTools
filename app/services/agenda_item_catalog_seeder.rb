@@ -122,11 +122,12 @@ class AgendaItemCatalogSeeder
       slug: "roll-call-and-quorum",
       summary: "Call the Post officers and determine whether a quorum is present.",
       category: "administration",
-      behavior_type: "business_item",
+      behavior_type: "roll_call",
       body: "List the Post officers, record their attendance, and determine whether a quorum is present before conducting official business.",
       legacy: {
         summary: "Determine whether enough members are present to conduct authorized business.",
-        body: "Roll call to determine if a quorum is present before conducting official business."
+        body: "Roll call to determine if a quorum is present before conducting official business.",
+        behavior_type: "business_item"
       }
     },
     {

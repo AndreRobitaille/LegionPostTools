@@ -1,4 +1,5 @@
 <div class="agenda-outline">
+  <% commander_copy = local_assigns.fetch(:commander_copy, false) %>
   <% visible_sections = dated_agenda.dated_agenda_sections.ordered.select { |section| section.agenda_items.any?(&:active?) } %>
   <% visible_sections.each_with_index do |agenda_section, section_index| %>
     <% items = agenda_section.agenda_items.select(&:active?) %>
@@ -22,10 +23,19 @@
                 an item has no body of its own. %>
             <section class="agenda-item">
               <h3 class="agenda-item-title"><%= agenda_item.title %></h3>
-              <% if agenda_item.body.present? %>
+              <% if agenda_item.body.present? && agenda_item.show_wording_on_agenda? %>
                 <div class="agenda-item-body"><%= agenda_item.body %></div>
-              <% elsif agenda_item.summary.present? %>
+              <% elsif agenda_item.body.blank? && agenda_item.summary.present? %>
                 <p class="agenda-item-summary"><%= agenda_item.summary %></p>
+              <% end %>
+              <% if commander_copy && agenda_item.commander_notes.present? %>
+                <aside class="commander-cue">
+                  <p class="commander-cue-label">Commander's cue</p>
+                  <div class="commander-cue-body"><%= agenda_item.commander_notes %></div>
+                </aside>
+              <% end %>
+              <% if commander_copy && agenda_item.roll_call? %>
+                <%= render "dated_agendas/roll_call", entries: agenda_item.roll_call_entries %>
               <% end %>
             </section>
           <% end %>

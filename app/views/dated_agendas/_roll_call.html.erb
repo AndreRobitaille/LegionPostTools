@@ -1,0 +1,24 @@
+<div class="roll-call-sheet" aria-label="Officer roll-call worksheet">
+  <table class="roll-call-table">
+    <thead>
+      <tr>
+        <th scope="col">Office</th>
+        <th scope="col">Officer</th>
+        <th scope="col" class="roll-call-mark-heading">Present</th>
+        <th scope="col" class="roll-call-mark-heading">Absent</th>
+        <th scope="col" class="roll-call-mark-heading">Excused</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% entries.each do |entry| %>
+        <tr>
+          <th scope="row" data-label="Office"><%= entry.office_name %></th>
+          <td data-label="Officer" class="<%= "roll-call-vacant" if entry.vacant? %>"><%= entry.person_name.presence || "Vacant" %></td>
+          <td data-label="Present" class="roll-call-mark"><span aria-hidden="true"></span><span class="sr-only">Unchecked</span></td>
+          <td data-label="Absent" class="roll-call-mark"><span aria-hidden="true"></span><span class="sr-only">Unchecked</span></td>
+          <td data-label="Excused" class="roll-call-mark"><span aria-hidden="true"></span><span class="sr-only">Unchecked</span></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

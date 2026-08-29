@@ -65,7 +65,7 @@ class AgentHandbook
       summary: "List dated agendas, upcoming first, including drafts. Use this to find the next meeting.",
       example: "GET /api/dated_agendas" },
     { name: "show_dated_agenda", method: "GET", path: "/api/dated_agendas/:id", capability: "manage_agendas", group: :common,
-      summary: "Show one dated agenda with sections and items.",
+      summary: "Show one dated agenda with sections, item wording controls, Commander cues, and any officer roll-call snapshot.",
       example: "GET /api/dated_agendas/:id" },
     { name: "create_dated_agenda", method: "POST", path: "/api/dated_agendas", capability: "manage_agendas", group: :common,
       summary: "Create a draft dated agenda by copying a meeting type template.",

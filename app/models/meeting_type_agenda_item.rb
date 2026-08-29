@@ -6,6 +6,7 @@ class MeetingTypeAgendaItem < ApplicationRecord
     inverse_of: :agenda_items
   belongs_to :agenda_item_catalog_entry
   has_rich_text :body
+  has_rich_text :commander_notes
 
   include Reorderable
 
@@ -38,7 +39,10 @@ class MeetingTypeAgendaItem < ApplicationRecord
       title: catalog_entry.title,
       summary: catalog_entry.summary,
       active: true,
-      body: catalog_entry.body.to_s
+      body: catalog_entry.body.to_s,
+      commander_notes: catalog_entry.commander_notes.to_s,
+      show_wording_on_agenda: catalog_entry.show_wording_on_agenda,
+      show_wording_in_minutes: catalog_entry.show_wording_in_minutes
     }
 
     attributes[:agenda_section] = agenda_section || meeting_type&.default_agenda_section

@@ -14,11 +14,13 @@ class AgendaItemCatalogEntry < ApplicationRecord
     "report_slot" => "Report slot",
     "business_item" => "Business item",
     "motion_vote_item" => "Motion/vote item",
-    "reading_recitation" => "Reading/recitation"
+    "reading_recitation" => "Reading/recitation",
+    "roll_call" => "Officer roll call"
   }.freeze
 
   belongs_to :organization
   has_rich_text :body
+  has_rich_text :commander_notes
   has_many :dated_agenda_items, dependent: :restrict_with_exception
 
   normalizes :slug, with: ->(value) { value.to_s.strip.downcase }

@@ -25,6 +25,27 @@ class DatedAgendaTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "Template body"
   end
 
+  test "create_from_template snapshots document controls and Commander notes" do
+    @template_item.update!(
+      show_wording_on_agenda: false,
+      show_wording_in_minutes: false,
+      commander_notes: "Wait for the color guard."
+    )
+
+    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    item = agenda.dated_agenda_items.first
+
+    assert_not item.show_wording_on_agenda?
+    assert_not item.show_wording_in_minutes?
+    assert_includes item.commander_notes.to_plain_text, "color guard"
+
+    @template_item.update!(show_wording_on_agenda: true, show_wording_in_minutes: true, commander_notes: "Changed later")
+
+    assert_not item.reload.show_wording_on_agenda?
+    assert_not item.show_wording_in_minutes?
+    assert_includes item.commander_notes.to_plain_text, "color guard"
+  end
+
   test "create_from_template copies section structure and item membership" do
     opening = @meeting_type.default_agenda_section
     opening.update!(title: "Opening Ceremony")

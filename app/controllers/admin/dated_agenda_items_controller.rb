@@ -3,8 +3,8 @@ module Admin
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
     before_action :set_dated_agenda
-    before_action :set_item, only: %i[edit update destroy]
-    before_action :ensure_draft_agenda, only: %i[new create edit update destroy reorder]
+    before_action :set_item, only: %i[edit update destroy refresh_roll_call]
+    before_action :ensure_draft_agenda, only: %i[new create edit update destroy reorder refresh_roll_call]
 
     def new
       set_agenda_sections
@@ -75,6 +75,15 @@ module Admin
       head :unprocessable_entity
     end
 
+    def refresh_roll_call
+      raise ActiveRecord::RecordNotFound unless @item.roll_call?
+
+      @item.refresh_roll_call!
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Officer roll call refreshed for the meeting date."
+    rescue ActiveRecord::RecordInvalid
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "Officer roll call could not be refreshed."
+    end
+
     private
 
     def set_organization
@@ -106,7 +115,17 @@ module Admin
     end
 
     def item_params
-      params.require(:dated_agenda_item).permit(:title, :summary, :body, :behavior_type, :lock_version, :dated_agenda_section_id)
+      params.require(:dated_agenda_item).permit(
+        :title,
+        :summary,
+        :body,
+        :commander_notes,
+        :behavior_type,
+        :show_wording_on_agenda,
+        :show_wording_in_minutes,
+        :lock_version,
+        :dated_agenda_section_id
+      )
     end
 
     def set_agenda_sections

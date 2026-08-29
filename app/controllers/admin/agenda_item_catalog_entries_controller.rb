@@ -6,7 +6,7 @@ module Admin
 
     def index
       AgendaItemCatalogSeeder.seed_for!(@organization)
-      grouped = @organization.agenda_item_catalog_entries.ordered.group_by(&:category)
+      grouped = @organization.agenda_item_catalog_entries.ordered.with_rich_text_commander_notes.group_by(&:category)
       @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.filter_map do |category|
         [ category, grouped[category] ] if grouped[category].present?
       end
@@ -52,7 +52,17 @@ module Admin
     end
 
     def entry_params
-      params.require(:agenda_item_catalog_entry).permit(:title, :summary, :category, :behavior_type, :active, :body)
+      params.require(:agenda_item_catalog_entry).permit(
+        :title,
+        :summary,
+        :category,
+        :behavior_type,
+        :active,
+        :body,
+        :commander_notes,
+        :show_wording_on_agenda,
+        :show_wording_in_minutes
+      )
     end
   end
 end

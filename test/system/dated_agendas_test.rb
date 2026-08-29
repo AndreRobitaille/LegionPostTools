@@ -48,6 +48,51 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_no_selector "button.row-del"
   end
 
+  test "officer reviews document controls and the responsive Commander's working copy" do
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)
+    item = @agenda.dated_agenda_items.find_by!(title: "Opening Ceremony")
+    item.update!(
+      behavior_type: "roll_call",
+      body: "Wording withheld from members",
+      show_wording_on_agenda: false,
+      show_wording_in_minutes: false,
+      commander_notes: "Give three raps, then call the officers."
+    )
+
+    visit edit_admin_dated_agenda_agenda_item_path(@agenda, item)
+
+    assert_selector "fieldset.agenda-document-fields legend", text: /Member agenda and minutes/i
+    assert_selector "input[name='dated_agenda_item[show_wording_on_agenda]']"
+    assert_selector "input[name='dated_agenda_item[show_wording_in_minutes]']"
+    assert_selector "fieldset.agenda-document-fields--commander", text: /For officers only/i
+    assert_selector "lexxy-editor[name='dated_agenda_item[commander_notes]']"
+
+    visit edit_admin_dated_agenda_path(@agenda)
+
+    assert_link "Print member agenda", href: print_admin_dated_agenda_path(@agenda)
+    assert_link "Commander's copy", href: commander_admin_dated_agenda_path(@agenda)
+    assert_selector ".agenda-item-flag", text: "Agenda wording hidden"
+    assert_selector ".agenda-item-flag", text: "Minutes wording hidden"
+    assert_selector ".agenda-item-flag--commander", text: "Commander script"
+    assert_button "Refresh officers"
+
+    click_link "Commander's copy"
+
+    assert_selector ".agenda-document-label--commander", text: /Commander's working copy/i
+    assert_selector ".commander-cue", text: /Give three raps/
+    assert_selector ".roll-call-table", text: /Commander.*Jane Doe/
+    assert_no_text "Wording withheld from members"
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+
+    page.current_window.resize_to(390, 844)
+
+    assert_selector ".roll-call-table .roll-call-mark", count: 3
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "officer reviews the delete warning and deletes a published agenda" do
     @agenda.approve!(@user)
     @agenda.publish!(@user)

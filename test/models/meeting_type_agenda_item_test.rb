@@ -24,6 +24,20 @@ class MeetingTypeAgendaItemTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "<strong>Original</strong>"
   end
 
+  test "copies document controls and Commander notes from catalog entry" do
+    @catalog_entry.update!(
+      show_wording_on_agenda: false,
+      show_wording_in_minutes: false,
+      commander_notes: "Pause until the Sergeant-at-Arms is ready."
+    )
+
+    item = @meeting_type.meeting_type_agenda_items.create_from_catalog_entry!(@catalog_entry, position: 1)
+
+    assert_not item.show_wording_on_agenda?
+    assert_not item.show_wording_in_minutes?
+    assert_includes item.commander_notes.to_plain_text, "Sergeant-at-Arms"
+  end
+
   test "template edits do not modify the catalog entry" do
     item = @meeting_type.meeting_type_agenda_items.create_from_catalog_entry!(@catalog_entry, position: 1)
 

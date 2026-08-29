@@ -1,0 +1,16 @@
+<% content_for :title, "Commander's copy — #{@dated_agenda.title}" %>
+<article class="agenda-doc agenda-doc--commander">
+  <header class="agenda-masthead">
+    <p class="agenda-org-name"><%= @organization.name %></p>
+    <p class="agenda-document-label agenda-document-label--commander"><span aria-hidden="true">◆</span> Commander's working copy <span aria-hidden="true">◆</span></p>
+    <h1><%= @dated_agenda.title %></h1>
+    <p class="agenda-meeting-meta">
+      <span><%= @dated_agenda.meeting_body.name %></span>
+      <span class="agenda-meta-diamond" aria-hidden="true">◆</span>
+      <time datetime="<%= @dated_agenda.starts_at.iso8601 %>"><%= legion_datetime(@dated_agenda.starts_at) %></time>
+    </p>
+    <div class="agenda-masthead-rule" aria-hidden="true"><span>◆</span></div>
+  </header>
+
+  <%= render "dated_agendas/agenda_body", dated_agenda: @dated_agenda, commander_copy: true %>
+</article>

@@ -24,6 +24,7 @@
         <span class="mrow-id">
           <span class="mrow-name"><%= entry.title %></span>
           <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
+          <%= render "admin/shared/agenda_item_status_flags", item: entry %>
         </span>
         <span class="catrow-meta">
           <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>

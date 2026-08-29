@@ -5,12 +5,23 @@
   <div class="agenda-item-copy">
     <span class="agenda-item-name"><%= item.title %></span>
     <% if item.summary.present? %><span class="agenda-item-note"><%= item.summary %></span><% end %>
+    <%= render "admin/shared/agenda_item_status_flags", item: item %>
     <% if item.tracked_item.present? %>
       <%= link_to "Tracked business", tracked_item_path(item.tracked_item), class: "section-item-source" %>
+    <% end %>
+    <% if item.roll_call? %>
+      <span class="agenda-roll-call-count"><%= pluralize(item.roll_call_entries.size, "officer row") %> for this meeting</span>
     <% end %>
   </div>
   <% if editable %>
     <div class="agenda-item-actions">
+      <% if item.roll_call? %>
+        <%= button_to "Refresh officers",
+              refresh_roll_call_admin_dated_agenda_agenda_item_path(dated_agenda, item),
+              method: :patch,
+              class: "section-action",
+              data: { turbo_confirm: "Replace this roll-call worksheet with officer assignments active on the meeting date?" } %>
+      <% end %>
       <%= link_to "Edit", edit_admin_dated_agenda_agenda_item_path(dated_agenda, item), class: "catrow-edit" %>
       <%= button_to admin_dated_agenda_agenda_item_path(dated_agenda, item), method: :delete, class: "row-del",
             aria: { label: "Remove #{item.title}" },

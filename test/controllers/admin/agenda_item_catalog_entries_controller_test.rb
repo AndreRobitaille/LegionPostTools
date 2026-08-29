@@ -91,7 +91,10 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
           category: "business",
           behavior_type: "business_item",
           active: true,
-          body: "Discuss new business"
+          body: "Discuss new business",
+          commander_notes: "Pause for discussion.",
+          show_wording_on_agenda: "0",
+          show_wording_in_minutes: "0"
         }
       }
     end
@@ -101,6 +104,9 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     entry = @organization.agenda_item_catalog_entries.find_by!(slug: "new-business")
     assert_equal 8, entry.position
     assert_equal "Discuss new business", entry.body.to_plain_text
+    assert_equal "Pause for discussion.", entry.commander_notes.to_plain_text
+    assert_not entry.show_wording_on_agenda?
+    assert_not entry.show_wording_in_minutes?
   end
 
   test "invalid create returns unprocessable entity with error summary" do
@@ -202,7 +208,10 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "select[name=?]", "agenda_item_catalog_entry[category]"
     assert_select "textarea[name=?]", "agenda_item_catalog_entry[summary]"
     assert_select "lexxy-editor[name=?]", "agenda_item_catalog_entry[body]"
-    assert_select "lexxy-editor[attachments=?]", "false"
+    assert_select "lexxy-editor[name=?]", "agenda_item_catalog_entry[commander_notes]"
+    assert_select "input[name=?][type='checkbox']", "agenda_item_catalog_entry[show_wording_on_agenda]"
+    assert_select "input[name=?][type='checkbox']", "agenda_item_catalog_entry[show_wording_in_minutes]"
+    assert_select "lexxy-editor[attachments=?]", "false", count: 2
   end
 
   test "cannot edit another organization entry" do

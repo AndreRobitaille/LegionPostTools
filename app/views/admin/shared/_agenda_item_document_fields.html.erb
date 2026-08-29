@@ -1,0 +1,40 @@
+<fieldset class="agenda-document-fields">
+  <legend>Member agenda and minutes</legend>
+  <p class="agenda-fieldset-help">Control the wording distributed to members and carried forward when draft minutes are created.</p>
+
+  <div class="fl">
+    <%= form.label :body, "Document wording" %>
+    <p class="fl-help">Spoken text or meeting content that may appear in the distributed agenda and draft minutes.</p>
+    <%= form.rich_text_area :body, attachments: "false" %>
+  </div>
+
+  <div class="agenda-visibility-controls">
+    <label class="form-toggle">
+      <%= form.check_box :show_wording_on_agenda %>
+      <span>
+        <span class="ft-label">Show this wording on the member agenda</span>
+        <span class="ft-help">Clear this to keep the item title while withholding its wording from screen and print copies.</span>
+      </span>
+    </label>
+    <label class="form-toggle">
+      <%= form.check_box :show_wording_in_minutes %>
+      <span>
+        <span class="ft-label">Carry this wording into draft minutes</span>
+        <span class="ft-help">This records the intended starting point. Officers will still review and approve the minutes.</span>
+      </span>
+    </label>
+  </div>
+</fieldset>
+
+<fieldset class="agenda-document-fields agenda-document-fields--commander">
+  <legend>Commander's copy</legend>
+  <div class="commander-field-heading">
+    <p class="agenda-fieldset-help">Add the exact script, stage directions, or reminders the Commander needs to lead this item.</p>
+    <span class="commander-private-label">For officers only</span>
+  </div>
+  <div class="fl">
+    <%= form.label :commander_notes, "Commander's script / cues" %>
+    <p class="fl-help">This never appears on the member agenda.</p>
+    <%= form.rich_text_area :commander_notes, attachments: "false" %>
+  </div>
+</fieldset>

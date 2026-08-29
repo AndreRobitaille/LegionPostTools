@@ -82,6 +82,11 @@ Meeting records are the core product direction.
   form a continuity record across meetings.
 - Adding tracked business to a dated agenda creates an independent agenda-item snapshot.
   Later tracker edits cannot silently rewrite an approved or published agenda.
+- Document-wording visibility and Commander-only cues follow the same catalog-to-template-to-dated
+  snapshot boundary. Member documents never render Commander cues.
+- Officer roll call is structured dated-agenda data. It snapshots assignments active on the
+  meeting date so later officer changes cannot rewrite a historical working document; recorded
+  attendance belongs to the minutes lifecycle.
 
 ## Official Records
 

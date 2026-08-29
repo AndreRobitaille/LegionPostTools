@@ -128,13 +128,26 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Old", summary: "Old summary", active: true, body: "Old body")
 
-    patch admin_meeting_type_agenda_item_path(@meeting_type, item), params: { meeting_type_agenda_item: { title: "New", summary: "New summary", active: false, body: "New body" } }
+    patch admin_meeting_type_agenda_item_path(@meeting_type, item), params: {
+      meeting_type_agenda_item: {
+        title: "New",
+        summary: "New summary",
+        active: false,
+        body: "New body",
+        commander_notes: "Read this verbatim.",
+        show_wording_on_agenda: "0",
+        show_wording_in_minutes: "0"
+      }
+    }
 
     assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
     assert_equal "Template item updated.", flash[:notice]
     assert_equal "New", item.reload.title
     assert_not item.active?
     assert_includes item.body.to_s, "New body"
+    assert_includes item.commander_notes.to_plain_text, "verbatim"
+    assert_not item.show_wording_on_agenda?
+    assert_not item.show_wording_in_minutes?
     assert_equal @catalog_entry.title, @catalog_entry.reload.title
   end
 
@@ -187,6 +200,9 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_select "input[name='meeting_type_agenda_item[title]']"
     assert_select "textarea[name='meeting_type_agenda_item[summary]']"
     assert_select "lexxy-editor[input='meeting_type_agenda_item_body_trix_input_meeting_type_agenda_item_#{item.id}']"
+    assert_select "lexxy-editor[name='meeting_type_agenda_item[commander_notes]']"
+    assert_select "input[name='meeting_type_agenda_item[show_wording_on_agenda]'][type='checkbox']"
+    assert_select "input[name='meeting_type_agenda_item[show_wording_in_minutes]'][type='checkbox']"
     assert_select "input[name='meeting_type_agenda_item[active]'][type='checkbox']"
     assert_select "select[name='meeting_type_agenda_item[meeting_type_agenda_section_id]']"
     assert_select "body", text: /source_key/i, count: 0

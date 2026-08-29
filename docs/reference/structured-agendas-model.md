@@ -64,6 +64,7 @@ Key points that are easy to get wrong:
 - Meeting Types design: `docs/superpowers/specs/2026-07-13-meeting-type-templates-design.md`
 - Agenda Sections design: `docs/superpowers/specs/2026-08-22-agenda-sections-design.md`
 - Membership Meeting structure: `docs/MEMBERSHIP_MEETING_AGENDA_STRUCTURE.md`
+- Commander agenda and roll call: `docs/COMMANDER_AGENDA_AND_ROLL_CALL.md`
 - Admin hub design: `docs/superpowers/specs/2026-07-13-admin-hub-reorganization-design.md`
 - `MeetingBody` is intentionally **not** used in this workflow (premature structure;
   see the meeting-type spec's Non-Goals).

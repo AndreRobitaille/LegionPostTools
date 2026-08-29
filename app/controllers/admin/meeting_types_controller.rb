@@ -86,7 +86,9 @@ module Admin
     end
 
     def set_agenda_sections
-      @agenda_sections = @meeting_type.meeting_type_agenda_sections.ordered.includes(agenda_items: :agenda_item_catalog_entry)
+      @agenda_sections = @meeting_type.meeting_type_agenda_sections.ordered.includes(
+        agenda_items: [ :agenda_item_catalog_entry, :rich_text_commander_notes ]
+      )
     end
 
     def next_position

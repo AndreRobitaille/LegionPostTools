@@ -32,6 +32,7 @@
               <div class="agenda-item-copy">
                 <span class="agenda-item-name"><%= item.title %></span>
                 <% if item.summary.present? %><span class="agenda-item-note"><%= item.summary %></span><% end %>
+                <%= render "admin/shared/agenda_item_status_flags", item: item %>
               </div>
               <div class="agenda-item-actions">
                 <% unless item.active? %><span class="catrow-flag">Inactive</span><% end %>

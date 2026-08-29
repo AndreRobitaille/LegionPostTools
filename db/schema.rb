@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,6 +60,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
     t.bigint "organization_id", null: false
     t.integer "position", default: 0, null: false
     t.datetime "seeded_at"
+    t.boolean "show_wording_in_minutes", default: true, null: false
+    t.boolean "show_wording_on_agenda", default: true, null: false
     t.string "slug", null: false
     t.string "source_key"
     t.string "source_label"
@@ -121,6 +123,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
     t.bigint "meeting_type_agenda_item_id"
     t.integer "position", default: 0, null: false
     t.datetime "seeded_at"
+    t.boolean "show_wording_in_minutes", default: true, null: false
+    t.boolean "show_wording_on_agenda", default: true, null: false
     t.string "source_key"
     t.string "source_label"
     t.text "summary", default: "", null: false
@@ -136,6 +140,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
     t.index ["dated_agenda_section_id", "position"], name: "idx_dated_agenda_items_section_position", unique: true
     t.index ["meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_meeting_type_agenda_item_id"
     t.index ["tracked_item_id"], name: "index_dated_agenda_items_on_tracked_item_id"
+  end
+
+  create_table "dated_agenda_roll_call_entries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "dated_agenda_item_id", null: false
+    t.string "office_name", null: false
+    t.bigint "person_id"
+    t.string "person_name"
+    t.integer "position", null: false
+    t.bigint "position_title_id"
+    t.datetime "updated_at", null: false
+    t.index ["dated_agenda_item_id", "position"], name: "idx_agenda_roll_call_item_position", unique: true
+    t.index ["dated_agenda_item_id"], name: "index_dated_agenda_roll_call_entries_on_dated_agenda_item_id"
+    t.index ["person_id"], name: "index_dated_agenda_roll_call_entries_on_person_id"
+    t.index ["position_title_id"], name: "index_dated_agenda_roll_call_entries_on_position_title_id"
   end
 
   create_table "dated_agenda_sections", force: :cascade do |t|
@@ -251,6 +270,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
     t.bigint "meeting_type_id", null: false
     t.integer "position", default: 0, null: false
     t.datetime "seeded_at"
+    t.boolean "show_wording_in_minutes", default: true, null: false
+    t.boolean "show_wording_on_agenda", default: true, null: false
     t.string "source_key"
     t.string "source_label"
     t.text "summary", default: "", null: false
@@ -474,6 +495,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
   add_foreign_key "dated_agenda_items", "dated_agendas"
   add_foreign_key "dated_agenda_items", "meeting_type_agenda_items"
   add_foreign_key "dated_agenda_items", "tracked_items"
+  add_foreign_key "dated_agenda_roll_call_entries", "dated_agenda_items"
+  add_foreign_key "dated_agenda_roll_call_entries", "people", on_delete: :nullify
+  add_foreign_key "dated_agenda_roll_call_entries", "position_titles", on_delete: :nullify
   add_foreign_key "dated_agenda_sections", "dated_agendas"
   add_foreign_key "dated_agenda_sections", "meeting_type_agenda_sections"
   add_foreign_key "dated_agendas", "meeting_bodies"

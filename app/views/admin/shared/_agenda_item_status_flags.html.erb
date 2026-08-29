@@ -1,0 +1,5 @@
+<span class="agenda-item-flags">
+  <% unless item.show_wording_on_agenda? %><span class="agenda-item-flag">Agenda wording hidden</span><% end %>
+  <% unless item.show_wording_in_minutes? %><span class="agenda-item-flag">Minutes wording hidden</span><% end %>
+  <% if item.commander_notes.present? %><span class="agenda-item-flag agenda-item-flag--commander">Commander script</span><% end %>
+</span>

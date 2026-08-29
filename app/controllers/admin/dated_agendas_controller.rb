@@ -2,7 +2,7 @@ module Admin
   class DatedAgendasController < ApplicationController
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
-    before_action :set_dated_agenda, only: %i[edit update destroy approve publish reopen print]
+    before_action :set_dated_agenda, only: %i[edit update destroy approve publish reopen print commander]
     before_action :set_form_collections, only: %i[new create edit update]
 
     def index
@@ -33,7 +33,7 @@ module Admin
     end
 
     def edit
-      @agenda_sections = @dated_agenda.dated_agenda_sections.ordered.includes(agenda_items: [ :agenda_item_catalog_entry, :rich_text_body ])
+      @agenda_sections = agenda_sections_with_content
     end
 
     def update
@@ -42,7 +42,7 @@ module Admin
       elsif @dated_agenda.update(dated_agenda_params.except(:meeting_body_id, :meeting_type_id))
         redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Dated agenda updated."
       else
-        @agenda_sections = @dated_agenda.dated_agenda_sections.ordered.includes(agenda_items: [ :agenda_item_catalog_entry, :rich_text_body ])
+        @agenda_sections = agenda_sections_with_content
         render :edit, status: :unprocessable_entity
       end
     rescue ActiveRecord::StaleObjectError
@@ -79,6 +79,10 @@ module Admin
       render layout: "print"
     end
 
+    def commander
+      render layout: "print"
+    end
+
     private
 
     def set_organization
@@ -110,6 +114,12 @@ module Admin
 
     def default_starts_at
       Time.zone.now.change(hour: 19, min: 0) + 1.week
+    end
+
+    def agenda_sections_with_content
+      @dated_agenda.dated_agenda_sections.ordered.includes(
+        agenda_items: [ :agenda_item_catalog_entry, :rich_text_body, :rich_text_commander_notes, :roll_call_entries ]
+      )
     end
   end
 end

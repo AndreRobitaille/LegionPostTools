@@ -23,10 +23,7 @@
     <%= form.label :summary %>
     <%= form.text_area :summary, class: "f", rows: 3 %>
   </div>
-  <div class="fl">
-    <%= form.label :body, "Wording" %>
-    <%= form.rich_text_area :body, attachments: "false" %>
-  </div>
+  <%= render "admin/shared/agenda_item_document_fields", form: form %>
   <label class="form-toggle">
     <%= form.check_box :active %>
     <span><span class="ft-label">Active</span></span>

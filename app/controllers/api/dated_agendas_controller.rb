@@ -77,7 +77,9 @@ module Api
 
     def agenda_detail(agenda)
       agenda_summary(agenda).merge(
-        sections: agenda.dated_agenda_sections.ordered.includes(:agenda_items).map { |section| section_payload(section) }
+        sections: agenda.dated_agenda_sections.ordered.includes(
+          agenda_items: [ :rich_text_body, :rich_text_commander_notes, :roll_call_entries ]
+        ).map { |section| section_payload(section) }
       )
     end
 
@@ -97,7 +99,20 @@ module Api
         summary: item.summary,
         position: item.position,
         behavior_type: item.behavior_type,
-        tracked_item_id: item.tracked_item_id
+        tracked_item_id: item.tracked_item_id,
+        wording: item.body.to_plain_text.presence,
+        show_wording_on_agenda: item.show_wording_on_agenda,
+        show_wording_in_minutes: item.show_wording_in_minutes,
+        commander_notes: item.commander_notes.to_plain_text.presence,
+        roll_call: item.roll_call? ? item.roll_call_entries.map { |entry| roll_call_entry_payload(entry) } : nil
+      }
+    end
+
+    def roll_call_entry_payload(entry)
+      {
+        office: entry.office_name,
+        officer: entry.person_name,
+        vacant: entry.vacant?
       }
     end
   end

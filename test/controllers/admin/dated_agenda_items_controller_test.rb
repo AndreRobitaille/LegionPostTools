@@ -31,12 +31,26 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @agenda.dated_agenda_items.first
 
-    patch admin_dated_agenda_agenda_item_path(@agenda, item), params: { dated_agenda_item: { title: "Meeting-specific", summary: "New summary", behavior_type: "report_slot", body: "New body", lock_version: item.lock_version } }
+    patch admin_dated_agenda_agenda_item_path(@agenda, item), params: {
+      dated_agenda_item: {
+        title: "Meeting-specific",
+        summary: "New summary",
+        behavior_type: "report_slot",
+        body: "New body",
+        commander_notes: "Ask for the report.",
+        show_wording_on_agenda: "0",
+        show_wording_in_minutes: "0",
+        lock_version: item.lock_version
+      }
+    }
 
     assert_redirected_to edit_admin_dated_agenda_path(@agenda)
     assert_equal "Agenda item updated.", flash[:notice]
     assert_equal "Meeting-specific", item.reload.title
     assert_equal "report_slot", item.behavior_type
+    assert_includes item.commander_notes.to_plain_text, "Ask for the report"
+    assert_not item.show_wording_on_agenda?
+    assert_not item.show_wording_in_minutes?
     assert_equal "Opening", @template_item.reload.title
     assert_equal "Opening Ceremony", @catalog_entry.reload.title
   end
@@ -204,6 +218,35 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to edit_admin_dated_agenda_path(@agenda)
     assert_equal "Agenda item removed.", flash[:notice]
+  end
+
+  test "authorized officer can refresh a draft officer roll call" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander = Person.create!(first_name: "Pat", last_name: "Commander")
+    commander_title.position_assignments.create!(person: commander, starts_on: Date.new(2026, 7, 1))
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    commander.update!(first_name: "Updated")
+
+    patch refresh_roll_call_admin_dated_agenda_agenda_item_path(@agenda, item)
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Officer roll call refreshed for the meeting date.", flash[:notice]
+    assert_equal "Updated Commander", item.roll_call_entries.reload.first.person_name
+  end
+
+  test "locked officer roll call cannot be refreshed" do
+    user = user_with_capabilities("manage_agendas")
+    sign_in_as(user)
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    @agenda.approve!(user)
+
+    patch refresh_roll_call_admin_dated_agenda_agenda_item_path(@agenda, item)
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Reopen this agenda before editing items.", flash[:alert]
   end
 
   test "locked agenda rejects removal" do

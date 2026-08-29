@@ -82,6 +82,7 @@ Rails.application.routes.draw do
         patch :publish
         patch :reopen
         get :print
+        get :commander
       end
       resources :agenda_sections, controller: "dated_agenda_sections", except: %i[index show] do
         post :reorder, on: :collection
@@ -89,6 +90,7 @@ Rails.application.routes.draw do
       end
       resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         post :reorder, on: :collection
+        patch :refresh_roll_call, on: :member
       end
       resources :tracked_items, controller: "dated_agenda_tracked_items", only: %i[new create]
     end

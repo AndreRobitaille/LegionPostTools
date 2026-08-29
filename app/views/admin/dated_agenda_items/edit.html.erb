@@ -35,10 +35,7 @@
       <%= form.label :behavior_type %>
       <%= form.select :behavior_type, AgendaItemCatalogEntry::BEHAVIOR_TYPES.map { |value, label| [label, value] }, {}, class: "f" %>
     </div>
-    <div class="fl">
-      <%= form.label :body, "Wording" %>
-      <%= form.rich_text_area :body, attachments: "false" %>
-    </div>
+    <%= render "admin/shared/agenda_item_document_fields", form: form %>
     <div class="btnrow">
       <%= form.submit "Save changes", class: "btn-primary" %>
       <%= link_to "Cancel", edit_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>

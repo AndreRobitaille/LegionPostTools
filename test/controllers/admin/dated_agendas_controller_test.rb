@@ -318,7 +318,47 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get edit_admin_dated_agenda_path(agenda)
 
     assert_response :success
-    assert_select "a[href=?]", print_admin_dated_agenda_path(agenda), text: "Print"
+    assert_select "a[href=?]", print_admin_dated_agenda_path(agenda), text: "Print member agenda"
+    assert_select "a[href=?]", commander_admin_dated_agenda_path(agenda), text: "Commander's copy"
+  end
+
+  test "users without manage_agendas cannot access the Commander's copy" do
+    sign_in_as(user_with_capabilities)
+
+    get commander_admin_dated_agenda_path(@agenda)
+
+    assert_redirected_to root_path
+    assert_equal "You do not have permission to open that page.", flash[:alert]
+  end
+
+  test "Commander's copy includes private cues and roll call while member print withholds both" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander = Person.create!(first_name: "Pat", last_name: "Commander")
+    commander_title.position_assignments.create!(person: commander, starts_on: Date.new(2026, 7, 1))
+    item = @agenda.dated_agenda_items.first
+    item.update!(
+      behavior_type: "roll_call",
+      body: "Withheld member wording",
+      show_wording_on_agenda: false,
+      commander_notes: "Call each officer by office."
+    )
+
+    get commander_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_select ".agenda-document-label--commander", text: /Commander's working copy/
+    assert_select ".commander-cue", text: /Call each officer/
+    assert_select ".roll-call-table", text: /Pat Commander/
+    assert_select "body", text: /Withheld member wording/, count: 0
+
+    get print_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_select ".commander-cue", count: 0
+    assert_select ".roll-call-table", count: 0
+    assert_select "body", text: /Call each officer/, count: 0
+    assert_select "body", text: /Withheld member wording/, count: 0
   end
 
   test "edit page shows a modal warning with the exact agenda record" do

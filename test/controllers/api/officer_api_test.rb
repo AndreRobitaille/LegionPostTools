@@ -143,6 +143,41 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert DatedAgenda.find(agenda["id"]).draft?
   end
 
+  test "dated agenda detail includes document controls Commander notes and officer roll call" do
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander_title.position_assignments.create!(person: @commander.person, starts_on: Date.current)
+    agenda = @organization.dated_agendas.create!(
+      meeting_body: @membership_body,
+      meeting_type: @membership_type,
+      starts_at: 1.week.from_now,
+      title: "Working Agenda",
+      status: "draft"
+    )
+    agenda.dated_agenda_items.create!(
+      position: 1,
+      title: "Roll Call and Quorum",
+      behavior_type: "roll_call",
+      body: "Internal working words",
+      commander_notes: "Call each office slowly.",
+      show_wording_on_agenda: false,
+      show_wording_in_minutes: true,
+      active: true
+    )
+    sign_in_as(@commander)
+
+    get "/api/dated_agendas/#{agenda.id}", as: :json
+
+    assert_response :success
+    item = response.parsed_body.dig("dated_agenda", "sections", 0, "items", 0)
+    assert_equal "Internal working words", item["wording"]
+    assert_not item["show_wording_on_agenda"]
+    assert item["show_wording_in_minutes"]
+    assert_equal "Call each office slowly.", item["commander_notes"]
+    assert_equal "Commander", item.dig("roll_call", 0, "office")
+    assert_equal @commander.person.full_name, item.dig("roll_call", 0, "officer")
+    assert_not item.dig("roll_call", 0, "vacant")
+  end
+
   test "member cannot create a dated agenda" do
     sign_in_as(@member)
 
