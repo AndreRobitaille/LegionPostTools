@@ -17,11 +17,14 @@
   <% if editable %>
     <div class="agenda-item-actions">
       <% if item.roll_call? %>
-        <%= button_to "Refresh officers",
+        <%= link_to "Edit officer list",
+              edit_admin_dated_agenda_agenda_item_roll_call_path(dated_agenda, item),
+              class: "section-action" %>
+        <%= button_to "Reload assigned officers",
               refresh_roll_call_admin_dated_agenda_agenda_item_path(dated_agenda, item),
               method: :patch,
               class: "section-action",
-              data: { turbo_confirm: "Replace this roll-call worksheet with officer assignments active on the meeting date?" } %>
+              data: { turbo_confirm: "Replace this meeting's officer list with assignments active on the meeting date? Any changes made only for this agenda will be lost." } %>
       <% end %>
       <%= link_to "Edit", edit_admin_dated_agenda_agenda_item_path(dated_agenda, item), class: "catrow-edit" %>
       <button type="button"

@@ -115,7 +115,8 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".agenda-item-flag", text: "Agenda wording hidden"
     assert_selector ".agenda-item-flag", text: "Minutes wording hidden"
     assert_selector ".agenda-item-flag--commander", text: "Commander script"
-    assert_button "Refresh officers"
+    assert_link "Edit officer list"
+    assert_button "Reload assigned officers"
 
     click_link "Commander's copy"
 
@@ -129,6 +130,43 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
 
     assert_selector ".roll-call-table .roll-call-mark", count: 3
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
+  test "officer reconstructs a historical meeting's officer list without changing Post roles" do
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)
+    historical_commander = Person.create!(first_name: "July", last_name: "Commander")
+    item = @agenda.dated_agenda_items.find_by!(title: "Opening Ceremony")
+    item.update!(behavior_type: "roll_call")
+
+    visit edit_admin_dated_agenda_path(@agenda)
+
+    within ".agenda-item-row[data-reorder-id='#{item.id}']" do
+      click_link "Edit officer list"
+    end
+
+    assert_selector "h1", text: "Officer list for this meeting"
+    assert_text "This list belongs only to this dated agenda."
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+
+    entry = item.roll_call_entries.find_by!(position_title: commander_title)
+    select "July Commander", from: "roll-call-entry-#{entry.id}"
+
+    page.current_window.resize_to(390, 844)
+    assert_selector ".roll-call-editor-mobile-label", text: /office/i
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+
+    click_button "Save officer list"
+
+    assert_current_path edit_admin_dated_agenda_path(@agenda)
+    assert_text "Officer list saved for this meeting."
+    assert_equal historical_commander, item.roll_call_entries.reload.find_by!(position_title: commander_title).person
+    assert_empty historical_commander.position_assignments
+
+    click_link "Commander's copy"
+    assert_selector ".roll-call-table", text: /Commander\s+July Commander/
   ensure
     page.current_window.resize_to(1400, 1400)
   end

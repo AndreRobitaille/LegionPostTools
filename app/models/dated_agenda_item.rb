@@ -126,6 +126,25 @@ class DatedAgendaItem < ApplicationRecord
     end
   end
 
+  def replace_roll_call_entries!(entries)
+    unless roll_call? && dated_agenda.draft?
+      errors.add(:base, "officer list can only be edited on a draft roll-call item")
+      raise ActiveRecord::RecordInvalid, self
+    end
+
+    if entries.empty?
+      errors.add(:base, "officer list must include at least one office")
+      raise ActiveRecord::RecordInvalid, self
+    end
+
+    transaction do
+      roll_call_entries.destroy_all
+      entries.each_with_index do |attributes, index|
+        roll_call_entries.create!(attributes.merge(position: index + 1))
+      end
+    end
+  end
+
   private
 
   def normalize_optional_fields

@@ -60,6 +60,21 @@ names. Later roster or assignment changes cannot alter an approved or historical
 While the agenda is a draft, an officer can refresh the snapshot explicitly; the action
 states that it replaces the current roll-call worksheet.
 
+The assignment snapshot is a useful starting point, not the only way to construct the
+worksheet. A draft agenda also provides an agenda-local officer-list editor. This supports
+reconstructing a past meeting when effective-dated assignments were not recorded in the
+application, and exceptional meetings whose roll call differed from the standing officer
+assignments. An editor may:
+
+- choose any existing person for an office;
+- leave an office visibly `Vacant`;
+- remove a row that did not belong on that meeting's roll call; and
+- add another active Post position, including a vacant position.
+
+These edits change only the dated agenda snapshot. They never rewrite a person's Post-role
+history or become defaults for a later agenda. “Reload assigned officers” remains available
+as an explicit reset and warns that it discards agenda-local changes.
+
 The member agenda shows the `Roll Call and Quorum` item like any other item but never shows
 blank attendance controls. The Commander's copy renders a compact table with Present,
 Absent, and Excused boxes. These boxes are a paper worksheet in this milestone. Recorded
@@ -72,7 +87,9 @@ attendance belongs to the later minutes lifecycle rather than mutating a publish
 - Private API detail may expose the script and document controls only under the existing
   `manage_agendas` gate; member-facing endpoints do not.
 - Roll-call rows are organization-scoped through their dated agenda and may be regenerated
-  only while that agenda is a draft.
+  or edited only while that agenda is a draft.
+- Agenda-local roll-call editing requires `manage_agendas`; it does not grant authority to
+  change officer assignments or assignment-derived membership access.
 - Existing records are backfilled with both document controls checked, preserving current
   output after migration.
 
@@ -100,6 +117,30 @@ undifferentiated form:
 Agenda-builder rows use quiet status chips only when they communicate an exception:
 `Agenda wording hidden`, `Minutes wording hidden`, or `Commander script`. Ordinary defaults
 do not receive badges, keeping the meeting order scannable.
+
+For a roll-call item, `Edit officer list` opens a dedicated meeting-scoped worksheet:
+
+```text
++----------------------------------------------------------------+
+| OFFICERS FOR JULY 7, 2026                                      |
+| This list belongs only to this agenda.                         |
++----------------------------------------------------------------+
+| Office                  Officer                                |
+| Commander               [ Pat Commander                    v ] |
+| Adjutant                [ Vacant                          v ]   |
+| Historian               [ Alex Member                     v ]  |
+|                          [ ] Remove this row                    |
++----------------------------------------------------------------+
+| ADD AN OFFICE                                                   |
+| [ Service Officer v ]   [ Jordan Member v ]                    |
++----------------------------------------------------------------+
+| [Save officer list]          [Reload assigned officers]         |
++----------------------------------------------------------------+
+```
+
+The page distinguishes `Vacant` from removal: vacant preserves the office on the worksheet,
+while removal omits the row from this meeting. Existing people are chosen by name so the
+saved row continues to preserve both its reference and displayed snapshot name.
 
 The agenda lifecycle actions distinguish **Print member agenda** from **Commander's copy**.
 The latter is visually an internal working document and must never be described as the
@@ -133,6 +174,11 @@ grayscale. The existing gold order rail remains the dominant agenda structure.
 The roll call uses a compact ruled table based on an Adjutant's paper worksheet. It avoids
 cards, oversized checkboxes, decorative icons, and repeated officer labels that would waste
 paper.
+
+The editor extends that worksheet metaphor with quiet horizontal rules and a narrow gold
+meeting-date rail. The established application sans remains the form typeface; office names
+use navy weight rather than introducing a decorative face. This is intentionally a working
+record, not another dashboard or a miniature version of the ceremonial print document.
 
 ### Commander document
 
@@ -172,9 +218,11 @@ without sacrificing clarity.
 ## Verification
 
 - Model and controller coverage confirms defaults, three-level copying, locks, private
-  visibility, roll-call snapshot date rules, vacancies, refresh behavior, and API payloads.
+  visibility, roll-call snapshot date rules, vacancies, agenda-local edits, refresh behavior,
+  and API payloads.
 - System coverage confirms the editor vocabulary and both print actions.
-- Browser critique covers the dated-agenda editor, member agenda, and Commander's copy at
-  desktop and 390px widths, including keyboard focus and horizontal overflow.
+- Browser critique covers the dated-agenda editor, officer-list editor, member agenda, and
+  Commander's copy at desktop and 390px widths, including keyboard focus and horizontal
+  overflow.
 - Printed output is inspected for hidden member content, visible Commander cues, compact
   roll call, grayscale legibility, and reasonable page-break behavior.

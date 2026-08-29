@@ -268,6 +268,153 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Reopen this agenda before editing items.", flash[:alert]
   end
 
+  test "signed out users cannot edit an agenda-local officer list" do
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+
+    get edit_admin_dated_agenda_agenda_item_roll_call_path(@agenda, item)
+
+    assert_redirected_to new_session_path
+  end
+
+  test "users without manage_agendas cannot edit an agenda-local officer list" do
+    sign_in_as(user_with_capabilities)
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+
+    get edit_admin_dated_agenda_agenda_item_roll_call_path(@agenda, item)
+
+    assert_redirected_to root_path
+    assert_equal "You do not have permission to open that page.", flash[:alert]
+  end
+
+  test "non-roll-call items do not expose an officer-list editor" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @agenda.dated_agenda_items.first
+
+    get edit_admin_dated_agenda_agenda_item_roll_call_path(@agenda, item)
+
+    assert_response :not_found
+  end
+
+  test "authorized officer can edit the agenda-local officer list without changing Post roles" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    current_commander = Person.create!(first_name: "Current", last_name: "Commander")
+    historical_commander = Person.create!(first_name: "July", last_name: "Commander")
+    assignment = commander_title.position_assignments.create!(person: current_commander, starts_on: Date.new(2026, 7, 1))
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    entry = item.roll_call_entries.find_by!(position_title: commander_title)
+
+    get edit_admin_dated_agenda_agenda_item_roll_call_path(@agenda, item)
+
+    assert_response :success
+    assert_select "h1", text: "Officer list for this meeting"
+    assert_select ".roll-call-editor-note", text: /only to this dated agenda/i
+    assert_select "select[name=?]", "roll_call[entries][#{entry.id}][person_id]"
+    assert_select "label[for='roll_call_new_entry_position_title_id']", text: "Post office"
+    assert_select "label[for='roll_call_new_entry_person_id']", text: "Officer or vacancy"
+
+    patch admin_dated_agenda_agenda_item_roll_call_path(@agenda, item), params: {
+      roll_call: {
+        entries: { entry.id.to_s => { person_id: historical_commander.id } },
+        new_entry: { position_title_id: "", person_id: "" }
+      }
+    }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Officer list saved for this meeting.", flash[:notice]
+    saved_entry = item.roll_call_entries.reload.find_by!(position_title: commander_title)
+    assert_equal historical_commander, saved_entry.person
+    assert_equal "July Commander", saved_entry.person_name
+    assert_equal current_commander, assignment.reload.person
+    assert_empty historical_commander.position_assignments
+  end
+
+  test "agenda-local officer list can preserve a vacancy and add an optional office" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    historian_title = @organization.position_titles.create!(name: "Historian", display_order: 2, required_by_default: false, active: true)
+    commander = Person.create!(first_name: "Pat", last_name: "Commander")
+    commander_title.position_assignments.create!(person: commander, starts_on: Date.new(2026, 7, 1))
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    commander_entry = item.roll_call_entries.find_by!(position_title: commander_title)
+
+    patch admin_dated_agenda_agenda_item_roll_call_path(@agenda, item), params: {
+      roll_call: {
+        entries: { commander_entry.id.to_s => { person_id: "" } },
+        new_entry: { position_title_id: historian_title.id, person_id: "" }
+      }
+    }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    rows = item.roll_call_entries.reload
+    assert_equal [ "Commander", "Historian" ], rows.map(&:office_name)
+    assert rows.all?(&:vacant?)
+  end
+
+  test "agenda-local officer list can remove a meeting-only row" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    adjutant_title = @organization.position_titles.create!(name: "Adjutant", display_order: 2, required_by_default: true, active: true)
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    commander_entry = item.roll_call_entries.find_by!(position_title: commander_title)
+    adjutant_entry = item.roll_call_entries.find_by!(position_title: adjutant_title)
+
+    patch admin_dated_agenda_agenda_item_roll_call_path(@agenda, item), params: {
+      roll_call: {
+        entries: {
+          commander_entry.id.to_s => { person_id: "" },
+          adjutant_entry.id.to_s => { person_id: "", remove: "1" }
+        },
+        new_entry: { position_title_id: "", person_id: "" }
+      }
+    }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal [ "Commander" ], item.roll_call_entries.reload.map(&:office_name)
+  end
+
+  test "agenda-local officer list rejects removing every row" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    entry = item.roll_call_entries.find_by!(position_title: commander_title)
+
+    assert_no_difference -> { item.roll_call_entries.count } do
+      patch admin_dated_agenda_agenda_item_roll_call_path(@agenda, item), params: {
+        roll_call: {
+          entries: { entry.id.to_s => { person_id: "", remove: "1" } },
+          new_entry: { position_title_id: "", person_id: "" }
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select ".app-flash-alert", text: /must include at least one office/i
+  end
+
+  test "locked agenda-local officer list cannot be edited" do
+    user = user_with_capabilities("manage_agendas")
+    sign_in_as(user)
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    item = @agenda.dated_agenda_items.first
+    item.update!(behavior_type: "roll_call")
+    entry = item.roll_call_entries.find_by!(position_title: commander_title)
+    @agenda.approve!(user)
+
+    patch admin_dated_agenda_agenda_item_roll_call_path(@agenda, item), params: {
+      roll_call: { entries: { entry.id.to_s => { person_id: "" } } }
+    }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Reopen this agenda before editing the officer list.", flash[:alert]
+  end
+
   test "locked agenda rejects removal" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     @agenda.approve!(User.last)

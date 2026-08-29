@@ -94,6 +94,7 @@ Rails.application.routes.draw do
       resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
         post :reorder, on: :collection
         patch :refresh_roll_call, on: :member
+        resource :roll_call, only: %i[edit update], controller: "dated_agenda_roll_calls"
       end
       resources :tracked_items, controller: "dated_agenda_tracked_items", only: %i[new create]
     end
