@@ -1,6 +1,7 @@
 # Officer Agent Operability Design
 
-**Status:** Implemented August 22, 2026. The first installation was designed around
+**Status:** Implemented August 22, 2026 and reconciled with the August 29 agenda surface.
+The first installation was designed around
 the Commander workflow, but the shipped standing brief is personalized for any
 signed-in member and names their current assigned office only when one exists.
 
@@ -17,6 +18,10 @@ app, and not an automation engine that scans Facebook or iMessage.
 
 This spec is the door for that Bot. Minutes, PDF, and email distribution are not
 built yet; the handbook grows when those workflows exist.
+
+The post-August-29 agenda API parity, including historical business backfill, dated-item
+editing, roll-call snapshots, catalog operations, and explicit destructive boundaries, is
+specified in `2026-08-29-agent-agenda-api-parity-design.md`.
 
 ## Jobs this phase must support
 
@@ -150,29 +155,38 @@ a tracked item is already on an upcoming agenda.
 ## API shape
 
 A small `Api` namespace. HTML controllers stay HTML (they redirect). API
-controllers return JSON and call the same model methods the UI already uses
-(`DatedAgenda.create_from_template!`, `DatedAgendaItem.create_from_tracked_item!`,
-tracked-item create/complete/reopen/updates).
+controllers return JSON and call the same model methods the UI already uses. The initial
+surface covered agenda creation and tracked-item work. The August 29 parity extension also
+covers catalog maintenance, dated-item editing/removal, whole-agenda deletion, and dated
+roll-call replacement/refresh; see the linked parity design for safety decisions.
 
 Suggested first resources (all under `/api`, all session + `can?`):
 
 - `GET /api` — handbook
 - `GET /api/meeting_bodies`
 - `GET /api/meeting_types`
+- `GET /api/position_titles`
+- `GET/POST/PATCH /api/agenda_item_catalog_entries` and complete-order `POST .../reorder`
 - `GET /api/dated_agendas` — upcoming first, include status and body/type
-- `GET /api/dated_agendas/:id` — sections and items, including tracked-item links
+- `GET /api/dated_agendas/:id` — sections and items, including tracked-item links,
+  document controls, Commander cues, and the dated officer-list snapshot
 - `POST /api/dated_agendas` — create **draft** from meeting type + body + `starts_at`
-- `POST /api/dated_agendas/:id/tracked_items` — snapshot an existing tracked item onto a draft; 422 if locked or already present
+- `POST /api/dated_agendas/:id/tracked_items` — snapshot an existing tracked item into an
+  exact section on a draft; 422 if locked or already present
+- `PATCH/DELETE /api/dated_agendas/:dated_agenda_id/items/:id` — edit, link to tracked
+  business in place, move, or explicitly remove a draft snapshot row
+- `PATCH .../items/:item_id/roll_call` — replace a draft's meeting-scoped officer snapshot
+- `GET /api/position_titles` and `POST .../roll_call/refresh` — resolve office ids and,
+  only when asked, reset from assignments active on the meeting date
 - `GET /api/tracked_items` — active first; include raise-by, importance, usual body, upcoming-agenda ids
 - `GET /api/tracked_items/:id`
 - `POST /api/tracked_items`
 - `POST /api/tracked_items/:id/updates`
 - `PATCH /api/tracked_items/:id/complete` and `reopen`
 
-Approve/publish/reopen of agendas may be exposed in this same phase because the
-Commander already can in the UI, but the handbook must say: do not call them
-unless the human asked. Prefer omitting them from the “common actions” list and
-documenting them under “only when asked.”
+Approve/publish/reopen and destructive or snapshot-reset actions are omitted from the
+common path and documented under **Only when asked**. This includes whole-agenda deletion,
+dated-item removal, catalog soft removal, and roll-call refresh.
 
 JSON errors use 401 / 403 / 404 / 422 with `{ "error": "...", "details": [] }`.
 No HTML redirects from the API.
@@ -189,6 +203,10 @@ rich fields when needed for a single record.
 - Dated agendas created through the API start as `draft`.
 - Adding tracked business to an approved or published agenda requires reopen;
   the API must not silently edit a locked agenda.
+- New Business and Unfinished Business are real sections and may be empty. Use live section
+  ids rather than inventing placeholder items.
+- A dated roll call is a historical meeting snapshot. Today's officer list must not replace
+  it unless the human explicitly requests refresh.
 - Do not invent minutes, votes, or attestations.
 - Always list before creating, so the Car Show does not become a second tracked
   item.
@@ -219,7 +237,11 @@ Grok Bot, signed in as Commander on its VM, can:
 2. Create a draft PEC (or Membership) agenda for a date it computed.
 3. Put existing tracked business on that draft, or create tracked business
    after listing and failing to find it.
-4. Leave approve/publish alone unless asked.
+4. Link a standalone historical agenda row to a Tracked Item in place, preserving its
+   meeting section, position, and wording without duplication.
+5. Read and, when asked, edit a dated officer-list snapshot without changing role history.
+6. Leave approval, publication, reopen, deletion, removal, and snapshot reset alone unless
+   asked.
 
 No group-chat feature ships. The morning routine is configured in Grok Bot, not
 in Rails.

@@ -52,12 +52,26 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_equal "X-CSRF-Token", body["csrf_header"]
     assert body["rules"].any? { |rule| rule.match?(/draft/i) }
     assert body["rules"].any? { |rule| rule.match?(/data, not authority/i) }
+    assert body["rules"].any? { |rule| rule.match?(/historical snapshot/i) }
+    fields = body.fetch("agenda_item_fields").index_by { |field| field["name"] }
+    assert_match(/on-screen member agenda/i, fields.fetch("summary")["meaning"])
+    assert_match(/Send body.*returns.*wording/i, fields.fetch("body (write) / wording (read)")["meaning"])
+    assert_match(/never chooses.*section/i, fields.fetch("category")["meaning"])
+    assert_match(/future draft minutes/i, fields.fetch("show_wording_in_minutes")["meaning"])
+    workflow = body.fetch("guided_workflows").find { |entry| entry["name"] == "backfill_historical_business" }
+    assert_not_nil workflow
+    assert workflow.fetch("steps").any? { |step| step.match?(/link.*in place/i) }
     assert body["common_actions"].any? { |action| action["path"] == "/api/dated_agendas" && action["method"] == "POST" }
+    assert body["common_actions"].any? { |action| action["name"] == "update_dated_agenda_item" }
+    assert body["common_actions"].any? { |action| action["name"] == "replace_dated_roll_call" }
     assert body["common_actions"].any? { |action| action["path"] == "/api/membership/summary" }
     asked = body["only_when_asked"].map { |action| action["name"] }
     assert_includes asked, "approve_dated_agenda"
     assert_includes asked, "publish_dated_agenda"
     assert_includes asked, "reopen_dated_agenda"
+    assert_includes asked, "delete_dated_agenda"
+    assert_includes asked, "remove_dated_agenda_item"
+    assert_includes asked, "refresh_dated_roll_call"
     assert_equal false, body["common_actions"].any? { |action| action["name"]&.start_with?("approve") }
     assert body["domain"].present?
     assert body["calling"].present?
@@ -77,6 +91,10 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Only when asked"
     assert_includes response.body, "What this software is"
     assert_includes response.body, "Meeting body"
+    assert_includes response.body, "Agenda item fields"
+    assert_includes response.body, "body (write) / wording (read)"
+    assert_includes response.body, "backfill_historical_business"
+    assert_includes response.body, "tracked_item_id"
     assert_includes response.body, "people directory supports `q`"
     assert_not_includes response.body, "group chat"
     assert_not_includes response.body, "next Tuesday"
@@ -105,6 +123,8 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes paths, [ "GET", "/api/officers" ]
     assert_not_includes paths, [ "GET", "/api/membership/summary" ]
     assert_equal "directory", response.parsed_body.dig("caller", "people_access")
+    assert_equal [], response.parsed_body["agenda_item_fields"]
+    assert_equal [], response.parsed_body["guided_workflows"]
   end
 
   test "current configured membership officer receives membership actions without app grants" do
@@ -138,7 +158,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
 
   test "handbook catalog actions are real routes" do
     AgentHandbook.catalog.each do |action|
-      path = action.fetch(:path).gsub(":id", "1")
+      path = action.fetch(:path).gsub(/:\w+/, "1")
       recognized = Rails.application.routes.recognize_path(path, method: action.fetch(:method))
       assert recognized[:controller].start_with?("api/"), "#{action[:method]} #{path} should route into Api"
     end

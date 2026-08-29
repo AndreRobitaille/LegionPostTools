@@ -12,7 +12,7 @@ rewrite existing meeting-type templates or dated-agenda snapshots.
 
 ## Interaction model
 
-- The six catalog categories remain fixed in the order defined by
+- The nine catalog categories remain fixed in the order defined by
   `AgendaItemCatalogEntry::CATEGORIES`.
 - Every category is rendered, even when empty, so it is always available as a
   drop destination.
@@ -53,6 +53,24 @@ rewrite existing meeting-type templates or dated-agenda snapshots.
   it cannot quietly reintroduce them into future meeting workflows.
 - Reordering and position normalization consider only entries still present in
   the catalog.
+
+## Delegated officer API
+
+The signed-in `GET /api` handbook exposes the same data operation without copying the
+browser's drag interaction:
+
+- `GET /api/agenda_item_catalog_entries` lists every kept entry with its category,
+  position, document controls, and Commander cues.
+- `POST /api/agenda_item_catalog_entries/reorder` accepts the complete category-to-id
+  arrangement and calls the same atomic model operation as drag and drop.
+- Create and update endpoints maintain reusable catalog content. Changing category places
+  an item at the end of that category, matching the browser editor.
+- `DELETE /api/agenda_item_catalog_entries/:id` performs the same soft removal and appears
+  only under **Only when asked** in the generated Bot handbook.
+
+The API does not emulate pointer movement or arrow clicks. It operates on the saved order,
+requires `manage_agendas`, rejects incomplete/duplicate/foreign ids, and does not rewrite
+existing meeting types or dated snapshots.
 
 ## Visual direction
 

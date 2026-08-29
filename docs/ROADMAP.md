@@ -129,13 +129,17 @@ proof of fresh human intent that the Bot cannot infer or create for itself.
 
 Build:
 
-- Private session-authenticated JSON for meeting bodies, meeting types, dated
-  agendas, and tracked items. Same `can?` rules as the HTML app.
+- Private session-or-bearer JSON for meeting bodies, meeting types, the agenda catalog,
+  dated agendas and their items, dated officer-list snapshots, and tracked items. Same
+  `can?` rules as the HTML app.
 - Generated handbook at `GET /api` (login required) so the Bot can learn this
   installation without a human manual, MCP, or public docs. Standing
   instructions to paste into the Bot live in `docs/agent-operator-skill.md`
   (what the app is, URL, sign-in, then `/api`). Job routines stay in the Bot.
 - Lists, not search. The Bot matches names from the list.
+- A guided historical-business workflow that lists before creating, targets exact section
+  ids, and can link a standalone agenda row to a Tracked Item in place without duplication.
+- Destructive and snapshot-reset actions appear separately under **Only when asked**.
 - Draft-only creates unless the human explicitly asks to approve or publish.
 - Verify the Agent Computer browser can sign in and reach `/api` (watch
   `allow_browser`).
@@ -148,8 +152,9 @@ The first slice deliberately did not build TUI, CLI package, MCP, public `llms.t
 chat ingest, or minutes endpoints. The completed access phase added personal agent
 tokens without adding those broader protocol surfaces.
 
-See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
-`docs/superpowers/plans/2026-08-22-officer-agent-operability.md`.
+See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`,
+`docs/superpowers/plans/2026-08-22-officer-agent-operability.md`, and
+`docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md`.
 
 When minutes, PDF, or distribution ship, add them to the handbook. MCP still waits
 until connector-style onboarding is worth another protocol surface.

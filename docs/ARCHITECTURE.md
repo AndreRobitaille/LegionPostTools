@@ -107,9 +107,17 @@ JSON surface and a generated handbook at `/api`. It is still not the authority o
 Group chat, email, and other outside channels stay in the agent’s own tools;
 this app only stores post business.
 
+The private API mirrors agenda data operations needed for delegated work: reusable catalog
+maintenance, dated-agenda and item changes, tracked-business continuity, and meeting-scoped
+officer-list snapshots. It does not turn print presentation into JSON or let today's officer
+directory silently overwrite a historical roll call. Deletion, removal, snapshot reset,
+approval, publication, and reopen remain explicit **only when asked** actions in the live
+handbook.
+
 Provider-specific AI integration should stay behind replaceable service boundaries. OpenAI is expected first, but the domain should not depend directly on one provider.
 
-See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`.
+See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
+`docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md`.
 
 ## Deferred Architecture
 

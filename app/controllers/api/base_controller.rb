@@ -247,6 +247,14 @@ module Api
       }, status: :unprocessable_entity
     end
 
+    def render_validation_error(record, fallback:)
+      render_error(
+        record.errors.full_messages.to_sentence.presence || fallback,
+        status: :unprocessable_entity,
+        details: record.errors.full_messages
+      )
+    end
+
     def meeting_body_payload(meeting_body)
       return nil if meeting_body.nil?
 
@@ -257,6 +265,82 @@ module Api
       return nil if meeting_type.nil?
 
       { id: meeting_type.id, name: meeting_type.name, slug: meeting_type.slug, active: meeting_type.active }
+    end
+
+    def agenda_summary_payload(agenda)
+      {
+        id: agenda.id,
+        title: agenda.title,
+        status: agenda.status,
+        starts_at: agenda.starts_at.iso8601,
+        meeting_body: meeting_body_payload(agenda.meeting_body),
+        meeting_type: meeting_type_payload(agenda.meeting_type)
+      }
+    end
+
+    def agenda_detail_payload(agenda)
+      agenda_summary_payload(agenda).merge(
+        sections: agenda.dated_agenda_sections.ordered.includes(
+          agenda_items: [ :rich_text_body, :rich_text_commander_notes, { roll_call_entries: %i[position_title person] } ]
+        ).map { |section| dated_agenda_section_payload(section) }
+      )
+    end
+
+    def dated_agenda_section_payload(section)
+      {
+        id: section.id,
+        title: section.title,
+        position: section.position,
+        items: section.agenda_items.order(:position, :title).map { |item| dated_agenda_item_payload(item) }
+      }
+    end
+
+    def dated_agenda_item_payload(item)
+      {
+        id: item.id,
+        dated_agenda_section_id: item.dated_agenda_section_id,
+        title: item.title,
+        summary: item.summary,
+        position: item.position,
+        behavior_type: item.behavior_type,
+        tracked_item_id: item.tracked_item_id,
+        wording: item.body.to_plain_text.presence,
+        show_wording_on_agenda: item.show_wording_on_agenda,
+        show_wording_in_minutes: item.show_wording_in_minutes,
+        commander_notes: item.commander_notes.to_plain_text.presence,
+        lock_version: item.lock_version,
+        roll_call: item.roll_call? ? item.roll_call_entries.map { |entry| dated_roll_call_entry_payload(entry) } : nil
+      }
+    end
+
+    def dated_roll_call_entry_payload(entry)
+      {
+        id: entry.id,
+        position_title_id: entry.position_title_id,
+        person_id: entry.person_id,
+        office: entry.office_name,
+        officer: entry.person_name,
+        position: entry.position,
+        vacant: entry.vacant?
+      }
+    end
+
+    def agenda_catalog_entry_payload(entry)
+      {
+        id: entry.id,
+        title: entry.title,
+        summary: entry.summary,
+        category: entry.category,
+        category_label: AgendaItemCatalogEntry::CATEGORIES.fetch(entry.category, entry.category.humanize),
+        position: entry.position,
+        behavior_type: entry.behavior_type,
+        active: entry.active,
+        wording: entry.body.to_plain_text.presence,
+        show_wording_on_agenda: entry.show_wording_on_agenda,
+        show_wording_in_minutes: entry.show_wording_in_minutes,
+        commander_notes: entry.commander_notes.to_plain_text.presence,
+        seeded: entry.seeded?
+      }
     end
   end
 end

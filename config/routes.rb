@@ -106,17 +106,26 @@ Rails.application.routes.draw do
     get "/", to: "handbook#show"
     resources :people, only: %i[index show]
     resources :officers, only: %i[index]
+    resources :position_titles, only: %i[index]
     get "membership/summary", to: "membership#summary"
     get "membership/renewals", to: "membership#renewals"
     get "membership/roster", to: "membership#roster"
     get "membership/people/:id", to: "membership#person"
     resources :meeting_bodies, only: %i[index]
     resources :meeting_types, only: %i[index]
-    resources :dated_agendas, only: %i[index show create] do
+    resources :agenda_item_catalog_entries, only: %i[index create update destroy] do
+      post :reorder, on: :collection
+    end
+    resources :dated_agendas, only: %i[index show create destroy] do
       member do
         patch :approve
         patch :publish
         patch :reopen
+      end
+      resources :items, only: %i[update destroy], controller: "dated_agenda_items" do
+        resource :roll_call, only: %i[update], controller: "dated_agenda_roll_calls" do
+          post :refresh, on: :member
+        end
       end
       resources :tracked_items, only: :create, controller: "dated_agenda_tracked_items"
     end

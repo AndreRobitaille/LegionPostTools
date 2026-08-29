@@ -19,7 +19,7 @@ read and what the Commander will use to lead the meeting.
 
 ## Product Decisions
 
-Every agenda item owns four independent values:
+Every agenda item owns four independent document controls:
 
 - **Document wording**: the existing rich-text wording.
 - **Show wording on agenda**: checked by default. When clear, the item title remains but
@@ -31,6 +31,25 @@ Every agenda item owns four independent values:
 
 Screen and print versions of a given copy have the same content. There are no independent
 digital-versus-print visibility switches.
+
+### Complete agenda-item field guide
+
+| Field | How it is used |
+|---|---|
+| **Title** | Concise item heading. It remains visible when document wording is hidden. |
+| **Summary or guidance** | Short officer-facing guidance in catalog, template, and agenda builders. If a dated item has no document wording, the signed-in on-screen member agenda may use the summary as a fallback. Member print and Commander copies suppress that fallback. |
+| **Usually used under / category** | Catalog grouping and ordering only. It helps officers find a reusable item but does not choose the actual section on a meeting template or dated agenda. |
+| **Agenda section** | The actual first-level placement for a template or dated snapshot. Moving an item places it at the end of the selected section. |
+| **Item kind / behavior type** | Records item-level workflow intent, not hierarchy. Officer roll call is specialized today; report, motion/decision, ceremony, and reading kinds preserve intent for later minutes work. Legacy section headings are historical compatibility only. |
+| **Active** | At catalog level, hides an item from Add-item choices without removing it. At meeting-type level, omits it from future dated agendas. Neither setting rewrites an existing dated snapshot. |
+| **Document wording / `body`** | Rich member/minutes content. The API accepts `body` on writes and returns plain text as `wording` on reads. |
+| **Show wording on agenda** | When clear, keeps the title but removes document wording from member and Commander screen/print agenda bodies. Commander cues remain separate. |
+| **Carry wording into draft minutes** | Records whether the document wording should seed future draft minutes. It has no approval effect, and the minutes workflow is not built yet. |
+| **Commander's script / cues** | Private script, stage directions, and reminders for the Commander's working copy and private officer API only. |
+| **Tracked item link** | Connects an independent dated snapshot to long-lived business. Linking an existing row in place does not replace its historical title, summary, wording, section, or position. |
+| **Position** | Order inside the catalog category or actual agenda section. It is not a global agenda order. |
+| **Lock version** | Dated-item concurrency guard. API clients send the value returned by agenda detail when editing content to avoid overwriting another officer's save. |
+| **Seed/provenance fields** | Slug, source keys/labels, seeded timestamps, and catalog-removal timestamps are app-managed metadata, not agenda content. |
 
 The values follow the established snapshot boundary:
 
@@ -84,12 +103,17 @@ attendance belongs to the later minutes lifecycle rather than mutating a publish
 
 - Member agenda routes never render Commander's script or roll-call rows.
 - Commander's copy routes require `manage_agendas`, matching agenda editing authority.
-- Private API detail may expose the script and document controls only under the existing
-  `manage_agendas` gate; member-facing endpoints do not.
+- Private API detail exposes the script and document controls only under the existing
+  `manage_agendas` gate; member-facing endpoints do not. It includes roll-call entry,
+  position-title, and person ids so a delegated Bot can edit the meeting snapshot without
+  matching historical officers by display text.
 - Roll-call rows are organization-scoped through their dated agenda and may be regenerated
   or edited only while that agenda is a draft.
 - Agenda-local roll-call editing requires `manage_agendas`; it does not grant authority to
   change officer assignments or assignment-derived membership access.
+- The officer API can replace the complete list on a draft. Its separate refresh action is
+  listed only when asked because it discards agenda-local edits and rebuilds from assignments
+  active on the meeting date—not from today's `/api/officers` response.
 - Existing records are backfilled with both document controls checked, preserving current
   output after migration.
 

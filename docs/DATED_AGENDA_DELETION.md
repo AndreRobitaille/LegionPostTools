@@ -8,8 +8,9 @@ whole-record administrative action, not an edit to the locked agenda snapshot.
 
 Deletion removes the dated agenda, its copied sections and items, and the items' rich
 text. Source meeting-type templates, catalog entries, and linked Tracked Items remain.
-The member-facing agenda disappears immediately if the record was published. No delete
-endpoint is added to the officer-agent API in this UI-focused change.
+The member-facing agenda disappears immediately if the record was published. The delegated
+officer API now mirrors this operation at `DELETE /api/dated_agendas/:id`; the generated
+handbook lists it under **Only when asked**, never as a routine agenda action.
 
 ## Interaction
 
@@ -24,8 +25,9 @@ button opens a native modal dialog rather than deleting immediately. The dialog:
   restores focus to the opening button; and
 - reserves the solid Legion red treatment for the final **Delete dated agenda** button.
 
-The server continues to enforce `manage_agendas` and organization scoping. The delete
-request redirects to the dated-agenda index with a completion notice.
+The server continues to enforce `manage_agendas` and organization scoping. The browser
+request redirects to the dated-agenda index with a completion notice; the API returns a
+small description of the deleted record so the Bot can verify the exact target.
 
 ## Visual direction
 

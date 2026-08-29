@@ -24,6 +24,8 @@ These are real agenda sections. They are the stable first level of the meeting r
 catalog and tracked items are placed beneath them as the second level. Unfinished Business
 and New Business are therefore not same-named placeholder items inside same-named
 sections. A dated agenda may leave either section empty until specific business is added.
+The delegated officer API returns each section id and requires that id when a Bot places
+tracked business on an exact historical agenda; it must not infer a placeholder row.
 
 Item detail does not create a third structural level. Ordinary supporting detail—such as
 balances, receipts, bills, and an attachment note beneath the Finance Officer Report—lives
@@ -85,8 +87,10 @@ baseline. The reusable seed keeps the Post's practical distinctions without copy
 names, dates, events, or decisions:
 
 - **Summary or guidance** is the concise description officers scan while building an
-  agenda. When an item has no document wording, it is also the short member-facing
-  explanation.
+  agenda. When a dated item has no document wording, the signed-in on-screen member agenda
+  may use it as a short fallback. Printed member agendas and Commander copies suppress
+  summaries, so distributable or spoken content that must appear there belongs in Document
+  wording or Commander's script / cues.
 - **Document wording** is reserved for text that may actually be distributed or carried
   into draft minutes. Routine instructions and report prompts do not need duplicate body
   text when the summary already says the job clearly.
