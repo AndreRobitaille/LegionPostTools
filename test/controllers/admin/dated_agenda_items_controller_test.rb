@@ -27,6 +27,25 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
+  test "edit page offers the shared modal removal warning" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    item = @agenda.dated_agenda_items.first
+
+    get edit_admin_dated_agenda_agenda_item_path(@agenda, item)
+
+    assert_response :success
+    assert_select ".da-danger-zone[data-controller='confirm-dialog']" do
+      assert_select "button[data-action='confirm-dialog#open']", text: "Remove agenda item"
+      assert_select "dialog.confirm-dialog" do
+        assert_select ".confirm-record-title", text: item.title
+        assert_select ".confirm-record-meta", text: /#{Regexp.escape(@agenda.title)}/
+        assert_select ".confirm-dialog-note", text: /catalog and meeting template will not be changed/i
+        assert_select "form[action=?] input[name='_method'][value='delete']", admin_dated_agenda_agenda_item_path(@agenda, item)
+      end
+    end
+    assert_select "[data-turbo-confirm]", count: 0
+  end
+
   test "update copied item does not change template item or catalog entry" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     item = @agenda.dated_agenda_items.first

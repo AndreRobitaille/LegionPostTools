@@ -56,6 +56,19 @@ class AgendaItemCatalogSeederTest < ActiveSupport::TestCase
     assert_equal "Locally edited prayer text", entry.body.to_plain_text.strip
   end
 
+  test "does not restore a seeded entry removed from the catalog" do
+    AgendaItemCatalogSeeder.seed_for!(@organization)
+    entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.opening_prayer")
+    entry.remove_from_catalog!
+
+    assert_no_difference -> { @organization.agenda_item_catalog_entries.count } do
+      AgendaItemCatalogSeeder.seed_for!(@organization)
+    end
+
+    assert_predicate entry.reload.removed_from_catalog_at, :present?
+    assert_not @organization.agenda_item_catalog_entries.kept.exists?(entry.id)
+  end
+
   test "upgrades untouched officer-facing wording from the earlier baseline" do
     AgendaItemCatalogSeeder.seed_for!(@organization)
     entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.unfinished_old_business")

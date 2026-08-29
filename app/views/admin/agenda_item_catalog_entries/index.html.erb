@@ -39,7 +39,8 @@
         <% entries.each do |entry| %>
           <div class="mrow catrow catalog-row<%= ' mrow--inactive' unless entry.active? %>"
                data-reorder-item
-               data-reorder-id="<%= entry.id %>">
+               data-reorder-id="<%= entry.id %>"
+               data-controller="confirm-dialog">
             <span class="catalog-grip-rail">
               <%= render "shared/drag_handle", label: entry.title %>
             </span>
@@ -48,7 +49,7 @@
               <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
               <%= render "admin/shared/agenda_item_status_flags", item: entry %>
             </span>
-            <span class="catrow-meta catalog-row-actions">
+            <div class="catrow-meta catalog-row-actions">
               <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>
               <% unless entry.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
               <span class="catalog-move-actions">
@@ -69,7 +70,15 @@
               <%= link_to edit_admin_agenda_item_catalog_entry_path(entry), class: "catrow-edit", aria: { label: "Edit #{entry.title}" } do %>
                 Edit<span class="catrow-caret" aria-hidden="true">&rsaquo;</span>
               <% end %>
-            </span>
+              <button type="button"
+                      class="row-del"
+                      aria-label="Remove <%= entry.title %>"
+                      data-confirm-dialog-target="trigger"
+                      data-action="confirm-dialog#open">
+                <%= render "shared/trash_icon" %>
+              </button>
+              <%= render "delete_confirmation_dialog", entry: entry, dialog_id: "remove-catalog-entry-#{entry.id}" %>
+            </div>
           </div>
         <% end %>
       </div>

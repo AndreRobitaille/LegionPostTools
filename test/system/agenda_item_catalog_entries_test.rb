@@ -42,4 +42,35 @@ class AgendaItemCatalogEntriesSystemTest < ApplicationSystemTestCase
     assert_text "Agenda item moved."
     assert_equal entry.id, @organization.agenda_item_catalog_entries.where(category: "business").order(:position).first.id
   end
+
+  test "trash action removes an item from the catalog after confirmation" do
+    entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.announcements")
+    visit admin_agenda_item_catalog_entries_path
+
+    within "[data-reorder-id='#{entry.id}']" do
+      find("button.row-del[aria-label='Remove #{entry.title}']").click
+      assert_selector "dialog.confirm-dialog[open]"
+      assert_selector ".confirm-record-title", text: entry.title
+      assert_selector ".confirm-dialog-note", text: /Existing meeting templates and dated agendas will keep their copies/
+      assert_equal "Cancel", page.evaluate_script("document.activeElement.textContent.trim()")
+      within "dialog.confirm-dialog" do
+        click_button "Remove catalog item"
+      end
+    end
+
+    assert_text "Agenda catalog item removed."
+    assert_no_selector "[data-reorder-id='#{entry.id}']"
+    assert_predicate entry.reload.removed_from_catalog_at, :present?
+  end
+
+  test "edit page repeats the catalog removal modal at the bottom" do
+    entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.announcements")
+    visit edit_admin_agenda_item_catalog_entry_path(entry)
+
+    within ".da-danger-zone" do
+      click_button "Remove catalog item"
+      assert_selector "dialog.confirm-dialog[open]"
+      assert_selector ".confirm-record-title", text: entry.title
+    end
+  end
 end

@@ -1,4 +1,5 @@
-<div class="agenda-item-row" <% if editable %>data-reorder-item data-reorder-id="<%= item.id %>"<% end %>>
+<div class="agenda-item-row"
+     <% if editable %>data-reorder-item data-reorder-id="<%= item.id %>" data-controller="confirm-dialog"<% end %>>
   <% if editable %>
     <%= render "shared/drag_handle", label: item.title %>
   <% end %>
@@ -23,11 +24,17 @@
               data: { turbo_confirm: "Replace this roll-call worksheet with officer assignments active on the meeting date?" } %>
       <% end %>
       <%= link_to "Edit", edit_admin_dated_agenda_agenda_item_path(dated_agenda, item), class: "catrow-edit" %>
-      <%= button_to admin_dated_agenda_agenda_item_path(dated_agenda, item), method: :delete, class: "row-del",
-            aria: { label: "Remove #{item.title}" },
-            data: { turbo_confirm: "Remove “#{item.title}” from this agenda?" } do %>
+      <button type="button"
+              class="row-del"
+              aria-label="Remove <%= item.title %>"
+              data-confirm-dialog-target="trigger"
+              data-action="confirm-dialog#open">
         <%= render "shared/trash_icon" %>
-      <% end %>
+      </button>
+      <%= render "agenda_item_delete_confirmation_dialog",
+            dated_agenda: dated_agenda,
+            item: item,
+            dialog_id: "remove-dated-agenda-item-#{item.id}" %>
     </div>
   <% end %>
 </div>

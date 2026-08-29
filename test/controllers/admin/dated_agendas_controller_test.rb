@@ -75,6 +75,13 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".mrow-list .mrow.catrow .mrow-name"
     assert_select ".mrow-list .catrow-meta .st"
     assert_select "a.btn-primary", text: "New dated agenda"
+    assert_select ".mrow-list .mrow.catrow[data-controller='confirm-dialog']" do
+      assert_select "button.row-del[aria-label=?]", "Delete #{@agenda.title}"
+      assert_select "dialog.confirm-dialog" do
+        assert_select ".confirm-record-title", text: @agenda.title
+        assert_select "form[action=?] input[name='_method'][value='delete']", admin_dated_agenda_path(@agenda)
+      end
+    end
   end
 
   test "new form includes dated agenda fields" do
@@ -495,7 +502,14 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{approve_admin_dated_agenda_path(@agenda)}']"
     assert_select "[data-controller='reorder'][data-reorder-url-value^='#{reorder_admin_dated_agenda_agenda_items_path(@agenda)}']"
     assert_select ".agenda-items[data-reorder-target='list'] .agenda-item-row[data-reorder-item] .pos-handle"
-    assert_select ".agenda-item-row button.row-del"
+    assert_select ".agenda-item-row[data-controller='confirm-dialog']" do
+      assert_select "button.row-del"
+      assert_select "dialog.confirm-dialog" do
+        assert_select ".confirm-record-title", text: "Opening"
+        assert_select ".confirm-dialog-note", text: /catalog and meeting template will not be changed/i
+      end
+    end
+    assert_select "[data-turbo-confirm]", count: 0
   end
 
   test "edit locks the item list and shows Publish + Reopen when approved" do

@@ -1,0 +1,11 @@
+<%= render "shared/delete_confirmation_dialog",
+      dialog_id: dialog_id,
+      kicker: "Remove agenda item",
+      title: "Remove this item from the dated agenda?",
+      description: "The item and its meeting-specific content will be removed from this draft agenda. This cannot be undone.",
+      record_label: "Agenda item to remove",
+      record_title: item.title,
+      record_meta: "#{dated_agenda.title} · #{item.agenda_section.title}",
+      note: "The agenda item catalog and meeting template will not be changed.",
+      delete_label: "Remove agenda item",
+      delete_path: admin_dated_agenda_agenda_item_path(dated_agenda, item) %>

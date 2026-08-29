@@ -75,39 +75,5 @@
           data-confirm-dialog-target="trigger"
           data-action="confirm-dialog#open">Delete dated agenda</button>
 
-  <dialog class="confirm-dialog"
-          data-confirm-dialog-target="dialog"
-          data-action="click->confirm-dialog#closeOnBackdrop cancel->confirm-dialog#cancel"
-          aria-labelledby="delete-agenda-dialog-title"
-          aria-describedby="delete-agenda-dialog-description">
-    <div class="confirm-dialog-card">
-      <span class="confirm-dialog-kicker">Permanent action</span>
-      <h2 class="confirm-dialog-title" id="delete-agenda-dialog-title">Delete this dated agenda?</h2>
-      <p class="confirm-dialog-copy" id="delete-agenda-dialog-description">
-        The agenda, its sections, and its agenda items will be permanently deleted. This cannot be recovered.
-      </p>
-
-      <div class="confirm-record" aria-label="Agenda record to delete">
-        <span class="confirm-record-label">Agenda record</span>
-        <strong class="confirm-record-title"><%= @dated_agenda.title %></strong>
-        <span class="confirm-record-meta">
-          <%= @dated_agenda.meeting_body.name %> &middot;
-          <%= legion_datetime(@dated_agenda.starts_at) %> &middot;
-          <%= @dated_agenda.status.humanize %>
-        </span>
-      </div>
-
-      <% if @dated_agenda.published? %>
-        <p class="confirm-dialog-alert">Members will immediately lose access to this published agenda.</p>
-      <% end %>
-
-      <div class="confirm-dialog-actions">
-        <button type="button"
-                class="btn-secondary"
-                data-confirm-dialog-target="cancel"
-                data-action="confirm-dialog#close">Cancel</button>
-        <%= button_to "Delete dated agenda", admin_dated_agenda_path(@dated_agenda), method: :delete, class: "btn-danger" %>
-      </div>
-    </div>
-  </dialog>
+  <%= render "delete_confirmation_dialog", dated_agenda: @dated_agenda, dialog_id: "delete-agenda-dialog" %>
 </section>

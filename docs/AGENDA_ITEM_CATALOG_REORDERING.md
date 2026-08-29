@@ -7,8 +7,8 @@ sense when building American Legion meeting templates. An item may be reordered
 inside its current category or moved to a different category without opening its
 edit form.
 
-The catalog remains a source library. Reordering it does not rewrite existing
-meeting-type templates or dated-agenda snapshots.
+The catalog remains a source library. Reordering or removing an entry does not
+rewrite existing meeting-type templates or dated-agenda snapshots.
 
 ## Interaction model
 
@@ -30,6 +30,9 @@ meeting-type templates or dated-agenda snapshots.
     disabled.
 - **Edit** remains a separate, explicit link. The row itself is not a link,
   avoiding nested interactive controls and accidental edits while dragging.
+- **Remove** uses the same compact red trash action as an item on a dated
+  agenda. Its confirmation explains that the entry will leave the catalog while
+  existing templates and dated agendas retain their independent copies.
 
 ## Data and integrity rules
 
@@ -41,6 +44,15 @@ meeting-type templates or dated-agenda snapshots.
   transaction.
 - New entries and entries whose category is changed in the edit form are placed
   at the end of their selected category.
+- Removing an entry records when it left the catalog instead of physically
+  deleting its database row. The entry no longer appears in the catalog or in
+  Add-item choices, but references from existing templates and dated agendas
+  remain intact.
+- A removed seeded entry stays suppressed when the catalog seeder runs again.
+- Seeding or resetting a meeting template also skips removed catalog entries;
+  it cannot quietly reintroduce them into future meeting workflows.
+- Reordering and position normalization consider only entries still present in
+  the catalog.
 
 ## Visual direction
 
@@ -71,8 +83,8 @@ Desktop:
 
 ```text
 CEREMONY ---------------------------------------------------  4 items
-| grip | Item title and summary       | Move  ↑  ↓ | Edit |
-| grip | Item title and summary       | Move  ↑  ↓ | Edit |
+| grip | Item title and summary       | Move  ↑  ↓ | Edit | trash |
+| grip | Item title and summary       | Move  ↑  ↓ | Edit | trash |
 
 BUSINESS ---------------------------------------------------  0 items
 |                 Drop an item here                         |
@@ -83,7 +95,7 @@ Narrow:
 ```text
 CEREMONY ----------------------------------------- 4 items
 | grip | Item title and summary                           |
-|      | status flags             Move  ↑  ↓   Edit      |
+|      | status flags          Move  ↑  ↓  Edit  trash  |
 ```
 
 The signature element is the **grip rail**: the dotted handle sits on a narrow
@@ -109,6 +121,9 @@ receives one deliberate inset gold rule; no decorative motion is added.
 - Move up/down crosses category boundaries correctly.
 - Invalid, duplicate, incomplete, foreign-post, or unknown-category payloads
   change nothing.
+- Removing a regular or seeded entry hides it from the catalog and Add-item
+  choices without deleting existing template or dated-agenda copies.
+- A removed seeded entry does not return after a subsequent seed.
 - The catalog remains usable without JavaScript.
 - Desktop and 390-pixel browser reviews show clear hierarchy, visible controls,
   drop feedback, and no horizontal overflow.

@@ -100,9 +100,15 @@ class MeetingTypeTemplateSeeder
   def self.defaults_missing?(organization)
     MEETING_TYPES.any? do |definition|
       meeting_type = organization.meeting_types.find_by(source_key: definition.fetch(:source_key))
+      available_catalog_source_keys = organization.agenda_item_catalog_entries.kept
+        .where(source_key: catalog_source_keys(definition))
+        .pluck(:source_key)
+      expected_item_source_keys = available_catalog_source_keys.map do |catalog_source_key|
+        "#{definition.fetch(:source_key)}:#{catalog_source_key}"
+      end
       meeting_type.blank? ||
         definition.fetch(:sections).any? { |section| !meeting_type.meeting_type_agenda_sections.exists?(title: section.fetch(:title)) } ||
-        meeting_type.meeting_type_agenda_items.where(source_key: seeded_item_source_keys(definition)).count < seeded_item_source_keys(definition).size
+        meeting_type.meeting_type_agenda_items.where(source_key: expected_item_source_keys).count < expected_item_source_keys.size
     end
   end
 
@@ -179,7 +185,9 @@ class MeetingTypeTemplateSeeder
   end
 
   def seed_template_item(meeting_type, section, catalog_source_key, position)
-    catalog_entry = organization.agenda_item_catalog_entries.find_by!(source_key: catalog_source_key)
+    catalog_entry = organization.agenda_item_catalog_entries.kept.find_by(source_key: catalog_source_key)
+    return unless catalog_entry
+
     source_key = "#{meeting_type.source_key}:#{catalog_source_key}"
     item = meeting_type.meeting_type_agenda_items.find_or_initialize_by(source_key: source_key)
     unless item.new_record?
@@ -209,8 +217,12 @@ class MeetingTypeTemplateSeeder
   end
 
   def self.seeded_item_source_keys(definition)
-    definition.fetch(:sections).flat_map { |section| section.fetch(:item_source_keys) }
+    catalog_source_keys(definition)
       .map { |catalog_source_key| "#{definition.fetch(:source_key)}:#{catalog_source_key}" }
+  end
+
+  def self.catalog_source_keys(definition)
+    definition.fetch(:sections).flat_map { |section| section.fetch(:item_source_keys) }
   end
 
   def next_available_position(preferred_position)

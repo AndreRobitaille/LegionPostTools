@@ -58,7 +58,7 @@ Rails.application.routes.draw do
     resources :position_titles, only: %i[index create update] do
       post :reorder, on: :collection
     end
-    resources :agenda_item_catalog_entries, except: %i[show destroy] do
+    resources :agenda_item_catalog_entries, except: :show do
       post :reorder, on: :collection
       patch :move, on: :member
     end

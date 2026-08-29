@@ -1,0 +1,37 @@
+<% warning = local_assigns[:warning] %>
+<% note = local_assigns[:note] %>
+
+<dialog class="confirm-dialog"
+        data-confirm-dialog-target="dialog"
+        data-action="click->confirm-dialog#closeOnBackdrop cancel->confirm-dialog#cancel"
+        aria-labelledby="<%= dialog_id %>-title"
+        aria-describedby="<%= dialog_id %>-description">
+  <div class="confirm-dialog-card">
+    <span class="confirm-dialog-kicker"><%= kicker %></span>
+    <h2 class="confirm-dialog-title" id="<%= dialog_id %>-title"><%= title %></h2>
+    <p class="confirm-dialog-copy" id="<%= dialog_id %>-description"><%= description %></p>
+
+    <div class="confirm-record" aria-label="<%= record_label %>">
+      <span class="confirm-record-label"><%= record_label %></span>
+      <strong class="confirm-record-title"><%= record_title %></strong>
+      <% if record_meta.present? %>
+        <span class="confirm-record-meta"><%= record_meta %></span>
+      <% end %>
+    </div>
+
+    <% if warning.present? %>
+      <p class="confirm-dialog-alert"><%= warning %></p>
+    <% end %>
+    <% if note.present? %>
+      <p class="confirm-dialog-note"><%= note %></p>
+    <% end %>
+
+    <div class="confirm-dialog-actions">
+      <button type="button"
+              class="btn-secondary"
+              data-confirm-dialog-target="cancel"
+              data-action="confirm-dialog#close">Cancel</button>
+      <%= button_to delete_label, delete_path, method: :delete, class: "btn-danger" %>
+    </div>
+  </div>
+</dialog>

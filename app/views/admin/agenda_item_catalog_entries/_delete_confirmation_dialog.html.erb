@@ -1,0 +1,16 @@
+<% record_meta = [
+  AgendaItemCatalogEntry::CATEGORIES[entry.category],
+  AgendaItemCatalogEntry::BEHAVIOR_TYPES[entry.behavior_type]
+].compact.join(" · ").presence || "Catalog item" %>
+
+<%= render "shared/delete_confirmation_dialog",
+      dialog_id: dialog_id,
+      kicker: "Remove from catalog",
+      title: "Remove this catalog item?",
+      description: "This item will no longer appear in the catalog or in future Add-item choices.",
+      record_label: "Catalog item to remove",
+      record_title: entry.title,
+      record_meta: record_meta,
+      note: "Existing meeting templates and dated agendas will keep their copies. Seeded defaults will not restore this item.",
+      delete_label: "Remove catalog item",
+      delete_path: admin_agenda_item_catalog_entry_path(entry) %>

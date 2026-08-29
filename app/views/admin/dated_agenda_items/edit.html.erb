@@ -42,3 +42,19 @@
     </div>
   <% end %>
 </div>
+
+<section class="da-danger-zone" data-controller="confirm-dialog" aria-labelledby="remove-agenda-item-heading">
+  <div>
+    <h2 class="da-danger-title" id="remove-agenda-item-heading">Remove agenda item</h2>
+    <p class="da-danger-copy">Remove this item and its meeting-specific content from this dated agenda.</p>
+  </div>
+  <button type="button"
+          class="btn-return da-delete-trigger"
+          data-confirm-dialog-target="trigger"
+          data-action="confirm-dialog#open">Remove agenda item</button>
+
+  <%= render "admin/dated_agendas/agenda_item_delete_confirmation_dialog",
+        dated_agenda: @dated_agenda,
+        item: @item,
+        dialog_id: "remove-agenda-item-dialog" %>
+</section>

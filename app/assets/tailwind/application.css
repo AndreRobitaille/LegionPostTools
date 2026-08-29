@@ -361,6 +361,7 @@
 .catalog-grip-rail .pos-handle:hover, .catalog-grip-rail .pos-handle:focus-visible { color: var(--color-navy); background: #dfe8ee; outline: 3px solid var(--color-gold); outline-offset: -3px; }
 .catalog-row > .mrow-id { grid-column: 2; grid-row: 1; align-self: center; padding: 14px 18px 14px 14px; }
 .catalog-row-actions { grid-column: 3; grid-row: 1; align-self: stretch; padding: 10px 14px 10px 18px; border-left: 1px solid #e4d9bb; }
+.catalog-row-actions > form { margin: 0; }
 .catalog-move-actions { display: inline-flex; align-items: center; gap: 4px; }
 .catalog-move-actions form { margin: 0; }
 .catalog-move-label { margin-right: 2px; color: var(--color-muted); font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -890,6 +891,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .confirm-record-title { color: var(--color-navy); font-family: var(--font-serif); font-size: 19px; line-height: 1.35; overflow-wrap: anywhere; }
 .confirm-record-meta { color: var(--color-muted); font-size: 14px; line-height: 1.45; }
 .confirm-dialog-alert { margin: 16px 0 0; padding: 11px 13px; color: #71151e; background: #fbeaea; border-left: 4px solid var(--color-legionred); font-size: 15px; font-weight: 700; line-height: 1.5; }
+.confirm-dialog-note { margin: 16px 0 0; padding: 11px 13px; color: #294e6b; background: #edf3f7; border-left: 4px solid var(--color-officer-blue); font-size: 15px; font-weight: 700; line-height: 1.5; }
 .confirm-dialog-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 24px; }
 .confirm-dialog-actions form { margin: 0; }
 
@@ -1044,6 +1046,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .mrow-id { flex-basis: 100%; padding-right: 0; }
   .mrow-status { flex: 1 1 auto; border-left: 0; padding-left: 0; }
   .catrow-meta { padding-left: 0; }
+  .row-del { width: 44px; height: 44px; }
   .agenda-docket { margin-top: 22px; }
   .agenda-docket-row { grid-template-columns: 66px minmax(0, 1fr); gap: 14px; padding: 14px 12px; }
   .agenda-docket-date { min-height: 66px; padding-right: 5px; padding-left: 5px; }

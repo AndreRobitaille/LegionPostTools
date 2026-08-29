@@ -6,3 +6,16 @@
 </div>
 
 <%= render "form", entry: @entry %>
+
+<section class="da-danger-zone" data-controller="confirm-dialog" aria-labelledby="remove-catalog-entry-heading">
+  <div>
+    <h2 class="da-danger-title" id="remove-catalog-entry-heading">Remove catalog item</h2>
+    <p class="da-danger-copy">Hide this source item from future agenda building while preserving existing copies.</p>
+  </div>
+  <button type="button"
+          class="btn-return da-delete-trigger"
+          data-confirm-dialog-target="trigger"
+          data-action="confirm-dialog#open">Remove catalog item</button>
+
+  <%= render "delete_confirmation_dialog", entry: @entry, dialog_id: "remove-catalog-entry-dialog" %>
+</section>

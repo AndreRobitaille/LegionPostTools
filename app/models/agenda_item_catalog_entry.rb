@@ -35,13 +35,14 @@ class AgendaItemCatalogEntry < ApplicationRecord
   validates :position, numericality: { only_integer: true }
 
   scope :ordered, -> { order(:category, :position, :title) }
-  scope :active, -> { where(active: true) }
+  scope :kept, -> { where(removed_from_catalog_at: nil) }
+  scope :active, -> { kept.where(active: true) }
 
   def self.reorder!(organization, ordered_ids_by_category)
     category_ids = normalize_category_ids(ordered_ids_by_category)
 
     transaction do
-      records = organization.agenda_item_catalog_entries.lock.index_by(&:id)
+      records = organization.agenda_item_catalog_entries.kept.lock.index_by(&:id)
       validate_complete_order!(records, category_ids)
       persist_category_order!(records, category_ids)
     end
@@ -51,16 +52,11 @@ class AgendaItemCatalogEntry < ApplicationRecord
     raise ActiveRecord::RecordNotFound unless direction.in?(%w[up down])
 
     transaction do
-      records = organization.agenda_item_catalog_entries.lock.index_by(&:id)
+      records = organization.agenda_item_catalog_entries.kept.lock.index_by(&:id)
       record = records[entry.id]
       raise ActiveRecord::RecordNotFound unless record
 
-      category_ids = CATEGORIES.keys.index_with do |category|
-        records.values
-          .select { |candidate| candidate.category == category }
-          .sort_by { |candidate| [ candidate.position, candidate.title, candidate.id ] }
-          .map(&:id)
-      end
+      category_ids = category_ids_for(records)
       move_id!(category_ids, record, direction)
       persist_category_order!(records, category_ids)
     end
@@ -78,6 +74,20 @@ class AgendaItemCatalogEntry < ApplicationRecord
     source_key.present?
   end
 
+  def remove_from_catalog!
+    self.class.transaction do
+      records = organization.agenda_item_catalog_entries.kept.lock.index_by(&:id)
+      record = records.delete(id)
+      raise ActiveRecord::RecordNotFound unless record
+
+      record.update!(removed_from_catalog_at: Time.current)
+      category_ids = self.class.send(:category_ids_for, records)
+      self.class.send(:persist_category_order!, records, category_ids)
+    end
+
+    reload
+  end
+
   private
 
   def self.normalize_category_ids(ordered_ids_by_category)
@@ -85,6 +95,15 @@ class AgendaItemCatalogEntry < ApplicationRecord
     raise ActiveRecord::RecordNotFound if (supplied.keys - CATEGORIES.keys).any?
 
     CATEGORIES.keys.index_with { |category| Array(supplied[category]).map(&:to_i) }
+  end
+
+  def self.category_ids_for(records)
+    CATEGORIES.keys.index_with do |category|
+      records.values
+        .select { |candidate| candidate.category == category }
+        .sort_by { |candidate| [ candidate.position, candidate.title, candidate.id ] }
+        .map(&:id)
+    end
   end
 
   def self.validate_complete_order!(records, category_ids)
@@ -129,7 +148,7 @@ class AgendaItemCatalogEntry < ApplicationRecord
     end
   end
 
-  private_class_method :normalize_category_ids, :validate_complete_order!, :persist_category_order!, :move_id!
+  private_class_method :normalize_category_ids, :category_ids_for, :validate_complete_order!, :persist_category_order!, :move_id!
 
   def normalize_optional_fields
     self.summary = summary.to_s

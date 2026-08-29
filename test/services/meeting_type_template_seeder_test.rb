@@ -135,6 +135,20 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     end
   end
 
+  test "template reset does not restore a removed catalog entry" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+    catalog_entry = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.opening_salute_colors")
+    template_source_key = "american_legion_post:membership_meeting:regular_meeting.opening_salute_colors"
+    assert membership.meeting_type_agenda_items.exists?(source_key: template_source_key)
+
+    catalog_entry.remove_from_catalog!
+    MeetingTypeTemplateSeeder.reset_agenda_for!(membership)
+
+    assert_not membership.meeting_type_agenda_items.exists?(source_key: template_source_key)
+    assert_not MeetingTypeTemplateSeeder.defaults_missing?(@organization)
+  end
+
   test "reseeding upgrades existing seeded items from the migration fallback section" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")

@@ -13,16 +13,28 @@
 <% if @dated_agendas.any? %>
   <div class="mrow-list">
     <% @dated_agendas.each do |dated_agenda| %>
-      <%= link_to edit_admin_dated_agenda_path(dated_agenda), class: "mrow catrow", aria: { label: "Open #{dated_agenda.title}" } do %>
-        <span class="mrow-id">
+      <div class="mrow catrow" data-controller="confirm-dialog">
+        <%= link_to edit_admin_dated_agenda_path(dated_agenda), class: "mrow-id", aria: { label: "Open #{dated_agenda.title}" } do %>
           <span class="mrow-name"><%= dated_agenda.title %></span>
           <span class="mrow-sub"><%= dated_agenda.meeting_body.name %> &middot; <%= legion_datetime(dated_agenda.starts_at) %></span>
-        </span>
-        <span class="catrow-meta">
+        <% end %>
+        <div class="catrow-meta">
           <%= dated_agenda_status_tag(dated_agenda.status) %>
-          <span class="catrow-edit">Open<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
-        </span>
-      <% end %>
+          <%= link_to edit_admin_dated_agenda_path(dated_agenda), class: "catrow-edit", aria: { label: "Open #{dated_agenda.title}" } do %>
+            Open<span class="catrow-caret" aria-hidden="true">&rsaquo;</span>
+          <% end %>
+          <button type="button"
+                  class="row-del"
+                  aria-label="Delete <%= dated_agenda.title %>"
+                  data-confirm-dialog-target="trigger"
+                  data-action="confirm-dialog#open">
+            <%= render "shared/trash_icon" %>
+          </button>
+          <%= render "delete_confirmation_dialog",
+                dated_agenda: dated_agenda,
+                dialog_id: "delete-dated-agenda-#{dated_agenda.id}" %>
+        </div>
+      </div>
     <% end %>
   </div>
 <% else %>

@@ -1,0 +1,11 @@
+<%= render "shared/delete_confirmation_dialog",
+      dialog_id: dialog_id,
+      kicker: "Permanent action",
+      title: "Delete this dated agenda?",
+      description: "The agenda, its sections, and its agenda items will be permanently deleted. This cannot be recovered.",
+      record_label: "Agenda record to delete",
+      record_title: dated_agenda.title,
+      record_meta: "#{dated_agenda.meeting_body.name} · #{legion_datetime(dated_agenda.starts_at)} · #{dated_agenda.status.humanize}",
+      warning: ("Members will immediately lose access to this published agenda." if dated_agenda.published?),
+      delete_label: "Delete dated agenda",
+      delete_path: admin_dated_agenda_path(dated_agenda) %>

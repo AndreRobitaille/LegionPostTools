@@ -48,6 +48,46 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_no_selector "button.row-del"
   end
 
+  test "dated agenda item list and edit page share the removal modal" do
+    item = @agenda.dated_agenda_items.find_by!(title: "Commander Report")
+    visit edit_admin_dated_agenda_path(@agenda)
+
+    within ".agenda-item-row[data-reorder-id='#{item.id}']" do
+      find("button.row-del[aria-label='Remove #{item.title}']").click
+      assert_selector "dialog.confirm-dialog[open]"
+      assert_selector ".confirm-record-title", text: item.title
+      assert_selector ".confirm-dialog-note", text: /catalog and meeting template will not be changed/i
+      find("dialog.confirm-dialog").send_keys(:escape)
+      click_link "Edit"
+    end
+
+    within ".da-danger-zone" do
+      click_button "Remove agenda item"
+      assert_selector "dialog.confirm-dialog[open]"
+      within "dialog.confirm-dialog" do
+        click_button "Remove agenda item"
+      end
+    end
+
+    assert_current_path edit_admin_dated_agenda_path(@agenda)
+    assert_text "Agenda item removed."
+    assert_not DatedAgendaItem.exists?(item.id)
+  end
+
+  test "dated agenda list trash icon opens the shared record warning" do
+    visit admin_dated_agendas_path
+
+    within ".mrow", text: @agenda.title do
+      find("button.row-del[aria-label='Delete #{@agenda.title}']").click
+      assert_selector "dialog.confirm-dialog[open]"
+      assert_selector ".confirm-record-title", text: @agenda.title
+      click_button "Cancel"
+      assert_no_selector "dialog.confirm-dialog[open]"
+    end
+
+    assert DatedAgenda.exists?(@agenda.id)
+  end
+
   test "officer reviews document controls and the responsive Commander's working copy" do
     commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
     commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)

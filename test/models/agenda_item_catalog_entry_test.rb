@@ -247,6 +247,33 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::RecordNotFound) { AgendaItemCatalogEntry.move!(@organization, last, "down") }
   end
 
+  test "removing an entry preserves template and dated agenda copies" do
+    first = create_entry("First", "ceremony", 1)
+    removed = create_entry("Removable", "ceremony", 2)
+    last = create_entry("Last", "ceremony", 3)
+    meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
+    template_item = MeetingTypeAgendaItem.create_from_catalog_entry!(removed, position: 1, meeting_type: meeting_type)
+    meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    dated_agenda = DatedAgenda.create_from_template!(
+      organization: @organization,
+      meeting_body: meeting_body,
+      meeting_type: meeting_type,
+      starts_at: Time.zone.local(2026, 8, 29, 19, 0)
+    )
+    dated_item = dated_agenda.dated_agenda_items.find_by!(agenda_item_catalog_entry: removed)
+
+    assert_no_difference -> { AgendaItemCatalogEntry.count } do
+      removed.remove_from_catalog!
+    end
+
+    assert_predicate removed, :removed_from_catalog_at?
+    assert_not_includes @organization.agenda_item_catalog_entries.kept, removed
+    assert_not_includes @organization.agenda_item_catalog_entries.active, removed
+    assert_equal [ [ first.id, 1 ], [ last.id, 2 ] ], entries_in("ceremony").kept.pluck(:id, :position)
+    assert_equal removed, template_item.reload.agenda_item_catalog_entry
+    assert_equal removed, dated_item.reload.agenda_item_catalog_entry
+  end
+
   private
 
   def create_entry(title, category, position)

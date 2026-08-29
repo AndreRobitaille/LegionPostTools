@@ -2,11 +2,11 @@ module Admin
   class AgendaItemCatalogEntriesController < ApplicationController
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
-    before_action :set_entry, only: %i[edit update move]
+    before_action :set_entry, only: %i[edit update destroy move]
 
     def index
       AgendaItemCatalogSeeder.seed_for!(@organization)
-      grouped = @organization.agenda_item_catalog_entries.ordered.with_rich_text_commander_notes.group_by(&:category)
+      grouped = @organization.agenda_item_catalog_entries.kept.ordered.with_rich_text_commander_notes.group_by(&:category)
       @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.map do |category|
         [ category, grouped.fetch(category, []) ]
       end
@@ -41,6 +41,11 @@ module Admin
       end
     end
 
+    def destroy
+      @entry.remove_from_catalog!
+      redirect_to admin_agenda_item_catalog_entries_path, notice: "Agenda catalog item removed."
+    end
+
     def reorder
       category_ids = params.require(:categories).to_unsafe_h
       AgendaItemCatalogEntry.reorder!(@organization, category_ids)
@@ -63,11 +68,11 @@ module Admin
     end
 
     def set_entry
-      @entry = @organization.agenda_item_catalog_entries.find(params[:id])
+      @entry = @organization.agenda_item_catalog_entries.kept.find(params[:id])
     end
 
     def next_position(category)
-      @organization.agenda_item_catalog_entries.where(category: category).maximum(:position).to_i + 1
+      @organization.agenda_item_catalog_entries.kept.where(category: category).maximum(:position).to_i + 1
     end
 
     def entry_params

@@ -58,6 +58,13 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "[data-reorder-id=?] a[href=?]", active_entry.id.to_s, edit_admin_agenda_item_catalog_entry_path(active_entry)
     assert_select "[data-reorder-id=?] button[aria-label=?]", active_entry.id.to_s, "Move Active Entry up"
     assert_select ".catalog-move-label", text: "Move"
+    assert_select "[data-reorder-id=?][data-controller='confirm-dialog']", active_entry.id.to_s do
+      assert_select "button.row-del[aria-label=?]", "Remove Active Entry"
+      assert_select "dialog.confirm-dialog" do
+        assert_select ".confirm-record-title", text: "Active Entry"
+        assert_select "form[action=?] input[name='_method'][value='delete']", admin_agenda_item_catalog_entry_path(active_entry)
+      end
+    end
 
     # Inactive entries are flagged; active ones carry no status noise.
     assert_select "[data-reorder-id=?].mrow--inactive", inactive_entry.id.to_s
@@ -66,8 +73,8 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     # Empty categories remain visible as cross-category drop destinations.
     assert_select "[data-category='memorial'] [data-catalog-reorder-target='list']"
 
-    # No per-row deactivate/reactivate controls remain on the index.
-    assert_select "form[action=?]", admin_agenda_item_catalog_entry_path(active_entry), count: 0
+    # Active status remains an edit-form choice rather than a noisy row action.
+    assert_select "[data-reorder-id=?] button.row-del", active_entry.id.to_s, count: 1
   end
 
   test "reorder saves positions within and across categories" do
@@ -131,6 +138,33 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_redirected_to admin_agenda_item_catalog_entries_path
     assert_equal "Agenda item moved.", flash[:notice]
     assert_equal [ "business", 1 ], entry.reload.slice(:category, :position).values
+  end
+
+  test "remove hides an entry without physically deleting it" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = create_entry(title: "Local Ceremony", category: "ceremony", position: 30)
+
+    assert_no_difference -> { @organization.agenda_item_catalog_entries.count } do
+      delete admin_agenda_item_catalog_entry_path(entry)
+    end
+
+    assert_redirected_to admin_agenda_item_catalog_entries_path
+    assert_equal "Agenda catalog item removed.", flash[:notice]
+    assert_predicate entry.reload.removed_from_catalog_at, :present?
+    assert_not @organization.agenda_item_catalog_entries.kept.exists?(entry.id)
+  end
+
+  test "cannot remove another organization entry" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    entry = other.agenda_item_catalog_entries.create!(
+      title: "Other Entry", category: "business", behavior_type: "business_item", position: 1, active: true
+    )
+
+    delete admin_agenda_item_catalog_entry_path(entry)
+
+    assert_response :not_found
+    assert_nil entry.reload.removed_from_catalog_at
   end
 
   test "index back link points to administration for manage_settings users" do
@@ -282,6 +316,14 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "input[name=?][type='checkbox']", "agenda_item_catalog_entry[show_wording_on_agenda]"
     assert_select "input[name=?][type='checkbox']", "agenda_item_catalog_entry[show_wording_in_minutes]"
     assert_select "lexxy-editor[attachments=?]", "false", count: 2
+    assert_select ".da-danger-zone[data-controller='confirm-dialog']" do
+      assert_select "button[data-action='confirm-dialog#open']", text: "Remove catalog item"
+      assert_select "dialog.confirm-dialog" do
+        assert_select ".confirm-record-title", text: entry.title
+        assert_select ".confirm-dialog-note", text: /Existing meeting templates and dated agendas will keep their copies/
+        assert_select "form[action=?] input[name='_method'][value='delete']", admin_agenda_item_catalog_entry_path(entry)
+      end
+    end
   end
 
   test "cannot edit another organization entry" do

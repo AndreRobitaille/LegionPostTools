@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_29_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,6 +59,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_030000) do
     t.datetime "created_at", null: false
     t.bigint "organization_id", null: false
     t.integer "position", default: 0, null: false
+    t.datetime "removed_from_catalog_at"
     t.datetime "seeded_at"
     t.boolean "show_wording_in_minutes", default: true, null: false
     t.boolean "show_wording_on_agenda", default: true, null: false
@@ -69,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_030000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id", "category", "position"], name: "idx_agenda_catalog_on_org_category_position"
+    t.index ["organization_id", "removed_from_catalog_at"], name: "idx_agenda_catalog_on_org_removal"
     t.index ["organization_id", "slug"], name: "index_agenda_item_catalog_entries_on_organization_id_and_slug", unique: true
     t.index ["organization_id", "source_key"], name: "idx_on_organization_id_source_key_ecf47169eb", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["organization_id"], name: "index_agenda_item_catalog_entries_on_organization_id"
