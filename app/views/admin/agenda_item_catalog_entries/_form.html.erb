@@ -21,13 +21,14 @@
     <%= form.text_area :summary, class: "f", rows: 3 %>
   </div>
   <div class="fl">
-    <%= form.label :category, "Part of the meeting" %>
+    <%= form.label :category, "Usually used under" %>
+    <p class="fl-help">This helps officers find the item. It can still be placed in any agenda section.</p>
     <%= form.select :category, AgendaItemCatalogEntry::CATEGORIES.map { |value, label| [label, value] }, {}, class: "f" %>
   </div>
   <div class="fl">
-    <%= form.label :behavior_type %>
-    <p class="fl-help">How this item is used when you build agendas later.</p>
-    <%= form.select :behavior_type, AgendaItemCatalogEntry::BEHAVIOR_TYPES.map { |value, label| [label, value] }, {}, class: "f" %>
+    <%= form.label :behavior_type, "Item kind" %>
+    <p class="fl-help">The kind of item this is. Sections are managed separately in meeting templates and dated agendas.</p>
+    <%= form.select :behavior_type, AgendaItemCatalogEntry.behavior_types_for_form(entry.behavior_type).map { |value, label| [label, value] }, {}, class: "f" %>
   </div>
   <%= render "admin/shared/agenda_item_document_fields", form: form %>
   <label class="form-toggle">

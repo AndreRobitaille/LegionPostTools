@@ -1,7 +1,6 @@
 <div class="agenda-outline">
   <% commander_copy = local_assigns.fetch(:commander_copy, false) %>
-  <% visible_sections = dated_agenda.dated_agenda_sections.ordered.select { |section| section.agenda_items.any?(&:active?) } %>
-  <% visible_sections.each_with_index do |agenda_section, section_index| %>
+  <% dated_agenda.dated_agenda_sections.ordered.each_with_index do |agenda_section, section_index| %>
     <% items = agenda_section.agenda_items.select(&:active?) %>
 
     <section class="agenda-chapter">
@@ -16,6 +15,9 @@
         </header>
 
         <div class="agenda-chapter-items">
+          <% if items.empty? %>
+            <p class="agenda-chapter-empty">No items listed in advance.</p>
+          <% end %>
           <% items.each do |agenda_item| %>
             <%# The summary is guidance for whoever builds the agenda; the body is
                 what the meeting actually needs. Showing both makes the printed

@@ -1,11 +1,26 @@
 class MeetingTypeTemplateSeeder
   SOURCE_LABEL = "American Legion meeting type template seed".freeze
+  INSERT_AT_PREFERRED_POSITION_SOURCE_KEYS = %w[
+    regular_meeting.opening_ceremony
+    regular_meeting.closing_memorial_service
+    regular_meeting.closing_service_reminder
+  ].freeze
 
   MEETING_TYPES = [
     {
       name: "PEC Meeting",
       source_key: "american_legion_post:pec_meeting",
       position: 1,
+      retired_section_titles: [ "Post Business" ],
+      renamed_section_titles: { "Post Business" => "Unfinished Business" },
+      retired_item_source_keys: [
+        "regular_meeting.unfinished_old_business",
+        "regular_meeting.new_business_correspondence"
+      ],
+      retired_item_sections: {
+        "regular_meeting.unfinished_old_business" => "Unfinished Business",
+        "regular_meeting.new_business_correspondence" => "New Business"
+      },
       sections: [
         {
           title: "Call to Order",
@@ -15,12 +30,16 @@ class MeetingTypeTemplateSeeder
           ]
         },
         {
-          title: "Post Business",
-          item_source_keys: [
-            "regular_meeting.unfinished_old_business",
-            "regular_meeting.new_business_correspondence",
-            "regular_meeting.good_of_legion"
-          ]
+          title: "Unfinished Business",
+          item_source_keys: []
+        },
+        {
+          title: "New Business",
+          item_source_keys: []
+        },
+        {
+          title: "Good of The American Legion",
+          item_source_keys: [ "regular_meeting.good_of_legion" ]
         }
       ]
     },
@@ -28,10 +47,15 @@ class MeetingTypeTemplateSeeder
       name: "Membership Meeting",
       source_key: "american_legion_post:membership_meeting",
       position: 2,
+      retired_item_source_keys: [
+        "regular_meeting.unfinished_old_business",
+        "regular_meeting.new_business_correspondence"
+      ],
       sections: [
         {
           title: "Opening Ceremony",
           item_source_keys: [
+            "regular_meeting.opening_ceremony",
             "regular_meeting.opening_salute_colors",
             "regular_meeting.opening_prayer",
             "regular_meeting.pow_mia_empty_chair",
@@ -68,11 +92,11 @@ class MeetingTypeTemplateSeeder
         },
         {
           title: "Unfinished Business",
-          item_source_keys: [ "regular_meeting.unfinished_old_business" ]
+          item_source_keys: []
         },
         {
           title: "New Business",
-          item_source_keys: [ "regular_meeting.new_business_correspondence" ]
+          item_source_keys: []
         },
         {
           title: "Good of The American Legion & Announcements",
@@ -84,6 +108,8 @@ class MeetingTypeTemplateSeeder
         {
           title: "Closing Ceremony & Adjournment",
           item_source_keys: [
+            "regular_meeting.closing_memorial_service",
+            "regular_meeting.closing_service_reminder",
             "regular_meeting.pow_mia_flag_retrieval",
             "regular_meeting.closing_salute_colors",
             "regular_meeting.adjournment_declaration"
@@ -167,9 +193,14 @@ class MeetingTypeTemplateSeeder
     end
 
     meeting_type.with_lock do
-      remove_unused_default_section(meeting_type)
+      sections_changed = remove_unused_default_section(meeting_type)
+      sections_changed = rename_retired_sections(meeting_type, definition) || sections_changed
+      retire_seeded_items(meeting_type, definition)
       seed_sections(meeting_type, definition)
-      resequence_sections(meeting_type) if remove_unused_default_section(meeting_type)
+      relocate_retired_items(meeting_type, definition)
+      fallback_section_removed = remove_unused_default_section(meeting_type)
+      retired_sections_removed = remove_empty_retired_sections(meeting_type, definition)
+      resequence_sections(meeting_type) if sections_changed || fallback_section_removed || retired_sections_removed
     end
   end
 
@@ -195,9 +226,14 @@ class MeetingTypeTemplateSeeder
       return
     end
 
+    item_position = if catalog_source_key.in?(INSERT_AT_PREFERRED_POSITION_SOURCE_KEYS)
+      reserve_template_item_position(section, position)
+    else
+      next_available_template_item_position(section, position)
+    end
     item = MeetingTypeAgendaItem.create_from_catalog_entry!(
       catalog_entry,
-      position: next_available_template_item_position(section, position),
+      position: item_position,
       meeting_type: meeting_type,
       agenda_section: section
     )
@@ -216,9 +252,33 @@ class MeetingTypeTemplateSeeder
     )
   end
 
+  def retire_seeded_items(meeting_type, definition)
+    source_keys = Array(definition[:retired_item_source_keys]).map do |catalog_source_key|
+      "#{meeting_type.source_key}:#{catalog_source_key}"
+    end
+
+    meeting_type.meeting_type_agenda_items.where(source_key: source_keys).find_each do |item|
+      if DatedAgendaItem.exists?(meeting_type_agenda_item_id: item.id)
+        item.update!(active: false)
+      else
+        item.destroy!
+      end
+    end
+  end
+
   def self.seeded_item_source_keys(definition)
     catalog_source_keys(definition)
       .map { |catalog_source_key| "#{definition.fetch(:source_key)}:#{catalog_source_key}" }
+  end
+
+  def relocate_retired_items(meeting_type, definition)
+    definition.fetch(:retired_item_sections, {}).each do |catalog_source_key, section_title|
+      item = meeting_type.meeting_type_agenda_items.find_by(source_key: "#{meeting_type.source_key}:#{catalog_source_key}")
+      section = meeting_type.meeting_type_agenda_sections.find_by(title: section_title)
+      next unless item && section && item.agenda_section != section
+
+      item.update!(agenda_section: section, position: next_available_template_item_position(section, 1))
+    end
   end
 
   def self.catalog_source_keys(definition)
@@ -246,12 +306,42 @@ class MeetingTypeTemplateSeeder
     (taken_positions.max || 0) + 1
   end
 
+  def reserve_template_item_position(section, position)
+    section.agenda_items
+      .where("position >= ?", position)
+      .reorder(position: :desc, id: :desc)
+      .each { |item| item.update!(position: item.position + 1) }
+    position
+  end
+
   def remove_unused_default_section(meeting_type)
     default_section = meeting_type.meeting_type_agenda_sections.find_by(title: "Order of Business")
     return false unless default_section&.agenda_items&.empty?
 
     default_section.destroy!
     true
+  end
+
+  def remove_empty_retired_sections(meeting_type, definition)
+    retired_sections = meeting_type.meeting_type_agenda_sections
+      .where(title: Array(definition[:retired_section_titles]))
+      .select do |section|
+        section.agenda_items.empty? && !DatedAgendaSection.exists?(meeting_type_agenda_section_id: section.id)
+      end
+    retired_sections.each(&:destroy!)
+    retired_sections.any?
+  end
+
+  def rename_retired_sections(meeting_type, definition)
+    renamed = false
+    definition.fetch(:renamed_section_titles, {}).each do |old_title, new_title|
+      old_section = meeting_type.meeting_type_agenda_sections.find_by(title: old_title)
+      next unless old_section && !meeting_type.meeting_type_agenda_sections.exists?(title: new_title)
+
+      old_section.update!(title: new_title)
+      renamed = true
+    end
+    renamed
   end
 
   def resequence_sections(meeting_type)

@@ -1,12 +1,17 @@
 class AgendaItemCatalogEntry < ApplicationRecord
   CATEGORIES = {
-    "ceremony" => "Ceremony",
-    "business" => "Business",
+    "opening_ceremony" => "Opening Ceremony",
+    "call_to_order" => "Roll Call, Minutes & Guests",
     "reports" => "Reports",
-    "membership" => "Membership",
-    "memorial" => "Memorial",
-    "administration" => "Administration"
+    "service_and_welfare" => "Sick Call & Service",
+    "unfinished_business" => "Unfinished Business",
+    "new_business" => "New Business",
+    "good_of_legion" => "Good of The American Legion & Announcements",
+    "closing_ceremony" => "Closing Ceremony & Adjournment",
+    "special" => "Special & As Needed"
   }.freeze
+
+  LEGACY_CATEGORIES = %w[ceremony business membership memorial administration].freeze
 
   BEHAVIOR_TYPES = {
     "scripted_ceremony" => "Scripted ceremony",
@@ -18,6 +23,8 @@ class AgendaItemCatalogEntry < ApplicationRecord
     "roll_call" => "Officer roll call"
   }.freeze
 
+  EDITABLE_BEHAVIOR_TYPES = BEHAVIOR_TYPES.except("section_heading").freeze
+
   belongs_to :organization
   has_rich_text :body
   has_rich_text :commander_notes
@@ -28,7 +35,7 @@ class AgendaItemCatalogEntry < ApplicationRecord
   before_validation :ensure_slug
 
   validates :title, :slug, :category, :behavior_type, presence: true
-  validates :category, inclusion: { in: CATEGORIES.keys }
+  validates :category, inclusion: { in: CATEGORIES.keys + LEGACY_CATEGORIES }
   validates :behavior_type, inclusion: { in: BEHAVIOR_TYPES.keys }
   validates :slug, uniqueness: { scope: :organization_id }
   validates :source_key, uniqueness: { scope: :organization_id }, allow_blank: true
@@ -37,6 +44,12 @@ class AgendaItemCatalogEntry < ApplicationRecord
   scope :ordered, -> { order(:category, :position, :title) }
   scope :kept, -> { where(removed_from_catalog_at: nil) }
   scope :active, -> { kept.where(active: true) }
+
+  def self.behavior_types_for_form(current_value = nil)
+    return EDITABLE_BEHAVIOR_TYPES unless current_value == "section_heading"
+
+    EDITABLE_BEHAVIOR_TYPES.merge("section_heading" => BEHAVIOR_TYPES.fetch("section_heading"))
+  end
 
   def self.reorder!(organization, ordered_ids_by_category)
     category_ids = normalize_category_ids(ordered_ids_by_category)

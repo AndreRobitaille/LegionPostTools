@@ -6,9 +6,9 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     @other_organization = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
-    @catalog_entry = @organization.agenda_item_catalog_entries.create!(title: "Opening Ceremony", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true, body: "Welcome")
-    @inactive_entry = @organization.agenda_item_catalog_entries.create!(title: "Inactive Ceremony", category: "ceremony", behavior_type: "scripted_ceremony", position: 2, active: false)
-    @other_entry = @other_organization.agenda_item_catalog_entries.create!(title: "Other Entry", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
+    @catalog_entry = @organization.agenda_item_catalog_entries.create!(title: "Opening Ceremony", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 1, active: true, body: "Welcome")
+    @inactive_entry = @organization.agenda_item_catalog_entries.create!(title: "Inactive Ceremony", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 2, active: false)
+    @other_entry = @other_organization.agenda_item_catalog_entries.create!(title: "Other Entry", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
   end
 
   test "picker requires manage_agendas" do
@@ -46,7 +46,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
   test "add catalog item appends at next position" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: @catalog_entry.title, active: true)
-    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Second Entry", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+    second_entry = @organization.agenda_item_catalog_entries.create!(title: "Second Entry", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
 
     post admin_meeting_type_agenda_items_path(@meeting_type), params: { agenda_item_catalog_entry_id: second_entry.id }
 
@@ -68,7 +68,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
   test "non duplicate validation failure is not reported as duplicate" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+    invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
     singleton = class << MeetingTypeAgendaItem; self; end
     singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
     singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:, agenda_section:|
@@ -86,7 +86,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
   test "non catalog unique violation uses generic message" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy 2", category: "ceremony", behavior_type: "scripted_ceremony", position: 4, active: true)
+    invalid_entry = @organization.agenda_item_catalog_entries.create!(title: "Invalid Copy 2", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 4, active: true)
     singleton = class << MeetingTypeAgendaItem; self; end
     singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
     singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:, agenda_section:|
@@ -106,7 +106,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
   test "duplicate record not unique is reported as duplicate" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    duplicate_entry = @organization.agenda_item_catalog_entries.create!(title: "Duplicate Copy", category: "ceremony", behavior_type: "scripted_ceremony", position: 5, active: true)
+    duplicate_entry = @organization.agenda_item_catalog_entries.create!(title: "Duplicate Copy", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 5, active: true)
     singleton = class << MeetingTypeAgendaItem; self; end
     singleton.alias_method :original_create_from_catalog_entry!, :create_from_catalog_entry!
     singleton.define_method(:create_from_catalog_entry!) do |_entry, position:, meeting_type:, agenda_section:|
@@ -179,7 +179,7 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
 
   test "reorder persists the new item order" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    entry2 = @organization.agenda_item_catalog_entries.create!(title: "Second", category: "ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
+    entry2 = @organization.agenda_item_catalog_entries.create!(title: "Second", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)
     a = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "A", active: true)
     b = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry2, position: 2, title: "B", active: true)
 

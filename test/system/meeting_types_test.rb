@@ -83,7 +83,9 @@ class MeetingTypesSystemTest < ApplicationSystemTestCase
     sections = pec.meeting_type_agenda_sections.ordered.to_a
     original_first = sections.first
 
-    click_button "Move down"
+    within ".agenda-section[data-reorder-id='#{original_first.id}']" do
+      click_button "Move down"
+    end
 
     assert_text "Agenda section moved."
     assert_not_equal original_first.id, pec.meeting_type_agenda_sections.ordered.first.id

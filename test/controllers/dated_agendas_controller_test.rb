@@ -23,6 +23,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     )
     business_section = @published.dated_agenda_sections.create!(title: "Post Business", position: 2)
     @published.dated_agenda_items.create!(agenda_section: business_section, position: 1, title: "Old Business", behavior_type: "business_item", active: true, body: "Review unfinished post business.")
+    @published.dated_agenda_sections.create!(title: "New Business", position: 3)
     @published.approve!(user_with_capabilities("manage_agendas"))
     @published.publish!(user_with_capabilities("manage_agendas"))
   end
@@ -75,6 +76,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Published Agenda"
     assert_select "h2", text: "Order of Business"
     assert_select "h2", text: "Post Business"
+    assert_select "h2", text: "New Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select "body", text: /Withheld ceremony wording/, count: 0
@@ -84,6 +86,8 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".agenda-org-name", text: @organization.name
     assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "1"
     assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "2"
+    assert_select ".agenda-chapter-rail .agenda-chapter-number", text: "3"
+    assert_select ".agenda-chapter-empty", text: "No items listed in advance."
     assert_select "a", text: "Edit", count: 0
   end
 

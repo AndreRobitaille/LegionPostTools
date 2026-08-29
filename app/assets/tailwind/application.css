@@ -945,6 +945,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-chapter-head h2 { margin: 0; font-size: 16px; font-weight: 850; letter-spacing: .12em; line-height: 1.35; text-transform: uppercase; overflow-wrap: anywhere; }
 .agenda-chapter-rule { flex: 1; height: 2px; background: linear-gradient(90deg, var(--color-gold), rgba(198,161,91,.08)); }
 .agenda-chapter-items { margin-top: 12px; }
+.agenda-chapter-empty { margin: 18px 0 4px; color: #647080; font-family: var(--font-serif); font-size: 16px; font-style: italic; line-height: 1.55; }
 .agenda-item { padding: 18px 0; border-top: 1px solid #eadfbf; }
 .agenda-item:first-child { border-top: none; }
 .agenda-item-title { font-family: var(--font-serif); font-size: 21px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }

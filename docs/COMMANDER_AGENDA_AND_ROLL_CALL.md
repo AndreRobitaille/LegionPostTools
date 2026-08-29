@@ -141,7 +141,7 @@ paper.
                   Meeting title / date
                         ◆
  [1] Opening Ceremony
-     Hand Salute / Colors
+     Colors & Hand Salute
      Member wording, when enabled
      | COMMANDER'S CUE
      | Three raps. All rise. "Hand salute." ...

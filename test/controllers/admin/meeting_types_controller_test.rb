@@ -156,7 +156,7 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
   test "destroy deletes a meeting type and its items" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     meeting_type = @organization.meeting_types.create!(name: "Doomed Meeting", position: 1, active: true)
-    entry = @organization.agenda_item_catalog_entries.create!(title: "Item", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
+    entry = @organization.agenda_item_catalog_entries.create!(title: "Item", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
     meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: entry, position: 1, title: "Item", active: true)
 
     assert_difference -> { @organization.meeting_types.count }, -1 do
@@ -219,7 +219,7 @@ class Admin::MeetingTypesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to edit_admin_meeting_type_path(pec)
     assert_equal "Agenda reset to the default items.", flash[:notice]
-    assert_equal 5, pec.reload.meeting_type_agenda_items.count
+    assert_equal 3, pec.reload.meeting_type_agenda_items.count
   end
 
   test "reset agenda is a no-op with an alert for a custom meeting type" do

@@ -28,7 +28,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
       title: "Active Entry",
       slug: "active-entry",
       summary: "Active",
-      category: "business",
+      category: "new_business",
       behavior_type: "business_item",
       position: 10,
       active: true
@@ -37,7 +37,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
       title: "Inactive Entry",
       slug: "inactive-entry",
       summary: "Inactive",
-      category: "business",
+      category: "new_business",
       behavior_type: "business_item",
       position: 11,
       active: false
@@ -71,7 +71,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "[data-reorder-id=?].mrow--inactive", active_entry.id.to_s, count: 0
 
     # Empty categories remain visible as cross-category drop destinations.
-    assert_select "[data-category='memorial'] [data-catalog-reorder-target='list']"
+    assert_select "[data-category='unfinished_business'] [data-catalog-reorder-target='list']"
 
     # Active status remains an edit-form choice rather than a noisy row action.
     assert_select "[data-reorder-id=?] button.row-del", active_entry.id.to_s, count: 1
@@ -79,70 +79,69 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
 
   test "reorder saves positions within and across categories" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    ceremony = create_entry(title: "Ceremony", category: "ceremony", position: 1)
-    business_first = create_entry(title: "First Business", category: "business", position: 1)
-    business_second = create_entry(title: "Second Business", category: "business", position: 2)
+    ceremony = create_entry(title: "Ceremony", category: "opening_ceremony", position: 1)
+    business_first = create_entry(title: "First Business", category: "call_to_order", position: 1)
+    business_second = create_entry(title: "Second Business", category: "call_to_order", position: 2)
 
     post reorder_admin_agenda_item_catalog_entries_path, params: {
       categories: {
-        ceremony: [ ceremony.id, business_second.id ],
-        business: [ business_first.id ],
-        reports: [], membership: [], memorial: [], administration: []
+        opening_ceremony: [ ceremony.id, business_second.id ],
+        call_to_order: [ business_first.id ]
       }
     }, as: :json
 
     assert_response :success
-    assert_equal [ [ "ceremony", 1 ], [ "ceremony", 2 ], [ "business", 1 ] ],
+    assert_equal [ [ "opening_ceremony", 1 ], [ "opening_ceremony", 2 ], [ "call_to_order", 1 ] ],
       [ ceremony, business_second, business_first ].map { |entry| entry.reload.slice(:category, :position).values }
   end
 
   test "reorder rejects foreign ids and changes nothing" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    entry = create_entry(title: "Post Item", category: "business", position: 4)
+    entry = create_entry(title: "Post Item", category: "new_business", position: 4)
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     foreign = other.agenda_item_catalog_entries.create!(
-      title: "Foreign", category: "business", behavior_type: "business_item", position: 1, active: true
+      title: "Foreign", category: "new_business", behavior_type: "business_item", position: 1, active: true
     )
 
     post reorder_admin_agenda_item_catalog_entries_path, params: {
       categories: {
-        ceremony: [], business: [ foreign.id ], reports: [], membership: [], memorial: [], administration: []
+        new_business: [ foreign.id ]
       }
     }, as: :json
 
     assert_response :unprocessable_entity
-    assert_equal [ "business", 4 ], entry.reload.slice(:category, :position).values
+    assert_equal [ "new_business", 4 ], entry.reload.slice(:category, :position).values
   end
 
   test "reorder rejects unknown categories and changes nothing" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    entry = create_entry(title: "Post Item", category: "business", position: 4)
+    entry = create_entry(title: "Post Item", category: "new_business", position: 4)
 
     post reorder_admin_agenda_item_catalog_entries_path, params: {
       categories: {
-        ceremony: [], business: [ entry.id ], reports: [], membership: [], memorial: [], administration: [],
+        new_business: [ entry.id ],
         unknown: []
       }
     }, as: :json
 
     assert_response :unprocessable_entity
-    assert_equal [ "business", 4 ], entry.reload.slice(:category, :position).values
+    assert_equal [ "new_business", 4 ], entry.reload.slice(:category, :position).values
   end
 
   test "move down crosses into the next category" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    entry = create_entry(title: "Last Ceremony", category: "ceremony", position: 1)
+    entry = create_entry(title: "Last Ceremony", category: "opening_ceremony", position: 1)
 
     patch move_admin_agenda_item_catalog_entry_path(entry, direction: "down")
 
     assert_redirected_to admin_agenda_item_catalog_entries_path
     assert_equal "Agenda item moved.", flash[:notice]
-    assert_equal [ "business", 1 ], entry.reload.slice(:category, :position).values
+    assert_equal [ "call_to_order", 1 ], entry.reload.slice(:category, :position).values
   end
 
   test "remove hides an entry without physically deleting it" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    entry = create_entry(title: "Local Ceremony", category: "ceremony", position: 30)
+    entry = create_entry(title: "Local Ceremony", category: "opening_ceremony", position: 30)
 
     assert_no_difference -> { @organization.agenda_item_catalog_entries.count } do
       delete admin_agenda_item_catalog_entry_path(entry)
@@ -158,7 +157,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     sign_in_as(user_with_capabilities("manage_agendas"))
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     entry = other.agenda_item_catalog_entries.create!(
-      title: "Other Entry", category: "business", behavior_type: "business_item", position: 1, active: true
+      title: "Other Entry", category: "new_business", behavior_type: "business_item", position: 1, active: true
     )
 
     delete admin_agenda_item_catalog_entry_path(entry)
@@ -181,7 +180,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
 
     @organization.agenda_item_catalog_entries.create!(
       title: "Existing Business",
-      category: "business",
+      category: "new_business",
       behavior_type: "business_item",
       position: 7,
       active: true
@@ -192,7 +191,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
         agenda_item_catalog_entry: {
           title: "New Business",
           summary: "Add new business",
-          category: "business",
+          category: "new_business",
           behavior_type: "business_item",
           active: true,
           body: "Discuss new business",
@@ -238,7 +237,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
       title: "Previous Minutes",
       slug: "previous-minutes",
       summary: "Read minutes",
-      category: "administration",
+      category: "call_to_order",
       behavior_type: "motion_vote_item",
       position: 1,
       active: true,
@@ -249,7 +248,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
       agenda_item_catalog_entry: {
         title: "Updated Minutes",
         summary: "Read and approve minutes",
-        category: "administration",
+        category: "call_to_order",
         behavior_type: "motion_vote_item",
         active: false,
         body: "New body"
@@ -269,7 +268,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
       title: "Previous Minutes",
       slug: "previous-minutes",
       summary: "Read minutes",
-      category: "administration",
+      category: "call_to_order",
       behavior_type: "motion_vote_item",
       position: 1,
       active: true,
@@ -297,7 +296,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
       slug: "opening-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -310,6 +309,9 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "input[name=?]", "agenda_item_catalog_entry[position]", count: 0
     assert_select "input[name=?]", "agenda_item_catalog_entry[title]"
     assert_select "select[name=?]", "agenda_item_catalog_entry[category]"
+    assert_select "label", text: "Usually used under"
+    assert_select "label", text: "Item kind"
+    assert_select "select[name='agenda_item_catalog_entry[behavior_type]'] option[value='section_heading']", count: 0
     assert_select "textarea[name=?]", "agenda_item_catalog_entry[summary]"
     assert_select "lexxy-editor[name=?]", "agenda_item_catalog_entry[body]"
     assert_select "lexxy-editor[name=?]", "agenda_item_catalog_entry[commander_notes]"
@@ -333,7 +335,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
       title: "Other Entry",
       slug: "other-entry",
       summary: "Other",
-      category: "business",
+      category: "new_business",
       behavior_type: "business_item",
       position: 1,
       active: true

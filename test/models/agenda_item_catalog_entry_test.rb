@@ -24,7 +24,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     first = @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
       slug: "opening-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true,
@@ -34,7 +34,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     second = @organization.agenda_item_catalog_entries.create!(
       title: "Closing Ceremony",
       slug: "closing-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 2,
       active: true,
@@ -49,7 +49,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
       slug: "opening-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true,
@@ -63,7 +63,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
       slug: " Opening-Ceremony ",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -72,7 +72,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     duplicate = @organization.agenda_item_catalog_entries.new(
       title: "Opening Ceremony Copy",
       slug: "opening-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 2,
       active: true
@@ -88,7 +88,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
       slug: "opening-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -97,7 +97,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     entry = other_organization.agenda_item_catalog_entries.new(
       title: "Opening Ceremony",
       slug: "opening-ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -109,7 +109,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
   test "derives slug from title when none is given" do
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -121,7 +121,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
   test "derived slug avoids collisions within the organization" do
     @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -129,7 +129,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
 
     second = @organization.agenda_item_catalog_entries.create!(
       title: "Opening Ceremony",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 2,
       active: true
@@ -142,7 +142,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Preamble",
       slug: "preamble",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "reading_recitation",
       position: 1,
       active: true,
@@ -155,7 +155,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
   test "defaults document wording to the agenda and draft minutes" do
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Call to Order",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true
@@ -168,7 +168,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
   test "supports private Commander notes" do
     entry = @organization.agenda_item_catalog_entries.create!(
       title: "Call to Order",
-      category: "ceremony",
+      category: "opening_ceremony",
       behavior_type: "scripted_ceremony",
       position: 1,
       active: true,
@@ -179,28 +179,28 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
   end
 
   test "reorder changes categories and writes contiguous positions" do
-    ceremony = create_entry("Ceremony", "ceremony", 8)
-    business_first = create_entry("First Business", "business", 4)
-    business_second = create_entry("Second Business", "business", 9)
+    ceremony = create_entry("Ceremony", "opening_ceremony", 8)
+    business_first = create_entry("First Business", "call_to_order", 4)
+    business_second = create_entry("Second Business", "call_to_order", 9)
 
     AgendaItemCatalogEntry.reorder!(@organization, {
-      "ceremony" => [ ceremony.id, business_second.id ],
-      "business" => [ business_first.id ]
+      "opening_ceremony" => [ ceremony.id, business_second.id ],
+      "call_to_order" => [ business_first.id ]
     })
 
-    assert_equal [ [ "ceremony", 1 ], [ "ceremony", 2 ], [ "business", 1 ] ],
+    assert_equal [ [ "opening_ceremony", 1 ], [ "opening_ceremony", 2 ], [ "call_to_order", 1 ] ],
       [ ceremony, business_second, business_first ].map { |entry| entry.reload.slice(:category, :position).values }
   end
 
   test "reorder rejects incomplete duplicate and unknown category payloads atomically" do
-    first = create_entry("First", "ceremony", 3)
-    second = create_entry("Second", "business", 7)
+    first = create_entry("First", "opening_ceremony", 3)
+    second = create_entry("Second", "call_to_order", 7)
     original = [ first, second ].map { |entry| entry.slice(:category, :position) }
 
     invalid_orders = [
-      { "ceremony" => [ first.id ] },
-      { "ceremony" => [ first.id, first.id ] },
-      { "ceremony" => [ first.id ], "unknown" => [ second.id ] }
+      { "opening_ceremony" => [ first.id ] },
+      { "opening_ceremony" => [ first.id, first.id ] },
+      { "opening_ceremony" => [ first.id ], "unknown" => [ second.id ] }
     ]
 
     invalid_orders.each do |order|
@@ -212,45 +212,45 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
   end
 
   test "reorder rejects an entry from another post" do
-    entry = create_entry("Post Item", "ceremony", 1)
+    entry = create_entry("Post Item", "opening_ceremony", 1)
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     foreign = other.agenda_item_catalog_entries.create!(
-      title: "Foreign", category: "business", behavior_type: "business_item", position: 1, active: true
+      title: "Foreign", category: "call_to_order", behavior_type: "business_item", position: 1, active: true
     )
 
     assert_raises(ActiveRecord::RecordNotFound) do
-      AgendaItemCatalogEntry.reorder!(@organization, "ceremony" => [ entry.id, foreign.id ])
+      AgendaItemCatalogEntry.reorder!(@organization, "opening_ceremony" => [ entry.id, foreign.id ])
     end
 
-    assert_equal [ "ceremony", 1 ], entry.reload.slice(:category, :position).values
+    assert_equal [ "opening_ceremony", 1 ], entry.reload.slice(:category, :position).values
   end
 
   test "move reorders within a category and crosses the adjacent category boundary" do
-    first = create_entry("First", "ceremony", 1)
-    second = create_entry("Second", "ceremony", 2)
+    first = create_entry("First", "opening_ceremony", 1)
+    second = create_entry("Second", "opening_ceremony", 2)
 
     AgendaItemCatalogEntry.move!(@organization, second, "up")
 
-    assert_equal [ second.id, first.id ], entries_in("ceremony").map(&:id)
+    assert_equal [ second.id, first.id ], entries_in("opening_ceremony").map(&:id)
 
     AgendaItemCatalogEntry.move!(@organization, first, "down")
 
-    assert_equal [ second.id ], entries_in("ceremony").map(&:id)
-    assert_equal [ first.id ], entries_in("business").map(&:id)
+    assert_equal [ second.id ], entries_in("opening_ceremony").map(&:id)
+    assert_equal [ first.id ], entries_in("call_to_order").map(&:id)
   end
 
   test "move rejects the outer catalog boundaries" do
-    first = create_entry("First", "ceremony", 1)
-    last = create_entry("Last", "administration", 1)
+    first = create_entry("First", "opening_ceremony", 1)
+    last = create_entry("Last", "special", 1)
 
     assert_raises(ActiveRecord::RecordNotFound) { AgendaItemCatalogEntry.move!(@organization, first, "up") }
     assert_raises(ActiveRecord::RecordNotFound) { AgendaItemCatalogEntry.move!(@organization, last, "down") }
   end
 
   test "removing an entry preserves template and dated agenda copies" do
-    first = create_entry("First", "ceremony", 1)
-    removed = create_entry("Removable", "ceremony", 2)
-    last = create_entry("Last", "ceremony", 3)
+    first = create_entry("First", "unfinished_business", 1)
+    removed = create_entry("Removable", "unfinished_business", 2)
+    last = create_entry("Last", "unfinished_business", 3)
     meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
     template_item = MeetingTypeAgendaItem.create_from_catalog_entry!(removed, position: 1, meeting_type: meeting_type)
     meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
@@ -269,7 +269,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     assert_predicate removed, :removed_from_catalog_at?
     assert_not_includes @organization.agenda_item_catalog_entries.kept, removed
     assert_not_includes @organization.agenda_item_catalog_entries.active, removed
-    assert_equal [ [ first.id, 1 ], [ last.id, 2 ] ], entries_in("ceremony").kept.pluck(:id, :position)
+    assert_equal [ [ first.id, 1 ], [ last.id, 2 ] ], entries_in("unfinished_business").kept.pluck(:id, :position)
     assert_equal removed, template_item.reload.agenda_item_catalog_entry
     assert_equal removed, dated_item.reload.agenda_item_catalog_entry
   end

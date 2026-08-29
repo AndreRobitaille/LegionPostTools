@@ -25,12 +25,12 @@ class AgendaItemCatalogEntriesSystemTest < ApplicationSystemTestCase
     source.drag_to(target, html5: true)
 
     assert_selector ".catalog-order-status", text: /saved/i
-    assert_equal "membership", source_entry.reload.category
+    assert_equal "call_to_order", source_entry.reload.category
   end
 
   test "compact arrow controls move an item without JavaScript drag gestures" do
     entry = @organization.agenda_item_catalog_entries
-      .where(category: "business")
+      .where(category: "reports")
       .order(:position)
       .second
     visit admin_agenda_item_catalog_entries_path
@@ -40,7 +40,7 @@ class AgendaItemCatalogEntriesSystemTest < ApplicationSystemTestCase
     end
 
     assert_text "Agenda item moved."
-    assert_equal entry.id, @organization.agenda_item_catalog_entries.where(category: "business").order(:position).first.id
+    assert_equal entry.id, @organization.agenda_item_catalog_entries.where(category: "reports").order(:position).first.id
   end
 
   test "trash action removes an item from the catalog after confirmation" do
