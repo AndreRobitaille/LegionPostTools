@@ -98,6 +98,21 @@ class DatedAgendaTest < ActiveSupport::TestCase
     assert_includes item.errors.full_messages.join, "agenda is locked"
   end
 
+  test "a locked agenda can be destroyed as a whole with its sections and items" do
+    user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
+    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda.approve!(user)
+    agenda.publish!(user)
+    item_ids = agenda.dated_agenda_items.ids
+    section_ids = agenda.dated_agenda_sections.ids
+
+    assert agenda.destroy!
+
+    assert_not DatedAgenda.exists?(agenda.id)
+    assert_not DatedAgendaItem.where(id: item_ids).exists?
+    assert_not DatedAgendaSection.where(id: section_ids).exists?
+  end
+
   test "approve only allows draft agendas" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
     agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")

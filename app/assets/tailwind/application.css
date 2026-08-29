@@ -805,6 +805,30 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
    header rule does not overhang the card beneath it. */
 .agenda-build-section--form { max-width: var(--w-form); }
 
+/* Whole-record deletion stays visually separate from lifecycle actions. The
+   modal's folio identifies the exact meeting snapshot before it is removed. */
+.da-danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 18px 28px; flex-wrap: wrap; max-width: var(--w-form); margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--rule-strong); }
+.da-danger-title { margin: 0; color: var(--color-legionred); font-size: 18px; font-weight: 800; }
+.da-danger-copy { margin: 5px 0 0; color: var(--color-muted); font-size: 15px; line-height: 1.5; }
+.da-delete-trigger { min-height: 44px; }
+.btn-danger { display: inline-block; min-height: 44px; box-sizing: border-box; padding: 10px 18px; color: #fff; background: var(--color-legionred); border: 1.5px solid var(--color-legionred); border-radius: var(--radius-control); font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.btn-danger:hover { background: #70111b; border-color: #70111b; }
+.btn-danger:focus-visible, .da-delete-trigger:focus-visible, .confirm-dialog .btn-secondary:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 3px; }
+
+.confirm-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 0; overflow: auto; color: var(--color-ink); background: transparent; border: 0; border-radius: var(--radius-card); box-shadow: 0 24px 70px rgba(8,26,52,.36); }
+.confirm-dialog::backdrop { background: rgba(8,26,52,.68); }
+.confirm-dialog-card { padding: 26px 28px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 5px solid var(--color-legionred); border-radius: var(--radius-card); }
+.confirm-dialog-kicker { display: block; color: var(--color-legionred); font-size: 13px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+.confirm-dialog-title { margin: 8px 0 8px; color: var(--color-navy); font-size: 24px; line-height: 1.25; }
+.confirm-dialog-copy { margin: 0; color: #4f5f72; font-size: 16px; line-height: 1.55; }
+.confirm-record { display: flex; flex-direction: column; gap: 5px; margin: 20px 0 0; padding: 16px 18px; background: var(--color-ivory); border: 1px solid var(--rule-strong); border-left: 4px solid var(--color-gold); border-radius: var(--radius-control); }
+.confirm-record-label { color: var(--color-gold-ink); font-size: 13px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.confirm-record-title { color: var(--color-navy); font-family: var(--font-serif); font-size: 19px; line-height: 1.35; overflow-wrap: anywhere; }
+.confirm-record-meta { color: var(--color-muted); font-size: 14px; line-height: 1.45; }
+.confirm-dialog-alert { margin: 16px 0 0; padding: 11px 13px; color: #71151e; background: #fbeaea; border-left: 4px solid var(--color-legionred); font-size: 15px; font-weight: 700; line-height: 1.5; }
+.confirm-dialog-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.confirm-dialog-actions form { margin: 0; }
+
 /* Upcoming published meetings ----------------------------------------------
    The date plate earns its place: on a list of meetings the date is what the
    member is looking for, so it leads. Sans throughout — this is the tool, not
@@ -958,6 +982,11 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .agenda-chapter-content { padding-top: 4px; padding-bottom: 28px; }
   .agenda-chapter-head { align-items: flex-start; flex-direction: column; gap: 8px; }
   .agenda-chapter-rule { width: 100%; }
+  .da-danger-zone { align-items: stretch; flex-direction: column; }
+  .da-delete-trigger { width: 100%; }
+  .confirm-dialog-card { padding: 22px 18px 18px; }
+  .confirm-dialog-actions { align-items: stretch; flex-direction: column-reverse; }
+  .confirm-dialog-actions form, .confirm-dialog-actions button { width: 100%; }
 }
 
 @media print {

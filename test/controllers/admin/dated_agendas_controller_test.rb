@@ -42,6 +42,17 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
+  test "users without manage_agendas cannot delete a dated agenda" do
+    sign_in_as(user_with_capabilities)
+
+    assert_no_difference -> { DatedAgenda.count } do
+      delete admin_dated_agenda_path(@agenda)
+    end
+
+    assert_redirected_to root_path
+    assert_equal "You do not have permission to open that page.", flash[:alert]
+  end
+
   test "index lists dated agendas" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     existing = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.parse("2026-08-04 19:00"), title: "Membership Meeting — August 4, 2026", status: "draft")
@@ -308,6 +319,67 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href=?]", print_admin_dated_agenda_path(agenda), text: "Print"
+  end
+
+  test "edit page shows a modal warning with the exact agenda record" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    @agenda.update!(status: "published")
+
+    get edit_admin_dated_agenda_path(@agenda)
+
+    assert_response :success
+    assert_select ".da-danger-zone[data-controller='confirm-dialog']"
+    assert_select "button[data-action='confirm-dialog#open']", text: "Delete dated agenda"
+    assert_select "dialog.confirm-dialog[aria-labelledby='delete-agenda-dialog-title']" do
+      assert_select ".confirm-record-title", text: @agenda.title
+      assert_select ".confirm-record-meta", text: /Membership.*Published/
+      assert_select ".confirm-dialog-alert", text: /immediately lose access/
+      assert_select "form[action='#{admin_dated_agenda_path(@agenda)}'] input[name='_method'][value='delete']"
+    end
+  end
+
+  test "destroy removes dated agendas in every lifecycle status and their dependent content" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    agendas = %w[draft approved published].map.with_index do |status, index|
+      agenda = DatedAgenda.create_from_template!(
+        organization: @organization,
+        meeting_body: @meeting_body,
+        meeting_type: @meeting_type,
+        starts_at: Time.zone.local(2026, 9, index + 1, 19, 0)
+      )
+      agenda.update!(status: status)
+      agenda
+    end
+    item_ids = agendas.flat_map { |agenda| agenda.dated_agenda_items.ids }
+    section_ids = agendas.flat_map { |agenda| agenda.dated_agenda_sections.ids }
+
+    assert_difference -> { DatedAgenda.count }, -3 do
+      agendas.each do |agenda|
+        delete admin_dated_agenda_path(agenda)
+        assert_redirected_to admin_dated_agendas_path
+        assert_response :see_other
+      end
+    end
+
+    assert_equal "Dated agenda deleted.", flash[:notice]
+    assert_not DatedAgendaItem.where(id: item_ids).exists?
+    assert_not DatedAgendaSection.where(id: section_ids).exists?
+    assert_not ActionText::RichText.where(record_type: "DatedAgendaItem", record_id: item_ids).exists?
+  end
+
+  test "destroy cannot reach another organization's dated agenda" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    other_body = other.meeting_bodies.create!(name: "Membership", slug: "other-membership")
+    other_type = other.meeting_types.create!(name: "Membership Meeting", slug: "other-membership-meeting", position: 1, active: true)
+    other_agenda = other.dated_agendas.create!(meeting_body: other_body, meeting_type: other_type, starts_at: Time.zone.local(2026, 9, 1, 19, 0), title: "Other agenda", status: "published")
+
+    assert_no_difference -> { DatedAgenda.count } do
+      delete admin_dated_agenda_path(other_agenda)
+    end
+
+    assert_response :not_found
+    assert DatedAgenda.exists?(other_agenda.id)
   end
 
   test "print view renders agenda details without edit controls" do

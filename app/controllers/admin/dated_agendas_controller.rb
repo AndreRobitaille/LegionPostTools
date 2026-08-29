@@ -2,7 +2,7 @@ module Admin
   class DatedAgendasController < ApplicationController
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
-    before_action :set_dated_agenda, only: %i[edit update approve publish reopen print]
+    before_action :set_dated_agenda, only: %i[edit update destroy approve publish reopen print]
     before_action :set_form_collections, only: %i[new create edit update]
 
     def index
@@ -47,6 +47,11 @@ module Admin
       end
     rescue ActiveRecord::StaleObjectError
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "This agenda was changed by someone else. Review the latest version before saving."
+    end
+
+    def destroy
+      @dated_agenda.destroy!
+      redirect_to admin_dated_agendas_path, notice: "Dated agenda deleted.", status: :see_other
     end
 
     def approve

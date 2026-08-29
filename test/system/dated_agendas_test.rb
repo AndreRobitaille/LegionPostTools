@@ -48,6 +48,32 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_no_selector "button.row-del"
   end
 
+  test "officer reviews the delete warning and deletes a published agenda" do
+    @agenda.approve!(@user)
+    @agenda.publish!(@user)
+    visit edit_admin_dated_agenda_path(@agenda)
+
+    click_button "Delete dated agenda"
+
+    assert_selector "dialog.confirm-dialog[open]"
+    assert_selector ".confirm-record-title", text: @agenda.title
+    assert_selector ".confirm-dialog-alert", text: /immediately lose access/
+    assert_equal "Cancel", page.evaluate_script("document.activeElement.textContent.trim()")
+
+    find("body").send_keys(:escape)
+    assert_no_selector "dialog.confirm-dialog[open]"
+    assert_equal "Delete dated agenda", page.evaluate_script("document.activeElement.textContent.trim()")
+
+    click_button "Delete dated agenda"
+    within "dialog.confirm-dialog" do
+      click_button "Delete dated agenda"
+    end
+
+    assert_current_path admin_dated_agendas_path
+    assert_text "Dated agenda deleted."
+    assert_not DatedAgenda.exists?(@agenda.id)
+  end
+
   test "member navigates from meetings to a published agenda at desktop and phone widths" do
     business_section = @agenda.dated_agenda_sections.create!(title: "Post Business", position: 2)
     @agenda.dated_agenda_items.create!(

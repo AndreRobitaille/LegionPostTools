@@ -40,6 +40,7 @@ class DatedAgendaSection < ApplicationRecord
   end
 
   def prevent_destroy_when_locked
+    return true if destroyed_by_association
     return true unless DatedAgenda.where(id: dated_agenda_id).pick(:status).in?(%w[approved published])
 
     errors.add(:base, "agenda is locked")

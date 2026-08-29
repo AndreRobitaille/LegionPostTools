@@ -76,7 +76,7 @@ Rails.application.routes.draw do
         post :reorder, on: :collection
       end
     end
-    resources :dated_agendas, except: %i[destroy] do
+    resources :dated_agendas do
       member do
         patch :approve
         patch :publish
