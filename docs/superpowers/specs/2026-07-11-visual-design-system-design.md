@@ -166,6 +166,7 @@ something the vocabulary genuinely cannot express, and then add it to this list.
 | Row importance | `.mrow--important` (subtle gold left edge). Never a badge. |
 | Record status | `.st` + `.st-dot` — a coloured word with a dot, **never a boxed pill** |
 | Drag grip | `shared/_drag_handle` (`.pos-handle`); pass `extra_class:` when a nested list needs its own selector |
+| Compact row reordering | One visible **Move** label followed by up/down arrow buttons. Do not repeat large "Move up" / "Move down" button text on every row; give each arrow a full item-specific accessible name. |
 | Destructive row action | `.row-del` + `shared/_trash_icon` |
 | Empty state | `.empty` |
 | Form | `.stacked-form` (inside `.panel form-panel` where the page wraps it) |

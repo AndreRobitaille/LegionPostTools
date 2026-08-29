@@ -10,7 +10,9 @@ to get backwards.
 (building blocks). This is where an admin creates and customizes the individual
 items a post reuses across its meetings (e.g. "Roll Call", "Reading of Minutes",
 "Chaplain's Prayer"). The catalog is foundational: it is the source of items for
-everything above it.
+everything above it. Its category and item order can be arranged independently;
+those changes affect future assembly choices, not existing meeting-type
+templates or dated-agenda snapshots.
 
 **Meeting Type** — a reusable *agenda template* for a kind of meeting (e.g. **PEC
 Meeting**, **Membership Meeting**). An admin arranges named sections, pulls

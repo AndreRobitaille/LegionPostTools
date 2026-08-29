@@ -335,7 +335,10 @@
 .mrow-kv { display: block; font-size: 14px; color: var(--color-ink); margin-top: 6px; }
 .mrow-kv .k { color: var(--color-muted); }
 
-/* Catalog rows: whole row opens the editor, with a visible Edit affordance - */
+/* Catalog rows -------------------------------------------------------------
+   The grip rail is the catalog's one signature gesture: a slim order-of-
+   business spine that makes the draggable area unambiguous. Editing remains a
+   separate action, and the compact arrow pair is the non-drag equivalent. */
 .catrow { position: relative; transition: background .12s ease; }
 .catrow:hover, .catrow:focus-visible { background: #e9eef6; outline: none; }
 .catrow:hover .mrow-name, .catrow:focus-visible .mrow-name { text-decoration: none; }
@@ -345,6 +348,33 @@
 .catrow:hover .catrow-edit, .catrow:focus-visible .catrow-edit { background: var(--color-navy); border-color: var(--color-navy); color: #fff; }
 .catrow-caret { font-size: 18px; line-height: 1; margin-top: -1px; }
 .mrow--inactive .mrow-name { color: var(--color-muted); }
+.catalog-reorder-hint { max-width: 720px; margin: 12px 0 20px; padding: 11px 14px; color: #435467; background: #eef3f7; border-left: 3px solid var(--color-officer-blue); border-radius: 0 var(--radius-control) var(--radius-control) 0; font-size: 15px; line-height: 1.5; }
+.catalog-section { margin-top: 24px; }
+.catalog-section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.catalog-section-head .sec-head { flex: 1; margin: 0; }
+.catalog-section-count { flex: 0 0 auto; color: var(--color-muted); font-size: 14px; font-weight: 700; }
+.catalog-dropzone { min-height: 66px; margin-bottom: 0; overflow: visible; transition: border-color .12s ease, box-shadow .12s ease, background .12s ease; }
+.mrow.catalog-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: stretch; gap: 0; padding: 0; background: var(--color-ivory); }
+.catalog-empty + .catalog-row { border-top: 0; }
+.catalog-grip-rail { grid-column: 1; grid-row: 1; display: flex; align-items: stretch; justify-content: center; min-height: 66px; color: #526779; background: #edf2f5; border-right: 2px solid var(--color-gold); }
+.catalog-grip-rail .pos-handle { width: 42px; height: auto; min-height: 44px; color: inherit; }
+.catalog-grip-rail .pos-handle:hover, .catalog-grip-rail .pos-handle:focus-visible { color: var(--color-navy); background: #dfe8ee; outline: 3px solid var(--color-gold); outline-offset: -3px; }
+.catalog-row > .mrow-id { grid-column: 2; grid-row: 1; align-self: center; padding: 14px 18px 14px 14px; }
+.catalog-row-actions { grid-column: 3; grid-row: 1; align-self: stretch; padding: 10px 14px 10px 18px; border-left: 1px solid #e4d9bb; }
+.catalog-move-actions { display: inline-flex; align-items: center; gap: 4px; }
+.catalog-move-actions form { margin: 0; }
+.catalog-move-label { margin-right: 2px; color: var(--color-muted); font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.catalog-move { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 0; color: var(--color-navy); background: #fff; border: 1.5px solid #cbb98a; border-radius: var(--radius-control); cursor: pointer; font-family: inherit; font-size: 21px; font-weight: 800; line-height: 1; }
+.catalog-move:hover, .catalog-move:focus-visible { color: #fff; background: var(--color-navy); border-color: var(--color-navy); outline: none; }
+.catalog-move:focus-visible { box-shadow: 0 0 0 3px var(--color-gold); }
+.catalog-move:disabled { color: #9ba3ab; background: #f1f1ee; border-color: #d7d3c8; cursor: default; opacity: .62; }
+.catalog-empty { min-height: 64px; display: flex; align-items: center; justify-content: center; gap: 9px; color: var(--color-muted); background: rgba(255,253,247,.76); font-size: 15px; font-weight: 650; }
+.catalog-empty.hidden { display: none; }
+.catalog-empty-mark { color: var(--color-gold-ink); font-size: 22px; line-height: 1; }
+.catalog-reorder--dragging .catalog-dropzone { border-color: var(--color-gold); background: #fffdf7; box-shadow: inset 0 0 0 2px rgba(198,161,91,.28); }
+.catalog-reorder--dragging .catalog-empty { background: #f8f1de; color: var(--color-navy); }
+.catalog-order-status { position: sticky; bottom: 12px; width: fit-content; min-height: 0; margin: 12px 0 0; padding: 6px 10px; background: var(--color-paper); border-radius: var(--radius-control); box-shadow: 0 3px 10px rgba(10,34,64,.12); }
+.catalog-order-status:empty { padding: 0; box-shadow: none; }
 
 /* Boxed list of member rows (People directory sections) ------------------- */
 .mrow-list { border: 1px solid #eadfbf; border-radius: 10px; overflow: hidden; background: var(--color-ivory); margin-bottom: 22px; }
@@ -512,6 +542,20 @@
   .pos { align-items: flex-start; flex-wrap: wrap; }
   .pos-handle { margin-top: 2px; }
   .pos-actions { flex-basis: 100%; justify-content: flex-start; padding-left: 42px; }
+}
+
+@media (max-width: 560px) {
+  .catalog-row { grid-template-columns: 44px minmax(0, 1fr); }
+  .catalog-grip-rail { grid-row: 1 / span 2; }
+  .catalog-row > .mrow-id { grid-column: 2; grid-row: 1; padding-right: 14px; }
+  .catalog-row-actions { grid-column: 2; grid-row: 2; justify-content: flex-start; gap: 10px; padding: 0 14px 12px; border-left: 0; flex-wrap: wrap; }
+  .catalog-row-actions .catrow-flag { flex-basis: 100%; }
+  .catalog-move { width: 44px; height: 44px; }
+  .catalog-row-actions .catrow-edit { min-height: 44px; box-sizing: border-box; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-dropzone, .catrow, .catrow-edit { transition: none; }
 }
 
 /* Shared reorder + row actions (meeting types, agenda items) --------------- */

@@ -177,4 +177,89 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
 
     assert_includes entry.commander_notes.to_plain_text, "three raps"
   end
+
+  test "reorder changes categories and writes contiguous positions" do
+    ceremony = create_entry("Ceremony", "ceremony", 8)
+    business_first = create_entry("First Business", "business", 4)
+    business_second = create_entry("Second Business", "business", 9)
+
+    AgendaItemCatalogEntry.reorder!(@organization, {
+      "ceremony" => [ ceremony.id, business_second.id ],
+      "business" => [ business_first.id ]
+    })
+
+    assert_equal [ [ "ceremony", 1 ], [ "ceremony", 2 ], [ "business", 1 ] ],
+      [ ceremony, business_second, business_first ].map { |entry| entry.reload.slice(:category, :position).values }
+  end
+
+  test "reorder rejects incomplete duplicate and unknown category payloads atomically" do
+    first = create_entry("First", "ceremony", 3)
+    second = create_entry("Second", "business", 7)
+    original = [ first, second ].map { |entry| entry.slice(:category, :position) }
+
+    invalid_orders = [
+      { "ceremony" => [ first.id ] },
+      { "ceremony" => [ first.id, first.id ] },
+      { "ceremony" => [ first.id ], "unknown" => [ second.id ] }
+    ]
+
+    invalid_orders.each do |order|
+      assert_raises(ActiveRecord::RecordNotFound) do
+        AgendaItemCatalogEntry.reorder!(@organization, order)
+      end
+      assert_equal original, [ first.reload, second.reload ].map { |entry| entry.slice(:category, :position) }
+    end
+  end
+
+  test "reorder rejects an entry from another post" do
+    entry = create_entry("Post Item", "ceremony", 1)
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.agenda_item_catalog_entries.create!(
+      title: "Foreign", category: "business", behavior_type: "business_item", position: 1, active: true
+    )
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      AgendaItemCatalogEntry.reorder!(@organization, "ceremony" => [ entry.id, foreign.id ])
+    end
+
+    assert_equal [ "ceremony", 1 ], entry.reload.slice(:category, :position).values
+  end
+
+  test "move reorders within a category and crosses the adjacent category boundary" do
+    first = create_entry("First", "ceremony", 1)
+    second = create_entry("Second", "ceremony", 2)
+
+    AgendaItemCatalogEntry.move!(@organization, second, "up")
+
+    assert_equal [ second.id, first.id ], entries_in("ceremony").map(&:id)
+
+    AgendaItemCatalogEntry.move!(@organization, first, "down")
+
+    assert_equal [ second.id ], entries_in("ceremony").map(&:id)
+    assert_equal [ first.id ], entries_in("business").map(&:id)
+  end
+
+  test "move rejects the outer catalog boundaries" do
+    first = create_entry("First", "ceremony", 1)
+    last = create_entry("Last", "administration", 1)
+
+    assert_raises(ActiveRecord::RecordNotFound) { AgendaItemCatalogEntry.move!(@organization, first, "up") }
+    assert_raises(ActiveRecord::RecordNotFound) { AgendaItemCatalogEntry.move!(@organization, last, "down") }
+  end
+
+  private
+
+  def create_entry(title, category, position)
+    @organization.agenda_item_catalog_entries.create!(
+      title: title,
+      category: category,
+      behavior_type: "business_item",
+      position: position,
+      active: true
+    )
+  end
+
+  def entries_in(category)
+    @organization.agenda_item_catalog_entries.where(category: category).order(:position)
+  end
 end

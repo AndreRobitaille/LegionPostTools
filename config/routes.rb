@@ -58,7 +58,10 @@ Rails.application.routes.draw do
     resources :position_titles, only: %i[index create update] do
       post :reorder, on: :collection
     end
-    resources :agenda_item_catalog_entries, except: %i[show destroy]
+    resources :agenda_item_catalog_entries, except: %i[show destroy] do
+      post :reorder, on: :collection
+      patch :move, on: :member
+    end
     resources :administrators, only: %i[index]
     resources :agent_access_tokens, only: %i[index destroy] do
       get :revoke, on: :member

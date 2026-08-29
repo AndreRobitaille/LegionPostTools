@@ -51,16 +51,86 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_select "a.back[href=?]", root_path, text: /Dashboard/
     assert_select "a.back[href=?]", admin_root_path, count: 0
 
-    # Rows are click-to-open links straight to the edit page.
-    assert_select "a.mrow[href=?]", edit_admin_agenda_item_catalog_entry_path(active_entry)
-    assert_select "a.mrow[href=?]", edit_admin_agenda_item_catalog_entry_path(inactive_entry)
+    # Rows have dedicated drag, move, and edit controls rather than nesting
+    # controls inside a whole-row link.
+    assert_select "[data-controller='catalog-reorder']"
+    assert_select "[data-reorder-id=?] .pos-handle", active_entry.id.to_s
+    assert_select "[data-reorder-id=?] a[href=?]", active_entry.id.to_s, edit_admin_agenda_item_catalog_entry_path(active_entry)
+    assert_select "[data-reorder-id=?] button[aria-label=?]", active_entry.id.to_s, "Move Active Entry up"
+    assert_select ".catalog-move-label", text: "Move"
 
     # Inactive entries are flagged; active ones carry no status noise.
-    assert_select "a.mrow.mrow--inactive[href=?]", edit_admin_agenda_item_catalog_entry_path(inactive_entry)
-    assert_select "a.mrow.mrow--inactive[href=?]", edit_admin_agenda_item_catalog_entry_path(active_entry), count: 0
+    assert_select "[data-reorder-id=?].mrow--inactive", inactive_entry.id.to_s
+    assert_select "[data-reorder-id=?].mrow--inactive", active_entry.id.to_s, count: 0
+
+    # Empty categories remain visible as cross-category drop destinations.
+    assert_select "[data-category='memorial'] [data-catalog-reorder-target='list']"
 
     # No per-row deactivate/reactivate controls remain on the index.
     assert_select "form[action=?]", admin_agenda_item_catalog_entry_path(active_entry), count: 0
+  end
+
+  test "reorder saves positions within and across categories" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    ceremony = create_entry(title: "Ceremony", category: "ceremony", position: 1)
+    business_first = create_entry(title: "First Business", category: "business", position: 1)
+    business_second = create_entry(title: "Second Business", category: "business", position: 2)
+
+    post reorder_admin_agenda_item_catalog_entries_path, params: {
+      categories: {
+        ceremony: [ ceremony.id, business_second.id ],
+        business: [ business_first.id ],
+        reports: [], membership: [], memorial: [], administration: []
+      }
+    }, as: :json
+
+    assert_response :success
+    assert_equal [ [ "ceremony", 1 ], [ "ceremony", 2 ], [ "business", 1 ] ],
+      [ ceremony, business_second, business_first ].map { |entry| entry.reload.slice(:category, :position).values }
+  end
+
+  test "reorder rejects foreign ids and changes nothing" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = create_entry(title: "Post Item", category: "business", position: 4)
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.agenda_item_catalog_entries.create!(
+      title: "Foreign", category: "business", behavior_type: "business_item", position: 1, active: true
+    )
+
+    post reorder_admin_agenda_item_catalog_entries_path, params: {
+      categories: {
+        ceremony: [], business: [ foreign.id ], reports: [], membership: [], memorial: [], administration: []
+      }
+    }, as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal [ "business", 4 ], entry.reload.slice(:category, :position).values
+  end
+
+  test "reorder rejects unknown categories and changes nothing" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = create_entry(title: "Post Item", category: "business", position: 4)
+
+    post reorder_admin_agenda_item_catalog_entries_path, params: {
+      categories: {
+        ceremony: [], business: [ entry.id ], reports: [], membership: [], memorial: [], administration: [],
+        unknown: []
+      }
+    }, as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal [ "business", 4 ], entry.reload.slice(:category, :position).values
+  end
+
+  test "move down crosses into the next category" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    entry = create_entry(title: "Last Ceremony", category: "ceremony", position: 1)
+
+    patch move_admin_agenda_item_catalog_entry_path(entry, direction: "down")
+
+    assert_redirected_to admin_agenda_item_catalog_entries_path
+    assert_equal "Agenda item moved.", flash[:notice]
+    assert_equal [ "business", 1 ], entry.reload.slice(:category, :position).values
   end
 
   test "index back link points to administration for manage_settings users" do
@@ -233,6 +303,16 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
   end
 
   private
+
+  def create_entry(title:, category:, position:)
+    @organization.agenda_item_catalog_entries.create!(
+      title: title,
+      category: category,
+      behavior_type: "business_item",
+      position: position,
+      active: true
+    )
+  end
 
   def user_with_capabilities(*capabilities)
     person = Person.create!(first_name: "Test", last_name: "User")

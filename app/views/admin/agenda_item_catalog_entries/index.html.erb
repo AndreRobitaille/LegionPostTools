@@ -5,33 +5,79 @@
 
 <div class="page-lead">
   <h1 class="page-title">Agenda Item Catalog</h1>
-  <p class="page-sub">These are the standard building blocks your post can use when creating meeting templates later. Select an item to edit its wording.</p>
+  <p class="page-sub">These are the standard building blocks your post can use when creating meeting templates later.</p>
 </div>
 
 <div class="btnrow">
   <%= link_to "Add catalog entry", new_admin_agenda_item_catalog_entry_path, class: "btn-primary" %>
 </div>
 
-<% @entries_by_category.each do |category, entries| %>
-  <div class="sec-head-row" style="margin-top: 22px">
-    <%= render "shared/section_header", label: AgendaItemCatalogEntry::CATEGORIES.fetch(category) %>
-  </div>
-  <div class="mrow-list">
-    <% entries.each do |entry| %>
-      <%= link_to edit_admin_agenda_item_catalog_entry_path(entry),
-            class: "mrow catrow#{' mrow--inactive' unless entry.active?}",
-            aria: { label: "Edit #{entry.title}" } do %>
-        <span class="mrow-id">
-          <span class="mrow-name"><%= entry.title %></span>
-          <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
-          <%= render "admin/shared/agenda_item_status_flags", item: entry %>
-        </span>
-        <span class="catrow-meta">
-          <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>
-          <% unless entry.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
-          <span class="catrow-edit">Edit<span class="catrow-caret" aria-hidden="true">&rsaquo;</span></span>
-        </span>
-      <% end %>
-    <% end %>
-  </div>
-<% end %>
+<% ordered_entries = @entries_by_category.flat_map(&:last) %>
+<div class="catalog-reorder"
+     data-controller="catalog-reorder"
+     data-catalog-reorder-url-value="<%= reorder_admin_agenda_item_catalog_entries_path %>">
+  <p class="catalog-reorder-hint" id="catalog-reorder-hint">
+    Drag an item by its dotted handle, or use the Move arrows. Changes save automatically.
+  </p>
+
+  <% @entries_by_category.each do |category, entries| %>
+    <section class="catalog-section" data-catalog-section data-category="<%= category %>">
+      <div class="catalog-section-head">
+        <%= render "shared/section_header", label: AgendaItemCatalogEntry::CATEGORIES.fetch(category) %>
+        <span class="catalog-section-count" data-catalog-count><%= pluralize(entries.length, "item") %></span>
+      </div>
+
+      <div class="mrow-list catalog-dropzone"
+           data-catalog-reorder-target="list"
+           data-category="<%= category %>"
+           aria-label="<%= AgendaItemCatalogEntry::CATEGORIES.fetch(category) %> catalog items">
+        <div class="catalog-empty" data-catalog-empty <%= "hidden" if entries.any? %>>
+          <span class="catalog-empty-mark" aria-hidden="true">&#8597;</span>
+          <span>Drop an item here</span>
+        </div>
+
+        <% entries.each do |entry| %>
+          <div class="mrow catrow catalog-row<%= ' mrow--inactive' unless entry.active? %>"
+               data-reorder-item
+               data-reorder-id="<%= entry.id %>">
+            <span class="catalog-grip-rail">
+              <%= render "shared/drag_handle", label: entry.title %>
+            </span>
+            <span class="mrow-id">
+              <span class="mrow-name"><%= entry.title %></span>
+              <% if entry.summary.present? %><span class="mrow-sub"><%= entry.summary %></span><% end %>
+              <%= render "admin/shared/agenda_item_status_flags", item: entry %>
+            </span>
+            <span class="catrow-meta catalog-row-actions">
+              <% unless entry.active? %><%= agenda_active_tag(false) %><% end %>
+              <% unless entry.seeded? %><span class="catrow-flag">Added by your post</span><% end %>
+              <span class="catalog-move-actions">
+                <span class="catalog-move-label">Move</span>
+                <%= button_to move_admin_agenda_item_catalog_entry_path(entry, direction: "up"), method: :patch,
+                      class: "catalog-move", disabled: entry == ordered_entries.first,
+                      aria: { label: "Move #{entry.title} up" }, title: "Move up",
+                      form: { data: { catalog_move_form: "up" } } do %>
+                  <span aria-hidden="true">&#8593;</span>
+                <% end %>
+                <%= button_to move_admin_agenda_item_catalog_entry_path(entry, direction: "down"), method: :patch,
+                      class: "catalog-move", disabled: entry == ordered_entries.last,
+                      aria: { label: "Move #{entry.title} down" }, title: "Move down",
+                      form: { data: { catalog_move_form: "down" } } do %>
+                  <span aria-hidden="true">&#8595;</span>
+                <% end %>
+              </span>
+              <%= link_to edit_admin_agenda_item_catalog_entry_path(entry), class: "catrow-edit", aria: { label: "Edit #{entry.title}" } do %>
+                Edit<span class="catrow-caret" aria-hidden="true">&rsaquo;</span>
+              <% end %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <span class="pos-status catalog-order-status"
+        data-catalog-reorder-target="status"
+        role="status"
+        aria-live="polite"></span>
+</div>

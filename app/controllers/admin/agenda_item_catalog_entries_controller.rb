@@ -2,13 +2,13 @@ module Admin
   class AgendaItemCatalogEntriesController < ApplicationController
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
-    before_action :set_entry, only: %i[edit update]
+    before_action :set_entry, only: %i[edit update move]
 
     def index
       AgendaItemCatalogSeeder.seed_for!(@organization)
       grouped = @organization.agenda_item_catalog_entries.ordered.with_rich_text_commander_notes.group_by(&:category)
-      @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.filter_map do |category|
-        [ category, grouped[category] ] if grouped[category].present?
+      @entries_by_category = AgendaItemCatalogEntry::CATEGORIES.keys.map do |category|
+        [ category, grouped.fetch(category, []) ]
       end
     end
 
@@ -18,7 +18,7 @@ module Admin
 
     def create
       @entry = @organization.agenda_item_catalog_entries.new(entry_params)
-      @entry.position = next_position if @entry.position.to_i.zero?
+      @entry.position = next_position(@entry.category) if @entry.position.to_i.zero?
 
       if @entry.save
         redirect_to admin_agenda_item_catalog_entries_path, notice: "Agenda item catalog entry created."
@@ -30,11 +30,30 @@ module Admin
     def edit; end
 
     def update
-      if @entry.update(entry_params)
+      previous_category = @entry.category
+      @entry.assign_attributes(entry_params)
+      @entry.position = next_position(@entry.category) if @entry.category != previous_category
+
+      if @entry.save
         redirect_to admin_agenda_item_catalog_entries_path, notice: "Agenda item catalog entry updated."
       else
         render :edit, status: :unprocessable_entity
       end
+    end
+
+    def reorder
+      category_ids = params.require(:categories).to_unsafe_h
+      AgendaItemCatalogEntry.reorder!(@organization, category_ids)
+      head :ok
+    rescue ActiveRecord::RecordNotFound, ActionController::ParameterMissing
+      head :unprocessable_entity
+    end
+
+    def move
+      AgendaItemCatalogEntry.move!(@organization, @entry, params[:direction])
+      redirect_to admin_agenda_item_catalog_entries_path, notice: "Agenda item moved."
+    rescue ActiveRecord::RecordNotFound
+      redirect_to admin_agenda_item_catalog_entries_path, alert: "That item cannot move farther in that direction."
     end
 
     private
@@ -47,8 +66,8 @@ module Admin
       @entry = @organization.agenda_item_catalog_entries.find(params[:id])
     end
 
-    def next_position
-      @organization.agenda_item_catalog_entries.maximum(:position).to_i + 1
+    def next_position(category)
+      @organization.agenda_item_catalog_entries.where(category: category).maximum(:position).to_i + 1
     end
 
     def entry_params
