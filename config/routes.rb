@@ -122,11 +122,12 @@ Rails.application.routes.draw do
         patch :publish
         patch :reopen
       end
-      resources :items, only: %i[update destroy], controller: "dated_agenda_items" do
+      resources :items, only: %i[create update destroy], controller: "dated_agenda_items" do
         resource :roll_call, only: %i[update], controller: "dated_agenda_roll_calls" do
           post :refresh, on: :member
         end
       end
+      post "sections/:section_id/items/reorder", to: "dated_agenda_items#reorder"
       resources :tracked_items, only: :create, controller: "dated_agenda_tracked_items"
     end
     resources :tracked_items, only: %i[index show create] do

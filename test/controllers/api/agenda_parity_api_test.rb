@@ -117,6 +117,215 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_equal @tracker.id, response.parsed_body.dig("dated_agenda_item", "tracked_item_id")
   end
 
+  test "dated item API creates standalone and optionally tracked historical rows without changing the catalog" do
+    catalog_entry("Existing reusable item", "reports", 1)
+    agenda, unfinished, new_business = historical_agenda
+    agenda.dated_agenda_items.create!(
+      agenda_section: unfinished,
+      position: 1,
+      title: "Existing business",
+      behavior_type: "business_item",
+      active: true
+    )
+    catalog_count = @organization.agenda_item_catalog_entries.count
+    template_item_count = MeetingTypeAgendaItem.count
+    sign_in_as(@commander)
+
+    post "/api/dated_agendas/#{agenda.id}/items", params: {
+      dated_agenda_section_id: unfinished.id,
+      title: "Newsletter",
+      summary: "July distribution report",
+      body: "The July newsletter was mailed.",
+      commander_notes: "Ask whether extra copies remain.",
+      behavior_type: "business_item",
+      show_wording_on_agenda: true,
+      show_wording_in_minutes: false,
+      source_key: "must-not-be-accepted",
+      seeded_at: Time.current.iso8601
+    }, as: :json
+
+    assert_response :created
+    standalone = agenda.dated_agenda_items.find(response.parsed_body.dig("dated_agenda_item", "id"))
+    assert_equal unfinished, standalone.agenda_section
+    assert_equal 2, standalone.position
+    assert_equal "Newsletter", standalone.title
+    assert_equal "The July newsletter was mailed.", standalone.body.to_plain_text
+    assert_equal "Ask whether extra copies remain.", standalone.commander_notes.to_plain_text
+    assert_not standalone.show_wording_in_minutes
+    assert standalone.active?
+    assert_nil standalone.agenda_item_catalog_entry_id
+    assert_nil standalone.meeting_type_agenda_item_id
+    assert_nil standalone.tracked_item_id
+    assert_nil standalone.source_key
+    assert_nil standalone.seeded_at
+
+    post "/api/dated_agendas/#{agenda.id}/items", params: {
+      dated_agenda_section_id: new_business.id,
+      tracked_item_id: @tracker.id,
+      title: "Buddy Checks status",
+      behavior_type: "business_item"
+    }, as: :json
+
+    assert_response :created
+    linked = agenda.dated_agenda_items.find(response.parsed_body.dig("dated_agenda_item", "id"))
+    assert_equal new_business, linked.agenda_section
+    assert_equal 1, linked.position
+    assert_equal @tracker, linked.tracked_item
+    assert_equal catalog_count, @organization.agenda_item_catalog_entries.count
+    assert_equal template_item_count, MeetingTypeAgendaItem.count
+  end
+
+  test "standalone dated item creation requires a section and a draft agenda" do
+    agenda, unfinished, = historical_agenda
+    sign_in_as(@commander)
+
+    assert_no_difference -> { agenda.dated_agenda_items.count } do
+      post "/api/dated_agendas/#{agenda.id}/items", params: {
+        title: "Missing section",
+        behavior_type: "business_item"
+      }, as: :json
+    end
+    assert_response :unprocessable_entity
+    assert_match(/dated_agenda_section_id/, response.parsed_body["error"])
+
+    agenda.approve!(@commander)
+    assert_no_difference -> { agenda.dated_agenda_items.count } do
+      post "/api/dated_agendas/#{agenda.id}/items", params: {
+        dated_agenda_section_id: unfinished.id,
+        title: "Locked item",
+        behavior_type: "business_item"
+      }, as: :json
+    end
+    assert_response :unprocessable_entity
+    assert_match(/reopen/i, response.parsed_body["error"])
+  end
+
+  test "standalone dated item creation rejects a tracker from another organization" do
+    agenda, unfinished, = historical_agenda
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    other_body = other.meeting_bodies.create!(name: "Membership", slug: "membership")
+    other_tracker = other.tracked_items.create!(
+      meeting_body: other_body,
+      created_by: @commander,
+      title: "Other Post business",
+      importance: "standard"
+    )
+    sign_in_as(@commander)
+
+    assert_no_difference -> { agenda.dated_agenda_items.count } do
+      post "/api/dated_agendas/#{agenda.id}/items", params: {
+        dated_agenda_section_id: unfinished.id,
+        tracked_item_id: other_tracker.id,
+        title: "Wrong installation",
+        behavior_type: "business_item"
+      }, as: :json
+    end
+
+    assert_response :not_found
+  end
+
+  test "dated section reorder requires an exact permutation and returns contiguous order" do
+    agenda, unfinished, new_business = historical_agenda
+    first = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 4, title: "Buddy Checks", behavior_type: "business_item", active: true)
+    second = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 7, title: "Rockers", behavior_type: "business_item", active: true)
+    third = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 9, title: "Newsletter", behavior_type: "business_item", active: true)
+    other_section_item = agenda.dated_agenda_items.create!(agenda_section: new_business, position: 1, title: "Other section", behavior_type: "business_item", active: true)
+    other_agenda, other_unfinished, = historical_agenda
+    other_agenda_item = other_agenda.dated_agenda_items.create!(agenda_section: other_unfinished, position: 1, title: "Other agenda", behavior_type: "business_item", active: true)
+    sign_in_as(@commander)
+
+    original_versions = [ first, second, third ].index_with(&:lock_version)
+    requested_ids = [ third.id, first.id, second.id ]
+    post "/api/dated_agendas/#{agenda.id}/sections/#{unfinished.id}/items/reorder", params: {
+      dated_agenda_item_ids: requested_ids
+    }, as: :json
+
+    assert_response :success
+    assert_equal requested_ids, unfinished.agenda_items.active.order(:position).pluck(:id)
+    assert_equal [ 1, 2, 3 ], unfinished.agenda_items.active.order(:position).pluck(:position)
+    assert_equal requested_ids, response.parsed_body.dig("dated_agenda_section", "items").map { |item| item["id"] }
+    [ first, second, third ].each do |item|
+      assert_equal unfinished, item.reload.agenda_section
+      assert_equal original_versions.fetch(item), item.lock_version
+    end
+
+    invalid_orders = [
+      [ third.id, first.id ],
+      [ third.id, first.id, second.id, 999_999 ],
+      [ third.id, first.id, first.id ],
+      [ third.id, first.id, other_section_item.id ],
+      [ third.id, first.id, other_agenda_item.id ]
+    ]
+    invalid_orders.each do |ids|
+      post "/api/dated_agendas/#{agenda.id}/sections/#{unfinished.id}/items/reorder", params: {
+        dated_agenda_item_ids: ids
+      }, as: :json
+
+      assert_response :unprocessable_entity
+      assert_equal requested_ids, unfinished.agenda_items.active.order(:position).pluck(:id)
+    end
+  end
+
+  test "dated section reorder scopes the section and rejects locked or unauthorized agendas" do
+    agenda, unfinished, = historical_agenda
+    first = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 1, title: "First", behavior_type: "business_item", active: true)
+    second = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 2, title: "Second", behavior_type: "business_item", active: true)
+    other_agenda, other_unfinished, = historical_agenda
+    sign_in_as(@commander)
+
+    post "/api/dated_agendas/#{agenda.id}/sections/#{other_unfinished.id}/items/reorder", params: {
+      dated_agenda_item_ids: [ first.id, second.id ]
+    }, as: :json
+    assert_response :not_found
+
+    agenda.approve!(@commander)
+    post "/api/dated_agendas/#{agenda.id}/sections/#{unfinished.id}/items/reorder", params: {
+      dated_agenda_item_ids: [ second.id, first.id ]
+    }, as: :json
+    assert_response :unprocessable_entity
+    assert_equal [ first.id, second.id ], unfinished.agenda_items.order(:position).pluck(:id)
+
+    sign_in_as(@member)
+    post "/api/dated_agendas/#{other_agenda.id}/sections/#{other_unfinished.id}/items/reorder", params: {
+      dated_agenda_item_ids: []
+    }, as: :json
+    assert_response :forbidden
+  end
+
+  test "standalone create requires manage agendas" do
+    agenda, unfinished, = historical_agenda
+    sign_in_as(@member)
+
+    post "/api/dated_agendas/#{agenda.id}/items", params: {
+      dated_agenda_section_id: unfinished.id,
+      title: "Not allowed",
+      behavior_type: "business_item"
+    }, as: :json
+    assert_response :forbidden
+  end
+
+  test "bearer retry replays a dated section reorder without applying it twice" do
+    agenda, unfinished, = historical_agenda
+    first = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 1, title: "First", behavior_type: "business_item", active: true)
+    second = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 2, title: "Second", behavior_type: "business_item", active: true)
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
+    headers = bearer_headers(plaintext, idempotency_key: "july-7-unfinished-order")
+    path = "/api/dated_agendas/#{agenda.id}/sections/#{unfinished.id}/items/reorder"
+    params = { dated_agenda_item_ids: [ second.id, first.id ] }
+
+    post path, params: params, as: :json, headers: headers
+    assert_response :success
+    first_body = response.body
+    versions_after_first_request = [ first.reload.lock_version, second.reload.lock_version ]
+
+    post path, params: params, as: :json, headers: headers
+    assert_response :success
+    assert_equal first_body, response.body
+    assert_equal versions_after_first_request, [ first.reload.lock_version, second.reload.lock_version ]
+    assert_equal [ second.id, first.id ], unfinished.agenda_items.order(:position).pluck(:id)
+    assert_equal "completed", token.agent_api_executions.find_by!(idempotency_key: "july-7-unfinished-order").state
+  end
+
   test "tracked business is added to the exact historical section id" do
     agenda, _unfinished, new_business = historical_agenda
     sign_in_as(@commander)
@@ -304,5 +513,11 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
       required_by_default: required,
       active: true
     )
+  end
+
+  def bearer_headers(plaintext, idempotency_key: nil)
+    { "Authorization" => "Bearer #{plaintext}" }.tap do |headers|
+      headers["Idempotency-Key"] = idempotency_key if idempotency_key
+    end
   end
 end

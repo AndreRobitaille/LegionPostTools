@@ -49,6 +49,10 @@ All routes are private and require `manage_agendas`.
 - `DELETE /api/dated_agendas/:id` mirrors whole-record deletion and is documented only
   when asked. It may remove a draft, approved, or published agenda; linked Tracked Items
   remain.
+- `POST /api/dated_agendas/:dated_agenda_id/items` creates a meeting-specific draft item
+  without first creating a reusable catalog entry or long-lived Tracked Item. It requires
+  an exact `dated_agenda_section_id`, appends to that section, and may optionally link an
+  existing Tracked Item while preserving supplied historical wording.
 - `PATCH /api/dated_agendas/:dated_agenda_id/items/:id` edits a draft snapshot's title,
   summary, document wording, Commander cues, display flags, item kind, section, or
   `tracked_item_id`.
@@ -57,6 +61,18 @@ All routes are private and require `manage_agendas`.
   section, position, and wording without creating a duplicate.
 - `DELETE /api/dated_agendas/:dated_agenda_id/items/:id` removes only a draft snapshot item
   and is documented only when asked.
+- `POST /api/dated_agendas/:dated_agenda_id/sections/:section_id/items/reorder` accepts the
+  complete set of active item ids in that one section, exactly once, in desired order. It
+  rejects partial, duplicate, extra, foreign, and cross-section ids rather than guessing,
+  then makes the active order contiguous. Moving an item between sections remains the
+  separate append-on-move PATCH behavior.
+
+Standalone creation accepts only dated-snapshot content fields: title, summary, body,
+Commander notes, behavior type, wording controls, required section id, and optional
+Tracked Item id. It does not accept catalog/template lineage, source/seed fields,
+position, active state, or lock version. Both creation and reorder recheck draft status
+while holding the dated-agenda lock. Reorder changes only positions and does not accept or
+advance item lock versions.
 
 ### Dated roll call
 
@@ -84,16 +100,20 @@ from an empty section.
 4. List Tracked Items before creating anything.
 5. For each distinct matter:
    - reuse a matching active tracker when one exists;
-   - otherwise create one using the supplied title, summary/details, body, importance, and
-     deadline without inventing decisions or outcomes;
+   - otherwise create one only when the matter is long-lived business that should continue
+     across meetings, using supplied facts without inventing decisions or outcomes;
    - if a standalone dated item already represents the matter, link it in place with the
      dated-item PATCH;
-   - otherwise add the tracker snapshot to the correct section using
-     `dated_agenda_section_id`.
-6. Preserve historical classification: a matter introduced as New Business on July 7
+   - if long-lived business has no dated row, add its tracker snapshot to the correct
+     section using `dated_agenda_section_id`;
+   - if it is one-meeting business with no existing row, POST a standalone item directly
+     into the correct section without creating catalog or tracker records.
+6. Reorder each changed section from the complete officer-supplied item order. Do not rely
+   on the order in which create, link, or move requests happened.
+7. Preserve historical classification: a matter introduced as New Business on July 7
    remains in that July 7 section even if it is unfinished today. Current tracker status
    does not rewrite the past agenda's classification.
-7. Re-fetch both the agenda and Tracked Items, and report created, reused, linked, and
+8. Re-fetch both the agenda and Tracked Items, and report created, reused, linked, and
    skipped matters. Do not approve or publish unless explicitly asked.
 
 The newly synced local production copy demonstrates the required mixed case: the July 7
@@ -105,6 +125,8 @@ Linking Buddy Checks in place is the required no-duplicate behavior.
 - List before create; match exact ids from live payloads.
 - All writes to agenda items and roll call require a draft agenda and return 422 when
   locked or invalid.
+- Standalone creation never mutates the catalog. Section reorder requires an exact
+  same-section permutation and never silently drops or appends ids.
 - Bearer writes require a unique `Idempotency-Key`; exact retries reuse the same key.
 - Deletion, catalog removal, roll-call refresh, agenda reopen, approval, and publication
   are listed under `only_when_asked` in the generated handbook.

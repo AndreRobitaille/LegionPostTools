@@ -108,11 +108,13 @@ Group chat, email, and other outside channels stay in the agent’s own tools;
 this app only stores post business.
 
 The private API mirrors agenda data operations needed for delegated work: reusable catalog
-maintenance, dated-agenda and item changes, tracked-business continuity, and meeting-scoped
-officer-list snapshots. It does not turn print presentation into JSON or let today's officer
-directory silently overwrite a historical roll call. Deletion, removal, snapshot reset,
-approval, publication, and reopen remain explicit **only when asked** actions in the live
-handbook.
+maintenance, dated-agenda changes, standalone one-meeting rows, exact same-section item
+ordering, tracked-business continuity, and meeting-scoped officer-list snapshots. Standalone
+rows do not require catalog or tracker records; cross-section moves append and a separate
+complete-order action establishes final document order. The API does not turn print
+presentation into JSON or let today's officer directory silently overwrite a historical
+roll call. Deletion, removal, snapshot reset, approval, publication, and reopen remain
+explicit **only when asked** actions in the live handbook.
 
 Provider-specific AI integration should stay behind replaceable service boundaries. OpenAI is expected first, but the domain should not depend directly on one provider.
 

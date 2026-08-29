@@ -110,6 +110,25 @@ class DatedAgendaItem < ApplicationRecord
     end
   end
 
+  def self.reorder_active_contiguously!(agenda_section, ordered_ids)
+    active_scope = agenda_section.agenda_items.active
+    ids = Array(ordered_ids).map { |id| Integer(id.to_s, 10) }
+    records = active_scope.where(id: ids).index_by(&:id)
+    active_ids = active_scope.pluck(:id)
+    raise ActiveRecord::RecordNotFound unless records.length == ids.length && ids.uniq.length == ids.length && ids.sort == active_ids.sort
+
+    inactive_records = agenda_section.agenda_items.where(active: false).order(:position, :id).to_a
+    ordered_records = ids.map { |id| records.fetch(id) } + inactive_records
+
+    transaction do
+      offset = agenda_section.agenda_items.maximum(:position).to_i + ordered_records.length + 1
+      ordered_records.each_with_index { |record, index| record.update_columns(position: offset + index) }
+      ordered_records.each_with_index { |record, index| record.update_columns(position: index + 1) }
+    end
+  rescue ArgumentError, TypeError
+    raise ActiveRecord::RecordNotFound
+  end
+
   def roll_call?
     behavior_type == "roll_call"
   end

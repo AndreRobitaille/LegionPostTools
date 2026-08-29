@@ -61,8 +61,12 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     workflow = body.fetch("guided_workflows").find { |entry| entry["name"] == "backfill_historical_business" }
     assert_not_nil workflow
     assert workflow.fetch("steps").any? { |step| step.match?(/link.*in place/i) }
+    assert workflow.fetch("steps").any? { |step| step.match?(/standalone dated item/i) }
+    assert workflow.fetch("steps").any? { |step| step.match?(/reorder.*complete officer-supplied/i) }
     assert body["common_actions"].any? { |action| action["path"] == "/api/dated_agendas" && action["method"] == "POST" }
+    assert body["common_actions"].any? { |action| action["name"] == "create_standalone_dated_agenda_item" }
     assert body["common_actions"].any? { |action| action["name"] == "update_dated_agenda_item" }
+    assert body["common_actions"].any? { |action| action["name"] == "reorder_dated_agenda_section_items" }
     assert body["common_actions"].any? { |action| action["name"] == "replace_dated_roll_call" }
     assert body["common_actions"].any? { |action| action["path"] == "/api/membership/summary" }
     asked = body["only_when_asked"].map { |action| action["name"] }

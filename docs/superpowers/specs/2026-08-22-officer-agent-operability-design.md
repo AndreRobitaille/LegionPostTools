@@ -157,8 +157,9 @@ a tracked item is already on an upcoming agenda.
 A small `Api` namespace. HTML controllers stay HTML (they redirect). API
 controllers return JSON and call the same model methods the UI already uses. The initial
 surface covered agenda creation and tracked-item work. The August 29 parity extension also
-covers catalog maintenance, dated-item editing/removal, whole-agenda deletion, and dated
-roll-call replacement/refresh; see the linked parity design for safety decisions.
+covers catalog maintenance, standalone dated-item creation, exact section ordering,
+dated-item editing/removal, whole-agenda deletion, and dated roll-call replacement/refresh;
+see the linked parity design for safety decisions.
 
 Suggested first resources (all under `/api`, all session + `can?`):
 
@@ -173,8 +174,12 @@ Suggested first resources (all under `/api`, all session + `can?`):
 - `POST /api/dated_agendas` — create **draft** from meeting type + body + `starts_at`
 - `POST /api/dated_agendas/:id/tracked_items` — snapshot an existing tracked item into an
   exact section on a draft; 422 if locked or already present
+- `POST /api/dated_agendas/:dated_agenda_id/items` — create a standalone one-meeting row in
+  an exact section without creating catalog or tracker records
 - `PATCH/DELETE /api/dated_agendas/:dated_agenda_id/items/:id` — edit, link to tracked
   business in place, move, or explicitly remove a draft snapshot row
+- `POST /api/dated_agendas/:dated_agenda_id/sections/:section_id/items/reorder` — submit the
+  complete active same-section item order after creates, links, or moves
 - `PATCH .../items/:item_id/roll_call` — replace a draft's meeting-scoped officer snapshot
 - `GET /api/position_titles` and `POST .../roll_call/refresh` — resolve office ids and,
   only when asked, reset from assignments active on the meeting date
@@ -237,10 +242,12 @@ Grok Bot, signed in as Commander on its VM, can:
 2. Create a draft PEC (or Membership) agenda for a date it computed.
 3. Put existing tracked business on that draft, or create tracked business
    after listing and failing to find it.
-4. Link a standalone historical agenda row to a Tracked Item in place, preserving its
-   meeting section, position, and wording without duplication.
-5. Read and, when asked, edit a dated officer-list snapshot without changing role history.
-6. Leave approval, publication, reopen, deletion, removal, and snapshot reset alone unless
+4. Create a standalone historical row when business belongs only to that meeting, or link
+   a long-lived row to a Tracked Item in place without duplication.
+5. Set each changed section to the complete officer-supplied order rather than relying on
+   create sequence.
+6. Read and, when asked, edit a dated officer-list snapshot without changing role history.
+7. Leave approval, publication, reopen, deletion, removal, and snapshot reset alone unless
    asked.
 
 No group-chat feature ships. The morning routine is configured in Grok Bot, not

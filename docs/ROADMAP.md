@@ -138,7 +138,9 @@ Build:
   (what the app is, URL, sign-in, then `/api`). Job routines stay in the Bot.
 - Lists, not search. The Bot matches names from the list.
 - A guided historical-business workflow that lists before creating, targets exact section
-  ids, and can link a standalone agenda row to a Tracked Item in place without duplication.
+  ids, uses standalone dated rows for one-meeting business, links long-lived business to
+  Tracked Items without duplication, and explicitly reorders each changed section from the
+  officer-supplied complete order.
 - Destructive and snapshot-reset actions appear separately under **Only when asked**.
 - Draft-only creates unless the human explicitly asks to approve or publish.
 - Verify the Agent Computer browser can sign in and reach `/api` (watch
