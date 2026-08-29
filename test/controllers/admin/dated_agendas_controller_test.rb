@@ -350,6 +350,14 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
       show_wording_on_agenda: false,
       commander_notes: "Call each officer by office."
     )
+    @agenda.dated_agenda_items.create!(
+      agenda_section: item.agenda_section,
+      position: item.agenda_section.agenda_items.maximum(:position) + 1,
+      title: "Builder Guidance",
+      summary: "Screen-only drafting summary.",
+      behavior_type: "business_item",
+      active: true
+    )
 
     get commander_admin_dated_agenda_path(@agenda)
 
@@ -358,6 +366,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".commander-cue", text: /Call each officer/
     assert_select ".roll-call-table", text: /Pat Commander/
     assert_select "body", text: /Withheld member wording/, count: 0
+    assert_select "body", text: /Screen-only drafting summary/, count: 0
 
     get print_admin_dated_agenda_path(@agenda)
 
@@ -366,6 +375,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".roll-call-table", count: 0
     assert_select "body", text: /Call each officer/, count: 0
     assert_select "body", text: /Withheld member wording/, count: 0
+    assert_select "body", text: /Screen-only drafting summary/, count: 0
   end
 
   test "edit page shows a modal warning with the exact agenda record" do

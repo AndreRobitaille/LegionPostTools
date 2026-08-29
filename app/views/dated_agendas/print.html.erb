@@ -1,2 +1,5 @@
 <% content_for :title, @dated_agenda.title %>
-<%= render "agenda_document", dated_agenda: @dated_agenda, organization: @organization %>
+<%= render "agenda_document",
+  dated_agenda: @dated_agenda,
+  organization: @organization,
+  show_summaries: false %>

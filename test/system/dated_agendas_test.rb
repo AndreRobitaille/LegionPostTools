@@ -168,7 +168,15 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
       summary: "Review this month's service work.",
       behavior_type: "report_slot",
       active: true,
-      body: "Committee chairs report on completed and upcoming work."
+      body: "<ul><li>Completed service work</li><li>Upcoming service work</li></ul>"
+    )
+    @agenda.dated_agenda_items.create!(
+      agenda_section: business_section,
+      position: 2,
+      title: "Builder Guidance",
+      summary: "Screen-only drafting summary.",
+      behavior_type: "business_item",
+      active: true
     )
     @agenda.approve!(@user)
     @agenda.publish!(@user)
@@ -187,6 +195,9 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".agenda-masthead h1", text: @agenda.title
     assert_selector ".agenda-chapter-number", count: 2
     assert_selector ".agenda-item-title", text: "Community service report"
+    assert_selector ".agenda-item-body ul li", text: "Completed service work"
+    assert_selector ".agenda-item-summary", text: "Screen-only drafting summary."
+    assert_equal "disc", page.evaluate_script("getComputedStyle(document.querySelector('.agenda-item-body ul')).listStyleType")
     assert_link "Print agenda", href: print_dated_agenda_path(@agenda)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
 
@@ -195,6 +206,14 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".agenda-masthead h1", text: @agenda.title
     assert_selector ".agenda-chapter-number", count: 2
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+
+    click_link "Print agenda"
+
+    assert_current_path print_dated_agenda_path(@agenda)
+    assert_selector ".agenda-item-body ul li", text: "Completed service work"
+    assert_equal "disc", page.evaluate_script("getComputedStyle(document.querySelector('.agenda-item-body ul')).listStyleType")
+    assert_no_selector ".agenda-item-summary"
+    assert_no_text "Screen-only drafting summary."
   ensure
     page.current_window.resize_to(1400, 1400)
   end

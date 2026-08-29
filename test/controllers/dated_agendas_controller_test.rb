@@ -22,7 +22,22 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
       commander_notes: "Private Commander instruction"
     )
     business_section = @published.dated_agenda_sections.create!(title: "Post Business", position: 2)
-    @published.dated_agenda_items.create!(agenda_section: business_section, position: 1, title: "Old Business", behavior_type: "business_item", active: true, body: "Review unfinished post business.")
+    @published.dated_agenda_items.create!(
+      agenda_section: business_section,
+      position: 1,
+      title: "Old Business",
+      behavior_type: "business_item",
+      active: true,
+      body: "<ul><li>Review unfinished post business.</li><li>Record the next step.</li></ul>"
+    )
+    @published.dated_agenda_items.create!(
+      agenda_section: business_section,
+      position: 2,
+      title: "Builder Guidance",
+      summary: "Screen-only drafting summary.",
+      behavior_type: "business_item",
+      active: true
+    )
     @published.dated_agenda_sections.create!(title: "New Business", position: 3)
     @published.approve!(user_with_capabilities("manage_agendas"))
     @published.publish!(user_with_capabilities("manage_agendas"))
@@ -79,6 +94,8 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "New Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
+    assert_select ".agenda-item-body ul li", text: "Review unfinished post business."
+    assert_select ".agenda-item-summary", text: "Screen-only drafting summary."
     assert_select "body", text: /Withheld ceremony wording/, count: 0
     assert_select "body", text: /Private Commander instruction/, count: 0
     assert_select ".commander-cue", count: 0
@@ -131,6 +148,9 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Order of Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
+    assert_select ".agenda-item-body ul li", text: "Review unfinished post business."
+    assert_select ".agenda-item-summary", count: 0
+    assert_select "body", text: /Screen-only drafting summary/, count: 0
     assert_select "a", text: "Edit", count: 0
     assert_select "nav", count: 0
     assert_select "body.print-body"

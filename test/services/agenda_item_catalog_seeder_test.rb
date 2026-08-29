@@ -65,8 +65,8 @@ class AgendaItemCatalogSeederTest < ActiveSupport::TestCase
       end
       assert_equal definition.fetch(:show_wording_on_agenda, true), entry.show_wording_on_agenda?, "#{definition.fetch(:source_key)} agenda wording"
       assert_equal definition.fetch(:show_wording_in_minutes, true), entry.show_wording_in_minutes?, "#{definition.fetch(:source_key)} minutes wording"
-      assert_equal definition.fetch(:body), entry.body.to_plain_text.strip, "#{definition.fetch(:source_key)} body"
-      assert_equal definition.fetch(:commander_notes, ""), entry.commander_notes.to_plain_text.strip, "#{definition.fetch(:source_key)} commander notes"
+      assert_equal plain_text(definition.fetch(:body)), entry.body.to_plain_text.strip, "#{definition.fetch(:source_key)} body"
+      assert_equal plain_text(definition.fetch(:commander_notes, "")), entry.commander_notes.to_plain_text.strip, "#{definition.fetch(:source_key)} commander notes"
     end
 
     assert_not @organization.agenda_item_catalog_entries.exists?(source_key: "regular_meeting.closing_ceremony")
@@ -82,6 +82,33 @@ class AgendaItemCatalogSeederTest < ActiveSupport::TestCase
     entry.reload
     assert_equal "Local Opening Prayer", entry.title
     assert_equal "Locally edited prayer text", entry.body.to_plain_text.strip
+  end
+
+  test "stores seeded bullet content as semantic lists" do
+    AgendaItemCatalogSeeder.seed_for!(@organization)
+
+    opening = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.opening_ceremony")
+    preamble = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.preamble")
+    closing = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.closing_salute_colors")
+
+    assert_equal 5, Nokogiri::HTML.fragment(opening.commander_notes.to_s).css("ul > li").count
+    assert_equal 10, Nokogiri::HTML.fragment(preamble.body.to_s).css("ul > li").count
+    assert_equal 4, Nokogiri::HTML.fragment(closing.commander_notes.to_s).css("ul > li").count
+  end
+
+  test "upgrades untouched literal bullets without overwriting local rich text" do
+    AgendaItemCatalogSeeder.seed_for!(@organization)
+    opening = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.opening_ceremony")
+    salute = @organization.agenda_item_catalog_entries.find_by!(source_key: "regular_meeting.opening_salute_colors")
+    legacy_notes = AgendaItemCatalogSeeder::ENTRIES.first.dig(:legacy, :commander_notes).last
+    opening.update!(commander_notes: "<div>#{legacy_notes.gsub("\n", "<br>")}</div>")
+    salute.update!(commander_notes: "Locally revised color guard instructions")
+    assert_empty Nokogiri::HTML.fragment(opening.commander_notes.to_s).css("ul > li")
+
+    AgendaItemCatalogSeeder.seed_for!(@organization)
+
+    assert_equal 5, Nokogiri::HTML.fragment(opening.reload.commander_notes.to_s).css("ul > li").count
+    assert_equal "Locally revised color guard instructions", salute.reload.commander_notes.to_plain_text
   end
 
   test "does not restore a seeded entry removed from the catalog" do
@@ -150,5 +177,11 @@ class AgendaItemCatalogSeederTest < ActiveSupport::TestCase
     assert_difference -> { AgendaItemCatalogEntry.count }, 28 do
       AgendaItemCatalogSeeder.seed_for!(other)
     end
+  end
+
+  private
+
+  def plain_text(content)
+    ActionText::Content.new(content).to_plain_text.strip
   end
 end

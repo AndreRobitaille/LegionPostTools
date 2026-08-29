@@ -5,5 +5,8 @@
     <h1 class="page-title"><%= @dated_agenda.title %></h1>
     <p class="page-sub"><%= legion_datetime(@dated_agenda.starts_at) %> &middot; <%= @dated_agenda.status.titleize %></p>
   </header>
-  <%= render "dated_agendas/agenda_body", dated_agenda: @dated_agenda, commander_copy: false %>
+  <%= render "dated_agendas/agenda_body",
+    dated_agenda: @dated_agenda,
+    commander_copy: false,
+    show_summaries: false %>
 </article>

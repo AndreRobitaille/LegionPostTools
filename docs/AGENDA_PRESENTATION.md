@@ -129,7 +129,9 @@ Print removes the application shell and page actions, removes screen-only shadow
 white page, and retains the masthead and order rail in print-safe navy/black and gold/gray.
 Section headings remain with their first item where practical. Individual short items avoid
 page breaks, but an entire long section may flow across pages rather than creating large
-blank spaces.
+blank spaces. Item summaries are drafting and screen-scanning aids, not agenda content, so
+member, admin, and commander's printed copies omit them. Rich-text unordered and ordered
+lists retain visible markers, indentation, and nested-list hierarchy on screen and in print.
 
 ## Design Critique
 
@@ -149,6 +151,8 @@ it. No animation is added because movement would not help someone follow or prin
   they would duplicate nearby text.
 - Rich text stays within the structured agenda items and is rendered as the published
   snapshot.
+- Semantic unordered and ordered lists retain visible markers rather than inheriting the
+  application shell's reset styles.
 
 ## Verification
 

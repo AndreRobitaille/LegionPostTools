@@ -222,6 +222,7 @@ class MeetingTypeTemplateSeeder
     source_key = "#{meeting_type.source_key}:#{catalog_source_key}"
     item = meeting_type.meeting_type_agenda_items.find_or_initialize_by(source_key: source_key)
     unless item.new_record?
+      upgrade_untouched_rich_text(item, catalog_entry, catalog_source_key)
       move_seeded_item_to_section(item, section, position)
       return
     end
@@ -250,6 +251,28 @@ class MeetingTypeTemplateSeeder
       agenda_section: section,
       position: next_available_template_item_position(section, preferred_position)
     )
+  end
+
+  def upgrade_untouched_rich_text(item, catalog_entry, catalog_source_key)
+    return unless item.source_label == SOURCE_LABEL
+
+    definition = AgendaItemCatalogSeeder::ENTRIES.find { |entry| entry.fetch(:source_key) == catalog_source_key }
+    legacy_attributes = definition&.dig(:legacy)&.slice(:body, :commander_notes)
+    return if legacy_attributes.blank?
+
+    updates = legacy_attributes.each_with_object({}) do |(attribute, old_value), result|
+      old_values = Array(old_value)
+      current_value = comparable_rich_text(item.public_send(attribute).to_plain_text)
+      next unless old_values.any? { |value| current_value == comparable_rich_text(value) }
+      next if item.public_send(attribute).body.to_html == catalog_entry.public_send(attribute).body.to_html
+
+      result[attribute] = catalog_entry.public_send(attribute).to_s
+    end
+    item.update!(updates) if updates.any?
+  end
+
+  def comparable_rich_text(value)
+    value.to_s.strip.gsub(/\r\n?/, "\n")
   end
 
   def retire_seeded_items(meeting_type, definition)

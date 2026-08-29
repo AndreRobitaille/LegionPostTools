@@ -956,6 +956,13 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-item-body img { max-width: 100%; height: auto; }
 .agenda-item-body > :first-child { margin-top: 0; }
 .agenda-item-body > :last-child { margin-bottom: 0; }
+.agenda-item-body :where(ul, ol), .commander-cue-body :where(ul, ol) { margin: .7em 0; padding-left: 1.6em; }
+.agenda-item-body ul, .commander-cue-body ul { list-style: disc outside; }
+.agenda-item-body ol, .commander-cue-body ol { list-style: decimal outside; }
+.agenda-item-body li, .commander-cue-body li { margin: .28em 0; padding-left: .18em; }
+.agenda-item-body li::marker, .commander-cue-body li::marker { color: var(--color-gold-ink); font-weight: 700; }
+.agenda-item-body ul ul, .commander-cue-body ul ul { list-style-type: circle; }
+.agenda-item-body ol ol, .commander-cue-body ol ol { list-style-type: lower-alpha; }
 .agenda-doc--commander { border-top-color: var(--color-officer-blue); }
 .agenda-document-label--commander { color: var(--color-officer-blue); }
 .commander-cue { margin: 16px 0 2px; padding: 13px 16px 14px; background: #eef4f8; border-left: 4px solid var(--color-officer-blue); color: #263847; }
@@ -1092,6 +1099,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .agenda-doc { max-width: none; padding: 0; border: 0; box-shadow: none; }
   .agenda-chapter-head { break-after: avoid; page-break-after: avoid; }
   .agenda-item { break-inside: avoid; page-break-inside: avoid; }
+  .agenda-item-summary { display: none !important; }
   .commander-cue { background: transparent; border-top: 1px solid #7895aa; border-right: 1px solid #7895aa; border-bottom: 1px solid #7895aa; }
   .roll-call-table tr { break-inside: avoid; page-break-inside: avoid; }
   .agenda-chapter-rail::after { background: #777; }

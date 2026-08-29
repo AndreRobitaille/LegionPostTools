@@ -12,5 +12,8 @@
     <div class="agenda-masthead-rule" aria-hidden="true"><span>◆</span></div>
   </header>
 
-  <%= render "dated_agendas/agenda_body", dated_agenda: @dated_agenda, commander_copy: true %>
+  <%= render "dated_agendas/agenda_body",
+    dated_agenda: @dated_agenda,
+    commander_copy: true,
+    show_summaries: false %>
 </article>

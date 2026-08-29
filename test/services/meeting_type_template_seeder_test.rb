@@ -111,6 +111,19 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
     assert_not item.active?
   end
 
+  test "reseeding upgrades untouched literal bullets in template items" do
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+    membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")
+    opening = membership.meeting_type_agenda_items.find_by!(source_key: "american_legion_post:membership_meeting:regular_meeting.opening_ceremony")
+    legacy_notes = AgendaItemCatalogSeeder::ENTRIES.first.dig(:legacy, :commander_notes).last
+    opening.update!(commander_notes: "<div>#{legacy_notes.gsub("\n", "<br>")}</div>")
+    assert_empty Nokogiri::HTML.fragment(opening.commander_notes.to_s).css("ul > li")
+
+    MeetingTypeTemplateSeeder.seed_for!(@organization)
+
+    assert_equal 5, Nokogiri::HTML.fragment(opening.reload.commander_notes.to_s).css("ul > li").count
+  end
+
   test "reseeding does not reactivate a removed seeded template item" do
     MeetingTypeTemplateSeeder.seed_for!(@organization)
     membership = @organization.meeting_types.find_by!(source_key: "american_legion_post:membership_meeting")

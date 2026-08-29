@@ -11,5 +11,7 @@
     <div class="agenda-masthead-rule" aria-hidden="true"><span>◆</span></div>
   </header>
 
-  <%= render "agenda_body", dated_agenda: dated_agenda %>
+  <%= render "agenda_body",
+    dated_agenda: dated_agenda,
+    show_summaries: local_assigns.fetch(:show_summaries, true) %>
 </article>

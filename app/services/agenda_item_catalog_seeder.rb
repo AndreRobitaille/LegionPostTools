@@ -20,11 +20,22 @@ class AgendaItemCatalogSeeder
       behavior_type: "scripted_ceremony",
       position: 1,
       body: "",
-      commander_notes: "• The commander announces that the meeting is about to open.\n• Officers take their stations.\n• The commander seats those present with one rap of the gavel.\n• The sergeant-at-arms closes the doors of the meeting hall.\n• The commander gives three raps of the gavel and all present stand at attention.",
+      commander_notes: <<~HTML,
+        <ul>
+          <li>The commander announces that the meeting is about to open.</li>
+          <li>Officers take their stations.</li>
+          <li>The commander seats those present with one rap of the gavel.</li>
+          <li>The sergeant-at-arms closes the doors of the meeting hall.</li>
+          <li>The commander gives three raps of the gavel and all present stand at attention.</li>
+        </ul>
+      HTML
       legacy: {
         title: "Opening Ceremony",
         summary: [ "Begins the regular meeting with colors, prayer, POW/MIA recognition, pledge, and preamble.", "" ],
-        commander_notes: "• The commander announces that the meeting is about to open.\n• Officers take their stations.\n• The sergeant-at-arms closes the doors of the meeting hall.\n• The commander gives three raps of the gavel and all present stand at attention."
+        commander_notes: [
+          "• The commander announces that the meeting is about to open.\n• Officers take their stations.\n• The sergeant-at-arms closes the doors of the meeting hall.\n• The commander gives three raps of the gavel and all present stand at attention.",
+          "• The commander announces that the meeting is about to open.\n• Officers take their stations.\n• The commander seats those present with one rap of the gavel.\n• The sergeant-at-arms closes the doors of the meeting hall.\n• The commander gives three raps of the gavel and all present stand at attention."
+        ]
       }
     },
     {
@@ -36,7 +47,16 @@ class AgendaItemCatalogSeeder
       behavior_type: "scripted_ceremony",
       position: 2,
       body: "",
-      commander_notes: "• The color bearers advance the colors.\n• The commander commands: Hand salute.\n• After the colors are posted, the commander commands: Two."
+      commander_notes: <<~HTML,
+        <ul>
+          <li>The color bearers advance the colors.</li>
+          <li>The commander commands: Hand salute.</li>
+          <li>After the colors are posted, the commander commands: Two.</li>
+        </ul>
+      HTML
+      legacy: {
+        commander_notes: "• The color bearers advance the colors.\n• The commander commands: Hand salute.\n• After the colors are posted, the commander commands: Two."
+      }
     },
     {
       source_key: "regular_meeting.opening_prayer",
@@ -92,10 +112,27 @@ class AgendaItemCatalogSeeder
       behavior_type: "reading_recitation",
       position: 6,
       show_wording_in_minutes: false,
-      body: "For God and Country, we associate ourselves together for the following purposes:\n\n• To uphold and defend the Constitution of the United States of America;\n• To maintain law and order;\n• To foster and perpetuate a one hundred percent Americanism;\n• To preserve the memories and incidents of our associations in all wars;\n• To inculcate a sense of individual obligation to the community, state and nation;\n• To combat the autocracy of both the classes and the masses;\n• To make right the master of might;\n• To promote peace and good will on earth;\n• To safeguard and transmit to posterity the principles of justice, freedom and democracy;\n• To consecrate and sanctify our comradeship by our devotion to mutual helpfulness.",
+      body: <<~HTML,
+        <p>For God and Country, we associate ourselves together for the following purposes:</p>
+        <ul>
+          <li>To uphold and defend the Constitution of the United States of America;</li>
+          <li>To maintain law and order;</li>
+          <li>To foster and perpetuate a one hundred percent Americanism;</li>
+          <li>To preserve the memories and incidents of our associations in all wars;</li>
+          <li>To inculcate a sense of individual obligation to the community, state and nation;</li>
+          <li>To combat the autocracy of both the classes and the masses;</li>
+          <li>To make right the master of might;</li>
+          <li>To promote peace and good will on earth;</li>
+          <li>To safeguard and transmit to posterity the principles of justice, freedom and democracy;</li>
+          <li>To consecrate and sanctify our comradeship by our devotion to mutual helpfulness.</li>
+        </ul>
+      HTML
       legacy: {
         summary: [ "The Preamble to the Constitution of The American Legion.", "Recover and recite the Preamble to the Constitution of The American Legion." ],
-        body: "For God and Country, we associate ourselves together for the following purposes:\n\nTo uphold and defend the Constitution of the United States of America;\nTo maintain law and order;\nTo foster and perpetuate a one hundred percent Americanism;\nTo preserve the memories and incidents of our associations in all wars;\nTo inculcate a sense of individual obligation to the community, state and nation;\nTo combat the autocracy of both the classes and the masses;\nTo make right the master of might;\nTo promote peace and goodwill on earth;\nTo safeguard and transmit to posterity the principles of justice, freedom and democracy;\nTo consecrate and sanctify our comradeship by our devotion to mutual helpfulness."
+        body: [
+          "For God and Country, we associate ourselves together for the following purposes:\n\nTo uphold and defend the Constitution of the United States of America;\nTo maintain law and order;\nTo foster and perpetuate a one hundred percent Americanism;\nTo preserve the memories and incidents of our associations in all wars;\nTo inculcate a sense of individual obligation to the community, state and nation;\nTo combat the autocracy of both the classes and the masses;\nTo make right the master of might;\nTo promote peace and goodwill on earth;\nTo safeguard and transmit to posterity the principles of justice, freedom and democracy;\nTo consecrate and sanctify our comradeship by our devotion to mutual helpfulness.",
+          "For God and Country, we associate ourselves together for the following purposes:\n\n• To uphold and defend the Constitution of the United States of America;\n• To maintain law and order;\n• To foster and perpetuate a one hundred percent Americanism;\n• To preserve the memories and incidents of our associations in all wars;\n• To inculcate a sense of individual obligation to the community, state and nation;\n• To combat the autocracy of both the classes and the masses;\n• To make right the master of might;\n• To promote peace and good will on earth;\n• To safeguard and transmit to posterity the principles of justice, freedom and democracy;\n• To consecrate and sanctify our comradeship by our devotion to mutual helpfulness."
+        ]
       }
     },
     {
@@ -151,7 +188,17 @@ class AgendaItemCatalogSeeder
       behavior_type: "scripted_ceremony",
       position: 4,
       body: "",
-      commander_notes: "• All present face the American flag.\n• The commander commands: Hand salute.\n• The color bearers retire the colors as applicable.\n• The commander then commands: Two."
+      commander_notes: <<~HTML,
+        <ul>
+          <li>All present face the American flag.</li>
+          <li>The commander commands: Hand salute.</li>
+          <li>The color bearers retire the colors as applicable.</li>
+          <li>The commander then commands: Two.</li>
+        </ul>
+      HTML
+      legacy: {
+        commander_notes: "• All present face the American flag.\n• The commander commands: Hand salute.\n• The color bearers retire the colors as applicable.\n• The commander then commands: Two."
+      }
     },
     {
       source_key: "regular_meeting.adjournment_declaration",
@@ -423,6 +470,8 @@ class AgendaItemCatalogSeeder
     updates = legacy_attributes.each_with_object({}) do |(attribute, old_value), result|
       current_value = rich_text_value(entry, attribute)
       old_values = old_value.is_a?(Array) ? old_value : [ old_value ]
+      next if rich_text_matches_default?(entry, attribute, entry_attributes.fetch(attribute))
+
       result[attribute] = entry_attributes.fetch(attribute) if old_values.any? { |value| comparable(current_value) == comparable(value) }
     end
     entry.update!(updates) if updates.any?
@@ -436,5 +485,11 @@ class AgendaItemCatalogSeeder
     return entry.public_send(attribute).to_plain_text if attribute.in?(%i[body commander_notes])
 
     entry.public_send(attribute)
+  end
+
+  def rich_text_matches_default?(entry, attribute, default_value)
+    return false unless attribute.in?(%i[body commander_notes])
+
+    entry.public_send(attribute).body.to_html == ActionText::Content.new(default_value).to_html
   end
 end
