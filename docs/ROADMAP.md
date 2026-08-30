@@ -30,7 +30,7 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 - README for operators and repo visitors.
 - Agent instructions.
-- Purpose, users, architecture, roadmap, and deployment notes.
+- Purpose, users, architecture, roadmap, deployment notes, and Endeavor governance.
 
 ## Production Readiness Side-Roadmap
 
@@ -72,14 +72,19 @@ Still pending:
 
 - Later guided workflow to create a new catalog item from the meeting type/template editor and add it directly to that template.
 
-## Completed: Tracked Items Foundation
+## Completed: Endeavors Foundation
 
 - Long-lived post business with rich context, importance, raise-by dates, usual meeting
   bodies, and active/completed lifecycle.
 - Append-only dated updates and a continuity record that includes agenda appearances.
-- Plain-language old-business priority suggestions from active tracked items.
-- Independent tracked-item snapshots added to chosen sections of draft agendas.
+- Plain-language old-business priority suggestions from active Endeavors.
+- Independent Endeavor snapshots added to chosen sections of draft agendas.
 - Read access for signed-in members and management through `manage_agendas`.
+- A final `endeavor_id` identity seam for future structured minutes items, without making
+  meeting wording depend on later Endeavor edits.
+
+See `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` for the completed foundation, the minutes
+integration contract, and intentionally deferred Endeavor work.
 
 Still pending:
 
@@ -119,7 +124,7 @@ Immediate jobs this phase must unlock:
 - Explicit orders such as “create a basic PEC agenda for next Tuesday” and
   “add the car show topic to the next meeting agenda.”
 - Morning group-chat triage **in Grok Bot**, which then creates or updates
-  tracked business and draft agenda entries here. Chat never enters this app.
+  Endeavors and draft agenda entries here. Chat never enters this app.
 
 Grok Bot is intended to be the signed-in user's delegate for ordinary work, not a
 weaker integration account. Browser sessions and personal agent tokens are credential
@@ -130,7 +135,7 @@ proof of fresh human intent that the Bot cannot infer or create for itself.
 Build:
 
 - Private session-or-bearer JSON for meeting bodies, meeting types, the agenda catalog,
-  dated agendas and their items, dated officer-list snapshots, and tracked items. Same
+  dated agendas and their items, dated officer-list snapshots, and Endeavors. Same
   `can?` rules as the HTML app.
 - Generated handbook at `GET /api` (login required) so the Bot can learn this
   installation without a human manual, MCP, or public docs. Standing
@@ -139,7 +144,7 @@ Build:
 - Lists, not search. The Bot matches names from the list.
 - A guided historical-business workflow that lists before creating, targets exact section
   ids, uses standalone dated rows for one-meeting business, links long-lived business to
-  Tracked Items without duplication, and explicitly reorders each changed section from the
+  Endeavors without duplication, and explicitly reorders each changed section from the
   officer-supplied complete order.
 - Destructive and snapshot-reset actions appear separately under **Only when asked**.
 - Draft-only creates unless the human explicitly asks to approve or publish.
@@ -176,22 +181,117 @@ until connector-style onboarding is worth another protocol surface.
 See `docs/superpowers/specs/2026-08-22-agent-sign-in-and-access-design.md` and
 `docs/superpowers/plans/2026-08-22-agent-sign-in-and-access.md`.
 
-## Next After Agent Access: Minutes Lifecycle
+## Next Core Work: Meeting Foundation and Minutes Lifecycle
 
-- Transcript paste/upload.
-- Draft/review/approval/attestation/acceptance workflow.
-- AI-assisted transcript-to-minutes drafting within that workflow.
-- Adjutant review.
-- Commander approval.
-- Adjutant attestation.
-- Acceptance by motion at the next same-body meeting.
-- Immutable official archive after acceptance.
+The first validation case is concrete: an already-held Post meeting has one structured
+agenda and an available recording transcript. Build the next slices so an officer can
+backfill that historical meeting, use the agenda and transcript to prepare structured
+minutes, and carry those minutes through human review without inventing missing facts.
 
-## Export and Distribution
+The governing design begins in
+`docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md`.
+It settles the first-class Meeting boundary, historical document snapshots, member archive,
+time-zone handling, and the future minutes states that the archive must present honestly.
+Write the more detailed Minutes Lifecycle design before Slice 2 begins; do not attach
+minutes directly to a dated agenda and make the agenda stand in for the meeting.
 
-- PDF generation for finalized records.
-- Email distribution of finalized documents.
-- Delivery records for sent documents.
+### Slice 1: First-class Meeting and member archive
+
+- Add an organization-owned `Meeting` as the durable occurrence, with its meeting body,
+  optional meeting type, local date/time, title, and snapshotted venue name/address. A
+  saved Meeting is visible to signed-in members even when it has no published agenda; do
+  not add a second meeting-publication workflow in this private member app.
+- Add an installation-configured time zone for entry and display while storing timestamps
+  in UTC. Historical evening meetings must not move to the wrong local date.
+- Give each `DatedAgenda` one unique, required `meeting_id` after a safe backfill, and make
+  future agenda creation begin from a Meeting. A Meeting may exist before an agenda is
+  created or published, but an agenda may not exist without its Meeting.
+- Keep Meeting schedule/place data separate from the agenda's historical document snapshot.
+  Creating an agenda copies the Meeting heading and venue. Draft agenda details may follow
+  deliberate Meeting edits, but approved or published agenda wording must never be silently
+  rewritten.
+- Build **Administration -> Meetings** as the officer workspace: create or backfill a
+  Meeting, edit its date/time/place, and create or open its agenda. Use the effective
+  Meeting Body/organization venue as editable defaults and snapshot the submitted values;
+  do not introduce a reusable Places subsystem.
+- Rebuild member Meetings around occurrences: a prominent next meeting, other upcoming
+  meetings, and a reverse-chronological record of past meetings. Every row opens a Meeting
+  page, so “Agenda not published yet” remains useful rather than becoming a dead end.
+- Show the best available record prominently: no published agenda, published agenda,
+  attested minutes awaiting acceptance, or accepted official minutes. When minutes become
+  primary, retain the published agenda as quieter historical evidence.
+- Update the private Meeting/agenda API and generated handbook in the same slice so an
+  authorized delegated agent cannot bypass the first-class Meeting boundary.
+
+### Slice 2: Private source material and structured draft minutes
+
+- Add one optional `Minutes` record per Meeting, with structured `MinutesSection` and
+  `MinutesItem` children rather than one large rich-text document.
+- Seed a draft from the linked agenda by copying section/item wording, behavior intent,
+  source `dated_agenda_item_id`, and optional direct `endeavor_id`. All copied wording is
+  an independent minutes snapshot.
+- Permit standalone minutes items for unplanned business. Never infer an Endeavor from a
+  copied title or classification; a human must confirm any new identity link.
+- Carry the dated officer-list snapshot into minutes attendance, then record actual
+  Present, Absent, and Excused results in minutes-owned rows. Do not mutate the published
+  agenda worksheet.
+- Represent substantive outcomes as structured content attached to a minutes item. The
+  initial design must cover narrative, motions/decisions, mover and seconder snapshots
+  when known, and the recorded outcome without attempting a general parliamentary engine.
+- Accept transcript paste first and a narrowly supported text-file upload when useful.
+  Treat the transcript as restricted source material, separate from the official minutes,
+  excluded from member and print output, and governed by an explicit retention/deletion
+  decision before production use.
+- Add AI-assisted transcript-to-draft work only behind a replaceable provider boundary and
+  only after the human-authored workflow works. Record source/run provenance, surface
+  uncertainty, and never invent attendance, motions, seconds, votes, decisions, or
+  Endeavor identity.
+
+### Slice 3: Human review, approval, and attestation
+
+- Keep the MVP state machine small: `draft` -> `approved` -> `attested` -> `accepted`.
+  Review is an activity within draft, not a separate persisted status unless officer use
+  proves a handoff state is necessary.
+- `manage_minutes` controls drafting. Commander approval, Adjutant attestation, and later
+  acceptance recording use the existing explicit capabilities rather than inferred job
+  titles or administrator power.
+- Attested minutes become the member-visible pre-acceptance record. An explicit reopen may
+  return approved or attested minutes to draft, but it must preserve who reopened them and
+  when, invalidate the superseded approval/attestation, and require the human workflow
+  again.
+- Approval, attestation, signature-equivalent confirmation, and acceptance require fresh,
+  one-use, record/action/version-bound human intent. Reuse the current passkey-preferred,
+  email-code fallback reauthentication boundary where appropriate, but do not treat a
+  browser session or bearer token alone as proof.
+- Do not expose official-record mutations to an agent until the confirmation record and
+  agent-execution provenance exist. Agents may help create and edit drafts within the
+  signed-in user's grants; they cannot make a record official.
+
+### Slice 4: Acceptance, amendments, and immutability
+
+- Record acceptance by motion at a later Meeting of the same body, with the accepting
+  Meeting, actor, time, outcome, and source minutes item or motion when available.
+- Accepted minutes are immutable at the database and application layers. There is no
+  administrator bypass and no transition back to draft.
+- Corrections adopted during acceptance or discovered later become linked amendment or
+  later-meeting records. They do not silently rewrite the attested or accepted text.
+- Render the accepted record together with its amendments so readers can see both the
+  original historical text and the authoritative correction.
+- Present accepted minutes as the primary historical document, attested minutes as
+  awaiting acceptance, and the published agenda as a retained secondary document.
+
+### Slice 5: Delivery and delegated access
+
+- Generate the finalized US Letter minutes PDF from the shared print-first meeting
+  document system after the official lifecycle is correct.
+- Add email distribution and delivery records after final document generation is stable.
+- Add draft-minutes API and generated-handbook guidance only after the HTML workflow is
+  proven. Add official-action API surfaces only with the same one-use human confirmation,
+  idempotency, and execution audit required by the browser workflow.
+
+The guided catalog-item creation improvement, Endeavor merge/split tools, Four Pillars,
+events, assignments, dashboards, reminders, general document archives, and broad AI
+automation do not block these minutes slices.
 
 ## Deployment
 
