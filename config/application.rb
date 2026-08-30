@@ -33,7 +33,13 @@ module LegionPostTools
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    installation_time_zone = ENV.fetch("APP_TIME_ZONE", "UTC")
+    unless ActiveSupport::TimeZone[installation_time_zone]
+      raise ArgumentError, "APP_TIME_ZONE must identify a valid Rails time zone (received #{installation_time_zone.inspect})"
+    end
+
+    config.time_zone = installation_time_zone
+    config.active_record.default_timezone = :utc
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

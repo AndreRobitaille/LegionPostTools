@@ -123,8 +123,9 @@ Meeting record, not a metadata edit.
 ## Time Zone Contract
 
 Configure one installation time zone through `APP_TIME_ZONE`, with Rails' UTC default as
-the safe fallback. The Post 165 deployment supplies its Central time zone as installation
-configuration; application behavior must not hard-code Wisconsin.
+the safe fallback. A fresh installation sets its zone before creating meeting records.
+Post 165 will supply `America/Chicago` when the Meeting backfill safely converts its legacy
+agenda time; application behavior must not hard-code Wisconsin.
 
 - Forms parse date and time in `Time.zone`.
 - Database timestamps remain UTC.
@@ -140,13 +141,24 @@ as its start time arrives.
 Verification must include a Central-time evening and a daylight-saving boundary while
 remaining valid when another installation chooses another zone.
 
+The original agenda workflow parsed officer-entered wall times while Rails was still in
+UTC. Do not activate another zone on an existing installation as a configuration-only
+deployment: the apparent meeting time would move. The Meeting backfill must preview each
+legacy `dated_agendas.starts_at`, reinterpret its components in the intended installation
+zone, and preserve the date and clock time the officer entered while correcting the stored
+UTC instant. Changing zones later is likewise an operator-managed data migration, not a
+routine configuration toggle.
+
 ## Data Migration
 
-Backfill without rewriting or recreating existing agendas:
+Backfill without recreating existing agendas or changing their document content. The one
+intentional correction is the legacy `starts_at` storage described in the time-zone
+contract:
 
 1. add `meetings` and nullable `dated_agendas.meeting_id`;
-2. create exactly one Meeting for every existing dated agenda, preserving organization,
-   Meeting Body, Meeting Type, title, and start timestamp;
+2. preview and correct each legacy agenda start from its UTC-parsed wall time into the
+   installation zone, then create exactly one Meeting preserving the organization,
+   Meeting Body, Meeting Type, title, and corrected UTC start timestamp;
 3. snapshot each current effective venue onto both the Meeting and dated agenda;
 4. attach the agenda to its new Meeting;
 5. add the unique index and non-null constraint; and
@@ -356,9 +368,11 @@ Before this milestone is complete, verify:
 
 ## Implementation Sequence
 
-1. Land and verify the in-progress Tracked Item to Endeavor rename as its own change.
-2. Add installation time-zone configuration and regression tests.
-3. Add Meeting, agenda snapshot fields, and the safe backfill migration.
+1. Land and verify the in-progress Endeavor rename as its own change.
+2. Add installation time-zone configuration and regression tests, retaining UTC for Post
+   165 until the existing agenda is converted.
+3. Add Meeting, agenda snapshot fields, and the safe backfill migration; preview and
+   verify the Post 165 timestamp correction before activating `America/Chicago`.
 4. Move agenda creation behind Meeting while preserving existing document URLs.
 5. Build the administration index, creator, and Meeting workspace.
 6. Build the member index/detail archive using agenda states only.

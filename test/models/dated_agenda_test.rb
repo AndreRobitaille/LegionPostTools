@@ -25,6 +25,26 @@ class DatedAgendaTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "Template body"
   end
 
+  test "upcoming uses the installation's local calendar-day boundary" do
+    Time.use_zone("America/Chicago") do
+      travel_to Time.zone.local(2026, 8, 4, 0, 30) do
+        previous_evening = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 3, 23, 30), title: "Previous evening", status: "published")
+        current_evening = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Current evening", status: "published")
+
+        assert_not_includes DatedAgenda.upcoming, previous_evening
+        assert_includes DatedAgenda.upcoming, current_evening
+      end
+    end
+  end
+
+  test "stores an installation-local start as UTC" do
+    Time.use_zone("America/Chicago") do
+      agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 7, 7, 18, 30), title: "Summer meeting", status: "draft")
+
+      assert_equal Time.utc(2026, 7, 7, 23, 30), agenda.reload.starts_at.utc
+    end
+  end
+
   test "create_from_template snapshots document controls and Commander notes" do
     @template_item.update!(
       show_wording_on_agenda: false,

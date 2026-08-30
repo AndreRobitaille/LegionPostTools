@@ -67,6 +67,13 @@ If an install is not using Loops, `MAIL_PROVIDER=action_mailer` is the SMTP/Acti
 
 For Post 165, `DB_HOST` should point at the Kamal Postgres accessory hostname on the Docker network.
 
+`APP_TIME_ZONE` is an optional clear env value that controls local meeting entry, display,
+and local-day boundaries; Rails defaults safely to UTC and stores timestamps in UTC. A
+fresh install should set its Rails or IANA zone before creating meeting records. Post 165's
+intended value is `America/Chicago`, but do not add it to the existing deployment until the
+Meeting backfill previews and corrects the legacy agenda wall time. Changing an existing
+installation's zone is a data migration, not a routine configuration toggle.
+
 ## Persistent SSH control master
 
 Production SSH credentials are not stored in Kamal secrets. Do not put SSH private keys, SSH certificates, or 1Password SSH references in `.kamal/secrets`.
@@ -144,7 +151,7 @@ Passkeys require HTTPS and do not work by IP address.
 3. Create `~/.ssh/controlmasters` with `mkdir -p ~/.ssh/controlmasters` and `chmod 700 ~/.ssh/controlmasters`.
 4. Start the persistent SSH control master with `ssh -MNf 178.156.250.235`.
 5. Set all required Kamal secrets.
-6. Set clear env values, especially `APP_HOST`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names.
+6. Set clear env values, especially `APP_HOST`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names. On a fresh installation, also set `APP_TIME_ZONE` before creating meeting records.
 7. Confirm the Kamal service name, image name, and storage names match the Post 165 convention.
 8. Run `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` once as a preflight check.
 9. Run the same `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` command a second time; it should reuse the shared control connection.

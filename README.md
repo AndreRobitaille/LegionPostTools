@@ -65,6 +65,11 @@ bin/dev
 
 Open `http://localhost:3000`. On a fresh database, the app shows the first-run setup wizard.
 
+Set `APP_TIME_ZONE` to the installation's Rails or IANA time-zone name so meeting dates
+and times are entered and displayed locally while PostgreSQL continues storing UTC.
+The safe default is `UTC`; Post 165 will use `America/Chicago` after its legacy agenda
+time is corrected during the Meeting backfill.
+
 ## Authentication
 
 LegionPostTools is passwordless. Users sign in with passkeys or a login email that

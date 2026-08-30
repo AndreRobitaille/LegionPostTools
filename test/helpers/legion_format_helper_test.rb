@@ -41,6 +41,18 @@ class LegionFormatHelperTest < ActionView::TestCase
     assert_equal Time.zone.local(2026, 6, 24, 19, 5), combine_legion_datetime("24 JUN 2026", "19:05")
   end
 
+  test "combines and renders installation-local times across daylight-saving offsets" do
+    Time.use_zone("America/Chicago") do
+      summer = combine_legion_datetime("07 JUL 2026", "18:30")
+      winter = combine_legion_datetime("01 DEC 2026", "18:30")
+
+      assert_equal(-5.hours, summer.utc_offset)
+      assert_equal "07 JUL 2026 · 18:30", legion_datetime(summer)
+      assert_equal(-6.hours, winter.utc_offset)
+      assert_equal "01 DEC 2026 · 18:30", legion_datetime(winter)
+    end
+  end
+
   test "combine_legion_datetime rejects missing malformed and out-of-range times" do
     assert_nil combine_legion_datetime("24 JUN 2026", nil)
     assert_nil combine_legion_datetime("24 JUN 2026", "evening")
