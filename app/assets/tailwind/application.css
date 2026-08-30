@@ -1177,7 +1177,11 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .agenda-chapter-empty { margin: 4pt 0 1pt; font-size: 9.5pt; }
   .agenda-item { padding: 3pt 0 3pt 1pt; break-inside: auto; page-break-inside: auto; }
   .agenda-item::marker { font-size: 9pt; }
-  .agenda-item-title { margin-bottom: 2pt; font-size: 10.25pt; line-height: 1.25; break-after: avoid; page-break-after: avoid; }
+  .agenda-item-title { margin-bottom: 2pt; font-size: 10.25pt; line-height: 1.25; }
+  /* Keep a title with its own wording, cue, or worksheet—not with the next
+     agenda item. Applying this to title-only items chains successive headings
+     into one effectively unbreakable block and leaves large page gaps. */
+  .agenda-item-title:not(:last-child) { break-after: avoid; page-break-after: avoid; }
   .agenda-item-body { font-size: 10pt; line-height: 1.36; }
   .agenda-item-body :where(ul, ol), .commander-cue-body :where(ul, ol) { margin: .5em 0; padding-left: 1.45em; }
   .agenda-item-body li, .commander-cue-body li { margin: .18em 0; }

@@ -63,6 +63,16 @@ fixed timeout and returns a controlled failure instead of tying up a web worker 
 If usage later becomes frequent, the same service boundary can move generation to Solid
 Queue and stored attachments without changing the document templates or controller policy.
 
+## Pagination
+
+- Section headings stay with at least the first agenda item beneath them.
+- An item title stays with its own printed wording, Commander cue, or roll-call worksheet.
+- A title-only item remains an independent break point. It must not be joined to the next
+  item merely because its heading is the item's final element; otherwise a sequence of
+  short procedural items can become one unbreakable block and leave excessive blank space.
+- Roll-call rows stay intact, while the table and ordinary agenda sections may continue on
+  the following page when necessary.
+
 ## Verification
 
 - Request tests assert authentication, permission, PDF content type, inline disposition,
