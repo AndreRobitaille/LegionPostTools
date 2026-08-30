@@ -147,44 +147,26 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "print view renders published agenda without edit link" do
+  test "print returns the published member agenda as an inline PDF" do
     sign_in_as(@user)
 
-    get print_dated_agenda_path(@published)
+    rendered = nil
+    renderer = lambda do |dated_agenda:, variant:|
+      rendered = { dated_agenda:, variant: }
+      "%PDF-1.7\nmember agenda"
+    end
+
+    with_stubbed_class_method(DatedAgendaPdf, :render, renderer) do
+      get print_dated_agenda_path(@published)
+    end
 
     assert_response :success
-    assert_select ".agenda-masthead h1", text: "Membership Meeting — Agenda"
-    assert_select "h2", text: "Order of Business"
-    assert_select "h3", text: "Opening"
-    assert_select "body", text: /Opening words/
-    assert_select ".agenda-item-body ul li", text: "Review unfinished post business."
-    assert_select ".agenda-item-summary", count: 0
-    assert_select "img.agenda-emblem[alt='']"
-    assert_select ".agenda-meeting-when", text: /#{Regexp.escape(legion_date(@published.starts_at))}.*#{Regexp.escape(legion_time(@published.starts_at))}/m
-    assert_select ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane.*Two Rivers, WI 54241/m
-    assert_select ".agenda-doc-footer", text: /P\.O\. Box 11.*Two Rivers, WI 54241.*wipost165@gmail\.com.*Agenda/m
-    assert_select "ol.agenda-chapter-items > li.agenda-item", minimum: 1
-    assert_select "body", text: /Screen-only drafting summary/, count: 0
-    assert_select "a", text: "Edit", count: 0
-    assert_select "nav", count: 0
-    assert_select "body.print-body"
-    assert_select "body", text: "Dashboard", count: 0
-  end
-
-  test "member print renders a chrome-free agenda document" do
-    sign_in_as(user_with_capabilities)
-
-    get print_dated_agenda_path(@published)
-
-    assert_response :success
-    assert_select "article.agenda-doc .agenda-masthead h1", text: "Membership Meeting — Agenda"
-    assert_select ".agenda-org-name", text: @organization.name
-    assert_select ".agenda-org-locality", text: @organization.locality
-    assert_select ".agenda-letterhead-rule"
-    assert_select ".agenda-meeting-location-name", text: @organization.default_location_name
-    assert_select ".agenda-meeting-location-address", text: /7227 Sandy Hill Lane.*Two Rivers, WI 54241/m
-    assert_select ".agenda-item .agenda-item-title"
-    assert_select "a.back", false
+    assert_equal "application/pdf", response.media_type
+    assert_match(/inline/, response.headers.fetch("Content-Disposition"))
+    assert_match(/membership-meeting-#{@published.starts_at.to_date.iso8601}-agenda\.pdf/, response.headers.fetch("Content-Disposition"))
+    assert_equal "no-store", response.headers["Cache-Control"]
+    assert_equal "%PDF-1.7\nmember agenda", response.body
+    assert_equal({ dated_agenda: @published, variant: "agenda" }, rendered)
   end
 
   test "member show renders a readable agenda document with house date format and a print link" do
@@ -194,7 +176,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "article.agenda-doc .agenda-masthead h1", text: "Membership Meeting — Agenda"
-    assert_select "a.btn-secondary[href='#{print_dated_agenda_path(@published)}']", text: "Print agenda"
+    assert_select "a.btn-secondary[href='#{print_dated_agenda_path(@published)}'][data-turbo='false']", text: "Open agenda PDF"
     assert_select "a.agenda-back-link[href='#{dated_agendas_path}']", text: /All meetings/
     assert_select ".agenda-item .agenda-item-title"
     assert_select ".agenda-meeting-when", text: /#{Regexp.escape(legion_date(@published.starts_at))}.*#{Regexp.escape(legion_time(@published.starts_at))}/m

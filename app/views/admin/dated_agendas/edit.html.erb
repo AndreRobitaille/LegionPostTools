@@ -27,8 +27,8 @@
     <% else %>
       <%= button_to "Reopen for editing", reopen_admin_dated_agenda_path(@dated_agenda), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Reopen this published agenda for editing? This will unpublish it until you publish again." } %>
     <% end %>
-    <%= link_to "Print member agenda", print_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>
-    <%= link_to "Commander's copy", commander_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary btn-commander-copy" %>
+    <%= link_to "Open member agenda PDF", print_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary", data: { turbo: false } %>
+    <%= link_to "Open officer-notes PDF", commander_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary btn-commander-copy", data: { turbo: false } %>
   </div>
 </div>
 

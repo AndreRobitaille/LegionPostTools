@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
+  get "internal/dated-agenda-pdf-source", to: "dated_agenda_pdf_sources#show", as: :dated_agenda_pdf_source
 
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"

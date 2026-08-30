@@ -34,4 +34,12 @@ class ActionDispatch::IntegrationTest
     cookies[:session_id] = jar["session_id"]
     session_record
   end
+
+  def with_stubbed_class_method(klass, method_name, replacement)
+    original = klass.method(method_name)
+    klass.define_singleton_method(method_name, replacement)
+    yield
+  ensure
+    klass.define_singleton_method(method_name, original)
+  end
 end

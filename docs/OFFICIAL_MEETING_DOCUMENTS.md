@@ -24,9 +24,10 @@ This milestone:
 - establishes the visual shell future draft and accepted minutes will reuse; and
 - preserves the existing member/Commander content boundary and agenda lifecycle.
 
-This milestone does not create minutes, signatures, acceptance, PDF storage, or a new PDF
-rendering service. Browser print and Save as PDF remain the delivery mechanism. Future
-minutes must reuse this shell while keeping accepted minutes immutable.
+This milestone does not create minutes, signatures, acceptance, or PDF storage. The shared
+shell is rendered to a real PDF by the delivery service described in
+`docs/PDF_DOCUMENT_DELIVERY.md`. Future minutes must reuse this shell while keeping accepted
+minutes immutable.
 
 ## Visual Direction
 

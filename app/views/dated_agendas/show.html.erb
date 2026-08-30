@@ -2,7 +2,7 @@
 
 <nav class="agenda-page-actions" aria-label="Agenda actions">
   <%= link_to dated_agendas_path, class: "agenda-back-link" do %><span aria-hidden="true">&larr;</span> All meetings<% end %>
-  <%= link_to "Print agenda", print_dated_agenda_path(@dated_agenda), class: "btn-secondary agenda-print-link" %>
+  <%= link_to "Open agenda PDF", print_dated_agenda_path(@dated_agenda), class: "btn-secondary agenda-print-link", data: { turbo: false } %>
 </nav>
 
 <%= render "agenda_document", dated_agenda: @dated_agenda, organization: @organization %>

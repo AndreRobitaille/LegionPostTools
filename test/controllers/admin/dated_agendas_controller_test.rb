@@ -332,15 +332,15 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select "button[data-turbo-confirm=?]", "Reopen this approved agenda for editing?"
   end
 
-  test "edit page shows print link" do
+  test "edit page shows PDF links" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     agenda = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.parse("2026-08-04 19:00"), title: "Membership Meeting — August 4, 2026", status: "draft")
 
     get edit_admin_dated_agenda_path(agenda)
 
     assert_response :success
-    assert_select "a[href=?]", print_admin_dated_agenda_path(agenda), text: "Print member agenda"
-    assert_select "a[href=?]", commander_admin_dated_agenda_path(agenda), text: "Commander's copy"
+    assert_select "a[href=?][data-turbo='false']", print_admin_dated_agenda_path(agenda), text: "Open member agenda PDF"
+    assert_select "a[href=?][data-turbo='false']", commander_admin_dated_agenda_path(agenda), text: "Open officer-notes PDF"
   end
 
   test "users without manage_agendas cannot access the Commander's copy" do
@@ -352,47 +352,27 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "Commander's copy includes private cues and roll call while member print withholds both" do
+  test "agenda manager receives the requested member and officer PDF variants" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
-    commander = Person.create!(first_name: "Pat", last_name: "Commander")
-    commander_title.position_assignments.create!(person: commander, starts_on: Date.new(2026, 7, 1))
-    item = @agenda.dated_agenda_items.first
-    item.update!(
-      behavior_type: "roll_call",
-      body: "Withheld member wording",
-      show_wording_on_agenda: false,
-      commander_notes: "Call each officer by office."
-    )
-    @agenda.dated_agenda_items.create!(
-      agenda_section: item.agenda_section,
-      position: item.agenda_section.agenda_items.maximum(:position) + 1,
-      title: "Builder Guidance",
-      summary: "Screen-only drafting summary.",
-      behavior_type: "business_item",
-      active: true
-    )
+    variants = []
+    renderer = lambda do |dated_agenda:, variant:|
+      variants << [ dated_agenda, variant ]
+      "%PDF-1.7\n#{variant}"
+    end
 
-    get commander_admin_dated_agenda_path(@agenda)
+    with_stubbed_class_method(DatedAgendaPdf, :render, renderer) do
+      get commander_admin_dated_agenda_path(@agenda)
+      assert_response :success
+      assert_equal "application/pdf", response.media_type
+      assert_match(/officer-notes\.pdf/, response.headers.fetch("Content-Disposition"))
 
-    assert_response :success
-    assert_select ".agenda-meeting-heading h1", text: /#{Regexp.escape(@agenda.meeting_type.name)} — Commander's working copy/
-    assert_select ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane/m
-    assert_select ".agenda-doc-footer", text: /P\.O\. Box 11.*wipost165@gmail\.com.*Commander's working copy/m
-    assert_select "ol.agenda-chapter-items > li.agenda-item", minimum: 1
-    assert_select ".commander-cue", text: /Call each officer/
-    assert_select ".roll-call-table", text: /Pat Commander/
-    assert_select "body", text: /Withheld member wording/, count: 0
-    assert_select "body", text: /Screen-only drafting summary/, count: 0
+      get print_admin_dated_agenda_path(@agenda)
+      assert_response :success
+      assert_equal "application/pdf", response.media_type
+      assert_match(/agenda\.pdf/, response.headers.fetch("Content-Disposition"))
+    end
 
-    get print_admin_dated_agenda_path(@agenda)
-
-    assert_response :success
-    assert_select ".commander-cue", count: 0
-    assert_select ".roll-call-table", count: 0
-    assert_select "body", text: /Call each officer/, count: 0
-    assert_select "body", text: /Withheld member wording/, count: 0
-    assert_select "body", text: /Screen-only drafting summary/, count: 0
+    assert_equal [ [ @agenda, "officer_notes" ], [ @agenda, "agenda" ] ], variants
   end
 
   test "edit page shows a modal warning with the exact agenda record" do
@@ -456,33 +436,16 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert DatedAgenda.exists?(other_agenda.id)
   end
 
-  test "print view renders agenda details without edit controls" do
+  test "PDF generation failure returns the agenda manager to the editor" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     agenda = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.parse("2026-08-04 19:00"), title: "Membership Meeting — August 4, 2026", status: "draft")
 
-    get print_admin_dated_agenda_path(agenda)
+    with_stubbed_class_method(DatedAgendaPdf, :render, ->(**) { raise DatedAgendaPdf::GenerationError, "renderer unavailable" }) do
+      get print_admin_dated_agenda_path(agenda)
+    end
 
-    assert_response :success
-    assert_select ".agenda-meeting-heading h1", text: "#{agenda.meeting_type.name} — Agenda"
-    assert_select "img.agenda-emblem[alt='']"
-    assert_select ".agenda-meeting-when time", count: 2
-    assert_select "body", text: /Membership Meeting/
-    assert_select "a[href=?]", edit_admin_dated_agenda_path(agenda), count: 0
-    assert_select "form[action=?]", approve_admin_dated_agenda_path(agenda), count: 0
-    assert_select "nav", count: 0
-    assert_select "body", text: "Dashboard", count: 0
-  end
-
-  test "admin print renders a chrome-free agenda document" do
-    sign_in_as(user_with_capabilities("manage_agendas"))
-
-    get print_admin_dated_agenda_path(@agenda)
-
-    assert_response :success
-    assert_select "article.agenda-doc .agenda-meeting-heading h1", text: "#{@agenda.meeting_type.name} — Agenda"
-    assert_select ".agenda-item .agenda-item-title"
-    assert_select "a.back", false
-    assert_select ".btnrow", false
+    assert_redirected_to edit_admin_dated_agenda_path(agenda)
+    assert_equal "The PDF could not be created. Try again.", flash[:alert]
   end
 
   test "empty template create shows empty state guidance" do

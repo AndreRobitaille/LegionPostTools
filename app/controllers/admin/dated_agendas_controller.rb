@@ -76,11 +76,11 @@ module Admin
     end
 
     def print
-      render layout: "print"
+      send_agenda_pdf("agenda")
     end
 
     def commander
-      render layout: "print"
+      send_agenda_pdf("officer_notes")
     end
 
     private
@@ -91,6 +91,18 @@ module Admin
 
     def set_dated_agenda
       @dated_agenda = @organization.dated_agendas.find(params[:id])
+    end
+
+    def send_agenda_pdf(variant)
+      pdf = DatedAgendaPdf.render(dated_agenda: @dated_agenda, variant:)
+      send_data pdf,
+        filename: DatedAgendaPdf.filename(dated_agenda: @dated_agenda, variant:),
+        type: "application/pdf",
+        disposition: "inline"
+      no_store
+    rescue DatedAgendaPdf::GenerationError => error
+      Rails.logger.error("Agenda PDF generation failed: #{error.message}")
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "The PDF could not be created. Try again."
     end
 
     def set_form_collections

@@ -10,7 +10,7 @@ class DatedAgendasController < ApplicationController
   def show; end
 
   def print
-    render layout: "print"
+    send_agenda_pdf("agenda")
   end
 
   private
@@ -21,5 +21,17 @@ class DatedAgendasController < ApplicationController
 
   def set_dated_agenda
     @dated_agenda = @organization.dated_agendas.published.find(params[:id])
+  end
+
+  def send_agenda_pdf(variant)
+    pdf = DatedAgendaPdf.render(dated_agenda: @dated_agenda, variant:)
+    send_data pdf,
+      filename: DatedAgendaPdf.filename(dated_agenda: @dated_agenda, variant:),
+      type: "application/pdf",
+      disposition: "inline"
+    no_store
+  rescue DatedAgendaPdf::GenerationError => error
+    Rails.logger.error("Agenda PDF generation failed: #{error.message}")
+    redirect_to dated_agenda_path(@dated_agenda), alert: "The agenda PDF could not be created. Try again."
   end
 end

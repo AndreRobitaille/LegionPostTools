@@ -120,28 +120,24 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
 
     visit edit_admin_dated_agenda_path(@agenda)
 
-    assert_link "Print member agenda", href: print_admin_dated_agenda_path(@agenda)
-    assert_link "Commander's copy", href: commander_admin_dated_agenda_path(@agenda)
+    assert_link "Open member agenda PDF", href: print_admin_dated_agenda_path(@agenda)
+    assert_link "Open officer-notes PDF", href: commander_admin_dated_agenda_path(@agenda)
     assert_selector ".agenda-item-flag", text: "Agenda wording hidden"
     assert_selector ".agenda-item-flag", text: "Minutes wording hidden"
     assert_selector ".agenda-item-flag--commander", text: "Commander script"
     assert_link "Edit officer list"
     assert_button "Reload assigned officers"
 
-    click_link "Commander's copy"
-
-    assert_selector ".agenda-meeting-heading h1", text: /Membership Meeting — Commander's working copy/i
-    assert_selector ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane/im
-    assert_selector "ol.agenda-chapter-items > li.agenda-item", minimum: 1
-    assert_selector ".commander-cue", text: /Give three raps/
-    assert_selector ".roll-call-table", text: /Commander.*Jane Doe/
-    assert_no_text "Wording withheld from members"
-    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-
     page.current_window.resize_to(390, 844)
 
-    assert_selector ".roll-call-table .roll-call-mark", count: 3
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+    result = fetch_pdf(commander_admin_dated_agenda_path(@agenda))
+    assert_equal 200, result.fetch("status")
+    assert_equal "application/pdf", result.fetch("contentType")
+    assert_match(/officer-notes\.pdf/, result.fetch("disposition"))
+    pdf_data = Base64.strict_decode64(result.fetch("data"))
+    assert pdf_data.start_with?("%PDF"), "officer-notes action should return a PDF document"
+    File.binwrite(ENV.fetch("OFFICER_AGENDA_PDF_CAPTURE"), pdf_data) if ENV["OFFICER_AGENDA_PDF_CAPTURE"].present?
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -177,8 +173,9 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_equal historical_commander, item.roll_call_entries.reload.find_by!(position_title: commander_title).person
     assert_empty historical_commander.position_assignments
 
-    click_link "Commander's copy"
-    assert_selector ".roll-call-table", text: /Commander\s+July Commander/
+    result = fetch_pdf(commander_admin_dated_agenda_path(@agenda))
+    assert_equal "application/pdf", result.fetch("contentType")
+    assert Base64.strict_decode64(result.fetch("data")).start_with?("%PDF")
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -252,7 +249,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".agenda-item-body ul li", text: "Completed service work"
     assert_selector ".agenda-item-summary", text: "Screen-only drafting summary."
     assert_equal "disc", page.evaluate_script("getComputedStyle(document.querySelector('.agenda-item-body ul')).listStyleType")
-    assert_link "Print agenda", href: print_dated_agenda_path(@agenda)
+    assert_link "Open agenda PDF", href: print_dated_agenda_path(@agenda)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
 
     page.current_window.resize_to(390, 844)
@@ -261,23 +258,42 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".agenda-chapter-number", count: 2
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
 
-    click_link "Print agenda"
-
-    assert_current_path print_dated_agenda_path(@agenda)
-    assert_selector ".agenda-item-body ul li", text: "Completed service work"
-    assert_equal "disc", page.evaluate_script("getComputedStyle(document.querySelector('.agenda-item-body ul')).listStyleType")
-    assert_no_selector ".agenda-item-summary"
-    assert_no_text "Screen-only drafting summary."
-
-    print_result = page.driver.browser.execute_cdp(
-      "Page.printToPDF",
-      printBackground: true,
-      preferCSSPageSize: true
-    )
-    pdf_data = Base64.strict_decode64(print_result.fetch("data"))
-    assert pdf_data.start_with?("%PDF"), "browser print should produce a PDF document"
+    result = fetch_pdf(print_dated_agenda_path(@agenda))
+    assert_equal 200, result.fetch("status")
+    assert_equal "application/pdf", result.fetch("contentType")
+    assert_match(/agenda\.pdf/, result.fetch("disposition"))
+    pdf_data = Base64.strict_decode64(result.fetch("data"))
+    assert pdf_data.start_with?("%PDF"), "agenda action should return a PDF document"
     File.binwrite(ENV.fetch("AGENDA_PDF_CAPTURE"), pdf_data) if ENV["AGENDA_PDF_CAPTURE"].present?
   ensure
     page.current_window.resize_to(1400, 1400)
+  end
+
+  private
+
+  def fetch_pdf(path)
+    previous_port = ENV["PDF_RENDER_PORT"]
+    ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
+
+    page.evaluate_async_script(<<~JAVASCRIPT, path)
+      const path = arguments[0];
+      const done = arguments[arguments.length - 1];
+
+      fetch(path, { credentials: "same-origin" })
+        .then(async (response) => {
+          const blob = await response.blob();
+          const reader = new FileReader();
+          reader.onloadend = () => done({
+            status: response.status,
+            contentType: response.headers.get("content-type"),
+            disposition: response.headers.get("content-disposition"),
+            data: reader.result.split(",", 2)[1]
+          });
+          reader.readAsDataURL(blob);
+        })
+        .catch((error) => done({ error: error.message }));
+    JAVASCRIPT
+  ensure
+    ENV["PDF_RENDER_PORT"] = previous_port
   end
 end
