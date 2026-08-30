@@ -126,7 +126,8 @@ the document never creates horizontal scrolling.
 ### Print
 
 Print removes the application shell and page actions, removes screen-only shadows, uses a
-white page, and retains the masthead and order rail in print-safe navy/black and gold/gray.
+white page. The original masthead and order-rail treatment has since been replaced by the
+shared official meeting-document shell described in `docs/OFFICIAL_MEETING_DOCUMENTS.md`.
 Section headings remain with their first item where practical. Individual short items avoid
 page breaks, but an entire long section may flow across pages rather than creating large
 blank spaces. Item summaries are drafting and screen-scanning aids, not agenda content, so

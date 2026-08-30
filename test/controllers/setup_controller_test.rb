@@ -19,7 +19,9 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
               unit_number: "165",
               timezone: "America/Chicago",
               default_location_name: "Manitowoc Rifle & Pistol Club",
-              default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI"
+              default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI",
+              mailing_address: "P.O. Box 11\nTwo Rivers, WI 54241",
+              public_email: "post165@example.org"
             },
             person: {
               first_name: "Andre",
@@ -36,6 +38,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     user = User.first
 
     assert_equal "american_legion_post", organization.unit_type
+    assert_equal "P.O. Box 11\nTwo Rivers, WI 54241", organization.mailing_address
+    assert_equal "post165@example.org", organization.public_email
     assert user.can?("manage_settings")
     assert_equal 11, organization.position_titles.count
     assert_equal 2, organization.meeting_bodies.count

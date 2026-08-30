@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_29_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -320,7 +320,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_050000) do
     t.text "default_location_address"
     t.string "default_location_name"
     t.string "locality"
+    t.text "mailing_address"
     t.string "name", null: false
+    t.string "public_email"
     t.string "timezone", default: "America/Chicago", null: false
     t.string "unit_number"
     t.string "unit_type", null: false

@@ -4,7 +4,16 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
   include LegionFormatHelper
 
   setup do
-    @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    @organization = Organization.create!(
+      name: "Robert E. Burns Post 165",
+      unit_type: "american_legion_post",
+      locality: "Two Rivers, Wisconsin",
+      mailing_address: "P.O. Box 11\nTwo Rivers, WI 54241",
+      public_email: "wipost165@gmail.com",
+      default_location_name: "Manitowoc Rifle and Pistol Club",
+      default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI 54241",
+      timezone: "America/Chicago"
+    )
     Installation.singleton.update!(setup_completed_at: Time.current)
     @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
@@ -88,7 +97,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "h1", text: "Published Agenda"
+    assert_select "h1", text: "Membership Meeting — Agenda"
     assert_select "h2", text: "Order of Business"
     assert_select "h2", text: "Post Business"
     assert_select "h2", text: "New Business"
@@ -144,12 +153,17 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_dated_agenda_path(@published)
 
     assert_response :success
-    assert_select ".agenda-masthead h1", text: "Published Agenda"
+    assert_select ".agenda-masthead h1", text: "Membership Meeting — Agenda"
     assert_select "h2", text: "Order of Business"
     assert_select "h3", text: "Opening"
     assert_select "body", text: /Opening words/
     assert_select ".agenda-item-body ul li", text: "Review unfinished post business."
     assert_select ".agenda-item-summary", count: 0
+    assert_select "img.agenda-emblem[alt='']"
+    assert_select ".agenda-meeting-when", text: /#{Regexp.escape(legion_date(@published.starts_at))}.*#{Regexp.escape(legion_time(@published.starts_at))}/m
+    assert_select ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane.*Two Rivers, WI 54241/m
+    assert_select ".agenda-doc-footer", text: /P\.O\. Box 11.*Two Rivers, WI 54241.*wipost165@gmail\.com.*Agenda/m
+    assert_select "ol.agenda-chapter-items > li.agenda-item", minimum: 1
     assert_select "body", text: /Screen-only drafting summary/, count: 0
     assert_select "a", text: "Edit", count: 0
     assert_select "nav", count: 0
@@ -163,8 +177,12 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "article.agenda-doc .agenda-masthead h1", text: @published.title
+    assert_select "article.agenda-doc .agenda-masthead h1", text: "Membership Meeting — Agenda"
     assert_select ".agenda-org-name", text: @organization.name
+    assert_select ".agenda-org-locality", text: @organization.locality
+    assert_select ".agenda-letterhead-rule"
+    assert_select ".agenda-meeting-location-name", text: @organization.default_location_name
+    assert_select ".agenda-meeting-location-address", text: /7227 Sandy Hill Lane.*Two Rivers, WI 54241/m
     assert_select ".agenda-item .agenda-item-title"
     assert_select "a.back", false
   end
@@ -175,11 +193,11 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agenda_path(@published)
 
     assert_response :success
-    assert_select "article.agenda-doc .agenda-masthead h1", text: @published.title
+    assert_select "article.agenda-doc .agenda-masthead h1", text: "Membership Meeting — Agenda"
     assert_select "a.btn-secondary[href='#{print_dated_agenda_path(@published)}']", text: "Print agenda"
     assert_select "a.agenda-back-link[href='#{dated_agendas_path}']", text: /All meetings/
     assert_select ".agenda-item .agenda-item-title"
-    assert_select ".agenda-masthead", text: /#{Regexp.escape(legion_datetime(@published.starts_at))}/
+    assert_select ".agenda-meeting-when", text: /#{Regexp.escape(legion_date(@published.starts_at))}.*#{Regexp.escape(legion_time(@published.starts_at))}/m
     assert_select "nav.nav-bar a[aria-current='page']", text: "Meetings"
   end
 

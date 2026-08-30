@@ -1,17 +1,66 @@
-<article class="agenda-doc">
+<% commander_copy = local_assigns.fetch(:commander_copy, false) %>
+<% document_label = local_assigns.fetch(:document_label, "Agenda") %>
+<% document_title = "#{dated_agenda.meeting_type.name} — #{document_label}" %>
+<% location_name = dated_agenda.meeting_body.effective_location_name %>
+<% location_address = dated_agenda.meeting_body.effective_location_address %>
+<% mailing_address_lines = organization.mailing_address_lines %>
+<% mailing_address_lines.fill("", mailing_address_lines.length...2) %>
+
+<% content_for :head do %>
+  <%= content_tag :style,
+        ":root { " \
+          "--agenda-footer-address-line-one: #{mailing_address_lines.first.to_json}; " \
+          "--agenda-footer-address-line-two: #{mailing_address_lines.second.to_json}; " \
+          "--agenda-footer-email: #{organization.public_email.to_s.to_json}; " \
+        "}".html_safe,
+        nonce: content_security_policy_nonce %>
+<% end %>
+
+<article class="agenda-doc<%= " agenda-doc--commander" if commander_copy %>">
   <header class="agenda-masthead">
-    <p class="agenda-org-name"><%= organization.name %></p>
-    <p class="agenda-document-label"><span aria-hidden="true">◆</span> Published agenda <span aria-hidden="true">◆</span></p>
-    <h1><%= dated_agenda.title %></h1>
-    <p class="agenda-meeting-meta">
-      <span><%= dated_agenda.meeting_body.name %></span>
-      <span class="agenda-meta-diamond" aria-hidden="true">◆</span>
-      <time datetime="<%= dated_agenda.starts_at.iso8601 %>"><%= legion_datetime(dated_agenda.starts_at) %></time>
-    </p>
-    <div class="agenda-masthead-rule" aria-hidden="true"><span>◆</span></div>
+    <div class="agenda-letterhead">
+      <%= image_tag "al-emblem.png", alt: "", class: "agenda-emblem" %>
+
+      <div class="agenda-letterhead-identity">
+        <p class="agenda-org-name"><%= organization.name %></p>
+        <% if organization.locality.present? %>
+          <p class="agenda-org-locality"><%= organization.locality %></p>
+        <% end %>
+      </div>
+
+      <% if location_name.present? || location_address.present? %>
+        <div class="agenda-meeting-location">
+          <p class="agenda-meeting-location-label">Meeting location</p>
+          <% if location_name.present? %>
+            <p class="agenda-meeting-location-name"><%= location_name %></p>
+          <% end %>
+          <% if location_address.present? %>
+            <p class="agenda-meeting-location-address"><%= simple_format(location_address, {}, wrapper_tag: "span") %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="agenda-letterhead-rule" aria-hidden="true"><span></span></div>
+
+    <div class="agenda-meeting-heading">
+      <h1><%= document_title %></h1>
+      <p class="agenda-meeting-when">
+        <time datetime="<%= dated_agenda.starts_at.to_date.iso8601 %>"><%= legion_date(dated_agenda.starts_at) %></time>
+        <span aria-hidden="true">·</span>
+        <time datetime="<%= dated_agenda.starts_at.iso8601 %>"><%= legion_time(dated_agenda.starts_at) %></time>
+      </p>
+    </div>
   </header>
 
-  <%= render "agenda_body",
+  <%= render "dated_agendas/agenda_body",
     dated_agenda: dated_agenda,
+    commander_copy:,
     show_summaries: local_assigns.fetch(:show_summaries, true) %>
+
+  <footer class="agenda-doc-footer">
+    <span><%= simple_format(organization.mailing_address, {}, wrapper_tag: "span") if organization.mailing_address.present? %></span>
+    <span><%= mail_to organization.public_email if organization.public_email.present? %></span>
+    <span><%= document_label %> · <%= legion_date(dated_agenda.starts_at) %></span>
+  </footer>
 </article>

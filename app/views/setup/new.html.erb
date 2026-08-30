@@ -81,6 +81,30 @@
           </div>
 
           <div class="setup-sec">
+            <span class="setup-sec-mark">&#9670;</span> Printed documents
+          </div>
+
+          <div class="entry-field">
+            <%= label_tag "organization_mailing_address" do %>
+              Post mailing address <span class="entry-opt">optional</span>
+            <% end %>
+            <%= text_area_tag "organization[mailing_address]", params.dig(:organization, :mailing_address),
+                  id: "organization_mailing_address", rows: 2,
+                  placeholder: "P.O. Box 11\nTwo Rivers, WI 54241" %>
+            <p class="entry-help">Shown at the left of printed agenda and minutes footers.</p>
+          </div>
+
+          <div class="entry-field">
+            <%= label_tag "organization_public_email" do %>
+              Public post email <span class="entry-opt">optional</span>
+            <% end %>
+            <%= email_field_tag "organization[public_email]", params.dig(:organization, :public_email),
+                  id: "organization_public_email", autocomplete: "email",
+                  placeholder: "post@example.org" %>
+            <p class="entry-help">Shown in the center of printed agenda and minutes footers.</p>
+          </div>
+
+          <div class="setup-sec">
             <span class="setup-sec-mark">&#9670;</span> You <span class="setup-sec-note">&mdash; the first administrator</span>
           </div>
 

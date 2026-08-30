@@ -3,7 +3,14 @@ require "test_helper"
 class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
   setup do
     @organization = Organization.first || Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
-    @organization.update!(name: "Robert E. Burns Post 165", timezone: "America/Chicago")
+    @organization.update!(
+      name: "Robert E. Burns Post 165",
+      timezone: "America/Chicago",
+      mailing_address: "P.O. Box 11\nTwo Rivers, WI 54241",
+      public_email: "wipost165@gmail.com",
+      default_location_name: "Manitowoc Rifle and Pistol Club",
+      default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI 54241"
+    )
     Installation.singleton.update!(setup_completed_at: Time.current)
     @meeting_body = @organization.meeting_bodies.first || @organization.meeting_bodies.create!(name: "Membership", slug: "membership-#{SecureRandom.hex(4)}")
     @meeting_type = @organization.meeting_types.first || @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting-#{SecureRandom.hex(4)}", position: 1, active: true)
@@ -124,7 +131,14 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(user_with_capabilities("manage_agendas"))
 
     assert_difference -> { DatedAgenda.where(organization_id: @organization.id).count }, 1 do
-      post admin_dated_agendas_path, params: { dated_agenda: { meeting_body_id: @meeting_body.id, meeting_type_id: @meeting_type.id, starts_at: "2026-08-04T19:00", title: "" } }
+      post admin_dated_agendas_path, params: {
+        dated_agenda: {
+          meeting_body_id: @meeting_body.id,
+          meeting_type_id: @meeting_type.id,
+          starts_at: "2026-08-04T19:00",
+          title: ""
+        }
+      }
     end
 
     agenda = DatedAgenda.where(organization_id: @organization.id).order(:created_at).last
@@ -362,7 +376,10 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get commander_admin_dated_agenda_path(@agenda)
 
     assert_response :success
-    assert_select ".agenda-document-label--commander", text: /Commander's working copy/
+    assert_select ".agenda-meeting-heading h1", text: /#{Regexp.escape(@agenda.meeting_type.name)} — Commander's working copy/
+    assert_select ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane/m
+    assert_select ".agenda-doc-footer", text: /P\.O\. Box 11.*wipost165@gmail\.com.*Commander's working copy/m
+    assert_select "ol.agenda-chapter-items > li.agenda-item", minimum: 1
     assert_select ".commander-cue", text: /Call each officer/
     assert_select ".roll-call-table", text: /Pat Commander/
     assert_select "body", text: /Withheld member wording/, count: 0
@@ -446,7 +463,9 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_admin_dated_agenda_path(agenda)
 
     assert_response :success
-    assert_select "h1.page-title", text: "Membership Meeting — August 4, 2026"
+    assert_select ".agenda-meeting-heading h1", text: "#{agenda.meeting_type.name} — Agenda"
+    assert_select "img.agenda-emblem[alt='']"
+    assert_select ".agenda-meeting-when time", count: 2
     assert_select "body", text: /Membership Meeting/
     assert_select "a[href=?]", edit_admin_dated_agenda_path(agenda), count: 0
     assert_select "form[action=?]", approve_admin_dated_agenda_path(agenda), count: 0
@@ -460,7 +479,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get print_admin_dated_agenda_path(@agenda)
 
     assert_response :success
-    assert_select "article.agenda-doc .agenda-masthead .page-title", text: @agenda.title
+    assert_select "article.agenda-doc .agenda-meeting-heading h1", text: "#{@agenda.meeting_type.name} — Agenda"
     assert_select ".agenda-item .agenda-item-title"
     assert_select "a.back", false
     assert_select ".btnrow", false

@@ -951,35 +951,42 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-back-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--color-navy); font-size: 16px; font-weight: 700; text-decoration: none; }
 .agenda-back-link:hover { text-decoration: underline; }
 .agenda-back-link:focus-visible, .agenda-print-link:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 3px; }
-.agenda-doc { max-width: var(--w-doc); margin: 0 auto; padding: 42px 32px 44px; background: var(--color-ivory); border: 1px solid var(--rule-strong); border-top: 5px solid var(--color-gold); box-shadow: 0 14px 34px rgba(27,34,43,.1); }
-.agenda-masthead { margin-bottom: 34px; text-align: center; }
-.agenda-org-name { margin: 0; color: var(--color-navy); font-size: 14px; font-weight: 850; letter-spacing: .18em; line-height: 1.45; text-transform: uppercase; }
-.agenda-document-label { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0 20px; color: var(--color-gold-ink); font-size: 13px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
-.agenda-document-label span { font-size: 9px; }
-.agenda-masthead h1 { max-width: 640px; margin: 0 auto; color: var(--color-navy); font-family: var(--font-serif); font-size: clamp(29px, 4vw, 39px); line-height: 1.16; overflow-wrap: anywhere; }
-.agenda-meeting-meta { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 9px; margin: 16px 0 0; color: #4d5d70; font-size: 16px; font-weight: 650; line-height: 1.45; }
-.agenda-meta-diamond { color: var(--color-gold-ink); font-size: 8px; }
-.agenda-masthead-rule { display: flex; align-items: center; gap: 12px; margin-top: 28px; color: var(--color-gold-ink); font-size: 9px; }
-.agenda-masthead-rule::before, .agenda-masthead-rule::after { content: ""; flex: 1; height: 3px; border-top: 1px solid var(--color-gold); border-bottom: 1px solid var(--color-gold); }
-.agenda-outline { margin-top: 0; }
-.agenda-chapter { display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 16px; }
-.agenda-chapter-rail { position: relative; display: flex; justify-content: center; }
-.agenda-chapter-rail::after { content: ""; position: absolute; top: 38px; bottom: -1px; left: 50%; width: 2px; background: linear-gradient(var(--color-gold), #decda3); transform: translateX(-50%); }
-.agenda-chapter:last-child .agenda-chapter-rail::after { display: none; }
-.agenda-chapter-number { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: #fff; background: var(--color-navy); clip-path: polygon(16% 0, 84% 0, 100% 16%, 100% 84%, 84% 100%, 16% 100%, 0 84%, 0 16%); font-family: var(--font-serif); font-size: 19px; font-weight: 700; }
-.agenda-chapter-content { min-width: 0; padding: 5px 0 34px; }
+.agenda-doc { box-sizing: border-box; max-width: var(--w-doc); margin: 0 auto; padding: 36px 42px 38px; background: #fff; border: 1px solid #cbd1d8; box-shadow: 0 14px 34px rgba(27,34,43,.1); }
+.agenda-masthead { margin-bottom: 21px; }
+.agenda-letterhead { display: grid; grid-template-columns: 62px minmax(0, 1fr) minmax(180px, 220px); align-items: center; gap: 13px; }
+.agenda-emblem { display: block; width: 58px; height: 58px; }
+.agenda-letterhead-identity { min-width: 0; }
+.agenda-org-name { margin: 0; color: var(--color-navy); font-family: var(--font-serif); font-size: 19px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.agenda-org-locality { margin: 3px 0 0; color: #586574; font-size: 13px; line-height: 1.3; }
+.agenda-meeting-location { min-width: 0; text-align: right; }
+.agenda-meeting-location-label { margin: 0 0 3px; color: #66717c; font-size: 9px; font-weight: 800; letter-spacing: .12em; line-height: 1.2; text-transform: uppercase; }
+.agenda-meeting-location-name { margin: 0; color: var(--color-navy); font-family: var(--font-serif); font-size: 12px; font-weight: 700; line-height: 1.25; }
+.agenda-meeting-location-address { margin: 2px 0 0; color: #586574; font-size: 10px; line-height: 1.28; }
+.agenda-meeting-location-address span { display: block; margin: 0; }
+.agenda-letterhead-rule { display: grid; grid-template-rows: 2px 1px; gap: 3px; margin-top: 12px; background: var(--color-navy); }
+.agenda-letterhead-rule span { display: block; grid-row: 2; background: var(--color-gold); }
+.agenda-meeting-heading { max-width: 680px; margin: 15px auto 0; padding-bottom: 14px; border-bottom: 1px solid #aeb4bb; text-align: center; }
+.agenda-meeting-heading h1 { margin: 0; color: var(--color-navy); font-family: var(--font-serif); font-size: clamp(21px, 2.7vw, 25px); line-height: 1.17; overflow-wrap: anywhere; }
+.agenda-meeting-when { display: flex; justify-content: center; gap: 7px; margin: 6px 0 0; color: #343b43; font-size: 13px; font-weight: 750; line-height: 1.3; }
+.agenda-outline { margin-top: 0; counter-reset: agenda-section; }
+.agenda-chapter { display: grid; grid-template-columns: 39px minmax(0, 1fr); column-gap: 10px; counter-increment: agenda-section; }
+.agenda-chapter-rail { display: flex; justify-content: flex-start; padding-top: 2px; }
+.agenda-chapter-rail::after { display: none; }
+.agenda-chapter-number { width: 100%; color: transparent; font-size: 0; }
+.agenda-chapter-number::before { content: counter(agenda-section, upper-roman) "."; color: var(--color-navy); font-family: var(--font-serif); font-size: 15px; font-weight: 700; line-height: 1.25; }
+.agenda-chapter-content { min-width: 0; padding: 2px 0 17px; }
 .agenda-chapter-head { display: flex; align-items: center; gap: 12px; color: var(--color-navy); }
-.agenda-chapter-head h2 { margin: 0; font-size: 16px; font-weight: 850; letter-spacing: .12em; line-height: 1.35; text-transform: uppercase; overflow-wrap: anywhere; }
-.agenda-chapter-rule { flex: 1; height: 2px; background: linear-gradient(90deg, var(--color-gold), rgba(198,161,91,.08)); }
-.agenda-chapter-items { margin-top: 12px; }
-.agenda-chapter-empty { margin: 18px 0 4px; color: #647080; font-family: var(--font-serif); font-size: 16px; font-style: italic; line-height: 1.55; }
-.agenda-item { padding: 18px 0; border-top: 1px solid #eadfbf; }
-.agenda-item:first-child { border-top: none; }
-.agenda-item-title { font-family: var(--font-serif); font-size: 21px; color: var(--color-navy); font-weight: 700; margin: 0 0 6px; }
+.agenda-chapter-head h2 { margin: 0; font-family: var(--font-serif); font-size: 17px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.agenda-chapter-rule { display: none; }
+.agenda-chapter-items { margin: 4px 0 0; padding-left: 28px; list-style: upper-alpha outside; }
+.agenda-chapter-empty { margin: 7px 0 1px; color: #647080; font-family: var(--font-serif); font-size: 15px; font-style: italic; line-height: 1.45; list-style: none; }
+.agenda-item { padding: 6px 0; }
+.agenda-item::marker { color: var(--color-navy); font-family: var(--font-serif); font-size: 14px; font-weight: 700; }
+.agenda-item-title { margin: 0 0 3px; color: #20252b; font-family: var(--font-serif); font-size: 16px; font-weight: 700; line-height: 1.3; }
 /* Shown only when an item has no body of its own, so the document never says
    the same thing twice. Serif, like everything else on the paper. */
-.agenda-item-summary { font-family: var(--font-serif); font-size: 17px; line-height: 1.6; color: #4a5462; margin: 0; }
-.agenda-item-body { color: var(--color-ink); font-family: var(--font-serif); font-size: 17px; line-height: 1.65; overflow-wrap: anywhere; }
+.agenda-item-summary { margin: 0; color: #4a5462; font-family: var(--font-serif); font-size: 15px; line-height: 1.47; }
+.agenda-item-body { color: var(--color-ink); font-family: var(--font-serif); font-size: 15px; line-height: 1.47; overflow-wrap: anywhere; }
 .agenda-item-body img { max-width: 100%; height: auto; }
 .agenda-item-body > :first-child { margin-top: 0; }
 .agenda-item-body > :last-child { margin-bottom: 0; }
@@ -991,10 +998,9 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-item-body ul ul, .commander-cue-body ul ul { list-style-type: circle; }
 .agenda-item-body ol ol, .commander-cue-body ol ol { list-style-type: lower-alpha; }
 .agenda-doc--commander { border-top-color: var(--color-officer-blue); }
-.agenda-document-label--commander { color: var(--color-officer-blue); }
 .commander-cue { margin: 16px 0 2px; padding: 13px 16px 14px; background: #eef4f8; border-left: 4px solid var(--color-officer-blue); color: #263847; }
 .commander-cue-label { margin: 0 0 7px; color: var(--color-officer-blue); font-family: system-ui, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
-.commander-cue-body { font-family: var(--font-serif); font-size: 17px; line-height: 1.65; overflow-wrap: anywhere; }
+.commander-cue-body { font-family: var(--font-serif); font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
 .commander-cue-body > :first-child { margin-top: 0; }
 .commander-cue-body > :last-child { margin-bottom: 0; }
 .roll-call-sheet { margin-top: 17px; }
@@ -1006,8 +1012,14 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .roll-call-mark { text-align: center !important; }
 .roll-call-mark > span[aria-hidden="true"] { display: inline-block; width: 17px; height: 17px; border: 1.5px solid #4b5e6e; background: #fff; }
 .roll-call-vacant { color: #6e5a2b; font-style: italic; }
+.agenda-doc-footer { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: end; gap: 18px; margin: 10px 0 0; padding-top: 9px; color: #606b76; border-top: 1px solid #aeb7c0; font-size: 11px; font-weight: 700; letter-spacing: .04em; line-height: 1.35; }
+.agenda-doc-footer > :nth-child(2) { text-align: center; }
+.agenda-doc-footer > :last-child { text-align: right; text-transform: uppercase; }
+.agenda-doc-footer span, .agenda-doc-footer p { margin: 0; }
+.agenda-doc-footer a { color: inherit; }
 .print-body { margin: 0; background: #fff; }
 .print-body .agenda-doc { margin: 0 auto; }
+.print-body .agenda-doc-footer { display: none; }
 
 /* Responsive -----------------------------------------------------------------
    Two steps, used consistently everywhere: 900px drops side rails and multi-
@@ -1102,19 +1114,25 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .agenda-back-link { align-self: flex-start; }
   .agenda-print-link { box-sizing: border-box; min-height: 48px; padding: 11px 18px; text-align: center; }
   .agenda-doc { padding: 30px 16px 34px; }
-  .agenda-masthead { margin-bottom: 28px; }
-  .agenda-org-name { font-size: 13px; letter-spacing: .13em; }
-  .agenda-document-label { margin-bottom: 16px; letter-spacing: .14em; }
-  .agenda-masthead h1 { font-size: 29px; }
-  .agenda-meeting-meta { align-items: center; flex-direction: column; gap: 4px; }
-  .agenda-meta-diamond { display: none; }
-  .agenda-masthead-rule { margin-top: 24px; }
-  .agenda-chapter { grid-template-columns: 38px minmax(0, 1fr); column-gap: 10px; }
-  .agenda-chapter-number { width: 34px; height: 34px; font-size: 16px; }
-  .agenda-chapter-rail::after { top: 34px; }
-  .agenda-chapter-content { padding-top: 4px; padding-bottom: 28px; }
-  .agenda-chapter-head { align-items: flex-start; flex-direction: column; gap: 8px; }
-  .agenda-chapter-rule { width: 100%; }
+  .agenda-masthead { margin-bottom: 20px; }
+  .agenda-letterhead { grid-template-columns: 52px minmax(0, 1fr); gap: 11px; }
+  .agenda-emblem { width: 50px; height: 50px; }
+  .agenda-org-name { font-size: 17px; }
+  .agenda-org-locality { font-size: 11px; }
+  .agenda-meeting-location { grid-column: 2; margin-top: -2px; text-align: left; }
+  .agenda-meeting-location-label { font-size: 8px; }
+  .agenda-meeting-location-name { font-size: 11px; }
+  .agenda-meeting-location-address { font-size: 9px; }
+  .agenda-letterhead-rule { margin-top: 11px; }
+  .agenda-meeting-heading { margin-top: 13px; padding-bottom: 12px; }
+  .agenda-meeting-heading h1 { font-size: 22px; }
+  .agenda-meeting-when { font-size: 12px; }
+  .agenda-chapter { grid-template-columns: 34px minmax(0, 1fr); column-gap: 7px; }
+  .agenda-chapter-number::before { font-size: 14px; }
+  .agenda-chapter-content { padding-top: 1px; padding-bottom: 15px; }
+  .agenda-chapter-head { gap: 0; }
+  .agenda-doc-footer { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .agenda-doc-footer > :nth-child(2), .agenda-doc-footer > :last-child { text-align: left; }
   .commander-cue { margin-right: 0; margin-left: 0; padding: 12px 13px; }
   .roll-call-table, .roll-call-table tbody { display: block; }
   .roll-call-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
@@ -1134,14 +1152,68 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 
 @media print {
   .back, .btnrow, .agenda-page-actions, .app-header, .app-main > .app-flash, .nav-bar, .nav-inner { display: none !important; }
-  body { background: #fff; color: #000; }
-  .agenda-doc { max-width: none; padding: 0; border: 0; box-shadow: none; }
+  html, body, .print-body, .agenda-doc { background: #fff !important; }
+  html, body { margin: 0; color: #000; }
+  .agenda-doc { box-sizing: border-box; width: auto; max-width: none; margin: 0; padding: 0 .23in; border: 0; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .agenda-masthead { margin-bottom: 13pt; }
+  .agenda-letterhead { grid-template-columns: .62in minmax(0, 1fr) 1.9in; gap: .12in; }
+  .agenda-emblem { width: .58in; height: .58in; }
+  .agenda-org-name { font-size: 12pt; }
+  .agenda-org-locality { margin-top: 2pt; font-size: 7.5pt; }
+  .agenda-meeting-location-label { margin-bottom: 2pt; font-size: 6pt; }
+  .agenda-meeting-location-name { font-size: 7.5pt; }
+  .agenda-meeting-location-address { margin-top: 1pt; font-size: 6.75pt; line-height: 1.2; }
+  .agenda-letterhead-rule { grid-template-rows: 1.5pt .75pt; gap: 2pt; margin-top: 7pt; }
+  .agenda-meeting-heading { margin: 9pt auto 0; padding-bottom: 8pt; }
+  .agenda-meeting-heading h1 { font-size: 15.5pt; line-height: 1.14; }
+  .agenda-meeting-when { gap: 5pt; margin-top: 4pt; font-size: 8.7pt; }
+  .agenda-chapter { display: block; position: relative; padding-left: .43in; break-inside: auto; page-break-inside: auto; }
+  .agenda-chapter-rail { position: absolute; top: 1pt; left: 0; width: .37in; padding-top: 0; }
+  .agenda-chapter-number::before { font-size: 9.5pt; }
+  .agenda-chapter-content { padding: 1pt 0 9pt; }
   .agenda-chapter-head { break-after: avoid; page-break-after: avoid; }
-  .agenda-item { break-inside: avoid; page-break-inside: avoid; }
+  .agenda-chapter-head h2 { font-size: 10.25pt; }
+  .agenda-chapter-items { margin: 2pt 0 0; padding-left: .27in; }
+  .agenda-chapter-empty { margin: 4pt 0 1pt; font-size: 9.5pt; }
+  .agenda-item { padding: 3pt 0 3pt 1pt; break-inside: auto; page-break-inside: auto; }
+  .agenda-item::marker { font-size: 9pt; }
+  .agenda-item-title { margin-bottom: 2pt; font-size: 10.25pt; line-height: 1.25; break-after: avoid; page-break-after: avoid; }
+  .agenda-item-body { font-size: 10pt; line-height: 1.36; }
+  .agenda-item-body :where(ul, ol), .commander-cue-body :where(ul, ol) { margin: .5em 0; padding-left: 1.45em; }
+  .agenda-item-body li, .commander-cue-body li { margin: .18em 0; }
   .agenda-item-summary { display: none !important; }
-  .commander-cue { background: transparent; border-top: 1px solid #7895aa; border-right: 1px solid #7895aa; border-bottom: 1px solid #7895aa; }
+  .commander-cue { margin-top: 8pt; padding: 7pt 9pt; background: transparent; border-top: 1px solid #7895aa; border-right: 1px solid #7895aa; border-bottom: 1px solid #7895aa; }
+  .commander-cue-label { margin-bottom: 4pt; font-size: 7pt; }
+  .commander-cue-body { font-size: 9.5pt; line-height: 1.36; }
   .roll-call-table tr { break-inside: avoid; page-break-inside: avoid; }
-  .agenda-chapter-rail::after { background: #777; }
-  .agenda-masthead { margin-bottom: 28px; }
-  @page { margin: 18mm; }
+  .agenda-doc-footer { display: none; }
+  @page {
+    size: Letter portrait;
+    margin: .5in .25in .45in;
+
+    @bottom-left {
+      content: var(--agenda-footer-address-line-one) "\A" var(--agenda-footer-address-line-two);
+      padding-top: 4pt;
+      color: #555;
+      border-top: .5pt solid #999;
+      font: 7.5pt/1.2 Arial, sans-serif;
+      white-space: pre-line;
+    }
+
+    @bottom-center {
+      content: var(--agenda-footer-email);
+      padding-top: 4pt;
+      color: #555;
+      border-top: .5pt solid #999;
+      font: 7.5pt/1.2 Arial, sans-serif;
+    }
+
+    @bottom-right {
+      content: "Page " counter(page);
+      padding-top: 4pt;
+      color: #555;
+      border-top: .5pt solid #999;
+      font: 7.5pt/1.2 Arial, sans-serif;
+    }
+  }
 }

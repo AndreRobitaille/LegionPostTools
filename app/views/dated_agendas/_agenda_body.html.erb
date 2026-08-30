@@ -15,15 +15,15 @@
           <span class="agenda-chapter-rule" aria-hidden="true"></span>
         </header>
 
-        <div class="agenda-chapter-items">
+        <ol class="agenda-chapter-items">
           <% if items.empty? %>
-            <p class="agenda-chapter-empty">No items listed in advance.</p>
+            <li class="agenda-chapter-empty">No items listed in advance.</li>
           <% end %>
           <% items.each do |agenda_item| %>
             <%# The summary is builder guidance, not printed agenda content. On
                 screen it can stand in when an item has no body of its own; print
                 callers disable it explicitly. %>
-            <section class="agenda-item">
+            <li class="agenda-item">
               <h3 class="agenda-item-title"><%= agenda_item.title %></h3>
               <% if agenda_item.body.present? && agenda_item.show_wording_on_agenda? %>
                 <div class="agenda-item-body"><%= agenda_item.body %></div>
@@ -39,9 +39,9 @@
               <% if commander_copy && agenda_item.roll_call? %>
                 <%= render "dated_agendas/roll_call", entries: agenda_item.roll_call_entries %>
               <% end %>
-            </section>
+            </li>
           <% end %>
-        </div>
+        </ol>
       </div>
     </section>
   <% end %>

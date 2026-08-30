@@ -1,10 +1,20 @@
 require "application_system_test_case"
+require "base64"
 
 # Browser-driven coverage for dated-agenda management and the member-facing
 # published-agenda flow that request tests cannot exercise.
 class DatedAgendasSystemTest < ApplicationSystemTestCase
   setup do
-    @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    @organization = Organization.create!(
+      name: "Robert E. Burns Post 165",
+      unit_type: "american_legion_post",
+      locality: "Two Rivers, Wisconsin",
+      mailing_address: "P.O. Box 11\nTwo Rivers, WI 54241",
+      public_email: "wipost165@gmail.com",
+      default_location_name: "Manitowoc Rifle and Pistol Club",
+      default_location_address: "7227 Sandy Hill Lane\nTwo Rivers, WI 54241",
+      timezone: "America/Chicago"
+    )
     Installation.singleton.update!(setup_completed_at: Time.current)
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     @user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
@@ -120,7 +130,9 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
 
     click_link "Commander's copy"
 
-    assert_selector ".agenda-document-label--commander", text: /Commander's working copy/i
+    assert_selector ".agenda-meeting-heading h1", text: /Membership Meeting — Commander's working copy/i
+    assert_selector ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane/im
+    assert_selector "ol.agenda-chapter-items > li.agenda-item", minimum: 1
     assert_selector ".commander-cue", text: /Give three raps/
     assert_selector ".roll-call-table", text: /Commander.*Jane Doe/
     assert_no_text "Wording withheld from members"
@@ -230,8 +242,12 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     find(".agenda-docket-row", text: @agenda.title).click
 
     assert_current_path dated_agenda_path(@agenda)
-    assert_selector ".agenda-masthead h1", text: @agenda.title
+    assert_selector ".agenda-masthead h1", text: "Membership Meeting — Agenda"
+    assert_selector "img.agenda-emblem[alt='']", visible: :all
+    assert_selector ".agenda-meeting-when time", count: 2
+    assert_selector ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane/im
     assert_selector ".agenda-chapter-number", count: 2
+    assert_selector "ol.agenda-chapter-items > li.agenda-item", minimum: 1
     assert_selector ".agenda-item-title", text: "Community service report"
     assert_selector ".agenda-item-body ul li", text: "Completed service work"
     assert_selector ".agenda-item-summary", text: "Screen-only drafting summary."
@@ -241,7 +257,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
 
     page.current_window.resize_to(390, 844)
 
-    assert_selector ".agenda-masthead h1", text: @agenda.title
+    assert_selector ".agenda-masthead h1", text: "Membership Meeting — Agenda"
     assert_selector ".agenda-chapter-number", count: 2
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
 
@@ -252,6 +268,15 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_equal "disc", page.evaluate_script("getComputedStyle(document.querySelector('.agenda-item-body ul')).listStyleType")
     assert_no_selector ".agenda-item-summary"
     assert_no_text "Screen-only drafting summary."
+
+    print_result = page.driver.browser.execute_cdp(
+      "Page.printToPDF",
+      printBackground: true,
+      preferCSSPageSize: true
+    )
+    pdf_data = Base64.strict_decode64(print_result.fetch("data"))
+    assert pdf_data.start_with?("%PDF"), "browser print should produce a PDF document"
+    File.binwrite(ENV.fetch("AGENDA_PDF_CAPTURE"), pdf_data) if ENV["AGENDA_PDF_CAPTURE"].present?
   ensure
     page.current_window.resize_to(1400, 1400)
   end
