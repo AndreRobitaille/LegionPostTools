@@ -41,6 +41,7 @@ class MinutesDraftProviders::OpenaiTest < ActiveSupport::TestCase
     assert_equal [], responses.parameters[:tools]
     assert_equal :none, responses.parameters[:tool_choice]
     assert_equal :disabled, responses.parameters[:truncation]
+    assert_equal :medium, responses.parameters.dig(:text, :verbosity)
     assert_equal :json_schema, responses.parameters.dig(:text, :format, :type)
     assert_equal true, responses.parameters.dig(:text, :format, :strict)
     assert_equal "req_123", result.provider_request_id

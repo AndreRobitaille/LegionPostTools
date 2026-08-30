@@ -11,7 +11,7 @@ class MinutesDraftRun < ApplicationRecord
     dependent: :destroy,
     inverse_of: :minutes_draft_run
 
-  validates :provider, :model, :reasoning_effort, :prompt_version, :prompt_sha256,
+  validates :provider, :model, :reasoning_effort, :text_verbosity, :prompt_version, :prompt_sha256,
     :schema_version, :source_sha256, :status, presence: true
   validates :status, inclusion: { in: STATUSES }
   validates :source_line_count, numericality: { only_integer: true, greater_than: 0 }

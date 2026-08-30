@@ -48,6 +48,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     assert_predicate @run, :succeeded?
     assert_equal "gpt-5.6-sol", @run.model
     assert_equal "high", @run.reasoning_effort
+    assert_equal "medium", @run.text_verbosity
     assert_equal MinutesDrafting::Prompt.sha256, @run.prompt_sha256
     assert_equal @transcript.sha256_digest, @run.source_sha256
     assert_equal 3, @run.suggestions.count

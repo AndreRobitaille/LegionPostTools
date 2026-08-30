@@ -138,6 +138,7 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
       provider: "openai",
       model: "gpt-5.6-sol",
       reasoning_effort: "high",
+      text_verbosity: "medium",
       prompt_version: MinutesDrafting::Prompt::VERSION,
       prompt_sha256: MinutesDrafting::Prompt.sha256,
       schema_version: MinutesDrafting::Prompt::SCHEMA_VERSION,

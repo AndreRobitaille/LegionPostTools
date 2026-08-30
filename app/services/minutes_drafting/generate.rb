@@ -59,6 +59,7 @@ module MinutesDrafting
         provider: MinutesDraftProviders::Openai::PROVIDER,
         model: MinutesDraftProviders::Openai::MODEL,
         reasoning_effort: MinutesDraftProviders::Openai::REASONING_EFFORT,
+        text_verbosity: MinutesDraftProviders::Openai::TEXT_VERBOSITY,
         prompt_version: Prompt::VERSION,
         prompt_sha256: Prompt.sha256,
         schema_version: Prompt::SCHEMA_VERSION,

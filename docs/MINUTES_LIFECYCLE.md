@@ -61,6 +61,10 @@ does not infer acceptance merely because time passed or another Meeting occurred
 - Use `gpt-5.6-sol` with high reasoning effort as the initial minutes-drafting default.
   Evaluate other reasoning levels against representative Post transcripts; use Terra or
   Luna for a lower-risk task only after task-specific evidence shows that quality holds.
+- Draft selectively complete minutes, not a skeletal outline and not a transcript. A member
+  who was absent should be able to understand what happened, why it matters, the material
+  viewpoints or disagreement, and any dates, numbers, costs, commitments, or next steps
+  needed to participate or follow up.
 - Keep every model-produced statement visibly reviewable against transcript line/time
   ranges or agenda sources. Missing facts remain missing.
 - Preserve exact approved versions in immutable `MinutesRevision` records. Member and
@@ -250,6 +254,21 @@ motions in narrative so decisions can later be found and rendered consistently.
 For a `decision`, mover and seconder normally remain blank. For a motion, those names are
 optional because the source may not establish them. **Not recorded** is a deliberate,
 visible value; a blank field must never cause the app or AI to assume adoption.
+
+#### Future roster-backed participant resolution
+
+The human review workflow should replace the free-text-only mover and seconder fields with
+an inline roster-backed identity resolver. The source wording remains visible, and the AI
+may preserve exactly the first name, nickname, or uncertain spelling it heard, but it must
+not choose a `Person` from similarity or likelihood.
+
+The reviewer chooses a full roster name, with the person's current or meeting-date Post
+role shown for disambiguation. The picker must also offer **Not identified** and **Not in
+roster — record the supplied name** paths. A confirmed choice writes `mover_person_id` or
+`seconder_person_id` and freezes the full displayed name into the corresponding name
+snapshot. Later roster or role changes never rewrite that minutes record. The same pattern
+may later support other attributed participants when the source and minutes format call for
+it. Sick Call and Service Officer case details never enter this identity workflow.
 
 This structure does not decide whether a second was legally required, whether debate was
 proper, whether quorum existed, or whether the procedure was valid. It records what the
@@ -838,7 +857,18 @@ also identifies direct supporting transcript evidence. Those proposals remain vi
 unreviewed; unsupported values must be `not_recorded`. The model never proposes approval,
 attestation, acceptance, amendment, or confirmation.
 
+The first pass uses medium text verbosity and an explicit absent-member usefulness test.
+It preserves directly supported material context, significant viewpoints or disagreement,
+reasons, proposals, names, dates, places, costs, quantities, statistics, commitments, and
+next steps while omitting repetition and minor banter. This is selective completeness, not
+verbatim transcription. Attribute a viewpoint only when the source identifies its speaker.
+
 ### Failure and privacy behavior
+
+Sick Call and Service Officer reports are a deliberate exception to the normal detail
+standard. Their suggestions may retain anonymous or aggregate counts and general activity,
+but never names or identifying health, benefit, financial, or case details. Reviewers must
+not relocate private details to another item merely to preserve them.
 
 Provider timeout, refusal, schema failure, context overflow, or partial output leaves the
 minutes scaffold intact and explains the next action: retry, reduce the transcript, or

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_070000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -460,6 +460,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_070000) do
     t.string "source_sha256", null: false
     t.datetime "started_at"
     t.string "status", default: "pending", null: false
+    t.string "text_verbosity", null: false
     t.integer "total_tokens"
     t.datetime "updated_at", null: false
     t.index ["meeting_minutes_id", "created_at"], name: "index_minutes_draft_runs_on_meeting_minutes_id_and_created_at"

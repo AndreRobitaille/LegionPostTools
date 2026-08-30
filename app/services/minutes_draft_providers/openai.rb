@@ -2,6 +2,7 @@ module MinutesDraftProviders
   class Openai
     MODEL = ENV.fetch("OPENAI_MINUTES_MODEL", "gpt-5.6-sol")
     REASONING_EFFORT = ENV.fetch("OPENAI_MINUTES_REASONING_EFFORT", "high")
+    TEXT_VERBOSITY = ENV.fetch("OPENAI_MINUTES_TEXT_VERBOSITY", "medium")
     PROVIDER = "openai"
 
     def initialize(client: nil)
@@ -21,7 +22,7 @@ module MinutesDraftProviders
             strict: true,
             schema: schema
           },
-          verbosity: :low
+          verbosity: TEXT_VERBOSITY.to_sym
         },
         tools: [],
         tool_choice: :none,

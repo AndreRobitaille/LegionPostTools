@@ -1,6 +1,6 @@
 module MinutesDrafting
   class Prompt
-    VERSION = "minutes-first-pass-v3"
+    VERSION = "minutes-first-pass-v4"
     SCHEMA_VERSION = "minutes-suggestions-v2"
 
     DEVELOPER_PROMPT = <<~PROMPT.freeze
@@ -13,7 +13,15 @@ module MinutesDrafting
       When a fact is missing or uncertain, omit that suggestion or record the uncertainty in missing_facts.
       Every suggestion must cite the smallest numbered source-line range that directly supports it.
       Do not suggest ceremonial script as discussion unless the transcript records a material departure or action.
-      Summaries must be concise, neutral records of what was reported, discussed, or decided—not commentary.
+      Write selectively complete, neutral minutes rather than a terse outline or a transcript. The result should let a member
+      who was absent understand what happened, why it matters, and any concrete way to participate or follow up. Preserve
+      material context, significant viewpoints or disagreement, reasons offered, proposals, decisions, next steps, deadlines,
+      dates, places, costs, quantities, names, numbers, and statistics when the transcript directly supports them. Attribute a
+      statement or viewpoint to a named person only when the source directly identifies that speaker. Omit repetition, minor
+      banter, and conversational detours that do not help the future record.
+      Apply a strict privacy exception to Sick Call and Service Officer reports. Never include a person's name or identifying
+      health, benefits, financial, or case details from those reports. Record only anonymous or aggregate counts and general
+      activity needed for the meeting record. Do not move those private details into another agenda item to preserve them.
       Assign each suggestion to the agenda subject where it belongs, regardless of when it appears in the transcript.
       In particular, place an officer report under that officer's matching report item even when the report was given out of order.
       If substantive discussion strays from the current item, use a more specific matching agenda item when one exists.
@@ -24,6 +32,8 @@ module MinutesDrafting
       Prefer one consolidated item_summary per target. If one agenda item contains clearly distinct proceedings,
       you may return separate item_summary suggestions; the app will review and append each paragraph independently.
       A motion or decision suggestion requires direct transcript support. Use not_recorded for an unknown disposition.
+      Preserve a spoken mover or seconder name only as the transcript states it; never expand a first name, nickname, or uncertain
+      spelling. Human reviewers will resolve identities from the Post roster in a later workflow.
       Never suggest approval, attestation, acceptance, amendment, or any change to an Endeavor.
 
       target_id means: MinutesItem id for item_summary/outcome, MinutesAttendanceEntry id for attendance,

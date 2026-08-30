@@ -251,6 +251,9 @@ normal Adjutant experience.
 - Represent substantive outcomes as structured content attached to a minutes item. The
   initial design must cover narrative, motions/decisions, mover and seconder snapshots
   when known, and the recorded outcome without attempting a general parliamentary engine.
+- Make the AI first pass selectively complete enough for an absent member to understand
+  material discussion, disagreement, names, dates, numbers, commitments, and next steps,
+  while keeping Sick Call and Service Officer details anonymous and non-identifying.
 - Accept transcript paste first and a narrowly supported text-file upload when useful.
   Treat the transcript as restricted source material, separate from the official minutes,
   excluded from member and print output, and governed by an explicit retention/deletion
@@ -260,6 +263,10 @@ normal Adjutant experience.
   strict structured output behind a replaceable provider boundary; record prompt,
   source/run, and review provenance; surface uncertainty; and never invent attendance,
   motions, seconds, votes, decisions, or Endeavor identity.
+- After transcript suggestions are proven, add roster-backed human identity resolution for
+  movers and seconders. Show full names and meeting-relevant Post roles, preserve the
+  transcript's spoken-name evidence, require a human selection, freeze a full-name snapshot,
+  and retain explicit **Not identified** and **Not in roster** paths.
 
 ### Slice 3: Human review, approval, and attestation
 
