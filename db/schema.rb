@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -492,6 +492,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_030000) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "disabled_at"
+    t.string "disabled_reason"
+    t.string "disabled_reason_detail"
     t.string "email_address", null: false
     t.datetime "email_verified_at"
     t.boolean "login_access_override", default: false, null: false
@@ -502,6 +504,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_030000) do
     t.datetime "roster_email_reviewed_at"
     t.datetime "updated_at", null: false
     t.string "webauthn_id", null: false
+    t.index ["disabled_reason"], name: "index_users_on_disabled_reason"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
     t.index ["login_access_override"], name: "index_users_on_login_access_override"
     t.index ["person_id"], name: "index_users_on_person_id", unique: true

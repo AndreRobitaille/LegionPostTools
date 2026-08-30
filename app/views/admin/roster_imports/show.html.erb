@@ -103,9 +103,14 @@
   <% end %>
 
   <% effect_lines = [
+       [ "New accounts created and enabled", @roster_import.access_effects["account_created"] ],
        [ "Turned on by roster status", @roster_import.access_effects["enabled_by_roster_status"] ],
        [ "Turned off by roster status or removal", @roster_import.access_effects["disabled_by_roster_status"] ],
-       [ "Left as set manually", @roster_import.access_effects["skipped_admin_override"] ],
+       [ "Left off by administrator", @roster_import.access_effects["skipped_manual_disable"] ],
+       [ "Active members missing a roster email", @roster_import.access_effects["account_not_created_missing_email"] ],
+       [ "Active members with an invalid roster email", @roster_import.access_effects["account_not_created_invalid_email"] ],
+       [ "Active members sharing a roster email", @roster_import.access_effects["account_not_created_shared_email"] ],
+       [ "Active members whose roster email is already in use", @roster_import.access_effects["account_not_created_email_in_use"] ],
        [ "Left on to protect the last administrator", @roster_import.access_effects["skipped_last_admin"] ]
      ].select { |_label, count| count.to_i.positive? } %>
   <% if effect_lines.any? %>
@@ -119,7 +124,7 @@
   <% exceptions = @roster_import.sign_in_exceptions %>
   <% if exceptions.any? %>
     <%= render "shared/section_panel", label: "Sign-in exceptions" do %>
-      <p class="ownernote">These accounts are set manually. Roster imports never change them — review each one to return it to roster-controlled sign-in.</p>
+      <p class="ownernote">These accounts are controlled locally. Active roster imports leave a deliberately disabled account off; people without a National roster record also remain manual.</p>
       <% exceptions.each do |user| %>
         <div class="item">
           <span class="who"><%= user.person.full_name %></span>

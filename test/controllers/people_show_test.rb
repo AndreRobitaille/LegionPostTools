@@ -52,8 +52,8 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     get person_path(person)
 
     assert_response :success
-    assert_includes response.body, "Sign-in is set manually."
-    assert_select "input[type=submit], button", text: /Switch back to following the roster/
+    assert_includes response.body, "Sign-in is managed locally."
+    assert_select "input[type=submit], button", text: /Use automatic roster access/
     assert_select "form[action=?]", roster_control_admin_person_user_account_path(person)
   end
 
@@ -67,7 +67,29 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Sign-in follows the National roster."
-    assert_select "input[type=submit], button", text: /Switch back to following the roster/, count: 0
+    assert_select "input[type=submit], button", text: /Use automatic roster access/, count: 0
+  end
+
+  test "officer login panel explains why a roster-disabled account cannot sign in" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    person.update!(roster_member_status: "Expired")
+    User.create!(
+      person: person,
+      email_address: "expired@example.com",
+      disabled_at: Time.current,
+      disabled_reason: "roster_status",
+      disabled_reason_detail: "expired"
+    )
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select ".badge-off", text: "Cannot sign in"
+    assert_select ".acct-mode--off", text: /National roster status is Expired/
+    assert_select ".acct-mode--off", text: /return automatically/
+    assert_select "input[type=submit][value='Save login email']"
   end
 
   test "member sees contact, service, and roles but no record or controls" do

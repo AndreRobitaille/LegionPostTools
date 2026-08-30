@@ -37,6 +37,10 @@ class Person < ApplicationRecord
     roster_member_status.to_s.strip.downcase
   end
 
+  def roster_backed?
+    member_number.present?
+  end
+
   # Up to two letters for the avatar token. Kept on the model because the header
   # and the account menu both render it, and a photo will replace it later.
   def initials

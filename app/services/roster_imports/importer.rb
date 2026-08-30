@@ -1,3 +1,5 @@
+require "uri"
+
 module RosterImports
   class Importer
     LARGE_REMOVAL_THRESHOLD = 10
@@ -69,6 +71,7 @@ module RosterImports
       created_members = []
       field_changes = {}
       access_effects = Hash.new(0)
+      email_counts = eligible_email_counts(rows)
       roster_import = nil
 
       ActiveRecord::Base.transaction do
@@ -99,13 +102,10 @@ module RosterImports
             unchanged += 1
           end
 
-          if person.user
-            effect = person.user.apply_roster_access!
+          effect = reconcile_login_access(person, email_counts, problems)
+          if effect
             access_effects[effect.to_s] += 1
-            if effect == :unsupported_status
-              problems << { row: nil, kind: "unsupported_member_status",
-                message: "#{person.roster_display_name} has unsupported member status #{person.roster_member_status.inspect}; sign-in was not changed." }
-            elsif effect == :skipped_last_admin
+            if effect == :skipped_last_admin
               problems << { row: nil, kind: "last_admin",
                 message: "#{person.roster_display_name} would lose sign-in by roster status but is the last administrator — sign-in kept on; review manually." }
             end
@@ -185,7 +185,7 @@ module RosterImports
       reserved_admin_id = pending_removed_admin_reservation_id(removed_people)
       removed_members = removed_people.map do |person|
         user = person.user
-        would_disable_sign_in = user.present? && !user.login_access_override? && user.disabled_at.blank?
+        would_disable_sign_in = user.present? && user.disabled_at.blank?
         would_disable_sign_in &&= !user.can?("manage_settings") || person.user.id != reserved_admin_id
 
         {
@@ -221,7 +221,7 @@ module RosterImports
     def pending_removed_admin_reservation_id(removed_people)
       removed_admins = removed_people.filter_map do |person|
         user = person.user
-        next unless user && !user.login_access_override? && user.disabled_at.blank? && user.can?("manage_settings")
+        next unless user && user.disabled_at.blank? && user.can?("manage_settings")
 
         user
       end
@@ -237,6 +237,72 @@ module RosterImports
       return nil if outside_enabled_admin_exists
 
       removed_admins.min_by(&:id).id
+    end
+
+    def reconcile_login_access(person, email_counts, problems)
+      if person.user
+        unsupported_status = person.user.roster_access_unsupported_status?
+        effect = person.user.apply_roster_access!
+        if unsupported_status && effect != :skipped_last_admin
+          outcome = effect == :skipped_manual_disable ? "sign-in remains off by administrator" : "sign-in was turned off"
+          problems << {
+            row: nil,
+            kind: "unsupported_member_status",
+            message: "#{person.roster_display_name} has unsupported member status #{person.roster_member_status.inspect}; #{outcome}."
+          }
+        end
+        return effect
+      end
+
+      status = person.normalized_roster_status
+      unless User::ROSTER_LOGIN_ENABLED_STATUSES.include?(status)
+        return if User::ROSTER_LOGIN_DISABLED_STATUSES.include?(status)
+
+        problems << {
+          row: nil,
+          kind: "unsupported_member_status",
+          message: "#{person.roster_display_name} has unsupported member status #{person.roster_member_status.inspect}; no sign-in account was created."
+        }
+        return :unsupported_status_without_account
+      end
+
+      email = person.roster_email_address.to_s.strip.downcase
+      problem = login_email_problem(person, email, email_counts)
+      if problem
+        problems << problem
+        return problem.fetch(:kind).to_sym
+      end
+
+      User.create!(person: person, email_address: email)
+      :account_created
+    end
+
+    def login_email_problem(person, email, email_counts)
+      kind, explanation = if email.blank?
+        [ "account_not_created_missing_email", "has no roster email" ]
+      elsif !URI::MailTo::EMAIL_REGEXP.match?(email)
+        [ "account_not_created_invalid_email", "has an invalid roster email" ]
+      elsif email_counts.fetch(email, 0) > 1
+        [ "account_not_created_shared_email", "shares a roster email with another current member" ]
+      elsif User.exists?(email_address: email)
+        [ "account_not_created_email_in_use", "has a roster email already used by another login account" ]
+      end
+
+      return unless kind
+
+      {
+        row: nil,
+        kind: kind,
+        message: "#{person.roster_display_name} is a current member but #{explanation}; no sign-in account was created."
+      }
+    end
+
+    def eligible_email_counts(rows)
+      rows.filter_map do |row|
+        next unless User::ROSTER_LOGIN_ENABLED_STATUSES.include?(row.member_status.to_s.strip.downcase)
+
+        row.email_address.to_s.strip.downcase.presence
+      end.tally
     end
 
     def assign_roster_fields(person, row)

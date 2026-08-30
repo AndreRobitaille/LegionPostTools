@@ -83,6 +83,8 @@ Codex's restricted command sandbox can expose root-owned host files under `/etc`
 - `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, Four Pillars, Legion Family, source authority, and AI interpretation rules.
 - `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
+- `docs/MEMBER_SIGN_IN_GUIDE.md` — plain-language email sign-in instructions for Post members.
+- `docs/USER_MANAGEMENT_GUIDE.md` — Commander and Adjutant procedures for accounts, officers, and permissions.
 - `docs/ARCHITECTURE.md` — architecture and durable decisions.
 - `docs/ROADMAP.md` — planned development phases.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — implemented first-class Meeting and member archive boundary.

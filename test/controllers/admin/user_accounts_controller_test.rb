@@ -7,10 +7,11 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     post admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "Sign-in is on. It's now set manually, so roster imports won't change it.", flash[:notice]
+    assert_equal "Sign-in is on and will follow the National roster.", flash[:notice]
     assert_equal "vincent@example.com", person.reload.user.email_address
-    assert person.user.email_verified_at.present?
+    assert_nil person.user.email_verified_at
     assert_nil person.user.disabled_at
+    assert_not person.user.login_access_override?
   end
 
   test "uses admin-entered email when enabling login" do
@@ -19,11 +20,11 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     post admin_person_user_account_path(person), params: { user: { email_address: "admin@example.com" } }
 
     assert_redirected_to person_path(person)
-    assert_equal "Sign-in is on. It's now set manually, so roster imports won't change it.", flash[:notice]
+    assert_equal "Sign-in is on and will follow the National roster.", flash[:notice]
     assert_equal "admin@example.com", person.reload.user.email_address
   end
 
-  test "enable existing account sets an admin override" do
+  test "enable existing roster account returns it to automatic access" do
     person = prepare_admin_person(roster_email_address: "vincent@example.com")
     user = User.create!(person: person, email_address: "disabled@example.com", disabled_at: 1.day.ago)
 
@@ -31,8 +32,9 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     user.reload
     assert_nil user.disabled_at
-    assert user.login_access_override?
-    assert user.login_access_override_at.present?
+    assert_not user.login_access_override?
+    assert_nil user.login_access_override_at
+    assert_nil user.disabled_reason
   end
 
   test "re-enables disabled existing user with admin-entered email" do
@@ -42,7 +44,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     post admin_person_user_account_path(person), params: { user: { email_address: "new@example.com" } }
 
     assert_redirected_to person_path(person)
-    assert_equal "Sign-in is on. It's now set manually, so roster imports won't change it.", flash[:notice]
+    assert_equal "Sign-in is on and will follow the National roster.", flash[:notice]
     assert_equal user.id, person.reload.user.id
     assert_equal "new@example.com", person.user.email_address
     assert_nil person.user.disabled_at
@@ -55,8 +57,9 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     delete admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "Sign-in is off. It's now set manually, so roster imports won't change it.", flash[:notice]
+    assert_equal "Sign-in is off. Roster imports will leave it off until an administrator enables it again.", flash[:notice]
     assert person.reload.user.disabled_at.present?
+    assert_equal "manual", person.user.disabled_reason
     assert_equal user.id, person.user.id
   end
 
@@ -70,6 +73,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     assert user.disabled_at.present?
     assert user.login_access_override?
     assert user.login_access_override_at.present?
+    assert_equal "manual", user.disabled_reason
   end
 
   test "cannot disable only enabled manage_settings user" do
@@ -95,7 +99,7 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     delete admin_person_user_account_path(person)
 
     assert_redirected_to person_path(person)
-    assert_equal "Sign-in is off. It's now set manually, so roster imports won't change it.", flash[:notice]
+    assert_equal "Sign-in is off. Roster imports will leave it off until an administrator enables it again.", flash[:notice]
     assert person.reload.user.disabled_at.present?
   end
 
@@ -110,10 +114,11 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     assert_not user.login_access_override?
     assert_nil user.login_access_override_at
     assert user.disabled_at.present?
+    assert_equal "roster_status", user.disabled_reason
     assert_redirected_to person_path(person)
   end
 
-  test "return to roster control alerts when roster status is unsupported" do
+  test "return to roster control disables an account when roster status is unsupported" do
     person = prepare_admin_person(roster_email_address: "vincent@example.com")
     user = User.create!(person: person, email_address: "vincent@example.com", email_verified_at: Time.current, login_access_override: true, login_access_override_at: Time.current)
     person.update!(roster_member_status: "Suspended")
@@ -122,10 +127,11 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
 
     user.reload
     assert_redirected_to person_path(person)
-    assert_equal "Roster status cannot be applied automatically.", flash[:alert]
+    assert_equal "Sign-in now follows the National roster and is off because the current status is not eligible.", flash[:notice]
     assert_not user.login_access_override?
     assert_nil user.login_access_override_at
-    assert_nil user.disabled_at
+    assert user.disabled_at.present?
+    assert_equal "suspended", user.disabled_reason_detail
   end
 
   test "return to roster control alerts when no user exists" do
@@ -156,7 +162,10 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
       Person.find_by!(first_name: "Vincent", last_name: "Alber")
     else
       sign_in_manage_settings_admin
-      Person.create!(first_name: "Vincent", last_name: "Alber", roster_email_address: roster_email_address)
+      Person.create!(
+        first_name: "Vincent", last_name: "Alber", member_number: "000204540637",
+        roster_email_address: roster_email_address, roster_member_status: "Active"
+      )
     end
   end
 

@@ -9,6 +9,8 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal 0, result.updated_count
     assert_equal 0, result.problem_count
     assert_equal 2, Person.where(member_number: %w[000204540637 000204540638]).count
+    assert_equal 2, User.joins(:person).where(people: { member_number: %w[000204540637 000204540638] }).count
+    assert_equal 2, result.roster_import.access_effects["account_created"]
     assert_equal "completed", result.roster_import.status
     assert_equal [ "Smith, John", "Jones, Mary" ], result.roster_import.reload.created_members.pluck("name")
   end
@@ -140,6 +142,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     gone.reload; gone_user.reload
     assert gone.roster_removed_at.present?
     assert gone_user.disabled_at.present?
+    assert_equal "roster_removed", gone_user.disabled_reason
     assert_equal "000000000001", result.roster_import.summary["removed_members"].first["member_number"]
   end
 
@@ -174,7 +177,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert(result.roster_import.summary["problems"].any? { |p| p["kind"] == "last_admin" })
   end
 
-  test "unsupported roster status for a person with a user records a problem and leaves sign-in unchanged" do
+  test "unsupported roster status for a person with a user records a problem and disables sign-in" do
     person = Person.create!(first_name: "Unknown", last_name: "Member", member_number: "000204540646", roster_imported_at: 1.day.ago)
     user = User.create!(person: person, email_address: "unknown@example.com")
     csv = <<~CSV
@@ -185,9 +188,10 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     result = RosterImports::Importer.new(csv_text: csv, filename: "unsupported-status.csv").import
 
     assert result.success?
-    assert_equal 1, result.roster_import.summary["access_effects"]["unsupported_status"]
+    assert_equal 1, result.roster_import.summary["access_effects"]["disabled_by_roster_status"]
     assert_equal "unsupported_member_status", result.roster_import.summary["problems"].first["kind"]
-    assert_nil user.reload.disabled_at
+    assert user.reload.disabled_at.present?
+    assert_equal "suspended", user.disabled_reason_detail
   end
 
   test "last enabled administrator present in the CSV with expired status is not disabled and records a skipped last admin problem" do
@@ -242,10 +246,12 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert result.success?
     assert expired_user.reload.disabled_at.present?
     assert deceased_user.reload.disabled_at.present?
+    assert_equal [ "roster_status", "expired" ], [ expired_user.disabled_reason, expired_user.disabled_reason_detail ]
+    assert_equal [ "roster_status", "deceased" ], [ deceased_user.disabled_reason, deceased_user.disabled_reason_detail ]
     assert_equal 2, result.roster_import.access_effects["disabled_by_roster_status"]
   end
 
-  test "imports skip admin override accounts" do
+  test "imports replace a legacy manual enable when roster status is expired" do
     person = Person.create!(first_name: "Override", last_name: "Member", member_number: "000204540644", roster_imported_at: 1.day.ago)
     user = User.create!(person: person, email_address: "override-import@example.com", login_access_override: true, login_access_override_at: Time.current)
     csv = <<~CSV
@@ -256,19 +262,69 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     result = RosterImports::Importer.new(csv_text: csv, filename: "override.csv").import
 
     assert result.success?
-    assert_nil user.reload.disabled_at
-    assert_equal 1, result.roster_import.access_effects["skipped_admin_override"]
+    assert user.reload.disabled_at.present?
+    assert_equal "roster_status", user.disabled_reason
+    assert_equal 1, result.roster_import.access_effects["disabled_by_roster_status"]
   end
 
-  test "imports do not create login accounts" do
+  test "imports create enabled roster-managed login accounts for active members" do
     csv = <<~CSV
       Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
       000204540645,"Member, New",165,Member,1 A St,,new@example.com,555,Army,Vietnam,5,2026,Active
     CSV
 
-    assert_no_difference -> { User.count } do
-      RosterImports::Importer.new(csv_text: csv, filename: "new.csv").import
+    assert_difference -> { User.count }, 1 do
+      result = RosterImports::Importer.new(csv_text: csv, filename: "new.csv").import
+      assert_equal 1, result.roster_import.access_effects["account_created"]
     end
+
+    user = Person.find_by!(member_number: "000204540645").user
+    assert_equal "new@example.com", user.email_address
+    assert_nil user.disabled_at
+    assert_not user.login_access_override?
+    assert_nil user.email_verified_at
+  end
+
+  test "active members without usable unique emails import but do not get login accounts" do
+    existing_person = Person.create!(first_name: "Existing", last_name: "Account")
+    User.create!(person: existing_person, email_address: "used@example.com")
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540650,"Missing, Email",165,Member,1 A St,,,555,Army,Vietnam,5,2026,Active
+      000204540651,"Invalid, Email",165,Member,2 A St,,not-an-email,555,Army,Vietnam,5,2026,Active
+      000204540652,"Shared, One",165,Member,3 A St,,shared@example.com,555,Army,Vietnam,5,2026,Active
+      000204540653,"Shared, Two",165,Member,4 A St,,shared@example.com,555,Army,Vietnam,5,2026,Grace
+      000204540654,"Used, Email",165,Member,5 A St,,used@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "email-problems.csv").import
+
+    assert result.success?
+    assert_equal 5, result.problem_count
+    assert_equal 1, result.roster_import.access_effects["account_not_created_missing_email"]
+    assert_equal 1, result.roster_import.access_effects["account_not_created_invalid_email"]
+    assert_equal 2, result.roster_import.access_effects["account_not_created_shared_email"]
+    assert_equal 1, result.roster_import.access_effects["account_not_created_email_in_use"]
+    assert Person.where(member_number: %w[000204540650 000204540651 000204540652 000204540653 000204540654]).all? { |person| person.user.nil? }
+    assert_not_includes result.roster_import.summary.to_json, "shared@example.com"
+    assert_not_includes result.roster_import.summary.to_json, "used@example.com"
+  end
+
+  test "active roster import leaves a deliberately disabled account off" do
+    person = Person.create!(first_name: "Manual", last_name: "Disable", member_number: "000204540655", roster_imported_at: 1.day.ago)
+    user = User.create!(person: person, email_address: "manual@example.com")
+    user.set_login_access_override!(disabled: true)
+    csv = <<~CSV
+      Member ID,Name,Post/Squadron Number,Type,Address,Undeliverable,Email,PhoneNumber,Branch,Conflict/War Era,Continuous Years,Paid Through Year,Member Status
+      000204540655,"Disable, Manual",165,Member,1 A St,,manual@example.com,555,Army,Vietnam,5,2026,Active
+    CSV
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "manual-disable.csv").import
+
+    assert result.success?
+    assert user.reload.disabled_at.present?
+    assert_equal "manual", user.disabled_reason
+    assert_equal 1, result.roster_import.access_effects["skipped_manual_disable"]
   end
 
   test "returning active member clears roster_removed_at and re-enables roster-controlled sign-in" do

@@ -1,4 +1,8 @@
 class User < ApplicationRecord
+  DISABLED_REASONS = %w[manual roster_status roster_removed].freeze
+  ROSTER_LOGIN_ENABLED_STATUSES = %w[active grace].freeze
+  ROSTER_LOGIN_DISABLED_STATUSES = %w[expired deceased].freeze
+
   belongs_to :person
   has_many :permission_grants, dependent: :destroy
   has_many :passkey_credentials, dependent: :destroy
@@ -13,6 +17,7 @@ class User < ApplicationRecord
   validates :email_address, presence: true, uniqueness: true
   validates :person_id, uniqueness: true
   validates :webauthn_id, presence: true, uniqueness: true
+  validates :disabled_reason, inclusion: { in: DISABLED_REASONS }, allow_nil: true
 
   def can?(capability)
     capability = capability.to_s
@@ -81,14 +86,11 @@ class User < ApplicationRecord
     disabled_at.blank? && can?("manage_settings") && !self.class.another_enabled_manage_settings_user_exists?(self)
   end
 
-  ROSTER_LOGIN_ENABLED_STATUSES = %w[active grace].freeze
-  ROSTER_LOGIN_DISABLED_STATUSES = %w[expired deceased].freeze
-
   def apply_roster_access!
     transaction do
       lock_relevant_admin_rows! if roster_access_should_disable?
 
-      return :skipped_admin_override if login_access_override?
+      return :skipped_manual_disable if manually_disabled?
 
       apply_roster_access_without_override_check!
     end
@@ -96,6 +98,8 @@ class User < ApplicationRecord
 
   def return_to_roster_control!
     transaction do
+      return :not_roster_managed unless roster_managed?
+
       lock_relevant_admin_rows! if roster_access_should_disable?
 
       return :skipped_last_admin if roster_access_should_disable? && only_enabled_administrator?
@@ -113,8 +117,22 @@ class User < ApplicationRecord
         return :skipped_last_admin
       end
 
-      update!(disabled_at: (disabled ? Time.current : nil), login_access_override: true, login_access_override_at: Time.current)
+      update!(
+        disabled_at: (disabled ? Time.current : nil),
+        disabled_reason: (disabled ? "manual" : nil),
+        disabled_reason_detail: nil,
+        login_access_override: true,
+        login_access_override_at: Time.current
+      )
     end
+  end
+
+  def roster_managed?
+    person.roster_backed?
+  end
+
+  def manually_disabled?
+    login_access_override? && disabled_at.present?
   end
 
   def roster_access_status
@@ -128,27 +146,45 @@ class User < ApplicationRecord
   end
 
   def roster_access_should_disable?
-    roster_access_status == "removed" || ROSTER_LOGIN_DISABLED_STATUSES.include?(roster_access_status)
+    roster_access_status == "removed" || (roster_managed? && !roster_access_should_enable?)
   end
 
   def roster_access_unsupported_status?
-    !roster_access_should_enable? && !roster_access_should_disable?
+    roster_managed? && roster_access_status != "removed" &&
+      !roster_access_should_enable? && !ROSTER_LOGIN_DISABLED_STATUSES.include?(roster_access_status)
   end
 
   private
 
   def apply_roster_access_without_override_check!
-    return :unsupported_status if roster_access_unsupported_status?
-
     if roster_access_should_enable?
-      update!(disabled_at: nil) if disabled_at.present?
+      update!(
+        disabled_at: nil,
+        disabled_reason: nil,
+        disabled_reason_detail: nil,
+        login_access_override: false,
+        login_access_override_at: nil
+      ) if disabled_at.present? || disabled_reason.present? || login_access_override?
       :enabled_by_roster_status
     elsif only_enabled_administrator?
       :skipped_last_admin
     else
-      update!(disabled_at: Time.current) if disabled_at.blank?
+      reason, detail = roster_disable_reason
+      update!(
+        disabled_at: disabled_at || Time.current,
+        disabled_reason: reason,
+        disabled_reason_detail: detail,
+        login_access_override: false,
+        login_access_override_at: nil
+      )
       :disabled_by_roster_status
     end
+  end
+
+  def roster_disable_reason
+    return [ "roster_removed", nil ] if roster_access_status == "removed"
+
+    [ "roster_status", roster_access_status.presence || "not active" ]
   end
 
   def lock_relevant_admin_rows!

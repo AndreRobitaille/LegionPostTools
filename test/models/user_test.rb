@@ -79,6 +79,8 @@ class UserTest < ActiveSupport::TestCase
     assert user.login_access_override?
     assert user.login_access_override_at.present?
     assert user.disabled_at.present?
+    assert_equal "manual", user.disabled_reason
+    assert_nil user.disabled_reason_detail
   end
 
   test "set_login_access_override! stores disabled false state" do
@@ -90,6 +92,7 @@ class UserTest < ActiveSupport::TestCase
     assert user.login_access_override?
     assert user.login_access_override_at.present?
     assert_nil user.disabled_at
+    assert_nil user.disabled_reason
   end
 
   test "roster controlled access enables active and grace members" do
@@ -98,7 +101,9 @@ class UserTest < ActiveSupport::TestCase
       user = User.create!(person: person, email_address: "#{status.downcase}@example.com", disabled_at: 1.day.ago)
 
       assert_equal :enabled_by_roster_status, user.apply_roster_access!
-      assert_nil user.reload.disabled_at
+      user.reload
+      assert_nil user.disabled_at
+      assert_nil user.disabled_reason
     end
   end
 
@@ -122,9 +127,12 @@ class UserTest < ActiveSupport::TestCase
     assert expired.reload.disabled_at.present?
     assert deceased.reload.disabled_at.present?
     assert removed.reload.disabled_at.present?
+    assert_equal [ "roster_status", "expired" ], [ expired.disabled_reason, expired.disabled_reason_detail ]
+    assert_equal [ "roster_status", "deceased" ], [ deceased.disabled_reason, deceased.disabled_reason_detail ]
+    assert_equal "roster_removed", removed.disabled_reason
   end
 
-  test "roster controlled access skips admin override accounts" do
+  test "roster access replaces a legacy manual enable when member is no longer eligible" do
     user = User.create!(
       person: Person.create!(first_name: "Override", last_name: "Member", roster_member_status: "Expired"),
       email_address: "override@example.com",
@@ -132,18 +140,38 @@ class UserTest < ActiveSupport::TestCase
       login_access_override_at: Time.current
     )
 
-    assert_equal :skipped_admin_override, user.apply_roster_access!
-    assert_nil user.reload.disabled_at
+    assert_equal :disabled_by_roster_status, user.apply_roster_access!
+    user.reload
+    assert user.disabled_at.present?
+    assert_equal "roster_status", user.disabled_reason
+    assert_not user.login_access_override?
   end
 
-  test "unsupported status returns :unsupported_status and does not change sign-in" do
+  test "roster access preserves a deliberate manual disable for an active member" do
+    user = User.create!(
+      person: Person.create!(first_name: "Manual", last_name: "Disable", roster_member_status: "Active"),
+      email_address: "manual-disable@example.com"
+    )
+    user.set_login_access_override!(disabled: true)
+
+    assert_equal :skipped_manual_disable, user.apply_roster_access!
+    user.reload
+    assert user.disabled_at.present?
+    assert_equal "manual", user.disabled_reason
+    assert user.login_access_override?
+  end
+
+  test "unsupported roster status disables sign-in with the status as reason" do
     user = User.create!(
       person: Person.create!(first_name: "Unknown", last_name: "Member", roster_member_status: "Suspended"),
       email_address: "unknown@example.com"
     )
 
-    assert_equal :unsupported_status, user.apply_roster_access!
-    assert_nil user.reload.disabled_at
+    assert_equal :disabled_by_roster_status, user.apply_roster_access!
+    user.reload
+    assert user.disabled_at.present?
+    assert_equal "roster_status", user.disabled_reason
+    assert_equal "suspended", user.disabled_reason_detail
   end
 
   test "last enabled administrator is not disabled by roster policy" do
@@ -157,7 +185,7 @@ class UserTest < ActiveSupport::TestCase
 
   test "return_to_roster_control clears override and applies current roster policy" do
     user = User.create!(
-      person: Person.create!(first_name: "Back", last_name: "Policy", roster_member_status: "Expired"),
+      person: Person.create!(first_name: "Back", last_name: "Policy", member_number: "100", roster_member_status: "Expired"),
       email_address: "back-policy@example.com",
       login_access_override: true,
       login_access_override_at: Time.current
@@ -168,10 +196,11 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.login_access_override?
     assert_nil user.login_access_override_at
     assert user.disabled_at.present?
+    assert_equal "roster_status", user.disabled_reason
   end
 
   test "return_to_roster_control skips when user is last enabled admin and override remains set" do
-    person = Person.create!(first_name: "Sole", last_name: "Admin", roster_member_status: "Expired")
+    person = Person.create!(first_name: "Sole", last_name: "Admin", member_number: "101", roster_member_status: "Expired")
     user = User.create!(person: person, email_address: "sole-admin@example.com", login_access_override: true, login_access_override_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings")
 
@@ -180,6 +209,21 @@ class UserTest < ActiveSupport::TestCase
     assert user.login_access_override?
     assert user.login_access_override_at.present?
     assert_nil user.disabled_at
+  end
+
+  test "return_to_roster_control replaces a manual disable with the ineligible roster status" do
+    user = User.create!(
+      person: Person.create!(first_name: "Unknown", last_name: "Policy", member_number: "102", roster_member_status: "Suspended"),
+      email_address: "unknown-policy@example.com"
+    )
+    user.set_login_access_override!(disabled: true)
+
+    assert_equal :disabled_by_roster_status, user.return_to_roster_control!
+    user.reload
+    assert_not user.login_access_override?
+    assert_equal "roster_status", user.disabled_reason
+    assert_equal "suspended", user.disabled_reason_detail
+    assert user.disabled_at.present?
   end
 
   test "manage_settings implies the management capabilities" do

@@ -11,18 +11,19 @@ module Admin
 
       if (user = @person.user)
         user.update!(email_address: email_address)
-        user.set_login_access_override!(disabled: false)
       else
-        User.create!(
+        user = User.create!(
           person: @person,
-          email_address: email_address,
-          email_verified_at: Time.current,
-          login_access_override: true,
-          login_access_override_at: Time.current
+          email_address: email_address
         )
       end
 
-      redirect_to person_path(@person), notice: "Sign-in is on. It's now set manually, so roster imports won't change it."
+      if user.roster_managed?
+        redirect_after_roster_managed_enable(user)
+      else
+        user.set_login_access_override!(disabled: false)
+        redirect_to person_path(@person), notice: "Sign-in is on. This local account is managed manually because it has no National roster record."
+      end
     rescue ActiveRecord::RecordInvalid => e
       redirect_to person_path(@person), alert: e.record.errors.full_messages.to_sentence
     end
@@ -38,7 +39,7 @@ module Admin
         return
       end
 
-      redirect_to person_path(@person), notice: "Sign-in is off. It's now set manually, so roster imports won't change it."
+      redirect_to person_path(@person), notice: "Sign-in is off. Roster imports will leave it off until an administrator enables it again."
     end
 
     def roster_control
@@ -53,10 +54,27 @@ module Admin
       result = user.return_to_roster_control!
       if result == :skipped_last_admin
         redirect_to person_path(@person), alert: "At least one enabled administrator account is required."
-      elsif result == :unsupported_status
-        redirect_to person_path(@person), alert: "Roster status cannot be applied automatically."
+      elsif result == :not_roster_managed
+        redirect_to person_path(@person), alert: "This local account has no National roster record to follow."
+      elsif result == :disabled_by_roster_status
+        redirect_to person_path(@person), notice: "Sign-in now follows the National roster and is off because the current status is not eligible."
       else
         redirect_to person_path(@person), notice: "Sign-in now follows the National roster."
+      end
+    end
+
+    private
+
+    def redirect_after_roster_managed_enable(user)
+      result = user.return_to_roster_control!
+
+      case result
+      when :enabled_by_roster_status
+        redirect_to person_path(@person), notice: "Sign-in is on and will follow the National roster."
+      when :disabled_by_roster_status
+        redirect_to person_path(@person), alert: "The login email was saved, but sign-in stays off because this member is not active on the National roster."
+      when :skipped_last_admin
+        redirect_to person_path(@person), alert: "At least one enabled administrator account is required."
       end
     end
   end

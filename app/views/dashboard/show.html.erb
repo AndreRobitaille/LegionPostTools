@@ -1,17 +1,22 @@
 <% if @show_passkey_invite %>
   <div class="pk-card" data-controller="passkey" data-passkey-redirect-value="/">
-    <%= button_to "×", passkey_invitation_path, method: :delete,
-          class: "pk-card-dismiss", form: { class: "pk-card-dismiss-form" },
-          aria: { label: "Dismiss" } %>
     <div class="pk-card-label">&#9670; Add a passkey</div>
-    <h2 class="pk-card-title">Sign in faster next time</h2>
+    <h2 class="pk-card-title">A passkey is not a password</h2>
     <p class="pk-card-lead">
-      Add a passkey to this device and you can sign in with your fingerprint, face, or
-      device PIN — no email link needed. You can still use the email link any time.
+      It is a safe sign-in key stored by your phone, computer, browser, or password
+      manager. You do not make up a word or memorize anything. Your device simply asks
+      for the same fingerprint, face, or PIN you already use to unlock it.
     </p>
-    <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
-      Add a passkey
-    </button>
+    <p class="pk-card-lead">
+      This is optional. Most current phones and browsers support passkeys, and you can
+      always keep signing in by email.
+    </p>
+    <div class="btnrow">
+      <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
+        Set up a passkey
+      </button>
+      <%= button_to "Not now", passkey_invitation_path, method: :delete, class: "btn-secondary" %>
+    </div>
     <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
   </div>
 <% end %>

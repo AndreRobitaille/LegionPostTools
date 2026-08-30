@@ -69,6 +69,11 @@ yarn-debug.log*
 /public/uploads
 .superpowers/
 /docs/superpowers/
+!/docs/superpowers/
+/docs/superpowers/*
+!/docs/superpowers/specs/
+/docs/superpowers/specs/*
+!/docs/superpowers/specs/2026-08-30-roster-managed-user-access-design.md
 .worktrees/
 
 # Ignore key files for decrypting credentials and more.

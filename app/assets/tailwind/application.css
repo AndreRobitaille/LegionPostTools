@@ -698,15 +698,21 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .acct-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 16px; }
 .acct-line .em { font-weight: 600; color: var(--color-navy); }
 .badge-on { font-size: 13px; font-weight: 700; color: var(--color-green); background: #e7efe4; border: 1px solid #bcd3b6; border-radius: 20px; padding: 3px 11px; }
+.badge-off { font-size: 13px; font-weight: 700; color: var(--color-legionred); background: #f8e9e7; border: 1px solid #dfb7b1; border-radius: 20px; padding: 3px 11px; }
 
-/* Whether sign-in follows the roster or is set manually. The manual (exception) state changes
-   what the buttons below do, so it gets a real callout — not a footnote. The default follows
-   quietly. */
+/* The access service record answers status, authority, and next action in that order. */
 .acct-mode { display: flex; align-items: flex-start; gap: 9px; font-size: 15px; line-height: 1.5; border-radius: 8px; padding: 11px 14px; margin: 6px 0 14px; }
 .acct-mode-dot { font-size: 10px; line-height: 1.7; }
 .acct-mode--manual { background: #eef2f7; border: 1px solid #cbd7e6; color: var(--color-navy); }
 .acct-mode--manual .acct-mode-dot { color: var(--color-navy); }
+.acct-mode--on { background: #f1f6ef; border: 1px solid #c8d9c3; color: #315631; }
+.acct-mode--on .acct-mode-dot { color: var(--color-green); }
+.acct-mode--off { background: #fbefed; border: 1px solid #e2c0bb; color: #71352f; }
+.acct-mode--off .acct-mode-dot { color: var(--color-legionred); }
 .acct-mode-note { font-size: 14px; color: var(--color-muted); margin: 6px 0 14px; }
+.account-email-form { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; width: 100%; }
+.account-email-form .fl { flex: 1 1 260px; min-width: 0; }
+.account-email-form .f { width: 100%; }
 .btnrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
 .btn-sm { padding: 8px 14px; font-size: 16px; }
 .helper { font-size: 14px; color: var(--color-muted); }

@@ -126,6 +126,10 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_match "Add a passkey", response.body
+    assert_select "h2", "A passkey is not a password"
+    assert_select "button", text: "Set up a passkey"
+    assert_select "button", text: "Not now"
+    assert_select "body", text: /always keep signing in by email/
   end
 
   test "hides the passkey invite when the user already has a passkey" do

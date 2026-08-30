@@ -48,6 +48,8 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for minutes.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
+- `docs/MEMBER_SIGN_IN_GUIDE.md` — plain-language email sign-in instructions for Post members.
+- `docs/USER_MANAGEMENT_GUIDE.md` — Commander and Adjutant procedures for accounts, officers, and permissions.
 - `docs/ARCHITECTURE.md` — architecture and durable product decisions.
 - `docs/ROADMAP.md` — planned development phases.
 - `docs/DEPLOYMENT.md` — deployment and operator notes.

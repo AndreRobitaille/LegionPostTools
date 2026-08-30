@@ -344,16 +344,17 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
       status: "completed",
       imported_at: Time.current,
       uploaded_filename: "effects.csv",
-      summary: { access_effects: { enabled_by_roster_status: 2, disabled_by_roster_status: 3, skipped_admin_override: 1, skipped_last_admin: 1 } }
+      summary: { access_effects: { account_created: 4, enabled_by_roster_status: 2, disabled_by_roster_status: 3, skipped_manual_disable: 1, skipped_last_admin: 1 } }
     )
 
     get admin_roster_import_path(roster_import)
 
     assert_response :success
     assert_select "body", /Sign-in access/
+    assert_select "body", /New accounts created and enabled: 4/
     assert_select "body", /Turned on by roster status: 2/
     assert_select "body", /Turned off by roster status or removal: 3/
-    assert_select "body", /Left as set manually: 1/
+    assert_select "body", /Left off by administrator: 1/
     assert_select "body", /Left on to protect the last administrator: 1/
     assert_select "body", /Sign-in exceptions/
     assert_select "body", /Exception Member/
