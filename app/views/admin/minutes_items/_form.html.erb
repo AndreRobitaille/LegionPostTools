@@ -1,0 +1,38 @@
+<% form_url = item.persisted? ? admin_meeting_minutes_item_path(meeting, item) : admin_meeting_minutes_items_path(meeting) %>
+<%= form_with model: item, url: form_url, class: "stacked-form minutes-editor-form" do |form| %>
+  <% if item.errors.any? %>
+    <div class="error-summary" role="alert">
+      <h2>The minutes item could not be saved:</h2>
+      <ul><% item.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+  <%= form.hidden_field :lock_version if item.persisted? %>
+  <div class="fl">
+    <%= form.label :minutes_section_id, "Minutes section" %>
+    <%= form.collection_select :minutes_section_id, @sections, :id, :title, {}, class: "f" %>
+    <span class="fl-help">Moving an item places it at the end of the selected section.</span>
+  </div>
+  <div class="fl">
+    <%= form.label :title %>
+    <%= form.text_field :title, class: "f", required: true, autofocus: true %>
+  </div>
+  <div class="fl">
+    <%= form.label :behavior_type, "Record kind" %>
+    <%= form.select :behavior_type, AgendaItemCatalogEntry.behavior_types_for_form(item.behavior_type).map { |value, label| [ label, value ] }, {}, class: "f" %>
+    <span class="fl-help">The kind helps organize the record. It never supplies a missing result.</span>
+  </div>
+  <div class="fl">
+    <%= form.label :endeavor_id, "Related Endeavor (optional)" %>
+    <%= form.collection_select :endeavor_id, @endeavors, :id, :title, { include_blank: "No Endeavor linked" }, class: "f" %>
+    <span class="fl-help">Choose only when this item is part of that same continuing Post endeavor.</span>
+  </div>
+  <div class="fl minutes-rich-text-field">
+    <%= form.label :body, "Factual record" %>
+    <p class="fl-help">Record what occurred. Put motions and decisions in structured outcomes after saving this item.</p>
+    <%= form.rich_text_area :body, attachments: "false" %>
+  </div>
+  <div class="btnrow">
+    <%= form.submit item.persisted? ? "Save item" : "Add item", class: "btn-primary" %>
+    <%= link_to "Cancel", admin_meeting_minutes_path(meeting), class: "btn-secondary" %>
+  </div>
+<% end %>

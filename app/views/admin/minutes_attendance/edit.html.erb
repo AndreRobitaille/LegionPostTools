@@ -1,0 +1,33 @@
+<% content_for :title, "Record officer attendance" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow">Officer roll call</p>
+  <h1 class="page-title">Record actual attendance</h1>
+  <p class="page-sub">The agenda supplied the officer list. These choices record what was actually established for this meeting.</p>
+</div>
+
+<%= form_with url: admin_meeting_minutes_attendance_path(@meeting), method: :patch, class: "minutes-attendance-form" do %>
+  <div class="minutes-attendance-list">
+    <% @attendance_entries.each do |entry| %>
+      <div class="minutes-attendance-row">
+        <div>
+          <strong><%= entry.office_name %></strong>
+          <span><%= entry.person_name || "Office vacant or person not named" %></span>
+        </div>
+        <div class="fl">
+          <%= label_tag "attendance_entries_#{entry.id}_status", "Attendance", class: "sr-only" %>
+          <%= select_tag "attendance_entries[#{entry.id}][status]", options_for_select(MinutesAttendanceEntry::STATUSES.map { |value| [ value.humanize, value ] }, entry.status), id: "attendance_entries_#{entry.id}_status", class: "f" %>
+          <%= hidden_field_tag "attendance_entries[#{entry.id}][lock_version]", entry.lock_version %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="whatnext minutes-unknown-note">
+    <strong>Leave facts unknown when the record is unclear.</strong>
+    “Not recorded” is an explicit result, not an unfinished field.
+  </div>
+  <div class="btnrow">
+    <%= submit_tag "Save attendance", class: "btn-primary" %>
+    <%= link_to "Cancel", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+  </div>
+<% end %>

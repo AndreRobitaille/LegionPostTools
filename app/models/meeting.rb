@@ -6,6 +6,14 @@ class Meeting < ApplicationRecord
   belongs_to :meeting_type, optional: true
 
   has_one :dated_agenda, dependent: :restrict_with_exception
+  has_one :minutes,
+    class_name: "MeetingMinutes",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting
+  has_one :transcript,
+    class_name: "MeetingTranscript",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting
 
   before_validation :apply_default_title
   before_validation :apply_location_defaults, on: :create
@@ -33,7 +41,7 @@ class Meeting < ApplicationRecord
   end
 
   def empty_record?
-    dated_agenda.nil?
+    dated_agenda.nil? && minutes.nil? && transcript.nil?
   end
 
   private

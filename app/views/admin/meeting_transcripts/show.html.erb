@@ -1,0 +1,30 @@
+<% content_for :title, "Restricted transcript — #{@meeting.title}" %>
+<%= link_to(@meeting.minutes ? admin_meeting_minutes_path(@meeting) : admin_meeting_path(@meeting), class: "back") do %>&larr; <%= @meeting.minutes ? "Minutes workspace" : "Meeting record" %><% end %>
+
+<div class="page-lead-row transcript-page-lead">
+  <div class="page-lead">
+    <p class="minutes-eyebrow">Restricted source &middot; not part of the published record</p>
+    <h1 class="page-title">Meeting transcript</h1>
+    <p class="page-sub"><%= @meeting.title %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
+  </div>
+  <span class="minutes-draft-stamp minutes-draft-stamp--restricted">Restricted</span>
+</div>
+
+<dl class="transcript-facts">
+  <div><dt>Source</dt><dd><%= @transcript.pasted_text? ? "Pasted text" : @transcript.original_filename %></dd></div>
+  <div><dt>Size</dt><dd><%= number_to_human_size(@transcript.byte_size) %></dd></div>
+  <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after acceptance and recovery window" : "Retain as restricted source" %></dd></div>
+  <div><dt>Added</dt><dd><%= legion_datetime(@transcript.created_at) %></dd></div>
+</dl>
+
+<section class="transcript-reader" aria-labelledby="transcript-content-heading">
+  <div class="transcript-reader-head">
+    <h2 id="transcript-content-heading">Source text</h2>
+    <span>Read only</span>
+  </div>
+  <% if @transcript.source_available? %>
+    <pre><%= @transcript.source_text %></pre>
+  <% else %>
+    <p class="minutes-empty-note">The transcript content has been purged. Its non-content audit metadata remains.</p>
+  <% end %>
+</section>

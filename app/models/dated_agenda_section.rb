@@ -9,6 +9,10 @@ class DatedAgendaSection < ApplicationRecord
     foreign_key: :dated_agenda_section_id,
     inverse_of: :agenda_section,
     dependent: :restrict_with_error
+  has_many :minutes_sections,
+    foreign_key: :source_dated_agenda_section_id,
+    dependent: :restrict_with_exception,
+    inverse_of: :source_dated_agenda_section
 
   normalizes :title, with: ->(value) { value.to_s.strip }
 

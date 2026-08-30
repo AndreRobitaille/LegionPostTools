@@ -14,6 +14,10 @@ class DatedAgendaItem < ApplicationRecord
     class_name: "DatedAgendaRollCallEntry",
     inverse_of: :dated_agenda_item,
     dependent: :destroy
+  has_many :minutes_items,
+    foreign_key: :source_dated_agenda_item_id,
+    dependent: :restrict_with_exception,
+    inverse_of: :source_dated_agenda_item
 
   has_rich_text :body
   has_rich_text :commander_notes

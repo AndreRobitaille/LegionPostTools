@@ -40,6 +40,48 @@ class Admin::MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{new_admin_meeting_path}']", text: "Schedule a meeting"
   end
 
+  test "minutes managers can open records without agenda mutation controls" do
+    past = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.ago, title: "Past Meeting")
+    minutes_manager = create_user("manage_minutes")
+    sign_in_as(minutes_manager)
+
+    get admin_meetings_path
+    assert_response :success
+    assert_select "a[href='#{admin_meeting_path(past)}']", text: /Past Meeting/
+    assert_select "a[href='#{new_admin_meeting_path}']", count: 0
+
+    get admin_meeting_path(past)
+    assert_response :success
+    assert_select "a[href='#{edit_admin_meeting_path(past)}']", count: 0
+    assert_select "form[action='#{admin_meeting_minutes_path(past)}'] button", text: "Begin minutes"
+
+    get edit_admin_meeting_path(past)
+    assert_redirected_to root_path
+  end
+
+  test "agenda-only managers do not see draft minutes or transcript status" do
+    past = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.ago)
+    MeetingMinutes.create_from_meeting!(meeting: past)
+    MeetingTranscripts::Create.new(
+      meeting: past,
+      created_by: @manager,
+      pasted_text: "Restricted source words",
+      retention_policy: "delete_after_acceptance"
+    ).call
+    sign_in_as(@manager)
+
+    get admin_meetings_path
+    assert_response :success
+    assert_select "a[href='#{admin_meeting_path(past)}']", text: /Agenda not started/
+    assert_no_match(/Draft minutes|Transcript ready/, response.body)
+
+    get admin_meeting_path(past)
+    assert_response :success
+    assert_select "a[href='#{admin_meeting_minutes_path(past)}']", count: 0
+    assert_select ".meeting-minutes-workflow", text: /Restricted officer record/
+    assert_no_match(/Restricted source words/, response.body)
+  end
+
   test "new uses body place defaults and renders plain meeting fields" do
     sign_in_as(@manager)
     get new_admin_meeting_path

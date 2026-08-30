@@ -1,0 +1,152 @@
+<% content_for :title, "Draft minutes — #{@minutes.title}" %>
+<%= link_to admin_meeting_path(@meeting), class: "back" do %>&larr; Meeting record<% end %>
+
+<div class="page-lead-row minutes-workspace-lead">
+  <div class="page-lead">
+    <p class="minutes-eyebrow">Working record &middot; not published</p>
+    <h1 class="page-title"><%= @minutes.title %></h1>
+    <p class="page-sub"><%= legion_datetime(@minutes.starts_at) %> &middot; <%= @minutes.location_name %></p>
+  </div>
+  <span class="minutes-draft-stamp">Draft minutes</span>
+</div>
+
+<div class="minutes-workspace">
+  <main class="minutes-outline" aria-labelledby="minutes-outline-heading">
+    <div class="minutes-outline-head">
+      <div>
+        <p class="meeting-workflow-kicker">Structured meeting record</p>
+        <h2 id="minutes-outline-heading">Meeting outline</h2>
+      </div>
+      <div class="minutes-outline-summary">
+        <p><%= pluralize(@minutes.sections.size, "section") %> &middot; <%= pluralize(@minutes.items.size, "item") %></p>
+        <% if current_user.can?("manage_minutes") && @minutes.draft? %>
+          <%= link_to "Edit heading", edit_admin_meeting_minutes_path(@meeting), class: "minutes-text-action" %>
+        <% end %>
+      </div>
+    </div>
+
+    <% editable = current_user.can?("manage_minutes") && @minutes.draft? %>
+    <% @minutes.sections.each_with_index do |section, section_index| %>
+      <section class="minutes-section" aria-labelledby="minutes-section-<%= section.id %>">
+        <div class="minutes-section-heading">
+          <h3 id="minutes-section-<%= section.id %>"><%= section.title %></h3>
+          <% if editable %>
+            <div class="minutes-order-actions" aria-label="Actions for <%= section.title %>">
+              <% if section_index.positive? %>
+                <%= button_to "↑", move_admin_meeting_minutes_section_path(@meeting, section, direction: "up"), method: :patch, class: "minutes-order-button", title: "Move section up", aria: { label: "Move #{section.title} up" } %>
+              <% end %>
+              <% if section_index < @minutes.sections.length - 1 %>
+                <%= button_to "↓", move_admin_meeting_minutes_section_path(@meeting, section, direction: "down"), method: :patch, class: "minutes-order-button", title: "Move section down", aria: { label: "Move #{section.title} down" } %>
+              <% end %>
+              <%= link_to "Edit section", edit_admin_meeting_minutes_section_path(@meeting, section), class: "minutes-text-action" %>
+            </div>
+          <% end %>
+        </div>
+        <% if section.items.any? %>
+          <ol class="minutes-item-list">
+            <% section.items.each_with_index do |item, item_index| %>
+              <li class="minutes-item-card">
+                <div class="minutes-item-heading">
+                  <div>
+                    <span class="minutes-item-title"><%= item.title %></span>
+                    <% unless item.source_dated_agenda_item %><span class="minutes-added-label">Added during the meeting</span><% end %>
+                  </div>
+                  <% if editable %>
+                    <div class="minutes-order-actions" aria-label="Actions for <%= item.title %>">
+                      <% if item_index.positive? %>
+                        <%= button_to "↑", move_admin_meeting_minutes_item_path(@meeting, item, direction: "up"), method: :patch, class: "minutes-order-button", title: "Move item up", aria: { label: "Move #{item.title} up" } %>
+                      <% end %>
+                      <% if item_index < section.items.length - 1 %>
+                        <%= button_to "↓", move_admin_meeting_minutes_item_path(@meeting, item, direction: "down"), method: :patch, class: "minutes-order-button", title: "Move item down", aria: { label: "Move #{item.title} down" } %>
+                      <% end %>
+                      <%= link_to "Edit", edit_admin_meeting_minutes_item_path(@meeting, item), class: "minutes-text-action" %>
+                    </div>
+                  <% end %>
+                </div>
+                <% if item.body.present? %><div class="minutes-seeded-wording"><%= item.body %></div><% end %>
+                <% if item.endeavor %><p class="minutes-endeavor-link">Related Endeavor: <%= link_to item.endeavor.title, endeavor_path(item.endeavor) %></p><% end %>
+
+                <% if item.outcomes.any? %>
+                  <ol class="minutes-outcome-list">
+                    <% item.outcomes.each_with_index do |outcome, outcome_index| %>
+                      <li>
+                        <div class="minutes-outcome-heading">
+                          <strong><%= outcome.kind.humanize %></strong>
+                          <span class="minutes-outcome-disposition minutes-outcome-disposition--<%= outcome.disposition %>"><%= outcome.disposition.humanize %></span>
+                        </div>
+                        <p><%= outcome.text %></p>
+                        <% details = [ ("Moved by #{outcome.mover_name}" if outcome.mover_name), ("Seconded by #{outcome.seconder_name}" if outcome.seconder_name), outcome.vote_summary ].compact %>
+                        <% if details.any? %><p class="minutes-outcome-details"><%= details.join(" · ") %></p><% end %>
+                        <% if editable %>
+                          <div class="minutes-outcome-actions">
+                            <% if outcome_index.positive? %><%= button_to "↑", move_admin_meeting_minutes_outcome_path(@meeting, outcome, direction: "up"), method: :patch, class: "minutes-order-button", aria: { label: "Move outcome up" } %><% end %>
+                            <% if outcome_index < item.outcomes.length - 1 %><%= button_to "↓", move_admin_meeting_minutes_outcome_path(@meeting, outcome, direction: "down"), method: :patch, class: "minutes-order-button", aria: { label: "Move outcome down" } %><% end %>
+                            <%= link_to "Edit outcome", edit_admin_meeting_minutes_outcome_path(@meeting, outcome), class: "minutes-text-action" %>
+                          </div>
+                        <% end %>
+                      </li>
+                    <% end %>
+                  </ol>
+                <% end %>
+                <% if editable %>
+                  <%= link_to "+ Record motion or decision", new_admin_meeting_minutes_outcome_path(@meeting, minutes_item_id: item.id), class: "minutes-add-outcome" %>
+                <% end %>
+              </li>
+            <% end %>
+          </ol>
+        <% else %>
+          <p class="minutes-empty-note">No items recorded in this section yet.</p>
+        <% end %>
+        <% if editable %>
+          <%= link_to "+ Add item to #{section.title}", new_admin_meeting_minutes_item_path(@meeting, minutes_section_id: section.id), class: "minutes-add-item" %>
+        <% end %>
+      </section>
+    <% end %>
+    <% if editable %>
+      <div class="minutes-outline-footer">
+        <%= link_to "+ Add section", new_admin_meeting_minutes_section_path(@meeting), class: "btn-secondary" %>
+      </div>
+    <% end %>
+  </main>
+
+  <aside class="minutes-evidence-rail" aria-labelledby="minutes-source-heading">
+    <p class="meeting-workflow-kicker">Source evidence</p>
+    <h2 id="minutes-source-heading">Transcript</h2>
+    <% if @meeting.transcript %>
+      <span class="meeting-state meeting-state--transcript">Restricted source ready</span>
+      <p><%= number_to_human_size(@meeting.transcript.byte_size) %><% if @meeting.transcript.original_filename.present? %> &middot; <%= @meeting.transcript.original_filename %><% end %></p>
+      <%= link_to "Review transcript source", admin_meeting_transcript_path(@meeting), class: "btn-secondary" %>
+      <div class="minutes-next-step">
+        <% latest_run = @minutes.draft_runs.first %>
+        <% if editable && latest_run&.succeeded? && latest_run.suggestions.unreviewed.exists? %>
+          <strong>AI suggestions await review</strong>
+          <p>Nothing enters the minutes until you use or correct each source-linked proposal.</p>
+          <%= link_to "Review AI draft", admin_meeting_minutes_draft_run_path(@meeting, latest_run), class: "btn-confirm" %>
+        <% elsif editable %>
+          <strong>Next: create a first draft</strong>
+          <p>The source stays separate from the record so every suggested fact can be checked before it is used.</p>
+          <%= link_to "Create first draft", new_admin_meeting_minutes_draft_run_path(@meeting), class: "btn-confirm" %>
+        <% else %>
+          <strong>Transcript available</strong>
+          <p>Minutes managers can create and review a source-linked working draft.</p>
+        <% end %>
+      </div>
+    <% elsif current_user.can?("manage_minutes") %>
+      <span class="meeting-state meeting-state--quiet">No transcript added</span>
+      <p>Paste a transcript or upload one plain-text file. It remains restricted and is never published with the minutes.</p>
+      <%= link_to "Add transcript", new_admin_meeting_transcript_path(@meeting), class: "btn-primary" %>
+      <p class="minutes-manual-note">A transcript is optional. The record can also be completed manually.</p>
+    <% else %>
+      <span class="meeting-state meeting-state--quiet">No transcript added</span>
+      <p>No restricted transcript source is attached to this meeting.</p>
+    <% end %>
+
+    <% if @minutes.attendance_entries.any? %>
+      <div class="minutes-attendance-summary">
+        <strong>Officer roll call</strong>
+        <p><%= pluralize(@minutes.attendance_entries.size, "office") %> copied for factual review. Unknown attendance remains marked not recorded.</p>
+        <% if editable %><%= link_to "Record attendance", edit_admin_meeting_minutes_attendance_path(@meeting), class: "minutes-rail-link" %><% end %>
+      </div>
+    <% end %>
+  </aside>
+</div>

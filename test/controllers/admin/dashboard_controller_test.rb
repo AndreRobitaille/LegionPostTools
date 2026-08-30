@@ -35,7 +35,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_roster_imports_path, text: /View imports/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
-    assert_select "a[href=?]", admin_meetings_path, text: /Manage meetings/
+    assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
     assert_select "a[href=?]", admin_position_titles_path, text: /Manage positions/
     assert_select "a[href=?]", admin_administrators_path, text: /View administrators/
   end
@@ -50,10 +50,23 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select ".hub-sec-h", text: "Meetings & Roster"
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
-    assert_select "a[href=?]", admin_meetings_path, text: /Manage meetings/
+    assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
     assert_select ".hub-sec-h", text: "Officers & Elections", count: 0
     assert_select ".hub-sec-h", text: "Setup & Administration", count: 0
     assert_select "a[href=?]", admin_position_titles_path, count: 0
+    assert_select "a[href=?]", new_admin_roster_import_path, count: 0
+  end
+
+  test "minutes manager reaches the hub and sees only the meeting records tile" do
+    prepare_setup_complete_state
+    sign_in_member(can_manage_settings: false, can_manage_minutes: true)
+
+    get admin_root_path
+
+    assert_response :success
+    assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
+    assert_select "a[href=?]", admin_meeting_types_path, count: 0
     assert_select "a[href=?]", new_admin_roster_import_path, count: 0
   end
 
@@ -99,11 +112,12 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     Installation.singleton.update!(setup_completed_at: Time.current)
   end
 
-  def sign_in_member(can_manage_settings: true, can_manage_agendas: false)
+  def sign_in_member(can_manage_settings: true, can_manage_agendas: false, can_manage_minutes: false)
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
     PermissionGrant.create!(user: user, capability: "manage_settings") if can_manage_settings
     PermissionGrant.create!(user: user, capability: "manage_agendas") if can_manage_agendas
+    PermissionGrant.create!(user: user, capability: "manage_minutes") if can_manage_minutes
     sign_in_as(user)
     user
   end

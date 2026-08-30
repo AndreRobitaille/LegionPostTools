@@ -6,7 +6,9 @@
     <h1 class="page-title"><%= @meeting.title %></h1>
     <p class="page-sub"><%= @meeting.meeting_body.name %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
   </div>
-  <%= link_to "Edit meeting details", edit_admin_meeting_path(@meeting), class: "btn-secondary" %>
+  <% if current_user.can?("manage_agendas") %>
+    <%= link_to "Edit meeting details", edit_admin_meeting_path(@meeting), class: "btn-secondary" %>
+  <% end %>
 </div>
 
 <dl class="admin-meeting-facts">
@@ -14,26 +16,59 @@
   <div><dt>Meeting type</dt><dd><%= @meeting.meeting_type&.name || "Not chosen yet" %></dd></div>
 </dl>
 
+<div class="meeting-document-progression">
 <section class="meeting-agenda-workflow" aria-labelledby="meeting-agenda-heading">
   <p class="meeting-workflow-kicker">Document progression</p>
   <h2 id="meeting-agenda-heading">Agenda</h2>
   <% if @meeting.dated_agenda %>
-    <% state, state_class = meeting_record_state(@meeting) %>
+    <% state, state_class = agenda_record_state(@meeting) %>
     <span class="meeting-state <%= state_class %>"><%= state %></span>
     <p>The agenda is attached to this meeting and keeps its own official snapshot of the heading and place.</p>
-    <%= link_to @meeting.dated_agenda.draft? ? "Continue preparing agenda" : "Open agenda record", edit_admin_dated_agenda_path(@meeting.dated_agenda), class: "btn-primary" %>
+    <% if current_user.can?("manage_agendas") %>
+      <%= link_to @meeting.dated_agenda.draft? ? "Continue preparing agenda" : "Open agenda record", edit_admin_dated_agenda_path(@meeting.dated_agenda), class: "btn-primary" %>
+    <% elsif @meeting.dated_agenda.published? %>
+      <%= link_to "Open published agenda", dated_agenda_path(@meeting.dated_agenda), class: "btn-secondary" %>
+    <% end %>
   <% elsif @meeting.meeting_type %>
     <span class="meeting-state meeting-state--quiet">Agenda not started</span>
     <p>Prepare a draft from the <strong><%= @meeting.meeting_type.name %></strong> template. You can review it before approval or publication.</p>
-    <%= button_to "Prepare agenda", agenda_admin_meeting_path(@meeting), class: "btn-primary" %>
+    <% if current_user.can?("manage_agendas") %>
+      <%= button_to "Prepare agenda", agenda_admin_meeting_path(@meeting), class: "btn-primary" %>
+    <% end %>
   <% else %>
     <span class="meeting-state meeting-state--quiet">Meeting type needed</span>
     <p>Choose a meeting type before preparing an agenda.</p>
-    <%= link_to "Choose meeting type", edit_admin_meeting_path(@meeting), class: "btn-primary" %>
+    <% if current_user.can?("manage_agendas") %>
+      <%= link_to "Choose meeting type", edit_admin_meeting_path(@meeting), class: "btn-primary" %>
+    <% end %>
   <% end %>
 </section>
 
-<% if @meeting.empty_record? %>
+<section class="meeting-agenda-workflow meeting-minutes-workflow" aria-labelledby="meeting-minutes-heading">
+  <p class="meeting-workflow-kicker">Document progression</p>
+  <h2 id="meeting-minutes-heading">Minutes</h2>
+  <% if !internal_minutes_access? %>
+    <span class="meeting-state meeting-state--quiet">Restricted officer record</span>
+    <p>Draft minutes and source material are available only to officers with minutes or internal-record access.</p>
+  <% elsif @meeting.minutes %>
+    <span class="meeting-state meeting-state--minutes"><%= @meeting.minutes.status.humanize %> minutes</span>
+    <p>The working record keeps the meeting outline, attendance, outcomes, and source material separate until people approve the exact document.</p>
+    <%= link_to "Open minutes workspace", admin_meeting_minutes_path(@meeting), class: "btn-primary" %>
+  <% elsif @meeting.starts_at > Time.current %>
+    <span class="meeting-state meeting-state--quiet">Meeting has not occurred</span>
+    <p>Minutes begin after the meeting. Its agenda can be prepared now.</p>
+  <% elsif current_user.can?("manage_minutes") %>
+    <span class="meeting-state meeting-state--quiet">No minutes yet</span>
+    <p>Start with the meeting and agenda structure. Nothing is published, approved, or inferred by this step.</p>
+    <%= button_to "Begin minutes", admin_meeting_minutes_path(@meeting), class: "btn-primary" %>
+  <% else %>
+    <span class="meeting-state meeting-state--quiet">No minutes yet</span>
+    <p>No internal minutes record has been created for this meeting.</p>
+  <% end %>
+</section>
+</div>
+
+<% if current_user.can?("manage_agendas") && @meeting.empty_record? %>
   <section class="da-danger-zone" data-controller="confirm-dialog" aria-labelledby="delete-meeting-heading">
     <div>
       <h2 class="da-danger-title" id="delete-meeting-heading">Delete meeting</h2>

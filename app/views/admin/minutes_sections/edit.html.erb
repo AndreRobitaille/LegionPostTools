@@ -1,0 +1,17 @@
+<% content_for :title, "Edit minutes section" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow">Draft minutes</p>
+  <h1 class="page-title">Edit section</h1>
+</div>
+<%= render "form", section: @section, meeting: @meeting %>
+
+<% if @section.items.empty? && @minutes.sections.size > 1 %>
+  <section class="da-danger-zone minutes-editor-danger" aria-labelledby="remove-minutes-section-heading">
+    <div>
+      <h2 class="da-danger-title" id="remove-minutes-section-heading">Remove section</h2>
+      <p class="da-danger-copy">This empty draft section can be removed.</p>
+    </div>
+    <%= button_to "Remove section", admin_meeting_minutes_section_path(@meeting, @section), method: :delete, class: "btn-return", data: { turbo_confirm: "Remove this empty minutes section?" } %>
+  </section>
+<% end %>

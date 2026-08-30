@@ -1,0 +1,8 @@
+<% content_for :title, "Add minutes section" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow">Draft minutes</p>
+  <h1 class="page-title">Add a section</h1>
+  <p class="page-sub">Add a clear home for business that was not in the original agenda.</p>
+</div>
+<%= render "form", section: @section, meeting: @meeting %>

@@ -1,0 +1,41 @@
+<% content_for :title, "Create first minutes draft" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+
+<div class="page-lead ai-draft-lead">
+  <p class="minutes-eyebrow">Transcript-assisted working draft</p>
+  <h1 class="page-title">Create the first pass</h1>
+  <p class="page-sub"><%= @meeting.title %> &middot; Nothing becomes official or enters the minutes without review.</p>
+</div>
+
+<div class="ai-draft-disclosure">
+  <section class="ai-draft-disclosure-main" aria-labelledby="ai-draft-what-heading">
+    <p class="meeting-workflow-kicker">What happens next</p>
+    <h2 id="ai-draft-what-heading">OpenAI prepares suggestions. You remain the recorder.</h2>
+    <ol>
+      <li>The app sends this Meeting's structured agenda, relevant Endeavor titles and summaries, and restricted transcript to OpenAI.</li>
+      <li>GPT-5.6 Sol proposes source-linked wording, outcomes, attendance, or unplanned business.</li>
+      <li>You check each proposal against the transcript and choose <strong>Use</strong>, <strong>Edit</strong>, or <strong>Discard</strong>.</li>
+    </ol>
+    <p class="ai-draft-no-bulk"><strong>There is no accept-all action.</strong> Unknown speakers, names, movers, seconds, and votes must remain unknown unless the source supports them.</p>
+  </section>
+
+  <aside class="ai-draft-source-ticket" aria-labelledby="ai-draft-source-heading">
+    <span>Restricted source</span>
+    <h2 id="ai-draft-source-heading">Transcript ready</h2>
+    <dl>
+      <div><dt>Size</dt><dd><%= number_to_human_size(@transcript.byte_size) %></dd></div>
+      <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after acceptance" : "Retain restricted" %></dd></div>
+      <div><dt>Model</dt><dd>GPT-5.6 Sol &middot; high reasoning</dd></div>
+    </dl>
+  </aside>
+</div>
+
+<div class="ai-provider-note">
+  <strong>External processing disclosure</strong>
+  <p>The agenda, relevant Endeavor summaries, and transcript will be sent to the OpenAI API for this draft request with provider storage disabled. OpenAI may still retain API content temporarily for abuse monitoring unless this API project has approved different data controls. The app keeps the transcript under the retention choice shown above.</p>
+</div>
+
+<%= form_with url: admin_meeting_minutes_draft_runs_path(@meeting), class: "ai-draft-start-form" do |form| %>
+  <%= form.submit "Send transcript and create draft", class: "btn-primary", data: { turbo_submits_with: "Creating draft…" } %>
+  <%= link_to "Continue manually", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+<% end %>

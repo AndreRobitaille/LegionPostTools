@@ -1,0 +1,37 @@
+<% content_for :title, "Edit minutes heading" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+
+<div class="page-lead">
+  <p class="minutes-eyebrow">Draft minutes</p>
+  <h1 class="page-title">Edit document heading</h1>
+  <p class="page-sub">These details belong to this historical record. They do not change the Meeting or agenda.</p>
+</div>
+
+<%= form_with model: @minutes, url: admin_meeting_minutes_path(@meeting), class: "stacked-form minutes-editor-form" do |form| %>
+  <% if @minutes.errors.any? %>
+    <div class="error-summary" role="alert">
+      <h2>The minutes heading could not be saved:</h2>
+      <ul><% @minutes.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+  <%= form.hidden_field :lock_version %>
+  <div class="fl">
+    <%= form.label :title, "Document title" %>
+    <%= form.text_field :title, class: "f", required: true, autofocus: true %>
+  </div>
+  <fieldset class="meeting-place-fields">
+    <legend>Place recorded in the minutes</legend>
+    <div class="fl">
+      <%= form.label :location_name, "Place name" %>
+      <%= form.text_field :location_name, class: "f", required: true %>
+    </div>
+    <div class="fl">
+      <%= form.label :location_address, "Address (optional)" %>
+      <%= form.text_area :location_address, class: "f", rows: 3 %>
+    </div>
+  </fieldset>
+  <div class="btnrow">
+    <%= form.submit "Save heading", class: "btn-primary" %>
+    <%= link_to "Cancel", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+  </div>
+<% end %>

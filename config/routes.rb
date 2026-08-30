@@ -83,6 +83,24 @@ Rails.application.routes.draw do
     end
     resources :meetings do
       post :agenda, on: :member, action: :create_agenda
+      resource :minutes, only: %i[show create edit update], controller: "meeting_minutes" do
+        resources :draft_runs, only: %i[new create show], controller: "minutes_draft_runs"
+        resources :draft_suggestions, only: %i[edit update], controller: "minutes_draft_suggestions" do
+          post :use, on: :member
+          post :discard, on: :member
+        end
+        resources :sections, except: %i[index show], controller: "minutes_sections" do
+          patch :move, on: :member
+        end
+        resources :items, except: %i[index show], controller: "minutes_items" do
+          patch :move, on: :member
+        end
+        resources :outcomes, except: %i[index show], controller: "minutes_outcomes" do
+          patch :move, on: :member
+        end
+        resource :attendance, only: %i[edit update], controller: "minutes_attendance"
+      end
+      resource :transcript, only: %i[new create show], controller: "meeting_transcripts"
     end
     resources :dated_agendas, only: %i[index edit destroy] do
       member do

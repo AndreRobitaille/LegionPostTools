@@ -27,6 +27,7 @@ class Endeavor < ApplicationRecord
     inverse_of: :endeavor
   has_many :dated_agenda_items, dependent: :restrict_with_exception
   has_many :dated_agendas, through: :dated_agenda_items
+  has_many :minutes_items, dependent: :restrict_with_exception
   has_rich_text :details
 
   before_validation :normalize_optional_fields

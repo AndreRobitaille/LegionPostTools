@@ -42,6 +42,14 @@ class ApplicationController < ActionController::Base
     redirect_to root_path, alert: "You do not have permission to open that page."
   end
 
+  def require_any_capability(*capabilities)
+    require_authentication
+    return if performed?
+    return if current_user.can_any?(*capabilities)
+
+    redirect_to root_path, alert: "You do not have permission to open that page."
+  end
+
   def start_new_session_for(user)
     reset_session
     session = Session.create!(

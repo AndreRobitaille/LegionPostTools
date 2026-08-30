@@ -2,10 +2,31 @@ class User < ApplicationRecord
   DISABLED_REASONS = %w[manual roster_status roster_removed].freeze
   ROSTER_LOGIN_ENABLED_STATUSES = %w[active grace].freeze
   ROSTER_LOGIN_DISABLED_STATUSES = %w[expired deceased].freeze
+  ADMIN_AREA_CAPABILITIES = %w[
+    manage_settings
+    manage_agendas
+    manage_minutes
+    view_internal_records
+  ].freeze
 
   belongs_to :person
   has_many :permission_grants, dependent: :destroy
   has_many :passkey_credentials, dependent: :destroy
+  has_many :created_meeting_transcripts,
+    class_name: "MeetingTranscript",
+    foreign_key: :created_by_id,
+    dependent: :restrict_with_exception,
+    inverse_of: :created_by
+  has_many :purged_meeting_transcripts,
+    class_name: "MeetingTranscript",
+    foreign_key: :purged_by_id,
+    dependent: :restrict_with_exception,
+    inverse_of: :purged_by
+  has_many :requested_minutes_draft_runs,
+    class_name: "MinutesDraftRun",
+    foreign_key: :requested_by_id,
+    dependent: :restrict_with_exception,
+    inverse_of: :requested_by
   has_many :agent_access_tokens, dependent: :destroy
   has_many :sessions, dependent: :destroy
   has_many :magic_links, dependent: :destroy
@@ -25,6 +46,10 @@ class User < ApplicationRecord
     return false unless PermissionGrant::IMPLIED_BY_MANAGE_SETTINGS.include?(capability)
 
     permission_grants.exists?(capability: "manage_settings")
+  end
+
+  def can_any?(*capabilities)
+    capabilities.any? { |capability| can?(capability) }
   end
 
   def full_membership_access?(on: Date.current)

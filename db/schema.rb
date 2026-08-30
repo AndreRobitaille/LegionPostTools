@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_070000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -301,6 +301,54 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_040000) do
     t.index ["organization_id"], name: "index_meeting_bodies_on_organization_id"
   end
 
+  create_table "meeting_minutes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "location_address"
+    t.string "location_name", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_body_id", null: false
+    t.bigint "meeting_id", null: false
+    t.bigint "meeting_type_id"
+    t.bigint "organization_id", null: false
+    t.datetime "starts_at", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meeting_body_id"], name: "index_meeting_minutes_on_meeting_body_id"
+    t.index ["meeting_id"], name: "index_meeting_minutes_on_meeting_id", unique: true
+    t.index ["meeting_type_id"], name: "index_meeting_minutes_on_meeting_type_id"
+    t.index ["organization_id", "starts_at"], name: "index_meeting_minutes_on_organization_id_and_starts_at"
+    t.index ["organization_id"], name: "index_meeting_minutes_on_organization_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'approved'::character varying, 'attested'::character varying, 'accepted'::character varying]::text[])", name: "meeting_minutes_status_check"
+  end
+
+  create_table "meeting_transcripts", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.string "media_type", null: false
+    t.bigint "meeting_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "original_filename"
+    t.datetime "purge_scheduled_at"
+    t.datetime "purged_at"
+    t.bigint "purged_by_id"
+    t.string "retention_policy", default: "delete_after_acceptance", null: false
+    t.string "sha256_digest", null: false
+    t.string "source_kind", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_meeting_transcripts_on_created_by_id"
+    t.index ["meeting_id"], name: "index_meeting_transcripts_on_meeting_id", unique: true
+    t.index ["organization_id"], name: "index_meeting_transcripts_on_organization_id"
+    t.index ["purged_by_id"], name: "index_meeting_transcripts_on_purged_by_id"
+    t.index ["sha256_digest"], name: "index_meeting_transcripts_on_sha256_digest"
+    t.check_constraint "byte_size >= 0", name: "meeting_transcripts_byte_size_check"
+    t.check_constraint "retention_policy::text = ANY (ARRAY['delete_after_acceptance'::character varying, 'retain_restricted'::character varying]::text[])", name: "meeting_transcripts_retention_policy_check"
+    t.check_constraint "source_kind::text = ANY (ARRAY['pasted_text'::character varying, 'text_upload'::character varying]::text[])", name: "meeting_transcripts_source_kind_check"
+  end
+
   create_table "meeting_type_agenda_items", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.bigint "agenda_item_catalog_entry_id", null: false
@@ -367,6 +415,148 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_040000) do
     t.index ["meeting_type_id"], name: "index_meetings_on_meeting_type_id"
     t.index ["organization_id", "starts_at"], name: "index_meetings_on_organization_id_and_starts_at"
     t.index ["organization_id"], name: "index_meetings_on_organization_id"
+  end
+
+  create_table "minutes_attendance_entries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "dated_agenda_roll_call_entry_id"
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_minutes_id", null: false
+    t.string "office_name", null: false
+    t.bigint "person_id"
+    t.string "person_name"
+    t.integer "position", null: false
+    t.bigint "position_title_id"
+    t.string "status", default: "not_recorded", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dated_agenda_roll_call_entry_id"], name: "index_minutes_attendance_on_agenda_roll_call"
+    t.index ["meeting_minutes_id", "position"], name: "index_minutes_attendance_on_minutes_and_position", unique: true
+    t.index ["meeting_minutes_id"], name: "index_minutes_attendance_entries_on_meeting_minutes_id"
+    t.index ["person_id"], name: "index_minutes_attendance_entries_on_person_id"
+    t.index ["position_title_id"], name: "index_minutes_attendance_entries_on_position_title_id"
+    t.check_constraint "\"position\" > 0", name: "minutes_attendance_position_check"
+    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'absent'::character varying, 'excused'::character varying, 'vacant'::character varying, 'not_recorded'::character varying]::text[])", name: "minutes_attendance_status_check"
+  end
+
+  create_table "minutes_draft_runs", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.string "error_category"
+    t.integer "input_tokens"
+    t.bigint "meeting_minutes_id", null: false
+    t.bigint "meeting_transcript_id", null: false
+    t.string "model", null: false
+    t.integer "output_tokens"
+    t.string "prompt_sha256", null: false
+    t.string "prompt_version", null: false
+    t.string "provider", null: false
+    t.string "provider_request_id"
+    t.string "provider_response_id"
+    t.string "reasoning_effort", null: false
+    t.integer "reasoning_tokens"
+    t.bigint "requested_by_id", null: false
+    t.string "schema_version", null: false
+    t.integer "source_line_count", null: false
+    t.string "source_sha256", null: false
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.integer "total_tokens"
+    t.datetime "updated_at", null: false
+    t.index ["meeting_minutes_id", "created_at"], name: "index_minutes_draft_runs_on_meeting_minutes_id_and_created_at"
+    t.index ["meeting_minutes_id"], name: "index_minutes_draft_runs_on_meeting_minutes_id"
+    t.index ["meeting_transcript_id"], name: "index_minutes_draft_runs_on_meeting_transcript_id"
+    t.index ["requested_by_id"], name: "index_minutes_draft_runs_on_requested_by_id"
+    t.check_constraint "source_line_count > 0", name: "minutes_draft_runs_source_line_count_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "minutes_draft_runs_status_check"
+  end
+
+  create_table "minutes_draft_suggestions", force: :cascade do |t|
+    t.bigint "applied_record_id"
+    t.string "applied_record_type"
+    t.string "confidence", null: false
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.bigint "minutes_attendance_entry_id"
+    t.bigint "minutes_draft_run_id", null: false
+    t.bigint "minutes_item_id"
+    t.bigint "minutes_section_id"
+    t.jsonb "missing_facts", default: [], null: false
+    t.jsonb "payload", default: {}, null: false
+    t.string "review_state", default: "unreviewed", null: false
+    t.datetime "reviewed_at"
+    t.bigint "reviewed_by_id"
+    t.bigint "source_dated_agenda_item_id"
+    t.integer "source_end_line", null: false
+    t.integer "source_start_line", null: false
+    t.datetime "updated_at", null: false
+    t.index ["applied_record_type", "applied_record_id"], name: "index_minutes_draft_suggestions_on_applied_record"
+    t.index ["minutes_attendance_entry_id"], name: "index_minutes_draft_suggestions_on_minutes_attendance_entry_id"
+    t.index ["minutes_draft_run_id", "review_state"], name: "index_minutes_draft_suggestions_on_run_and_review_state"
+    t.index ["minutes_draft_run_id"], name: "index_minutes_draft_suggestions_on_minutes_draft_run_id"
+    t.index ["minutes_item_id"], name: "index_minutes_draft_suggestions_on_minutes_item_id"
+    t.index ["minutes_section_id"], name: "index_minutes_draft_suggestions_on_minutes_section_id"
+    t.index ["reviewed_by_id"], name: "index_minutes_draft_suggestions_on_reviewed_by_id"
+    t.index ["source_dated_agenda_item_id"], name: "index_minutes_draft_suggestions_on_source_dated_agenda_item_id"
+    t.check_constraint "confidence::text = ANY (ARRAY['high'::character varying, 'medium'::character varying, 'low'::character varying]::text[])", name: "minutes_draft_suggestions_confidence_check"
+    t.check_constraint "kind::text = ANY (ARRAY['item_summary'::character varying, 'outcome'::character varying, 'attendance'::character varying, 'additional_item'::character varying]::text[])", name: "minutes_draft_suggestions_kind_check"
+    t.check_constraint "review_state::text = ANY (ARRAY['unreviewed'::character varying, 'used'::character varying, 'edited'::character varying, 'discarded'::character varying]::text[])", name: "minutes_draft_suggestions_review_state_check"
+    t.check_constraint "source_start_line > 0 AND source_end_line >= source_start_line", name: "minutes_draft_suggestions_source_range_check"
+  end
+
+  create_table "minutes_items", force: :cascade do |t|
+    t.string "behavior_type", null: false
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_id"
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "minutes_section_id", null: false
+    t.integer "position", null: false
+    t.string "record_key", null: false
+    t.bigint "source_dated_agenda_item_id"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endeavor_id"], name: "index_minutes_items_on_endeavor_id"
+    t.index ["minutes_section_id", "position"], name: "index_minutes_items_on_section_and_position", unique: true
+    t.index ["minutes_section_id"], name: "index_minutes_items_on_minutes_section_id"
+    t.index ["record_key"], name: "index_minutes_items_on_record_key", unique: true
+    t.index ["source_dated_agenda_item_id"], name: "index_minutes_items_on_source_dated_agenda_item_id"
+    t.check_constraint "\"position\" > 0", name: "minutes_items_position_check"
+  end
+
+  create_table "minutes_outcomes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "disposition", default: "not_recorded", null: false
+    t.string "kind", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "minutes_item_id", null: false
+    t.string "mover_name"
+    t.bigint "mover_person_id"
+    t.integer "position", null: false
+    t.string "seconder_name"
+    t.bigint "seconder_person_id"
+    t.text "text", null: false
+    t.datetime "updated_at", null: false
+    t.string "vote_summary"
+    t.index ["minutes_item_id", "position"], name: "index_minutes_outcomes_on_item_and_position", unique: true
+    t.index ["minutes_item_id"], name: "index_minutes_outcomes_on_minutes_item_id"
+    t.index ["mover_person_id"], name: "index_minutes_outcomes_on_mover_person_id"
+    t.index ["seconder_person_id"], name: "index_minutes_outcomes_on_seconder_person_id"
+    t.check_constraint "\"position\" > 0", name: "minutes_outcomes_position_check"
+    t.check_constraint "disposition::text = ANY (ARRAY['adopted'::character varying, 'lost'::character varying, 'withdrawn'::character varying, 'postponed'::character varying, 'referred'::character varying, 'no_vote'::character varying, 'not_recorded'::character varying]::text[])", name: "minutes_outcomes_disposition_check"
+    t.check_constraint "kind::text = ANY (ARRAY['motion'::character varying, 'decision'::character varying]::text[])", name: "minutes_outcomes_kind_check"
+  end
+
+  create_table "minutes_sections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_minutes_id", null: false
+    t.integer "position", null: false
+    t.bigint "source_dated_agenda_section_id"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meeting_minutes_id", "position"], name: "index_minutes_sections_on_minutes_and_position", unique: true
+    t.index ["meeting_minutes_id"], name: "index_minutes_sections_on_meeting_minutes_id"
+    t.index ["source_dated_agenda_section_id"], name: "index_minutes_sections_on_source_dated_agenda_section_id"
+    t.check_constraint "\"position\" > 0", name: "minutes_sections_position_check"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -546,6 +736,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_040000) do
   add_foreign_key "magic_links", "sessions"
   add_foreign_key "magic_links", "users"
   add_foreign_key "meeting_bodies", "organizations"
+  add_foreign_key "meeting_minutes", "meeting_bodies"
+  add_foreign_key "meeting_minutes", "meeting_types"
+  add_foreign_key "meeting_minutes", "meetings"
+  add_foreign_key "meeting_minutes", "organizations"
+  add_foreign_key "meeting_transcripts", "meetings"
+  add_foreign_key "meeting_transcripts", "organizations"
+  add_foreign_key "meeting_transcripts", "users", column: "created_by_id"
+  add_foreign_key "meeting_transcripts", "users", column: "purged_by_id"
   add_foreign_key "meeting_type_agenda_items", "agenda_item_catalog_entries"
   add_foreign_key "meeting_type_agenda_items", "meeting_type_agenda_sections"
   add_foreign_key "meeting_type_agenda_items", "meeting_types"
@@ -554,6 +752,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_040000) do
   add_foreign_key "meetings", "meeting_bodies"
   add_foreign_key "meetings", "meeting_types"
   add_foreign_key "meetings", "organizations"
+  add_foreign_key "minutes_attendance_entries", "dated_agenda_roll_call_entries"
+  add_foreign_key "minutes_attendance_entries", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "minutes_attendance_entries", "people", on_delete: :nullify
+  add_foreign_key "minutes_attendance_entries", "position_titles", on_delete: :nullify
+  add_foreign_key "minutes_draft_runs", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "minutes_draft_runs", "meeting_transcripts"
+  add_foreign_key "minutes_draft_runs", "users", column: "requested_by_id"
+  add_foreign_key "minutes_draft_suggestions", "dated_agenda_items", column: "source_dated_agenda_item_id"
+  add_foreign_key "minutes_draft_suggestions", "minutes_attendance_entries"
+  add_foreign_key "minutes_draft_suggestions", "minutes_draft_runs"
+  add_foreign_key "minutes_draft_suggestions", "minutes_items"
+  add_foreign_key "minutes_draft_suggestions", "minutes_sections"
+  add_foreign_key "minutes_draft_suggestions", "users", column: "reviewed_by_id"
+  add_foreign_key "minutes_items", "dated_agenda_items", column: "source_dated_agenda_item_id"
+  add_foreign_key "minutes_items", "endeavors"
+  add_foreign_key "minutes_items", "minutes_sections"
+  add_foreign_key "minutes_outcomes", "minutes_items"
+  add_foreign_key "minutes_outcomes", "people", column: "mover_person_id", on_delete: :nullify
+  add_foreign_key "minutes_outcomes", "people", column: "seconder_person_id", on_delete: :nullify
+  add_foreign_key "minutes_sections", "dated_agenda_sections", column: "source_dated_agenda_section_id"
+  add_foreign_key "minutes_sections", "meeting_minutes", column: "meeting_minutes_id"
   add_foreign_key "passkey_credentials", "users"
   add_foreign_key "permission_grants", "users"
   add_foreign_key "position_assignments", "people"

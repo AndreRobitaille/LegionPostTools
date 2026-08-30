@@ -58,6 +58,9 @@ does not infer acceptance merely because time passed or another Meeting occurred
 - Use the OpenAI Responses API with strict structured output, `store: false`, no tools, and
   a replaceable provider boundary. Save local provenance and suggestions, not provider
   conversation state.
+- Use `gpt-5.6-sol` with high reasoning effort as the initial minutes-drafting default.
+  Evaluate other reasoning levels against representative Post transcripts; use Terra or
+  Luna for a lower-risk task only after task-specific evidence shows that quality holds.
 - Keep every model-produced statement visibly reviewable against transcript line/time
   ranges or agenda sources. Missing facts remain missing.
 - Preserve exact approved versions in immutable `MinutesRevision` records. Member and
@@ -771,9 +774,20 @@ API and contains:
 2. the exact JSON schema for sections, item suggestions, attendance, outcomes, source
    references, uncertainties, and missing facts;
 3. Meeting and snapshotted agenda structure, including item behavior and direct Endeavor
-   ids already confirmed by humans;
+   ids already confirmed by humans, plus a bounded list of relevant existing Endeavor ids,
+   titles, summaries, and statuses;
 4. the transcript with stable line numbers and preserved timestamps when supplied; and
 5. an explicit instruction to use `null` / `not_recorded` rather than guessing.
+
+The first pass organizes facts by the supplied agenda structure rather than transcript
+chronology. A late officer report belongs under that officer's report item. Substantive
+discussion that strays from the current item belongs under a more specific agenda item
+when one exists. If no agenda item fits, the model checks the supplied existing Endeavors;
+a clear match becomes a proposed added minutes item with a human-reviewable Endeavor link.
+Only genuinely unrelated material with no better destination belongs under **Good of The
+American Legion**. The transcript citation remains at the lines where the words were
+actually spoken. Brief asides and uncertain classifications are omitted or flagged for
+review rather than forced into a misleading destination.
 
 Use strict Structured Outputs rather than asking the model to imitate JSON in prose. Do
 not enable web search, file search, code execution, or other tools. Do not let the model
@@ -786,12 +800,19 @@ textbox. Persist prompt version and SHA-256, provider, exact model, request/resp
 token usage, source digest, schema version, requester, timestamps, and terminal status in
 `MinutesDraftRun`.
 
+The initial OpenAI provider sends `model: "gpt-5.6-sol"` and
+`reasoning: { effort: "high" }`. Keep model and reasoning selection in provider
+configuration rather than domain records, while recording the effective values on every
+run. Sol is still an untrusted drafting assistant: the source-evidence, missing-fact, and
+human-review rules apply regardless of model capability.
+
 ### Suggestion staging
 
 The structured response creates `MinutesDraftSuggestion` staging rows, not approved
 minutes and not invisible direct mutations. Each suggestion records:
 
 - target section/item or a proposed standalone item;
+- optional proposed link to an exact supplied existing Endeavor, for an added item only;
 - field/kind and proposed wording or structured value;
 - exact transcript line/time ranges and agenda source ids;
 - model-reported uncertainty and missing-fact flags;
@@ -799,13 +820,17 @@ minutes and not invisible direct mutations. Each suggestion records:
 - reviewer and review time; and
 - draft-run provenance.
 
-Applying a suggestion copies its value into the normal editable minutes row. Later prompt
-runs create new suggestion sets and never overwrite human-edited content. Regeneration
+Applying an outcome, attendance, or additional-item suggestion copies its value into the
+normal editable minutes row. Applying an item-summary suggestion appends a reviewed
+paragraph so separate supported passages and existing agenda wording cannot overwrite one
+another. Later prompt runs create new suggestion sets and never overwrite human-edited content. Regeneration
 requires a deliberate choice of whether to target only unresolved fields or start a new
 draft; the default is unresolved fields only.
 
-AI may summarize discussion and suggest possible links to a supplied list of existing
-Endeavors. A link stays a suggestion until the human selects it. AI may not create, merge,
+AI may summarize discussion and suggest possible links to the supplied bounded list of
+relevant existing Endeavors. The model receives only the id, title, summary, and status,
+not a roster or an invitation to infer identity. A link stays a suggestion until the human
+uses it unchanged or confirms/corrects it in the edit form. AI may not create, merge,
 split, complete, reopen, rename, prioritize, or reassign an Endeavor.
 
 The model may propose attendance, mover, seconder, vote, and outcome values only when it
@@ -1026,6 +1051,9 @@ the first implementation's structure, source separation, human authority, or imm
   for the permanent-record and continuity context of the Adjutant's work.
 - [OpenAI Responses API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create),
   for stateless text input, versioned prompts, Structured Outputs, and `store` behavior.
+- [GPT-5.6 Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol), for the initial
+  flagship minutes-drafting model, reasoning levels, context window, and Structured
+  Outputs support.
 - [OpenAI API data controls](https://developers.openai.com/api/docs/guides/your-data),
   for training, application-state, abuse-monitoring, and approved retention-control
   distinctions.

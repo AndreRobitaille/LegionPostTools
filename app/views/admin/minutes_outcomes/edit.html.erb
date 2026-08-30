@@ -1,0 +1,15 @@
+<% content_for :title, "Edit outcome" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow"><%= @outcome.minutes_item.title %></p>
+  <h1 class="page-title">Edit recorded outcome</h1>
+</div>
+<%= render "form", outcome: @outcome, meeting: @meeting %>
+
+<section class="da-danger-zone minutes-editor-danger" aria-labelledby="remove-minutes-outcome-heading">
+  <div>
+    <h2 class="da-danger-title" id="remove-minutes-outcome-heading">Remove outcome</h2>
+    <p class="da-danger-copy">Remove this motion or decision from the draft.</p>
+  </div>
+  <%= button_to "Remove outcome", admin_meeting_minutes_outcome_path(@meeting, @outcome), method: :delete, class: "btn-return", data: { turbo_confirm: "Remove this draft outcome?" } %>
+</section>

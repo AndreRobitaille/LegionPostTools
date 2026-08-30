@@ -1,6 +1,11 @@
 class Organization < ApplicationRecord
   has_many :dated_agendas, dependent: :restrict_with_exception
   has_many :meetings, dependent: :restrict_with_exception
+  has_many :meeting_minutes,
+    class_name: "MeetingMinutes",
+    dependent: :restrict_with_exception,
+    inverse_of: :organization
+  has_many :meeting_transcripts, dependent: :restrict_with_exception
   has_many :position_titles, dependent: :destroy
   has_many :meeting_bodies, dependent: :destroy
   has_many :agenda_item_catalog_entries, dependent: :destroy

@@ -1,0 +1,51 @@
+<% content_for :title, "Edit AI suggestion" %>
+<%= link_to admin_meeting_minutes_draft_run_path(@meeting, @suggestion.minutes_draft_run), class: "back" do %>&larr; Draft review<% end %>
+
+<div class="page-lead ai-draft-lead">
+  <p class="minutes-eyebrow">Human correction</p>
+  <h1 class="page-title">Edit before using</h1>
+  <p class="page-sub"><%= minutes_suggestion_target_label(@suggestion) %> &middot; The corrected value will enter the ordinary working minutes.</p>
+</div>
+
+<%= form_with model: @suggestion, url: admin_meeting_minutes_draft_suggestion_path(@meeting, @suggestion), class: "stacked-form ai-suggestion-edit-form" do |form| %>
+  <% if @suggestion.errors.any? %>
+    <div class="error-summary" role="alert">
+      <h2>The suggestion could not be used:</h2>
+      <ul><% @suggestion.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <% case @suggestion.kind %>
+  <% when "item_summary" %>
+    <div class="fl"><%= form.label :body, "Paragraph to add to this minutes item" %><%= form.text_area :body, value: @suggestion.payload["body"], rows: 10, class: "f", required: true %></div>
+  <% when "outcome" %>
+    <div class="fl"><%= form.label :text, "Motion or decision" %><%= form.text_area :text, value: @suggestion.payload["text"], rows: 6, class: "f", required: true %></div>
+    <div class="fl"><%= form.label :kind, "Record type" %><%= form.select :kind, MinutesOutcome::KINDS.map { |value| [ value.humanize, value ] }, { selected: @suggestion.payload["kind"] }, class: "f" %></div>
+    <div class="fl"><%= form.label :disposition %><%= form.select :disposition, MinutesOutcome::DISPOSITIONS.map { |value| [ value.humanize, value ] }, { selected: @suggestion.payload["disposition"] }, class: "f" %></div>
+    <div class="minutes-outcome-name-grid">
+      <div class="fl"><%= form.label :mover_name, "Moved by (leave blank if unknown)" %><%= form.text_field :mover_name, value: @suggestion.payload["mover_name"], class: "f" %></div>
+      <div class="fl"><%= form.label :seconder_name, "Seconded by (leave blank if unknown)" %><%= form.text_field :seconder_name, value: @suggestion.payload["seconder_name"], class: "f" %></div>
+    </div>
+    <div class="fl"><%= form.label :vote_summary, "Vote result (leave blank if unknown)" %><%= form.text_field :vote_summary, value: @suggestion.payload["vote_summary"], class: "f" %></div>
+  <% when "attendance" %>
+    <div class="fl"><%= form.label :status, "Attendance status" %><%= form.select :status, MinutesAttendanceEntry::STATUSES.map { |value| [ value.humanize, value ] }, { selected: @suggestion.payload["status"] }, class: "f" %></div>
+  <% when "additional_item" %>
+    <div class="fl"><%= form.label :title, "Item title" %><%= form.text_field :title, value: @suggestion.payload["title"], class: "f", required: true %></div>
+    <div class="fl"><%= form.label :body, "Minutes wording" %><%= form.text_area :body, value: @suggestion.payload["body"], rows: 10, class: "f", required: true %></div>
+    <div class="fl">
+      <%= form.label :endeavor_id, "Related Endeavor (optional)" %>
+      <%= form.collection_select :endeavor_id, @endeavors, :id, :title, { selected: @suggestion.payload["endeavor_id"], include_blank: "No Endeavor linked" }, class: "f" %>
+      <span class="fl-help">Keep the link only when this discussion belongs to that same continuing Post endeavor.</span>
+    </div>
+  <% end %>
+
+  <details class="ai-source-evidence ai-source-evidence--editor">
+    <summary>Read the cited transcript lines before saving</summary>
+    <pre><%= @suggestion.source_excerpt %></pre>
+  </details>
+
+  <div class="btnrow">
+    <%= form.submit "Use corrected suggestion", class: "btn-primary" %>
+    <%= link_to "Cancel", admin_meeting_minutes_draft_run_path(@meeting, @suggestion.minutes_draft_run), class: "btn-secondary" %>
+  </div>
+<% end %>

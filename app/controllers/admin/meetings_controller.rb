@@ -1,13 +1,15 @@
 module Admin
   class MeetingsController < ApplicationController
-    before_action -> { require_capability("manage_agendas") }
+    before_action :require_meeting_records_access, only: %i[index show]
+    before_action -> { require_capability("manage_agendas") }, except: %i[index show]
     before_action :set_organization
     before_action :set_meeting, only: %i[show edit update destroy create_agenda]
     before_action :set_form_collections, only: %i[new create edit update]
 
     def index
-      @upcoming_meetings = @organization.meetings.upcoming.includes(:meeting_body, :meeting_type, :dated_agenda)
-      @past_meetings = @organization.meetings.past.includes(:meeting_body, :meeting_type, :dated_agenda)
+      records = %i[meeting_body meeting_type dated_agenda minutes transcript]
+      @upcoming_meetings = @organization.meetings.upcoming.includes(*records)
+      @past_meetings = @organization.meetings.past.includes(*records)
     end
 
     def show; end
@@ -68,12 +70,20 @@ module Admin
 
     private
 
+    def require_meeting_records_access
+      require_any_capability("manage_agendas", "manage_minutes", "view_internal_records")
+    end
+
     def set_organization
       @organization = Organization.first!
     end
 
     def set_meeting
-      @meeting = @organization.meetings.includes(:dated_agenda).find(params[:id])
+      @meeting = @organization.meetings.includes(
+        :dated_agenda,
+        :minutes,
+        :transcript
+      ).find(params[:id])
     end
 
     def set_form_collections

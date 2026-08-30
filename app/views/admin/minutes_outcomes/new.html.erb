@@ -1,0 +1,8 @@
+<% content_for :title, "Add outcome" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow"><%= @outcome.minutes_item.title %></p>
+  <h1 class="page-title">Record a motion or decision</h1>
+  <p class="page-sub">Unknown facts stay visibly unknown. A blank name never means the app inferred one.</p>
+</div>
+<%= render "form", outcome: @outcome, meeting: @meeting %>

@@ -1,0 +1,15 @@
+<% content_for :title, "Edit #{@item.title}" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow"><%= @item.source_dated_agenda_item ? "Seeded from agenda" : "Added during the meeting" %></p>
+  <h1 class="page-title">Edit minutes item</h1>
+</div>
+<%= render "form", item: @item, meeting: @meeting %>
+
+<section class="da-danger-zone minutes-editor-danger" aria-labelledby="remove-minutes-item-heading">
+  <div>
+    <h2 class="da-danger-title" id="remove-minutes-item-heading">Remove minutes item</h2>
+    <p class="da-danger-copy">Remove this item and its draft outcomes from the working record.</p>
+  </div>
+  <%= button_to "Remove item", admin_meeting_minutes_item_path(@meeting, @item), method: :delete, class: "btn-return", data: { turbo_confirm: "Remove this draft minutes item and its outcomes?" } %>
+</section>

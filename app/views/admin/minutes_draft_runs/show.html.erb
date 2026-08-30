@@ -1,0 +1,108 @@
+<% content_for :title, "Review minutes draft — #{@meeting.title}" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+
+<div class="page-lead-row ai-review-lead">
+  <div class="page-lead">
+    <p class="minutes-eyebrow">AI working suggestions &middot; not minutes</p>
+    <h1 class="page-title">Review the first pass</h1>
+    <p class="page-sub"><%= @meeting.title %></p>
+  </div>
+  <span class="ai-review-counter"><%= pluralize(@run.suggestions.unreviewed.count, "suggestion") %> to review</span>
+</div>
+
+<% if @run.failed? %>
+  <section class="ai-draft-failure" role="alert">
+    <p class="meeting-workflow-kicker">Draft not created</p>
+    <h2>The working minutes are unchanged.</h2>
+    <p><%= minutes_draft_error_message(@run) %></p>
+    <div class="btnrow">
+      <%= link_to "Try again", new_admin_meeting_minutes_draft_run_path(@meeting), class: "btn-primary" %>
+      <%= link_to "Continue manually", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+    </div>
+  </section>
+<% elsif @run.succeeded? %>
+  <div class="ai-review-layout">
+    <main class="ai-suggestion-ledger" aria-labelledby="suggestion-ledger-heading">
+      <div class="ai-suggestion-ledger-head">
+        <div>
+          <p class="meeting-workflow-kicker">Adjutant review ledger</p>
+          <h2 id="suggestion-ledger-heading">Check every proposed fact</h2>
+        </div>
+        <p>Use adds the proposal to the editable working record. Edit lets you correct it first.</p>
+      </div>
+
+      <% if @suggestions.any? %>
+        <% @suggestions.each do |suggestion| %>
+          <article class="ai-suggestion-card ai-suggestion-card--<%= suggestion.review_state %>" aria-labelledby="suggestion-<%= suggestion.id %>-heading">
+            <div class="ai-suggestion-source-ribbon">
+              <span>Source</span>
+              L<%= format("%04d", suggestion.source_start_line) %><% if suggestion.source_end_line != suggestion.source_start_line %>–L<%= format("%04d", suggestion.source_end_line) %><% end %>
+            </div>
+            <div class="ai-suggestion-heading">
+              <div>
+                <p><%= minutes_suggestion_kind_label(suggestion) %> &middot; <%= suggestion.confidence.capitalize %> confidence</p>
+                <h3 id="suggestion-<%= suggestion.id %>-heading"><%= minutes_suggestion_target_label(suggestion) %></h3>
+              </div>
+              <span class="ai-review-state ai-review-state--<%= suggestion.review_state %>"><%= suggestion.review_state.humanize %></span>
+            </div>
+
+            <div class="ai-suggestion-proposal"><%= simple_format(minutes_suggestion_proposal(suggestion)) %></div>
+
+            <% if (endeavor_label = minutes_suggestion_endeavor_label(suggestion)) %>
+              <p class="ai-suggestion-endeavor"><span>Related Endeavor</span><strong><%= endeavor_label %></strong></p>
+            <% end %>
+
+            <% if suggestion.missing_facts.any? %>
+              <div class="ai-missing-facts">
+                <strong>Check before using</strong>
+                <ul><% suggestion.missing_facts.each do |fact| %><li><%= fact %></li><% end %></ul>
+              </div>
+            <% end %>
+
+            <details class="ai-source-evidence">
+              <summary>Read supporting transcript lines</summary>
+              <% if @source_document %>
+                <pre><%= @source_document.excerpt(suggestion.source_start_line, suggestion.source_end_line) %></pre>
+              <% else %>
+                <p>The restricted source has been purged; this range is retained only as provenance.</p>
+              <% end %>
+            </details>
+
+            <% if suggestion.unreviewed? %>
+              <div class="ai-suggestion-actions">
+                <%= button_to (suggestion.kind == "item_summary" ? "Add to minutes" : "Use suggestion"), use_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion), method: :post, class: "btn-primary" %>
+                <%= link_to "Edit before using", edit_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion), class: "btn-secondary" %>
+                <%= button_to "Discard", discard_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion), method: :post, class: "ai-discard-button" %>
+              </div>
+            <% else %>
+              <p class="ai-reviewed-note">Reviewed <%= legion_datetime(suggestion.reviewed_at) %> by <%= suggestion.reviewed_by.person.full_name %>.</p>
+            <% end %>
+          </article>
+        <% end %>
+      <% else %>
+        <div class="ai-no-suggestions">
+          <h3>No source-supported suggestions were returned.</h3>
+          <p>The working minutes remain available for manual editing. This is safer than filling gaps from an uncertain transcript.</p>
+        </div>
+      <% end %>
+    </main>
+
+    <aside class="ai-run-facts" aria-labelledby="ai-run-facts-heading">
+      <p class="meeting-workflow-kicker">Run provenance</p>
+      <h2 id="ai-run-facts-heading">Draft record</h2>
+      <dl>
+        <div><dt>Model</dt><dd><%= @run.model %></dd></div>
+        <div><dt>Reasoning</dt><dd><%= @run.reasoning_effort %></dd></div>
+        <div><dt>Prompt</dt><dd><%= @run.prompt_version %></dd></div>
+        <div><dt>Source</dt><dd><%= number_with_delimiter(@run.source_line_count) %> numbered lines</dd></div>
+        <% if @run.total_tokens %><div><dt>Tokens</dt><dd><%= number_with_delimiter(@run.total_tokens) %> total</dd></div><% end %>
+      </dl>
+      <%= link_to "Open restricted transcript", admin_meeting_transcript_path(@meeting), class: "minutes-rail-link" %>
+    </aside>
+  </div>
+<% else %>
+  <section class="ai-draft-failure" role="status">
+    <h2>The draft is still being prepared.</h2>
+    <p>Return to this page in a moment. The working minutes are unchanged until you review suggestions.</p>
+  </section>
+<% end %>

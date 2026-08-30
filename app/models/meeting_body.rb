@@ -2,6 +2,10 @@ class MeetingBody < ApplicationRecord
   belongs_to :organization
   has_many :meetings, dependent: :restrict_with_exception
   has_many :dated_agendas, dependent: :restrict_with_exception
+  has_many :meeting_minutes,
+    class_name: "MeetingMinutes",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting_body
   has_many :endeavors, dependent: :nullify
 
   normalizes :slug, with: ->(value) { value.strip.downcase }

@@ -1,0 +1,60 @@
+<% content_for :title, "Add meeting transcript" %>
+<% return_path = @meeting.minutes ? admin_meeting_minutes_path(@meeting) : admin_meeting_path(@meeting) %>
+<%= link_to return_path, class: "back" do %>&larr; <%= @meeting.minutes ? "Minutes workspace" : "Meeting record" %><% end %>
+
+<div class="page-lead transcript-page-lead">
+  <p class="minutes-eyebrow">Restricted source</p>
+  <h1 class="page-title">Add meeting transcript</h1>
+  <p class="page-sub"><%= @meeting.title %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
+</div>
+
+<%= form_with url: admin_meeting_transcript_path(@meeting), scope: :meeting_transcript, multipart: true, class: "transcript-form" do |form| %>
+  <% if @transcript.errors.any? %>
+    <div class="error-summary" role="alert">
+      <h2>The transcript could not be added:</h2>
+      <ul><% @transcript.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <section class="transcript-source-panel" aria-labelledby="transcript-source-heading">
+    <p class="meeting-workflow-kicker">Step 1</p>
+    <h2 id="transcript-source-heading">Provide one plain-text source</h2>
+    <p>Paste is usually simplest. If your transcription service produced a <code>.txt</code> file, you may upload that instead.</p>
+
+    <div class="fl">
+      <%= form.label :pasted_text, "Paste transcript" %>
+      <%= text_area_tag "meeting_transcript[pasted_text]", params.dig(:meeting_transcript, :pasted_text), rows: 16, class: "f transcript-textarea", placeholder: "Paste the complete transcript here…" %>
+      <span class="fl-help">Plain UTF-8 text, up to 5 MB. Speaker labels and timestamps are welcome but not required.</span>
+    </div>
+
+    <div class="transcript-or"><span>or</span></div>
+
+    <div class="fl">
+      <%= form.label :text_upload, "Upload a transcript file" %>
+      <%= form.file_field :text_upload, accept: ".txt,text/plain", class: "f transcript-file" %>
+      <span class="fl-help">One <code>.txt</code> file only. Word, PDF, caption, audio, and video files are not accepted here.</span>
+    </div>
+  </section>
+
+  <fieldset class="transcript-retention">
+    <legend><span>Step 2</span> Choose how long this app keeps the source</legend>
+    <label class="transcript-choice">
+      <%= form.radio_button :retention_policy, "delete_after_acceptance", checked: params.dig(:meeting_transcript, :retention_policy).blank? || params.dig(:meeting_transcript, :retention_policy) == "delete_after_acceptance" %>
+      <span><strong>Delete after acceptance <em>Recommended</em></strong><small>Schedule source deletion after the members accept the minutes, with a 30-day recovery window.</small></span>
+    </label>
+    <label class="transcript-choice">
+      <%= form.radio_button :retention_policy, "retain_restricted", checked: params.dig(:meeting_transcript, :retention_policy) == "retain_restricted" %>
+      <span><strong>Retain as a restricted source</strong><small>Keep it available only to officers with minutes or internal-record access until someone deliberately purges it.</small></span>
+    </label>
+  </fieldset>
+
+  <div class="transcript-privacy-note">
+    <strong>This step does not send anything to OpenAI.</strong>
+    <p>The source is stored privately in this installation. Before any later AI drafting request, the app will show a separate disclosure and require a deliberate action.</p>
+  </div>
+
+  <div class="btnrow">
+    <%= form.submit "Save restricted transcript", class: "btn-primary" %>
+    <%= link_to "Cancel", return_path, class: "btn-secondary" %>
+  </div>
+<% end %>

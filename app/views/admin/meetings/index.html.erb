@@ -4,9 +4,11 @@
 <div class="page-lead-row">
   <div class="page-lead">
     <h1 class="page-title">Meetings</h1>
-    <p class="page-sub">Schedule each meeting, then prepare and publish its agenda.</p>
+    <p class="page-sub">Follow each meeting from its agenda through its lasting minutes record.</p>
   </div>
-  <%= link_to "Schedule a meeting", new_admin_meeting_path, class: "btn-primary" %>
+  <% if current_user.can?("manage_agendas") %>
+    <%= link_to "Schedule a meeting", new_admin_meeting_path, class: "btn-primary" %>
+  <% end %>
 </div>
 
 <section class="admin-meeting-section" aria-labelledby="upcoming-meetings-heading">

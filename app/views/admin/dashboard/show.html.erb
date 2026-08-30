@@ -7,13 +7,14 @@
 
 <% show_roster = current_user.can?("manage_settings") %>
 <% show_agendas = current_user.can?("manage_agendas") %>
+<% show_meeting_records = show_agendas || current_user.can?("manage_minutes") || current_user.can?("view_internal_records") %>
 <% show_positions = current_user.can?("manage_settings") %>
 <% show_admins = current_user.can?("manage_settings") %>
 
-<% if show_roster || show_agendas %>
+<% if show_roster || show_meeting_records %>
   <section class="hub-sec">
     <h2 class="hub-sec-h">Meetings &amp; Roster</h2>
-    <p class="hub-sec-n">Keep the membership current and prepare your agendas.</p>
+    <p class="hub-sec-n">Keep the membership current and preserve each meeting’s records.</p>
     <div class="hub-tiles">
       <% if show_roster %>
         <div class="tile<%= " tile--due" if @roster_stale %>">
@@ -61,12 +62,15 @@
           </div>
         </div>
 
+      <% end %>
+
+      <% if show_meeting_records %>
         <div class="tile">
           <div class="tile-ic" aria-hidden="true">🗓️</div>
           <p class="tile-t">Meetings</p>
-          <p class="tile-d">Schedule meetings, then prepare, approve, and publish their agendas.</p>
+          <p class="tile-d"><%= show_agendas ? "Schedule meetings and carry each agenda into its minutes record." : "Open past meetings and continue their minutes records." %></p>
           <div class="tile-actions">
-            <%= link_to "Manage meetings →", admin_meetings_path, class: "tile-act" %>
+            <%= link_to "Open meeting records →", admin_meetings_path, class: "tile-act" %>
           </div>
         </div>
       <% end %>

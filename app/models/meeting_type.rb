@@ -4,6 +4,10 @@ class MeetingType < ApplicationRecord
   has_many :meeting_type_agenda_items, dependent: :destroy
   has_many :meeting_type_agenda_sections, -> { ordered }, dependent: :destroy
   has_many :dated_agendas, dependent: :restrict_with_exception
+  has_many :meeting_minutes,
+    class_name: "MeetingMinutes",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting_type
 
   include Reorderable
 

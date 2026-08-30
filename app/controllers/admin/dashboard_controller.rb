@@ -14,7 +14,7 @@ module Admin
     def require_admin_area
       require_authentication
       return if performed?
-      return if current_user.can?("manage_settings") || current_user.can?("manage_agendas")
+      return if current_user.can_any?(*User::ADMIN_AREA_CAPABILITIES)
 
       redirect_to root_path, alert: "You do not have permission to open that page."
     end

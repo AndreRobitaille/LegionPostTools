@@ -14,7 +14,7 @@ module NavigationHelper
   # Admin is capability-gated and rendered apart from the others, so it is
   # returned separately rather than folded into the list above.
   def admin_destination
-    return nil unless current_user.can?("manage_settings") || current_user.can?("manage_agendas")
+    return nil unless current_user.can_any?(*User::ADMIN_AREA_CAPABILITIES)
 
     { section: :admin, label: "Admin", path: admin_root_path }
   end

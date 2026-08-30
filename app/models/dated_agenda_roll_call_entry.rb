@@ -2,6 +2,9 @@ class DatedAgendaRollCallEntry < ApplicationRecord
   belongs_to :dated_agenda_item, inverse_of: :roll_call_entries
   belongs_to :position_title, optional: true
   belongs_to :person, optional: true
+  has_many :minutes_attendance_entries,
+    dependent: :restrict_with_exception,
+    inverse_of: :dated_agenda_roll_call_entry
 
   normalizes :office_name, with: ->(value) { value.to_s.strip }
   normalizes :person_name, with: ->(value) { value.to_s.strip.presence }

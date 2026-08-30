@@ -1,0 +1,8 @@
+<% content_for :title, "Add minutes item" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+<div class="page-lead">
+  <p class="minutes-eyebrow">Added during the meeting</p>
+  <h1 class="page-title">Add a minutes item</h1>
+  <p class="page-sub">New business and unplanned reports belong in the record even when they were not on the agenda.</p>
+</div>
+<%= render "form", item: @item, meeting: @meeting %>

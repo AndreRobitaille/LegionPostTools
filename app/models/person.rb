@@ -4,6 +4,17 @@ class Person < ApplicationRecord
   has_one :user, dependent: :destroy
   has_many :position_assignments, dependent: :destroy
   has_many :position_titles, through: :position_assignments
+  has_many :minutes_attendance_entries, dependent: :nullify
+  has_many :moved_minutes_outcomes,
+    class_name: "MinutesOutcome",
+    foreign_key: :mover_person_id,
+    dependent: :nullify,
+    inverse_of: :mover_person
+  has_many :seconded_minutes_outcomes,
+    class_name: "MinutesOutcome",
+    foreign_key: :seconder_person_id,
+    dependent: :nullify,
+    inverse_of: :seconder_person
 
   normalizes :roster_email_address, with: ->(value) { value&.strip&.downcase }
   normalizes :member_number, with: ->(value) { value&.strip.presence }
