@@ -254,7 +254,7 @@ class AgendaItemCatalogEntryTest < ActiveSupport::TestCase
     meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
     template_item = MeetingTypeAgendaItem.create_from_catalog_entry!(removed, position: 1, meeting_type: meeting_type)
     meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
-    dated_agenda = DatedAgenda.create_from_template!(
+    dated_agenda = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: meeting_body,
       meeting_type: meeting_type,

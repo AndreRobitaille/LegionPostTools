@@ -26,7 +26,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     report = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report", category: "reports", behavior_type: "report_slot", position: 2, active: true, body: "Report")
     @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: opening, position: 1, title: "Opening Ceremony", active: true, body: "Opening")
     @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: report, position: 2, title: "Commander Report", active: true, body: "Report")
-    @agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now.change(hour: 19, min: 0))
+    @agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now.change(hour: 19, min: 0))
 
     system_sign_in(@user)
   end
@@ -53,7 +53,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     visit edit_admin_dated_agenda_path(@agenda)
 
     assert_selector ".da-lifecycle .st.st--approved"
-    assert_selector ".readonly-tip"
+    assert_selector ".agenda-meeting-snapshot", text: /Change meeting details/
     assert_no_selector ".pos-handle"
     assert_no_selector "button.row-del"
   end
@@ -84,18 +84,16 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_not DatedAgendaItem.exists?(item.id)
   end
 
-  test "dated agenda list trash icon opens the shared record warning" do
-    visit admin_dated_agendas_path
+  test "meeting list opens the stable meeting workspace" do
+    visit admin_meetings_path
 
-    within ".mrow", text: @agenda.title do
-      find("button.row-del[aria-label='Delete #{@agenda.title}']").click
-      assert_selector "dialog.confirm-dialog[open]"
-      assert_selector ".confirm-record-title", text: @agenda.title
-      click_button "Cancel"
-      assert_no_selector "dialog.confirm-dialog[open]"
-    end
+    row = find(".admin-meeting-row", text: @agenda.title)
+    assert_includes row.text, "Continue agenda"
+    row.click
 
-    assert DatedAgenda.exists?(@agenda.id)
+    assert_current_path admin_meeting_path(@agenda.meeting)
+    assert_selector ".meeting-agenda-workflow", text: /Draft agenda.*Continue preparing agenda/m
+    assert_no_button "Delete meeting"
   end
 
   test "officer reviews document controls and the responsive Commander's working copy" do
@@ -183,6 +181,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
   test "officer reviews the delete warning and deletes a published agenda" do
     @agenda.approve!(@user)
     @agenda.publish!(@user)
+    meeting = @agenda.meeting
     visit edit_admin_dated_agenda_path(@agenda)
 
     click_button "Delete dated agenda"
@@ -201,9 +200,10 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
       click_button "Delete dated agenda"
     end
 
-    assert_current_path admin_dated_agendas_path
-    assert_text "Dated agenda deleted."
+    assert_current_path admin_meeting_path(meeting)
+    assert_text "Dated agenda deleted. The meeting remains in the record."
     assert_not DatedAgenda.exists?(@agenda.id)
+    assert Meeting.exists?(meeting.id)
   end
 
   test "member navigates from meetings to a published agenda at desktop and phone widths" do
@@ -231,12 +231,15 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     visit root_path
     click_link "Meetings"
 
-    assert_current_path dated_agendas_path
+    assert_current_path meetings_path
     assert_selector "a.nav-tab--active[aria-current='page']", text: /Meetings/i
     assert_no_selector ".nav-tab", text: "Records"
-    assert_selector ".agenda-docket-row", text: @agenda.title
+    assert_selector ".meeting-next-card", text: @agenda.title
 
-    find(".agenda-docket-row", text: @agenda.title).click
+    find(".meeting-next-card", text: @agenda.title).click
+
+    assert_current_path meeting_path(@agenda.meeting)
+    click_link "Read the published agenda"
 
     assert_current_path dated_agenda_path(@agenda)
     assert_selector ".agenda-masthead h1", text: "Membership Meeting — Agenda"

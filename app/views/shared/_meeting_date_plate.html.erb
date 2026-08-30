@@ -1,0 +1,6 @@
+<% day, month, year = legion_date_parts(meeting.starts_at) %>
+<time class="agenda-docket-date" datetime="<%= meeting.starts_at.to_date.iso8601 %>">
+  <span class="agenda-docket-day"><%= day %></span>
+  <span class="agenda-docket-month"><%= month %></span>
+  <span class="agenda-docket-year"><%= year %></span>
+</time>

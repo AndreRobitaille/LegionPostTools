@@ -30,6 +30,7 @@ Rails.application.routes.draw do
     get :revoke, on: :member
   end
   resources :people, only: %i[index show]
+  resources :meetings, only: %i[index show]
   resources :endeavors, except: %i[destroy] do
     member do
       patch :complete
@@ -80,7 +81,10 @@ Rails.application.routes.draw do
         post :reorder, on: :collection
       end
     end
-    resources :dated_agendas do
+    resources :meetings do
+      post :agenda, on: :member, action: :create_agenda
+    end
+    resources :dated_agendas, only: %i[index edit destroy] do
       member do
         patch :approve
         patch :publish
@@ -114,6 +118,7 @@ Rails.application.routes.draw do
     get "membership/people/:id", to: "membership#person"
     resources :meeting_bodies, only: %i[index]
     resources :meeting_types, only: %i[index]
+    resources :meetings, only: %i[index show create update destroy]
     resources :agenda_item_catalog_entries, only: %i[index create update destroy] do
       post :reorder, on: :collection
     end

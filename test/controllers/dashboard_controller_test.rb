@@ -60,7 +60,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", organization.name
     assert_match "Signed in as #{person.full_name}", response.body
     assert_select ".hub-sec-h", text: "Meetings"
-    assert_select "a[href=?]", dated_agendas_path, text: /View upcoming published agendas/
+    assert_select "a[href=?]", meetings_path, text: /View meetings/
   end
 
   test "signed in user in recovery installed state can reach dashboard" do
@@ -76,7 +76,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", organization.name
     assert_match "Signed in as #{person.full_name}", response.body
     assert_select ".hub-sec-h", text: "Meetings"
-    assert_select "a[href=?]", dated_agendas_path, text: /View upcoming published agendas/
+    assert_select "a[href=?]", meetings_path, text: /View meetings/
   end
 
   test "stale sessions older than 180 days are expired" do

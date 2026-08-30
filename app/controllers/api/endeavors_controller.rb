@@ -64,17 +64,17 @@ module Api
     end
 
     def upcoming_agenda_ids_for(item)
-      item.dated_agendas.merge(DatedAgenda.upcoming).ids
+      item.dated_agendas.joins(:meeting).merge(Meeting.upcoming).ids
     end
 
     def upcoming_agenda_ids_by_endeavor_id(items)
       ids = items.map(&:id)
       return {} if ids.empty?
 
-      DatedAgendaItem.joins(:dated_agenda)
+      DatedAgendaItem.joins(dated_agenda: :meeting)
         .where(endeavor_id: ids)
-        .where("dated_agendas.starts_at >= ?", Time.zone.today.beginning_of_day)
-        .order("dated_agendas.starts_at ASC", "dated_agendas.title ASC")
+        .merge(Meeting.upcoming)
+        .order("meetings.starts_at ASC", "meetings.title ASC")
         .pluck(:endeavor_id, :dated_agenda_id)
         .group_by(&:first)
         .transform_values { |pairs| pairs.map(&:last) }

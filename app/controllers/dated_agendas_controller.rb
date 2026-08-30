@@ -4,7 +4,7 @@ class DatedAgendasController < ApplicationController
   before_action :set_dated_agenda, only: %i[show print]
 
   def index
-    @dated_agendas = @organization.dated_agendas.published.upcoming.includes(:meeting_body).order(:starts_at, :title)
+    redirect_to meetings_path
   end
 
   def show; end
@@ -32,6 +32,6 @@ class DatedAgendasController < ApplicationController
     no_store
   rescue DatedAgendaPdf::GenerationError => error
     Rails.logger.error("Agenda PDF generation failed: #{error.message}")
-    redirect_to dated_agenda_path(@dated_agenda), alert: "The agenda PDF could not be created. Try again."
+      redirect_to dated_agenda_path(@dated_agenda), alert: "The agenda PDF could not be created. Try again."
   end
 end

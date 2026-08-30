@@ -1,5 +1,5 @@
 <% content_for :title, @dated_agenda.title %>
-<a class="back" href="<%= admin_dated_agendas_path %>">&larr; Dated Agendas</a>
+<a class="back" href="<%= admin_meeting_path(@dated_agenda.meeting) %>">&larr; Meeting record</a>
 
 <div class="page-lead-row">
   <div class="page-lead">
@@ -32,10 +32,11 @@
   </div>
 </div>
 
-<section class="agenda-build-section agenda-build-section--form">
-  <%= render "shared/section_header", label: "Meeting details" %>
-  <%= render "form", dated_agenda: @dated_agenda %>
-</section>
+<div class="agenda-meeting-snapshot">
+  <span>Meeting details</span>
+  <strong><%= @dated_agenda.location_name %></strong>
+  <%= link_to "Change meeting details", edit_admin_meeting_path(@dated_agenda.meeting) %>
+</div>
 
 <section class="agenda-build-section">
   <%= render "shared/section_header",

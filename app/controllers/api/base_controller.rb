@@ -270,11 +270,31 @@ module Api
     def agenda_summary_payload(agenda)
       {
         id: agenda.id,
+        meeting_id: agenda.meeting_id,
         title: agenda.title,
         status: agenda.status,
         starts_at: agenda.starts_at.iso8601,
+        location_name: agenda.location_name,
+        location_address: agenda.location_address,
         meeting_body: meeting_body_payload(agenda.meeting_body),
         meeting_type: meeting_type_payload(agenda.meeting_type)
+      }
+    end
+
+    def meeting_payload(meeting)
+      {
+        id: meeting.id,
+        title: meeting.title,
+        starts_at: meeting.starts_at.iso8601,
+        location_name: meeting.location_name,
+        location_address: meeting.location_address,
+        lock_version: meeting.lock_version,
+        meeting_body: meeting_body_payload(meeting.meeting_body),
+        meeting_type: meeting_type_payload(meeting.meeting_type),
+        agenda: meeting.dated_agenda ? {
+          id: meeting.dated_agenda.id,
+          status: meeting.dated_agenda.status
+        } : nil
       }
     end
 

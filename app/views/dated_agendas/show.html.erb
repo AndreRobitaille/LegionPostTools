@@ -1,7 +1,7 @@
 <% content_for :title, @dated_agenda.title %>
 
 <nav class="agenda-page-actions" aria-label="Agenda actions">
-  <%= link_to dated_agendas_path, class: "agenda-back-link" do %><span aria-hidden="true">&larr;</span> All meetings<% end %>
+  <%= link_to meeting_path(@dated_agenda.meeting), class: "agenda-back-link" do %><span aria-hidden="true">&larr;</span> Meeting record<% end %>
   <%= link_to "Open agenda PDF", print_dated_agenda_path(@dated_agenda), class: "btn-secondary agenda-print-link", data: { turbo: false } %>
 </nav>
 

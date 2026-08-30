@@ -5,7 +5,7 @@ class DatedAgendaPdfTest < ActiveSupport::TestCase
     organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     meeting_body = organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     meeting_type = organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
-    @agenda = organization.dated_agendas.create!(
+    @agenda = create_dated_agenda!(organization: organization,
       meeting_body:,
       meeting_type:,
       starts_at: Time.zone.local(2026, 7, 7, 19, 0),

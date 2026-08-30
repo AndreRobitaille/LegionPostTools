@@ -12,18 +12,8 @@ module Api
     end
 
     def create
-      meeting_body = organization.meeting_bodies.find(params[:meeting_body_id])
-      meeting_type = organization.meeting_types.active.find(params[:meeting_type_id])
-      starts_at = Time.zone.parse(params[:starts_at].to_s)
-      raise ArgumentError, "starts_at can't be blank" if starts_at.blank?
-
-      agenda = DatedAgenda.create_from_template!(
-        organization: organization,
-        meeting_body: meeting_body,
-        meeting_type: meeting_type,
-        starts_at: starts_at,
-        title: params[:title]
-      )
+      meeting = organization.meetings.find(params[:meeting_id])
+      agenda = DatedAgenda.create_from_template!(meeting: meeting)
       render json: { dated_agenda: agenda_detail_payload(agenda) }, status: :created
     rescue ArgumentError, ActiveRecord::RecordInvalid => e
       message = e.respond_to?(:record) ? e.record.errors.full_messages.to_sentence : e.message
@@ -32,8 +22,9 @@ module Api
 
     def destroy
       deleted = agenda_summary_payload(@dated_agenda)
+      meeting = @dated_agenda.meeting
       @dated_agenda.destroy!
-      render json: { deleted_dated_agenda: deleted }
+      render json: { deleted_dated_agenda: deleted, meeting: meeting_payload(meeting) }
     rescue ActiveRecord::RecordNotDestroyed => e
       render_validation_error(e.record, fallback: "Could not delete this agenda.")
     end

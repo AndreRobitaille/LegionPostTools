@@ -5,7 +5,7 @@ class DatedAgendaSectionTest < ActiveSupport::TestCase
     @organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
-    @agenda = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Membership Meeting", status: "draft")
+    @agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Membership Meeting", status: "draft")
     @user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
   end
 

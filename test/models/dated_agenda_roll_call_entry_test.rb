@@ -94,7 +94,7 @@ class DatedAgendaRollCallEntryTest < ActiveSupport::TestCase
   end
 
   def create_agenda
-    DatedAgenda.create_from_template!(
+    create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: @meeting_body,
       meeting_type: @meeting_type,

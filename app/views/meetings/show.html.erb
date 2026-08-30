@@ -1,0 +1,30 @@
+<% content_for :title, @meeting.title %>
+
+<%= link_to meetings_path, class: "back" do %>&larr; Meetings<% end %>
+
+<article class="meeting-record">
+  <header class="meeting-record-head">
+    <%= render "shared/meeting_date_plate", meeting: @meeting %>
+    <div>
+      <p class="meeting-record-kicker"><%= @meeting.starts_at >= Time.zone.today.beginning_of_day ? "Scheduled meeting" : "Meeting record" %></p>
+      <h1 class="page-title"><%= @meeting.title %></h1>
+      <p class="page-sub"><%= @meeting.meeting_body.name %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
+    </div>
+  </header>
+
+  <dl class="meeting-facts">
+    <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
+    <div><dt>Documents</dt><dd>
+      <% if @published_agenda %>
+        <%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-link" %>
+        <% if @meeting.starts_at < Time.zone.today.beginning_of_day %>
+          <span class="meeting-document-note">Minutes have not been published yet.</span>
+        <% end %>
+      <% elsif @meeting.starts_at < Time.zone.today.beginning_of_day %>
+        <span>No agenda was published for this meeting.</span>
+      <% else %>
+        <span>The agenda has not been published yet.</span>
+      <% end %>
+    </dd></div>
+  </dl>
+</article>

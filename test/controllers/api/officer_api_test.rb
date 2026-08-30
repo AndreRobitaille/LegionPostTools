@@ -61,14 +61,14 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "Endeavor index is small enough to match Car Show without search" do
-    past = @organization.dated_agendas.create!(
+    past = create_dated_agenda!(organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
       starts_at: 1.month.ago,
       title: "Past",
       status: "published"
     )
-    upcoming = DatedAgenda.create_from_template!(
+    upcoming = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
@@ -102,15 +102,15 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "dated agendas list upcoming first and include drafts for managers" do
-    past = @organization.dated_agendas.create!(
+    past = create_dated_agenda!(organization: @organization,
       meeting_body: @pec_body, meeting_type: @pec_type,
       starts_at: 2.weeks.ago, title: "Past PEC", status: "draft"
     )
-    later = @organization.dated_agendas.create!(
+    later = create_dated_agenda!(organization: @organization,
       meeting_body: @membership_body, meeting_type: @membership_type,
       starts_at: 2.weeks.from_now, title: "Later Membership", status: "draft"
     )
-    soon = @organization.dated_agendas.create!(
+    soon = create_dated_agenda!(organization: @organization,
       meeting_body: @pec_body, meeting_type: @pec_type,
       starts_at: 2.days.from_now, title: "Soon PEC", status: "draft"
     )
@@ -126,13 +126,16 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "creating a dated agenda from a template starts as draft" do
     sign_in_as(@commander)
     starts_at = Time.zone.parse("2026-09-08 19:00")
+    meeting = create_meeting!(
+      organization: @organization,
+      meeting_body: @pec_body,
+      meeting_type: @pec_type,
+      starts_at: starts_at,
+      title: "PEC Meeting"
+    )
 
     assert_difference -> { @organization.dated_agendas.count }, 1 do
-      post "/api/dated_agendas", params: {
-        meeting_body_id: @pec_body.id,
-        meeting_type_id: @pec_type.id,
-        starts_at: starts_at.iso8601
-      }, as: :json
+      post "/api/dated_agendas", params: { meeting_id: meeting.id }, as: :json
     end
 
     assert_response :created
@@ -146,7 +149,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "dated agenda detail includes document controls Commander notes and officer roll call" do
     commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
     commander_title.position_assignments.create!(person: @commander.person, starts_on: Date.current)
-    agenda = @organization.dated_agendas.create!(
+    agenda = create_dated_agenda!(organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
       starts_at: 1.week.from_now,
@@ -192,7 +195,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "adding Endeavor to a draft agenda snapshots it" do
-    agenda = DatedAgenda.create_from_template!(
+    agenda = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
@@ -210,7 +213,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "adding Endeavor to a locked agenda is 422" do
-    agenda = DatedAgenda.create_from_template!(
+    agenda = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
@@ -227,7 +230,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "adding the same Endeavor twice is 422" do
-    agenda = DatedAgenda.create_from_template!(
+    agenda = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
@@ -311,7 +314,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "approve publish and reopen are available but not required for drafts" do
-    agenda = DatedAgenda.create_from_template!(
+    agenda = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: @pec_body,
       meeting_type: @pec_type,
@@ -473,11 +476,14 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "bearer retries are safe across every current API mutation family" do
     token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
 
-    agenda_params = {
-      meeting_body_id: @pec_body.id,
-      meeting_type_id: @pec_type.id,
-      starts_at: 1.week.from_now.iso8601
-    }
+    meeting = create_meeting!(
+      organization: @organization,
+      meeting_body: @pec_body,
+      meeting_type: @pec_type,
+      starts_at: 1.week.from_now,
+      title: "Bearer agenda meeting"
+    )
+    agenda_params = { meeting_id: meeting.id }
     twice_with_same_key(:post, "/api/dated_agendas", agenda_params, plaintext, "agenda-create", :created)
     agenda = @organization.dated_agendas.last
     assert_equal 1, @organization.dated_agendas.count

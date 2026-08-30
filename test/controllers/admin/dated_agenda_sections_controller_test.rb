@@ -6,7 +6,7 @@ class Admin::DatedAgendaSectionsControllerTest < ActionDispatch::IntegrationTest
     Installation.singleton.update!(setup_completed_at: Time.current)
     @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
-    @agenda = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Membership Meeting", status: "draft")
+    @agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Membership Meeting", status: "draft")
     @section = @agenda.default_agenda_section
   end
 
@@ -69,7 +69,7 @@ class Admin::DatedAgendaSectionsControllerTest < ActionDispatch::IntegrationTest
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     other_body = other.meeting_bodies.create!(name: "Membership", slug: "membership")
     other_type = other.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
-    other_agenda = other.dated_agendas.create!(meeting_body: other_body, meeting_type: other_type, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Other", status: "draft")
+    other_agenda = create_dated_agenda!(organization: other, meeting_body: other_body, meeting_type: other_type, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Other", status: "draft")
 
     get edit_admin_dated_agenda_agenda_section_path(other_agenda, other_agenda.default_agenda_section)
 

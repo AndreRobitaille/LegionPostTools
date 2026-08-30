@@ -35,7 +35,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_roster_imports_path, text: /View imports/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
-    assert_select "a[href=?]", admin_dated_agendas_path, text: /Manage dated agendas/
+    assert_select "a[href=?]", admin_meetings_path, text: /Manage meetings/
     assert_select "a[href=?]", admin_position_titles_path, text: /Manage positions/
     assert_select "a[href=?]", admin_administrators_path, text: /View administrators/
   end
@@ -50,7 +50,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select ".hub-sec-h", text: "Meetings & Roster"
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
-    assert_select "a[href=?]", admin_dated_agendas_path, text: /Manage dated agendas/
+    assert_select "a[href=?]", admin_meetings_path, text: /Manage meetings/
     assert_select ".hub-sec-h", text: "Officers & Elections", count: 0
     assert_select ".hub-sec-h", text: "Setup & Administration", count: 0
     assert_select "a[href=?]", admin_position_titles_path, count: 0

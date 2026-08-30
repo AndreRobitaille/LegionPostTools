@@ -10,7 +10,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   end
 
   test "create_from_template copies active template items into a dated agenda" do
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
 
     assert_equal "Membership Meeting — 04 AUG 2026", agenda.title
     assert agenda.draft?
@@ -25,21 +25,21 @@ class DatedAgendaTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "Template body"
   end
 
-  test "upcoming uses the installation's local calendar-day boundary" do
+  test "meeting upcoming uses the installation's local calendar-day boundary" do
     Time.use_zone("America/Chicago") do
       travel_to Time.zone.local(2026, 8, 4, 0, 30) do
-        previous_evening = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 3, 23, 30), title: "Previous evening", status: "published")
-        current_evening = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Current evening", status: "published")
+        previous_evening = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 3, 23, 30), title: "Previous evening", status: "published")
+        current_evening = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Current evening", status: "published")
 
-        assert_not_includes DatedAgenda.upcoming, previous_evening
-        assert_includes DatedAgenda.upcoming, current_evening
+        assert_not_includes Meeting.upcoming, previous_evening.meeting
+        assert_includes Meeting.upcoming, current_evening.meeting
       end
     end
   end
 
   test "stores an installation-local start as UTC" do
     Time.use_zone("America/Chicago") do
-      agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 7, 7, 18, 30), title: "Summer meeting", status: "draft")
+      agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 7, 7, 18, 30), title: "Summer meeting", status: "draft")
 
       assert_equal Time.utc(2026, 7, 7, 23, 30), agenda.reload.starts_at.utc
     end
@@ -52,7 +52,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
       commander_notes: "Wait for the color guard."
     )
 
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     item = agenda.dated_agenda_items.first
 
     assert_not item.show_wording_on_agenda?
@@ -73,7 +73,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
     business_entry = @organization.agenda_item_catalog_entries.create!(title: "New Business", category: "business", behavior_type: "business_item", position: 2, active: true)
     business_item = @meeting_type.meeting_type_agenda_items.create!(agenda_section: business, agenda_item_catalog_entry: business_entry, position: 1, title: "New Business", active: true)
 
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
 
     assert_equal [ "Opening Ceremony", "Post Business" ], agenda.dated_agenda_sections.ordered.pluck(:title)
     assert_equal [ [ "Opening" ], [ "New Business" ] ], agenda.dated_agenda_sections.ordered.map { |section| section.agenda_items.pluck(:title) }
@@ -83,7 +83,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
 
   test "copied dated agenda sections are independent from template sections" do
     @meeting_type.default_agenda_section.update!(title: "Opening Ceremony")
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
 
     @meeting_type.default_agenda_section.update!(title: "Changed Template Section")
 
@@ -91,7 +91,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   end
 
   test "copied dated agenda items are independent from later template edits" do
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     item = agenda.dated_agenda_items.first
 
     @template_item.update!(title: "Changed Template", summary: "Changed summary", body: "Changed body")
@@ -102,7 +102,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   end
 
   test "editing a dated agenda item does not change the template item" do
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
 
     agenda.dated_agenda_items.first.update!(title: "Meeting-specific Opening", body: "Meeting-specific body")
 
@@ -111,7 +111,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   end
 
   test "locked agendas reject ordinary item changes" do
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     agenda.approve!(User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current))
 
     item = agenda.dated_agenda_items.first
@@ -120,7 +120,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   end
 
   test "locked agendas reject item creation" do
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     agenda.approve!(User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current))
 
     item = agenda.dated_agenda_items.build(agenda_item_catalog_entry: @catalog_entry, position: 2, title: "New Item", behavior_type: "scripted_ceremony")
@@ -130,7 +130,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
   end
 
   test "locked agendas reject item destruction" do
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     agenda.approve!(User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current))
 
     item = agenda.dated_agenda_items.first
@@ -141,7 +141,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
 
   test "a locked agenda can be destroyed as a whole with its sections and items" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
-    agenda = DatedAgenda.create_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
+    agenda = create_dated_agenda_from_template!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0))
     agenda.approve!(user)
     agenda.publish!(user)
     item_ids = agenda.dated_agenda_items.ids
@@ -156,7 +156,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
 
   test "approve only allows draft agendas" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
-    agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
 
     agenda.approve!(user)
 
@@ -169,7 +169,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
 
   test "publish only allows approved agendas" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
-    agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
 
     assert_raises(ActiveRecord::RecordInvalid) { agenda.publish!(user) }
 
@@ -186,7 +186,7 @@ class DatedAgendaTest < ActiveSupport::TestCase
 
   test "reopen only allows approved or published agendas" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Commander"), email_address: "pat@example.com", email_verified_at: Time.current)
-    agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
 
     assert_raises(ActiveRecord::RecordInvalid) { agenda.reopen!(user) }
 

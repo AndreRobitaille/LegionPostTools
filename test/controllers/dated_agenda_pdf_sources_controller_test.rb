@@ -19,7 +19,7 @@ class DatedAgendaPdfSourcesControllerTest < ActionDispatch::IntegrationTest
       position: 1,
       active: true
     )
-    @agenda = @organization.dated_agendas.create!(
+    @agenda = create_dated_agenda!(organization: @organization,
       meeting_body: @meeting_body,
       meeting_type: @meeting_type,
       starts_at: Time.zone.local(2026, 7, 7, 19, 0),

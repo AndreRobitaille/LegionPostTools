@@ -1,5 +1,6 @@
 class MeetingType < ApplicationRecord
   belongs_to :organization
+  has_many :meetings, dependent: :restrict_with_exception
   has_many :meeting_type_agenda_items, dependent: :destroy
   has_many :meeting_type_agenda_sections, -> { ordered }, dependent: :destroy
   has_many :dated_agendas, dependent: :restrict_with_exception

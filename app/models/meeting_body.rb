@@ -1,5 +1,6 @@
 class MeetingBody < ApplicationRecord
   belongs_to :organization
+  has_many :meetings, dependent: :restrict_with_exception
   has_many :dated_agendas, dependent: :restrict_with_exception
   has_many :endeavors, dependent: :nullify
 

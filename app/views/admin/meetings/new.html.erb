@@ -1,0 +1,7 @@
+<% content_for :title, "Schedule a meeting" %>
+<%= link_to admin_meetings_path, class: "back" do %>&larr; Meetings<% end %>
+<div class="page-lead">
+  <h1 class="page-title">Schedule a meeting</h1>
+  <p class="page-sub">Create the meeting record first. Its agenda can be prepared when you are ready.</p>
+</div>
+<%= render "form", meeting: @meeting %>

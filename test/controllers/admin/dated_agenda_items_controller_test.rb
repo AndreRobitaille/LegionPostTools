@@ -8,7 +8,7 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting-#{SecureRandom.hex(4)}", position: 99, active: true)
     @catalog_entry = @organization.agenda_item_catalog_entries.create!(title: "Opening Ceremony", slug: "opening-ceremony-#{SecureRandom.hex(4)}", category: "ceremony", behavior_type: "scripted_ceremony", position: 99, active: true, body: "Opening words")
     @template_item = @meeting_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 99, title: "Opening", active: true, body: "Template body")
-    @agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    @agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
     @agenda.dated_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 1, title: "Opening", behavior_type: "scripted_ceremony", active: true, body: "Template body")
   end
 
@@ -147,7 +147,7 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
 
   test "reorder succeeds when an inactive agenda item occupies position one" do
     sign_in_as(user_with_capabilities("manage_agendas"))
-    agenda = DatedAgenda.create!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
+    agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: Time.zone.local(2026, 8, 4, 19, 0), title: "Membership Meeting — August 4, 2026", status: "draft")
     first = agenda.dated_agenda_items.create!(agenda_item_catalog_entry: @catalog_entry, position: 2, title: "Opening", behavior_type: "scripted_ceremony", active: true)
     second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-2", category: "reports", behavior_type: "report_slot", position: 2, active: true)
     third_entry = @organization.agenda_item_catalog_entries.create!(title: "Inactive Report", slug: "inactive-report", category: "reports", behavior_type: "report_slot", position: 3, active: true)
@@ -435,7 +435,7 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     other_type = other.meeting_types.create!(name: "Other Meeting", slug: "other-meeting", position: 1, active: true)
     other_catalog_entry = other.agenda_item_catalog_entries.create!(title: "Other Item", slug: "other-item", category: "ceremony", behavior_type: "scripted_ceremony", position: 1, active: true)
     other_type.meeting_type_agenda_items.create!(agenda_item_catalog_entry: other_catalog_entry, position: 1, title: "Other Template", active: true)
-    other_agenda = DatedAgenda.create_from_template!(organization: other, meeting_body: other_body, meeting_type: other_type, starts_at: Time.zone.local(2026, 8, 5, 19, 0))
+    other_agenda = create_dated_agenda_from_template!(organization: other, meeting_body: other_body, meeting_type: other_type, starts_at: Time.zone.local(2026, 8, 5, 19, 0))
 
     get edit_admin_dated_agenda_agenda_item_path(other_agenda, other_agenda.dated_agenda_items.first)
 

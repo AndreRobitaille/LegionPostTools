@@ -19,6 +19,56 @@ module ActiveSupport
     fixtures :all
 
     # Add more helper methods to be used by all tests here...
+    def create_meeting!(organization:, meeting_body:, starts_at:, meeting_type: nil, title: nil, location_name: nil, location_address: nil, **attributes)
+      organization.meetings.create!(
+        {
+          meeting_body: meeting_body,
+          meeting_type: meeting_type,
+          starts_at: starts_at,
+          title: title,
+          location_name: location_name.presence || meeting_body.effective_location_name.presence || "Location not recorded",
+          location_address: location_address.nil? ? meeting_body.effective_location_address : location_address
+        }.merge(attributes)
+      )
+    end
+
+    def create_dated_agenda_from_template!(organization:, meeting_body:, meeting_type:, starts_at:, title: nil, location_name: nil, location_address: nil)
+      meeting = create_meeting!(
+        organization: organization,
+        meeting_body: meeting_body,
+        meeting_type: meeting_type,
+        starts_at: starts_at,
+        title: title,
+        location_name: location_name,
+        location_address: location_address
+      )
+      DatedAgenda.create_from_template!(meeting: meeting)
+    end
+
+    def create_dated_agenda!(organization:, meeting_body:, meeting_type:, starts_at:, title:, status: "draft", location_name: nil, location_address: nil, **attributes)
+      meeting = create_meeting!(
+        organization: organization,
+        meeting_body: meeting_body,
+        meeting_type: meeting_type,
+        starts_at: starts_at,
+        title: title,
+        location_name: location_name,
+        location_address: location_address
+      )
+      DatedAgenda.create!(
+        {
+          organization: organization,
+          meeting: meeting,
+          meeting_body: meeting_body,
+          meeting_type: meeting_type,
+          starts_at: starts_at,
+          title: title,
+          status: status,
+          location_name: meeting.location_name,
+          location_address: meeting.location_address
+        }.merge(attributes)
+      )
+    end
   end
 end
 

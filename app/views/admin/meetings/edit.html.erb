@@ -1,0 +1,7 @@
+<% content_for :title, "Edit #{@meeting.title}" %>
+<%= link_to admin_meeting_path(@meeting), class: "back" do %>&larr; <%= @meeting.title %><% end %>
+<div class="page-lead">
+  <h1 class="page-title">Meeting details</h1>
+  <p class="page-sub">Change when and where this meeting will be held.</p>
+</div>
+<%= render "form", meeting: @meeting %>

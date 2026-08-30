@@ -1,0 +1,45 @@
+<% content_for :title, @meeting.title %>
+<%= link_to admin_meetings_path, class: "back" do %>&larr; Meetings<% end %>
+
+<div class="page-lead-row admin-meeting-lead">
+  <div class="page-lead">
+    <h1 class="page-title"><%= @meeting.title %></h1>
+    <p class="page-sub"><%= @meeting.meeting_body.name %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
+  </div>
+  <%= link_to "Edit meeting details", edit_admin_meeting_path(@meeting), class: "btn-secondary" %>
+</div>
+
+<dl class="admin-meeting-facts">
+  <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
+  <div><dt>Meeting type</dt><dd><%= @meeting.meeting_type&.name || "Not chosen yet" %></dd></div>
+</dl>
+
+<section class="meeting-agenda-workflow" aria-labelledby="meeting-agenda-heading">
+  <p class="meeting-workflow-kicker">Document progression</p>
+  <h2 id="meeting-agenda-heading">Agenda</h2>
+  <% if @meeting.dated_agenda %>
+    <% state, state_class = meeting_record_state(@meeting) %>
+    <span class="meeting-state <%= state_class %>"><%= state %></span>
+    <p>The agenda is attached to this meeting and keeps its own official snapshot of the heading and place.</p>
+    <%= link_to @meeting.dated_agenda.draft? ? "Continue preparing agenda" : "Open agenda record", edit_admin_dated_agenda_path(@meeting.dated_agenda), class: "btn-primary" %>
+  <% elsif @meeting.meeting_type %>
+    <span class="meeting-state meeting-state--quiet">Agenda not started</span>
+    <p>Prepare a draft from the <strong><%= @meeting.meeting_type.name %></strong> template. You can review it before approval or publication.</p>
+    <%= button_to "Prepare agenda", agenda_admin_meeting_path(@meeting), class: "btn-primary" %>
+  <% else %>
+    <span class="meeting-state meeting-state--quiet">Meeting type needed</span>
+    <p>Choose a meeting type before preparing an agenda.</p>
+    <%= link_to "Choose meeting type", edit_admin_meeting_path(@meeting), class: "btn-primary" %>
+  <% end %>
+</section>
+
+<% if @meeting.empty_record? %>
+  <section class="da-danger-zone" data-controller="confirm-dialog" aria-labelledby="delete-meeting-heading">
+    <div>
+      <h2 class="da-danger-title" id="delete-meeting-heading">Delete meeting</h2>
+      <p class="da-danger-copy">An empty meeting can be removed. Meetings with documents are retained as records.</p>
+    </div>
+    <button type="button" class="btn-return da-delete-trigger" data-confirm-dialog-target="trigger" data-action="confirm-dialog#open">Delete meeting</button>
+    <%= render "delete_confirmation_dialog", meeting: @meeting, dialog_id: "delete-meeting-dialog" %>
+  </section>
+<% end %>

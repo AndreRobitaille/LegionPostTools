@@ -5,7 +5,7 @@ module NavigationHelper
   def primary_destinations
     [
       { section: :dashboard, label: "Dashboard", path: root_path },
-      { section: :meetings, label: "Meetings", path: dated_agendas_path },
+      { section: :meetings, label: "Meetings", path: meetings_path },
       { section: :endeavors, label: "Endeavors", path: endeavors_path },
       { section: :people, label: "People", path: people_path }
     ]
@@ -20,7 +20,7 @@ module NavigationHelper
   end
 
   def nav_section_for(path)
-    return :meetings if path == "/dated_agendas" || path.start_with?("/dated_agendas/")
+    return :meetings if path == "/meetings" || path.start_with?("/meetings/") || path == "/dated_agendas" || path.start_with?("/dated_agendas/")
     return :people if path == "/people" || path.start_with?("/people/")
     return :endeavors if path == "/endeavors" || path.start_with?("/endeavors/")
     return :admin if path.start_with?("/admin")

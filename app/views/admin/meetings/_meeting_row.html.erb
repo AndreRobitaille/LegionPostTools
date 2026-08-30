@@ -1,0 +1,10 @@
+<% state, state_class = meeting_record_state(meeting) %>
+<%= link_to admin_meeting_path(meeting), class: "admin-meeting-row" do %>
+  <%= render "shared/meeting_date_plate", meeting: meeting %>
+  <span class="admin-meeting-copy">
+    <span class="mrow-name"><%= meeting.title %></span>
+    <span class="mrow-sub"><%= meeting.meeting_body.name %> &middot; <%= legion_time(meeting.starts_at) %> &middot; <%= meeting.location_name %></span>
+  </span>
+  <span class="meeting-state <%= state_class %>"><%= state %></span>
+  <span class="admin-meeting-open"><%= admin_meeting_action(meeting) %> <span aria-hidden="true">&rsaquo;</span></span>
+<% end %>

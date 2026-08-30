@@ -1,0 +1,10 @@
+<%= render "shared/delete_confirmation_dialog",
+      dialog_id: dialog_id,
+      kicker: "Permanent action",
+      title: "Delete this meeting?",
+      description: "This empty meeting record will be permanently deleted. This cannot be recovered.",
+      record_label: "Meeting to delete",
+      record_title: meeting.title,
+      record_meta: "#{meeting.meeting_body.name} · #{legion_datetime(meeting.starts_at)}",
+      delete_label: "Delete meeting",
+      delete_path: admin_meeting_path(meeting) %>

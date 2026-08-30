@@ -36,7 +36,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_select "nav.nav-bar a.nav-tab", text: "Dashboard"
-    assert_select "nav.nav-bar a.nav-tab[href=?]", dated_agendas_path, text: "Meetings"
+    assert_select "nav.nav-bar a.nav-tab[href=?]", meetings_path, text: "Meetings"
     assert_select "nav.nav-bar a.nav-tab[href=?]", endeavors_path, text: "Endeavors"
     assert_select "nav.nav-bar", text: /Records/, count: 0
     assert_select "nav.nav-bar .nav-tab--soon", count: 0
@@ -65,7 +65,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select ".app-menu-nav a.app-menu-link[href=?]", dated_agendas_path, text: "Meetings"
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", meetings_path, text: "Meetings"
     assert_select ".app-menu-nav a.app-menu-link[href=?]", endeavors_path, text: "Endeavors"
     assert_select ".app-menu-nav a.app-menu-link[href=?]", admin_root_path, text: "Admin"
   end
@@ -143,9 +143,9 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     prepare_setup_complete_state
     sign_in_plain_member
 
-    get dated_agendas_path
+    get meetings_path
 
     assert_response :success
-    assert_select "nav.nav-bar a.nav-tab--active[aria-current='page'][href=?]", dated_agendas_path, text: "Meetings"
+    assert_select "nav.nav-bar a.nav-tab--active[aria-current='page'][href=?]", meetings_path, text: "Meetings"
   end
 end

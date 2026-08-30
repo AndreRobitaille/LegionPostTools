@@ -6,7 +6,7 @@ class Admin::DatedAgendaEndeavorsControllerTest < ActionDispatch::IntegrationTes
     Installation.singleton.update!(setup_completed_at: Time.current)
     @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
-    @agenda = @organization.dated_agendas.create!(meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now, title: "September Membership", status: "draft")
+    @agenda = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.week.from_now, title: "September Membership", status: "draft")
     @manager = create_user("Manager", manage_agendas: true)
     @member = create_user("Member")
     @endeavor = @organization.endeavors.create!(created_by: @manager, meeting_body: @meeting_body, title: "Car Show", summary: "Confirm permits", details: "Permit history", importance: "important", raise_by_on: 1.week.from_now.to_date)

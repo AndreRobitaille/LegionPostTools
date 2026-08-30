@@ -171,7 +171,7 @@ class MeetingTypeTemplateSeederTest < ActiveSupport::TestCase
       seeded_at: Time.current
     )
     meeting_body = @organization.meeting_bodies.create!(name: "Post Executive Committee", slug: "pec")
-    dated_agenda = DatedAgenda.create_from_template!(
+    dated_agenda = create_dated_agenda_from_template!(
       organization: @organization,
       meeting_body: meeting_body,
       meeting_type: pec,

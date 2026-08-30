@@ -11,7 +11,7 @@ class ReinterpretLegacyDatedAgendaTimesTest < ActiveSupport::TestCase
     meeting_body = organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     meeting_type = organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
 
-    @agenda = organization.dated_agendas.create!(
+    @agenda = create_dated_agenda!(organization: organization,
       meeting_body: meeting_body,
       meeting_type: meeting_type,
       starts_at: Time.utc(2026, 7, 7, 18, 30),

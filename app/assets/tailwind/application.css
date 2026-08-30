@@ -896,6 +896,10 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 /* A section whose only content is a form takes the form's measure, so the
    header rule does not overhang the card beneath it. */
 .agenda-build-section--form { max-width: var(--w-form); }
+.agenda-meeting-snapshot { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; max-width: var(--w-main); margin: -12px 0 30px; padding: 11px 15px; color: var(--color-muted); background: var(--color-ivory); border: 1px solid var(--rule); border-radius: var(--radius-control); font-size: 14px; }
+.agenda-meeting-snapshot > span { color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.agenda-meeting-snapshot strong { color: var(--color-ink); font-size: 15px; }
+.agenda-meeting-snapshot a { margin-left: auto; color: var(--color-navy); font-size: 15px; font-weight: 750; }
 
 /* Whole-record deletion stays visually separate from lifecycle actions. The
    modal's folio identifies the exact meeting snapshot before it is removed. */
@@ -944,6 +948,77 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .agenda-docket-row:hover .agenda-docket-title, .agenda-docket-row:focus-visible .agenda-docket-title { text-decoration-color: var(--color-navy); }
 .agenda-docket-meta { display: block; margin-top: 5px; color: var(--color-muted); font-size: 16px; line-height: 1.4; }
 .agenda-docket-next { display: inline-block; margin-bottom: 5px; color: var(--color-gold-ink); font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+
+/* First-class meetings ------------------------------------------------------
+   The member page reads like an assembly notice followed by a calm records
+   ledger. The next meeting gets one deliberate gold-topped feature; archive
+   rows reuse the compact date plate so dates remain the strongest landmark. */
+.meeting-page-lead { max-width: var(--w-main); }
+.meeting-next { max-width: var(--w-main); margin: 28px 0 38px; }
+.meeting-next-kicker, .meeting-archive-kicker, .meeting-record-kicker, .meeting-workflow-kicker { margin: 0 0 8px; color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .18em; text-transform: uppercase; }
+.meeting-next-card { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: center; gap: 22px; padding: 22px 24px; color: inherit; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 5px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 12px 28px rgba(10,34,64,.09); text-decoration: none; }
+.meeting-next-card:hover, .meeting-next-card:focus-visible { background: #fffdf7; outline: none; }
+.meeting-next-card:focus-visible { box-shadow: 0 0 0 3px var(--color-gold), 0 12px 28px rgba(10,34,64,.09); }
+.meeting-next-copy { min-width: 0; }
+.meeting-next-copy h2 { margin: 0; color: var(--color-navy); font-size: 22px; line-height: 1.3; overflow-wrap: anywhere; }
+.meeting-next-meta, .meeting-next-place { display: block; margin-top: 6px; color: var(--color-muted); font-size: 16px; line-height: 1.4; }
+.meeting-next-place { color: var(--color-ink); }
+.meeting-next-action { align-self: center; color: var(--color-navy); font-size: 16px; font-weight: 800; white-space: nowrap; }
+.meeting-next--empty { padding: 22px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-left: 4px solid var(--color-gold); border-radius: var(--radius-card); }
+.meeting-next--empty h2 { margin: 0 0 6px; color: var(--color-navy); font-size: 20px; }
+.meeting-next--empty p { margin: 0; color: var(--color-muted); font-size: 16px; }
+.meeting-state { display: inline-flex; align-items: center; gap: 7px; margin-top: 9px; color: var(--color-muted); font-size: 14px; font-weight: 750; line-height: 1.35; }
+.meeting-state::before { width: 8px; height: 8px; flex: 0 0 auto; background: currentColor; border-radius: 50%; content: ""; }
+.meeting-state--approved { color: var(--color-gold-ink); }
+.meeting-state--published { color: var(--color-green); }
+.meeting-state--draft { color: var(--color-officer-blue); }
+.meeting-state--quiet::before { background: transparent; border: 1.5px solid currentColor; box-sizing: border-box; }
+.meeting-list-section { max-width: var(--w-form); margin: 0 0 38px; }
+.meeting-docket { margin-top: 0; border-top-width: 1px; box-shadow: none; }
+.meeting-archive { max-width: var(--w-main); margin-top: 14px; padding-top: 26px; border-top: 2px solid var(--rule-strong); }
+.meeting-archive-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+.meeting-archive-head h2 { margin: 0; color: var(--color-navy); font-size: 22px; }
+.meeting-year-rail { display: flex; gap: 8px; flex-wrap: wrap; }
+.meeting-year-rail a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 13px; color: var(--color-navy); background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-control); font-size: 15px; font-weight: 800; text-decoration: none; }
+.meeting-year-rail a:hover, .meeting-year-rail a:focus-visible { color: #fff; background: var(--color-navy); outline: none; }
+.meeting-year-rail a:focus-visible { box-shadow: 0 0 0 3px var(--color-gold); }
+.meeting-year { max-width: var(--w-form); margin: 0 0 30px; scroll-margin-top: 20px; }
+.meeting-year h3 { margin: 0 0 9px; color: var(--color-gold-ink); font-size: 17px; letter-spacing: .08em; }
+.meeting-archive-empty { margin-top: 6px; }
+.meeting-record { max-width: var(--w-form); margin-top: 12px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 4px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.meeting-record-head { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 20px; padding: 24px; }
+.meeting-facts, .admin-meeting-facts { margin: 0; }
+.meeting-facts > div, .admin-meeting-facts > div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 18px; padding: 17px 24px; border-top: 1px solid var(--rule); }
+.meeting-facts dt, .admin-meeting-facts dt { color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.meeting-facts dd, .admin-meeting-facts dd { margin: 0; color: var(--color-ink); font-size: 16px; line-height: 1.5; }
+.meeting-facts dd > span, .admin-meeting-facts dd > span { display: block; }
+.meeting-document-link { display: inline-block; color: var(--color-navy); font-size: 17px; font-weight: 800; }
+.meeting-document-note { margin-top: 5px; color: var(--color-muted); }
+
+/* Officer meeting ledger and workflow ------------------------------------- */
+.admin-meeting-section { max-width: var(--w-main); margin-top: 30px; }
+.admin-meeting-list { overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.admin-meeting-row { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto auto; align-items: center; gap: 18px; padding: 14px 16px; color: inherit; border-top: 1px solid var(--rule-soft); text-decoration: none; }
+.admin-meeting-row:first-child { border-top: 0; }
+.admin-meeting-row:hover, .admin-meeting-row:focus-visible { background: #eef2f7; outline: none; }
+.admin-meeting-row:focus-visible { box-shadow: inset 0 0 0 3px var(--color-gold); }
+.admin-meeting-row .agenda-docket-date { min-height: 62px; }
+.admin-meeting-copy { min-width: 0; }
+.admin-meeting-row:hover .mrow-name { text-decoration: underline; }
+.admin-meeting-row .meeting-state { margin-top: 0; white-space: nowrap; }
+.admin-meeting-open { color: var(--color-navy); font-size: 16px; font-weight: 800; }
+.admin-meeting-empty { margin: 0; padding: 19px 20px; color: var(--color-muted); background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); font-size: 16px; }
+.admin-meeting-lead { margin-bottom: 22px; }
+.admin-meeting-facts { max-width: var(--w-form); overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.admin-meeting-facts > div:first-child { border-top: 0; }
+.meeting-agenda-workflow { max-width: var(--w-form); margin-top: 30px; padding: 22px 24px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-left: 4px solid var(--color-gold); border-radius: var(--radius-card); }
+.meeting-agenda-workflow h2 { display: inline; margin: 0 12px 0 0; color: var(--color-navy); font-size: 21px; }
+.meeting-agenda-workflow .meeting-state { margin-top: 0; vertical-align: 3px; }
+.meeting-agenda-workflow p:not(.meeting-workflow-kicker) { margin: 14px 0 18px; color: #4f5f72; font-size: 16px; line-height: 1.55; }
+.meeting-place-fields { min-width: 0; margin: 6px 0 18px; padding: 18px 18px 0; background: var(--color-ivory); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.meeting-place-fields legend { padding: 0 7px; color: var(--color-navy); font-size: 14px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.meeting-place-fields > p { margin: 0 0 16px; color: var(--color-muted); font-size: 15px; line-height: 1.5; }
+.page-lead + .stacked-form { margin-top: 22px; }
 
 /* Published / printable agenda document ------------------------------------
    The action bar matches the paper width exactly so their edges line up. */
@@ -1110,6 +1185,21 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .agenda-docket-row { grid-template-columns: 66px minmax(0, 1fr); gap: 14px; padding: 14px 12px; }
   .agenda-docket-date { min-height: 66px; padding-right: 5px; padding-left: 5px; }
   .agenda-docket-day { font-size: 27px; }
+  .meeting-next { margin: 22px 0 32px; }
+  .meeting-next-card { grid-template-columns: 66px minmax(0, 1fr); gap: 14px; padding: 16px 13px; }
+  .meeting-next-card .agenda-docket-date { min-height: 66px; }
+  .meeting-next-copy h2 { font-size: 20px; }
+  .meeting-next-action { grid-column: 2; justify-self: start; min-height: 40px; }
+  .meeting-archive-head { align-items: flex-start; flex-direction: column; }
+  .meeting-year-rail { width: 100%; }
+  .meeting-year-rail a { flex: 1 1 auto; justify-content: center; }
+  .meeting-record-head { grid-template-columns: 66px minmax(0, 1fr); gap: 14px; padding: 18px 14px; }
+  .meeting-facts > div, .admin-meeting-facts > div { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 15px 16px; }
+  .admin-meeting-row { grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding: 13px 12px; }
+  .admin-meeting-row .meeting-state { grid-column: 2; white-space: normal; }
+  .admin-meeting-open { grid-column: 2; min-height: 40px; }
+  .meeting-agenda-workflow { padding: 20px 17px 21px; }
+  .meeting-place-fields { padding-right: 13px; padding-left: 13px; }
   .agenda-page-actions { align-items: stretch; flex-direction: column; gap: 10px; }
   .agenda-back-link { align-self: flex-start; }
   .agenda-print-link { box-sizing: border-box; min-height: 48px; padding: 11px 18px; text-align: center; }

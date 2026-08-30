@@ -2,6 +2,7 @@ class DatedAgenda < ApplicationRecord
   STATUSES = %w[draft approved published].freeze
 
   belongs_to :organization
+  belongs_to :meeting
   belongs_to :meeting_body
   belongs_to :meeting_type
   belongs_to :approved_by, class_name: "User", optional: true
@@ -14,20 +15,33 @@ class DatedAgenda < ApplicationRecord
 
   after_create :create_default_agenda_section!
 
-  validates :title, :starts_at, :status, presence: true
+  validates :title, :starts_at, :status, :location_name, presence: true
+  validates :meeting_id, uniqueness: true
   validates :status, inclusion: { in: STATUSES }
   validate :associations_belong_to_same_organization
 
-  scope :ordered, -> { order(starts_at: :desc, title: :asc) }
-  scope :upcoming, -> { where("starts_at >= ?", Time.zone.today.beginning_of_day).order(:starts_at, :title) }
   scope :draft, -> { where(status: "draft") }
   scope :approved, -> { where(status: "approved") }
   scope :published, -> { where(status: "published") }
 
-  def self.create_from_template!(organization:, meeting_body:, meeting_type:, starts_at:, title: nil)
-    agenda_title = title.to_s.strip.presence || default_title(meeting_type:, starts_at:)
+  def self.create_from_template!(meeting:)
+    if meeting.meeting_type.blank?
+      meeting.errors.add(:meeting_type, "must be chosen before preparing an agenda")
+      raise ActiveRecord::RecordInvalid, meeting
+    end
+
     transaction do
-      agenda = create!(organization:, meeting_body:, meeting_type:, starts_at:, title: agenda_title, status: "draft")
+      agenda = create!(
+        meeting: meeting,
+        organization: meeting.organization,
+        meeting_body: meeting.meeting_body,
+        meeting_type: meeting.meeting_type,
+        starts_at: meeting.starts_at,
+        title: meeting.title,
+        location_name: meeting.location_name,
+        location_address: meeting.location_address,
+        status: "draft"
+      )
       agenda.copy_template_items!
       agenda
     end
@@ -116,9 +130,13 @@ class DatedAgenda < ApplicationRecord
   end
 
   def associations_belong_to_same_organization
-    return if organization.blank? || meeting_body.blank? || meeting_type.blank?
-    return if meeting_body.organization_id == organization_id && meeting_type.organization_id == organization_id
+    return if organization.blank? || meeting.blank? || meeting_body.blank? || meeting_type.blank?
+    return if meeting.organization_id == organization_id &&
+      meeting_body.organization_id == organization_id &&
+      meeting_type.organization_id == organization_id &&
+      meeting.meeting_body_id == meeting_body_id &&
+      meeting.meeting_type_id == meeting_type_id
 
-    errors.add(:base, "meeting body and meeting type must belong to the same organization")
+    errors.add(:base, "meeting, meeting body, and meeting type must describe the same organization and occurrence")
   end
 end

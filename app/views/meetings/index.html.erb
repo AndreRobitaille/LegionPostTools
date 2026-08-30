@@ -1,0 +1,73 @@
+<% content_for :title, "Meetings" %>
+
+<div class="page-lead meeting-page-lead">
+  <h1 class="page-title">Meetings</h1>
+  <p class="page-sub">Upcoming assemblies and the post's meeting record.</p>
+</div>
+
+<% if @next_meeting %>
+  <section class="meeting-next" aria-labelledby="next-meeting-heading">
+    <div class="meeting-next-kicker">Next assembly</div>
+    <%= link_to meeting_path(@next_meeting), class: "meeting-next-card" do %>
+      <%= render "shared/meeting_date_plate", meeting: @next_meeting %>
+      <span class="meeting-next-copy">
+        <h2 id="next-meeting-heading"><%= @next_meeting.title %></h2>
+        <span class="meeting-next-meta"><%= @next_meeting.meeting_body.name %> &middot; <%= legion_time(@next_meeting.starts_at) %></span>
+        <span class="meeting-next-place"><%= @next_meeting.location_name %></span>
+        <% state, state_class = member_meeting_state(@next_meeting) %>
+        <span class="meeting-state <%= state_class %>"><%= state %></span>
+      </span>
+      <span class="meeting-next-action">View meeting <span aria-hidden="true">&rsaquo;</span></span>
+    <% end %>
+  </section>
+<% else %>
+  <section class="meeting-next meeting-next--empty" aria-labelledby="next-meeting-heading">
+    <div class="meeting-next-kicker">Next assembly</div>
+    <h2 id="next-meeting-heading">No meetings are scheduled</h2>
+    <p>When an officer schedules the next meeting, it will appear here.</p>
+  </section>
+<% end %>
+
+<% if @upcoming_meetings.any? %>
+  <section class="meeting-list-section" aria-labelledby="later-meetings-heading">
+    <%= render "shared/section_header", label: "Also coming up", meta: pluralize(@upcoming_meetings.size, "meeting") %>
+    <div class="agenda-docket meeting-docket">
+      <%= render partial: "meeting_row", collection: @upcoming_meetings, as: :meeting %>
+    </div>
+  </section>
+<% end %>
+
+<section class="meeting-archive" aria-labelledby="meeting-archive-heading">
+  <div class="meeting-archive-head">
+    <div>
+      <p class="meeting-archive-kicker">Post record</p>
+      <h2 id="meeting-archive-heading">Past meetings</h2>
+    </div>
+    <% if @past_meetings_by_year.any? %>
+      <nav class="meeting-year-rail" aria-label="Meeting archive years">
+        <% @past_meetings_by_year.each_key do |year| %>
+          <a href="#meetings-<%= year %>"><%= year %></a>
+        <% end %>
+      </nav>
+    <% end %>
+  </div>
+
+  <% if @past_meetings_by_year.any? %>
+    <% @past_meetings_by_year.each do |year, meetings| %>
+      <section class="meeting-year" id="meetings-<%= year %>" aria-labelledby="meetings-<%= year %>-heading">
+        <h3 id="meetings-<%= year %>-heading"><%= year %></h3>
+        <div class="agenda-docket meeting-docket">
+          <%= render partial: "meeting_row", collection: meetings, as: :meeting %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <div class="empty meeting-archive-empty">
+      <span class="empty-mark" aria-hidden="true">&#9670;</span>
+      <div>
+        <h2>No past meetings have been recorded</h2>
+        <p>Completed meetings will collect here as the post's record grows.</p>
+      </div>
+    </div>
+  <% end %>
+</section>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -178,8 +178,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_020000) do
     t.datetime "approved_at"
     t.bigint "approved_by_id"
     t.datetime "created_at", null: false
+    t.text "location_address"
+    t.string "location_name", null: false
     t.integer "lock_version", default: 0, null: false
     t.bigint "meeting_body_id", null: false
+    t.bigint "meeting_id", null: false
     t.bigint "meeting_type_id", null: false
     t.bigint "organization_id", null: false
     t.datetime "published_at"
@@ -192,6 +195,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_020000) do
     t.datetime "updated_at", null: false
     t.index ["approved_by_id"], name: "index_dated_agendas_on_approved_by_id"
     t.index ["meeting_body_id"], name: "index_dated_agendas_on_meeting_body_id"
+    t.index ["meeting_id"], name: "index_dated_agendas_on_meeting_id", unique: true
     t.index ["meeting_type_id"], name: "index_dated_agendas_on_meeting_type_id"
     t.index ["organization_id", "meeting_body_id", "meeting_type_id", "starts_at"], name: "index_dated_agendas_on_org_body_type_and_starts_at"
     t.index ["organization_id", "starts_at"], name: "index_dated_agendas_on_organization_id_and_starts_at"
@@ -346,6 +350,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_020000) do
     t.index ["organization_id", "slug"], name: "index_meeting_types_on_organization_id_and_slug", unique: true
     t.index ["organization_id", "source_key"], name: "index_meeting_types_on_organization_id_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
     t.index ["organization_id"], name: "index_meeting_types_on_organization_id"
+  end
+
+  create_table "meetings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "location_address"
+    t.string "location_name", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_body_id", null: false
+    t.bigint "meeting_type_id"
+    t.bigint "organization_id", null: false
+    t.datetime "starts_at", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meeting_body_id"], name: "index_meetings_on_meeting_body_id"
+    t.index ["meeting_type_id"], name: "index_meetings_on_meeting_type_id"
+    t.index ["organization_id", "starts_at"], name: "index_meetings_on_organization_id_and_starts_at"
+    t.index ["organization_id"], name: "index_meetings_on_organization_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -506,6 +527,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_020000) do
   add_foreign_key "dated_agenda_sections", "meeting_type_agenda_sections"
   add_foreign_key "dated_agendas", "meeting_bodies"
   add_foreign_key "dated_agendas", "meeting_types"
+  add_foreign_key "dated_agendas", "meetings"
   add_foreign_key "dated_agendas", "organizations"
   add_foreign_key "dated_agendas", "users", column: "approved_by_id"
   add_foreign_key "dated_agendas", "users", column: "published_by_id"
@@ -526,6 +548,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_020000) do
   add_foreign_key "meeting_type_agenda_items", "meeting_types"
   add_foreign_key "meeting_type_agenda_sections", "meeting_types"
   add_foreign_key "meeting_types", "organizations"
+  add_foreign_key "meetings", "meeting_bodies"
+  add_foreign_key "meetings", "meeting_types"
+  add_foreign_key "meetings", "organizations"
   add_foreign_key "passkey_credentials", "users"
   add_foreign_key "permission_grants", "users"
   add_foreign_key "position_assignments", "people"

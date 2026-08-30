@@ -1,0 +1,53 @@
+<%= form_with model: [ :admin, meeting ], class: "stacked-form", data: { controller: "meeting-place", meeting_place_locations_value: @meeting_body_locations.to_json } do |form| %>
+  <% if meeting.errors.any? %>
+    <div class="error-summary">
+      <h2><%= pluralize(meeting.errors.count, "error") %> prohibited this meeting from being saved:</h2>
+      <ul><% meeting.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <%= form.hidden_field :lock_version if meeting.persisted? %>
+
+  <div class="fl">
+    <%= form.label :meeting_body_id, "Meeting body" %>
+    <%= form.collection_select :meeting_body_id, @meeting_bodies, :id, :name, {}, class: "f", data: { meeting_place_target: "body", action: "meeting-place#bodyChanged" }, disabled: meeting.dated_agenda.present? %>
+    <%= form.hidden_field :meeting_body_id if meeting.dated_agenda.present? %>
+    <% if meeting.dated_agenda.present? %><span class="fl-help">Remove the draft agenda before changing the meeting body.</span><% end %>
+  </div>
+
+  <div class="fl">
+    <%= form.label :meeting_type_id, "Meeting type" %>
+    <%= form.collection_select :meeting_type_id, @meeting_types, :id, :name, { include_blank: "Choose later" }, class: "f", disabled: meeting.dated_agenda.present? %>
+    <%= form.hidden_field :meeting_type_id if meeting.dated_agenda.present? %>
+    <span class="fl-help">A meeting type is required before preparing an agenda.</span>
+  </div>
+
+  <div class="fl">
+    <span class="fl-label-inline">Date and start time</span>
+    <%= render "shared/datetime_field", prefix: "meeting", attribute: :starts_at, value: meeting.starts_at %>
+  </div>
+
+  <div class="fl">
+    <%= form.label :title, "Meeting title (optional)" %>
+    <%= form.text_field :title, class: "f" %>
+    <span class="fl-help">Leave blank to use the meeting type or body and date.</span>
+  </div>
+
+  <fieldset class="meeting-place-fields">
+    <legend>Place</legend>
+    <p>These details are saved with this meeting, so its historical record will not change later.</p>
+    <div class="fl">
+      <%= form.label :location_name, "Place name" %>
+      <%= form.text_field :location_name, class: "f", required: true, data: { meeting_place_target: "name" } %>
+    </div>
+    <div class="fl">
+      <%= form.label :location_address, "Address (optional)" %>
+      <%= form.text_area :location_address, class: "f", rows: 3, data: { meeting_place_target: "address" } %>
+    </div>
+  </fieldset>
+
+  <div class="btnrow">
+    <%= form.submit meeting.persisted? ? "Save meeting" : "Create meeting", class: "btn-primary" %>
+    <%= link_to "Cancel", meeting.persisted? ? admin_meeting_path(meeting) : admin_meetings_path, class: "btn-secondary" %>
+  </div>
+<% end %>

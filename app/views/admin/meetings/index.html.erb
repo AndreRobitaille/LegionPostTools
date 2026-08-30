@@ -1,0 +1,32 @@
+<% content_for :title, "Meetings" %>
+<%= link_to admin_root_path, class: "back" do %>&larr; Administration<% end %>
+
+<div class="page-lead-row">
+  <div class="page-lead">
+    <h1 class="page-title">Meetings</h1>
+    <p class="page-sub">Schedule each meeting, then prepare and publish its agenda.</p>
+  </div>
+  <%= link_to "Schedule a meeting", new_admin_meeting_path, class: "btn-primary" %>
+</div>
+
+<section class="admin-meeting-section" aria-labelledby="upcoming-meetings-heading">
+  <%= render "shared/section_header", label: "Upcoming", meta: pluralize(@upcoming_meetings.size, "meeting") %>
+  <% if @upcoming_meetings.any? %>
+    <div class="admin-meeting-list">
+      <%= render partial: "meeting_row", collection: @upcoming_meetings, as: :meeting %>
+    </div>
+  <% else %>
+    <p class="admin-meeting-empty">No upcoming meetings are scheduled.</p>
+  <% end %>
+</section>
+
+<section class="admin-meeting-section" aria-labelledby="past-meetings-heading">
+  <%= render "shared/section_header", label: "Past meetings", meta: pluralize(@past_meetings.size, "meeting") %>
+  <% if @past_meetings.any? %>
+    <div class="admin-meeting-list">
+      <%= render partial: "meeting_row", collection: @past_meetings, as: :meeting %>
+    </div>
+  <% else %>
+    <p class="admin-meeting-empty">Past meetings will collect here.</p>
+  <% end %>
+</section>

@@ -1,0 +1,9 @@
+<% state, state_class = member_meeting_state(meeting) %>
+<%= link_to meeting_path(meeting), class: "agenda-docket-row", aria: { label: "View #{meeting.title}" } do %>
+  <%= render "shared/meeting_date_plate", meeting: meeting %>
+  <span class="agenda-docket-copy">
+    <span class="agenda-docket-title"><%= meeting.title %></span>
+    <span class="agenda-docket-meta"><%= meeting.meeting_body.name %> &middot; <%= legion_time(meeting.starts_at) %></span>
+    <span class="meeting-state <%= state_class %>"><%= state %></span>
+  </span>
+<% end %>

@@ -1,8 +1,8 @@
 <% commander_copy = local_assigns.fetch(:commander_copy, false) %>
 <% document_label = local_assigns.fetch(:document_label, "Agenda") %>
 <% document_title = "#{dated_agenda.meeting_type.name} — #{document_label}" %>
-<% location_name = dated_agenda.meeting_body.effective_location_name %>
-<% location_address = dated_agenda.meeting_body.effective_location_address %>
+<% location_name = dated_agenda.location_name %>
+<% location_address = dated_agenda.location_address %>
 <% mailing_address_lines = organization.mailing_address_lines %>
 <% mailing_address_lines.fill("", mailing_address_lines.length...2) %>
 

@@ -493,7 +493,7 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
   end
 
   def historical_agenda
-    agenda = @organization.dated_agendas.create!(
+    agenda = create_dated_agenda!(organization: @organization,
       meeting_body: @meeting_body,
       meeting_type: @meeting_type,
       starts_at: Time.zone.local(2026, 7, 7, 18, 30),
