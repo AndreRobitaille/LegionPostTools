@@ -80,6 +80,8 @@ Codex's restricted command sandbox can expose root-owned host files under `/etc`
 - `README.md` — overview for operators and repo visitors.
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
+- `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, Four Pillars, Legion Family, source authority, and AI interpretation rules.
+- `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/ARCHITECTURE.md` — architecture and durable decisions.
 - `docs/ROADMAP.md` — planned development phases.

@@ -86,3 +86,6 @@ yarn-debug.log*
 # repo or the deployed image (member PII); PDFs are just non-deployable refs.
 /docs/reference/*.pdf
 /docs/reference/*.csv
+
+# Local implementation sequencing — keep this working plan out of the repo.
+/docs/ENDEAVOR_DEVELOPMENT_PLAN.md
