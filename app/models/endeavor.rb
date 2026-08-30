@@ -1,4 +1,4 @@
-class TrackedItem < ApplicationRecord
+class Endeavor < ApplicationRecord
   IMPORTANCE_LEVELS = {
     "standard" => "Standard",
     "important" => "Important"
@@ -22,9 +22,9 @@ class TrackedItem < ApplicationRecord
 
   has_many :updates,
     -> { order(created_at: :desc, id: :desc) },
-    class_name: "TrackedItemUpdate",
+    class_name: "EndeavorUpdate",
     dependent: :restrict_with_exception,
-    inverse_of: :tracked_item
+    inverse_of: :endeavor
   has_many :dated_agenda_items, dependent: :restrict_with_exception
   has_many :dated_agendas, through: :dated_agenda_items
   has_rich_text :details
@@ -64,7 +64,7 @@ class TrackedItem < ApplicationRecord
   def complete!(user)
     with_lock do
       unless active?
-        errors.add(:base, "Only active tracked items can be completed.")
+        errors.add(:base, "Only active Endeavors can be completed.")
         raise ActiveRecord::RecordInvalid, self
       end
 
@@ -75,7 +75,7 @@ class TrackedItem < ApplicationRecord
   def reopen!
     with_lock do
       unless completed?
-        errors.add(:base, "Only completed tracked items can be reopened.")
+        errors.add(:base, "Only completed Endeavors can be reopened.")
         raise ActiveRecord::RecordInvalid, self
       end
 
@@ -101,7 +101,7 @@ class TrackedItem < ApplicationRecord
       errors.add(:completed_by, "must be recorded for a completed item") if completed_by.blank?
       errors.add(:completed_at, "must be recorded for a completed item") if completed_at.blank?
     elsif completed_by.present? || completed_at.present?
-      errors.add(:base, "Active tracked items cannot have completion details")
+      errors.add(:base, "Active Endeavors cannot have completion details")
     end
   end
 end

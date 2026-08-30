@@ -15,7 +15,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     @membership_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 2, active: true)
     @commander = create_user("Commander", capabilities: %w[manage_settings])
     @member = create_user("Member")
-    @car_show = @organization.tracked_items.create!(
+    @car_show = @organization.endeavors.create!(
       meeting_body: @membership_body,
       created_by: @commander,
       title: "Car Show",
@@ -27,7 +27,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   end
 
   test "unauthenticated JSON list is 401" do
-    get "/api/tracked_items", as: :json
+    get "/api/endeavors", as: :json
 
     assert_response :unauthorized
     assert_equal "This is a private post operations app. Sign in, then open /api.", response.parsed_body["error"]
@@ -60,7 +60,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_includes type_names, "Membership Meeting"
   end
 
-  test "tracked item index is small enough to match Car Show without search" do
+  test "Endeavor index is small enough to match Car Show without search" do
     past = @organization.dated_agendas.create!(
       meeting_body: @membership_body,
       meeting_type: @membership_type,
@@ -74,13 +74,13 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
       meeting_type: @membership_type,
       starts_at: 1.week.from_now
     )
-    DatedAgendaItem.create_from_tracked_item!(@car_show, dated_agenda: upcoming, position: 99)
+    DatedAgendaItem.create_from_endeavor!(@car_show, dated_agenda: upcoming, position: 99)
 
     sign_in_as(@commander)
-    get "/api/tracked_items", as: :json
+    get "/api/endeavors", as: :json
 
     assert_response :success
-    row = response.parsed_body.fetch("tracked_items").find { |item| item["title"] == "Car Show" }
+    row = response.parsed_body.fetch("endeavors").find { |item| item["title"] == "Car Show" }
     assert_not_nil row
     assert_equal "important", row["importance"]
     assert_equal "active", row["status"]
@@ -90,13 +90,13 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_nil row["details"]
   end
 
-  test "tracked item show includes details as plain text" do
+  test "Endeavor show includes details as plain text" do
     sign_in_as(@member)
 
-    get "/api/tracked_items/#{@car_show.id}", as: :json
+    get "/api/endeavors/#{@car_show.id}", as: :json
 
     assert_response :success
-    body = response.parsed_body.fetch("tracked_item")
+    body = response.parsed_body.fetch("endeavor")
     assert_equal "Car Show", body["title"]
     assert_includes body["details"], "Permit and volunteer history"
   end
@@ -191,7 +191,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_equal 0, @organization.dated_agendas.count
   end
 
-  test "adding tracked business to a draft agenda snapshots it" do
+  test "adding Endeavor to a draft agenda snapshots it" do
     agenda = DatedAgenda.create_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
@@ -200,16 +200,16 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     )
     sign_in_as(@commander)
 
-    post "/api/dated_agendas/#{agenda.id}/tracked_items", params: { tracked_item_id: @car_show.id }, as: :json
+    post "/api/dated_agendas/#{agenda.id}/endeavors", params: { endeavor_id: @car_show.id }, as: :json
 
     assert_response :created
     item = response.parsed_body.fetch("dated_agenda_item")
     assert_equal "Car Show", item["title"]
-    assert_equal @car_show.id, item["tracked_item_id"]
-    assert agenda.dated_agenda_items.exists?(tracked_item_id: @car_show.id)
+    assert_equal @car_show.id, item["endeavor_id"]
+    assert agenda.dated_agenda_items.exists?(endeavor_id: @car_show.id)
   end
 
-  test "adding tracked business to a locked agenda is 422" do
+  test "adding Endeavor to a locked agenda is 422" do
     agenda = DatedAgenda.create_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
@@ -219,33 +219,33 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     agenda.approve!(@commander)
     sign_in_as(@commander)
 
-    post "/api/dated_agendas/#{agenda.id}/tracked_items", params: { tracked_item_id: @car_show.id }, as: :json
+    post "/api/dated_agendas/#{agenda.id}/endeavors", params: { endeavor_id: @car_show.id }, as: :json
 
     assert_response :unprocessable_entity
     assert_match(/reopen/i, response.parsed_body["error"])
-    assert_not agenda.dated_agenda_items.exists?(tracked_item_id: @car_show.id)
+    assert_not agenda.dated_agenda_items.exists?(endeavor_id: @car_show.id)
   end
 
-  test "adding the same tracked item twice is 422" do
+  test "adding the same Endeavor twice is 422" do
     agenda = DatedAgenda.create_from_template!(
       organization: @organization,
       meeting_body: @membership_body,
       meeting_type: @membership_type,
       starts_at: 1.week.from_now
     )
-    DatedAgendaItem.create_from_tracked_item!(@car_show, dated_agenda: agenda, position: 99)
+    DatedAgendaItem.create_from_endeavor!(@car_show, dated_agenda: agenda, position: 99)
     sign_in_as(@commander)
 
-    post "/api/dated_agendas/#{agenda.id}/tracked_items", params: { tracked_item_id: @car_show.id }, as: :json
+    post "/api/dated_agendas/#{agenda.id}/endeavors", params: { endeavor_id: @car_show.id }, as: :json
 
     assert_response :unprocessable_entity
     assert_match(/already/i, response.parsed_body["error"])
   end
 
-  test "commander creates tracked business then appends an update" do
+  test "commander creates Endeavor then appends an update" do
     sign_in_as(@commander)
 
-    post "/api/tracked_items", params: {
+    post "/api/endeavors", params: {
       title: "Buddy Checks",
       summary: "Call remaining members",
       meeting_body_id: @membership_body.id,
@@ -255,21 +255,21 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     }, as: :json
 
     assert_response :created
-    created = TrackedItem.find(response.parsed_body.dig("tracked_item", "id"))
+    created = Endeavor.find(response.parsed_body.dig("endeavor", "id"))
     assert_equal @commander, created.created_by
     assert_equal Date.new(2026, 9, 15), created.raise_by_on
 
-    post "/api/tracked_items/#{created.id}/updates", params: { body: "Five calls completed." }, as: :json
+    post "/api/endeavors/#{created.id}/updates", params: { body: "Five calls completed." }, as: :json
 
     assert_response :created
     assert_includes created.updates.first.body.to_s, "Five calls completed."
   end
 
-  test "malformed tracked item date is 422 JSON and creates nothing" do
+  test "malformed Endeavor date is 422 JSON and creates nothing" do
     sign_in_as(@commander)
 
-    assert_no_difference -> { @organization.tracked_items.count } do
-      post "/api/tracked_items", params: {
+    assert_no_difference -> { @organization.endeavors.count } do
+      post "/api/endeavors", params: {
         title: "Buddy Checks",
         importance: "standard",
         raise_by_on: "next Thursday"
@@ -286,7 +286,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     sign_in_as(@commander)
 
     with_forgery_protection do
-      post "/api/tracked_items", params: {
+      post "/api/endeavors", params: {
         title: "Buddy Checks",
         importance: "standard"
       }, as: :json
@@ -298,14 +298,14 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_equal [], response.parsed_body["details"]
   end
 
-  test "complete and reopen tracked business" do
+  test "complete and reopen Endeavor" do
     sign_in_as(@commander)
 
-    patch "/api/tracked_items/#{@car_show.id}/complete", as: :json
+    patch "/api/endeavors/#{@car_show.id}/complete", as: :json
     assert_response :success
     assert @car_show.reload.completed?
 
-    patch "/api/tracked_items/#{@car_show.id}/reopen", as: :json
+    patch "/api/endeavors/#{@car_show.id}/reopen", as: :json
     assert_response :success
     assert @car_show.reload.active?
   end
@@ -335,7 +335,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "missing records are 404 JSON" do
     sign_in_as(@commander)
 
-    get "/api/tracked_items/0", as: :json
+    get "/api/endeavors/0", as: :json
 
     assert_response :not_found
     assert_equal "Not found.", response.parsed_body["error"]
@@ -355,7 +355,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "invalid bearer never falls back to a valid session cookie" do
     sign_in_as(@commander)
 
-    get "/api/tracked_items", as: :json, headers: bearer_headers("lpt_missing_invalid")
+    get "/api/endeavors", as: :json, headers: bearer_headers("lpt_missing_invalid")
 
     assert_response :unauthorized
   end
@@ -363,16 +363,16 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "revoked expired and disabled bearer tokens return unauthorized" do
     token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
     token.revoke!(@commander)
-    get "/api/tracked_items", as: :json, headers: bearer_headers(plaintext)
+    get "/api/endeavors", as: :json, headers: bearer_headers(plaintext)
     assert_response :unauthorized
 
     token.update!(revoked_at: nil, revoked_by: nil, expires_at: 1.minute.ago)
-    get "/api/tracked_items", as: :json, headers: bearer_headers(plaintext)
+    get "/api/endeavors", as: :json, headers: bearer_headers(plaintext)
     assert_response :unauthorized
 
     token.update!(expires_at: 1.day.from_now)
     @commander.update!(disabled_at: Time.current)
-    get "/api/tracked_items", as: :json, headers: bearer_headers(plaintext)
+    get "/api/endeavors", as: :json, headers: bearer_headers(plaintext)
     assert_response :unauthorized
   end
 
@@ -380,14 +380,14 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
 
     with_forgery_protection do
-      post "/api/tracked_items", params: { title: "Buddy Checks" }, as: :json,
+      post "/api/endeavors", params: { title: "Buddy Checks" }, as: :json,
         headers: bearer_headers(plaintext)
     end
     assert_response :unprocessable_entity
     assert_match(/Idempotency-Key/, response.parsed_body["error"])
 
     with_forgery_protection do
-      post "/api/tracked_items", params: { title: "Buddy Checks" }, as: :json,
+      post "/api/endeavors", params: { title: "Buddy Checks" }, as: :json,
         headers: bearer_headers(plaintext, idempotency_key: "buddy-checks-2026-08-22")
     end
     assert_response :created
@@ -398,12 +398,12 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     headers = bearer_headers(plaintext, idempotency_key: "create-buddy-checks")
     params = { title: "Buddy Checks", summary: "Call members" }
 
-    assert_difference -> { TrackedItem.count }, 1 do
-      post "/api/tracked_items", params: params, as: :json, headers: headers
+    assert_difference -> { Endeavor.count }, 1 do
+      post "/api/endeavors", params: params, as: :json, headers: headers
       assert_response :created
       first_body = response.body
 
-      post "/api/tracked_items", params: params, as: :json, headers: headers
+      post "/api/endeavors", params: params, as: :json, headers: headers
       assert_response :created
       assert_equal first_body, response.body
     end
@@ -418,11 +418,11 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
     headers = bearer_headers(plaintext, idempotency_key: "one-purpose-only")
 
-    post "/api/tracked_items", params: { title: "First purpose" }, as: :json, headers: headers
+    post "/api/endeavors", params: { title: "First purpose" }, as: :json, headers: headers
     assert_response :created
 
-    assert_no_difference -> { TrackedItem.count } do
-      post "/api/tracked_items", params: { title: "Altered purpose" }, as: :json, headers: headers
+    assert_no_difference -> { Endeavor.count } do
+      post "/api/endeavors", params: { title: "Altered purpose" }, as: :json, headers: headers
     end
     assert_response :conflict
   end
@@ -431,14 +431,14 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     _token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
     headers = bearer_headers(plaintext, idempotency_key: "sensitive-input")
 
-    post "/api/tracked_items",
+    post "/api/endeavors",
       params: { title: "First purpose", confirmation_code: "first-secret" },
       as: :json,
       headers: headers
     assert_response :created
 
-    assert_no_difference -> { TrackedItem.count } do
-      post "/api/tracked_items",
+    assert_no_difference -> { Endeavor.count } do
+      post "/api/endeavors",
         params: { title: "First purpose", confirmation_code: "changed-secret" },
         as: :json,
         headers: headers
@@ -451,12 +451,12 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     headers = bearer_headers(plaintext, idempotency_key: "stale-processing")
     params = { title: "Buddy Checks" }
 
-    post "/api/tracked_items", params: params, as: :json, headers: headers
+    post "/api/endeavors", params: params, as: :json, headers: headers
     assert_response :created
     token.agent_api_executions.find_by!(idempotency_key: "stale-processing").update!(state: "processing")
 
-    assert_no_difference -> { TrackedItem.count } do
-      post "/api/tracked_items", params: params, as: :json, headers: headers
+    assert_no_difference -> { Endeavor.count } do
+      post "/api/endeavors", params: params, as: :json, headers: headers
     end
     assert_response :conflict
     assert_match(/still processing/i, response.parsed_body["error"])
@@ -465,7 +465,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
   test "session mutation remains compatible without idempotency key" do
     sign_in_as(@commander)
 
-    post "/api/tracked_items", params: { title: "Human-created item" }, as: :json
+    post "/api/endeavors", params: { title: "Human-created item" }, as: :json
 
     assert_response :created
   end
@@ -484,17 +484,17 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
 
     twice_with_same_key(
       :post,
-      "/api/dated_agendas/#{agenda.id}/tracked_items",
-      { tracked_item_id: @car_show.id },
+      "/api/dated_agendas/#{agenda.id}/endeavors",
+      { endeavor_id: @car_show.id },
       plaintext,
       "agenda-add-tracked",
       :created
     )
-    assert_equal 1, agenda.dated_agenda_items.where(tracked_item_id: @car_show.id).count
+    assert_equal 1, agenda.dated_agenda_items.where(endeavor_id: @car_show.id).count
 
     twice_with_same_key(
       :post,
-      "/api/tracked_items/#{@car_show.id}/updates",
+      "/api/endeavors/#{@car_show.id}/updates",
       { body: "Permit filed." },
       plaintext,
       "tracked-update",
@@ -502,8 +502,8 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     )
     assert_equal 1, @car_show.updates.count
 
-    twice_with_same_key(:patch, "/api/tracked_items/#{@car_show.id}/complete", {}, plaintext, "tracked-complete", :success)
-    twice_with_same_key(:patch, "/api/tracked_items/#{@car_show.id}/reopen", {}, plaintext, "tracked-reopen", :success)
+    twice_with_same_key(:patch, "/api/endeavors/#{@car_show.id}/complete", {}, plaintext, "tracked-complete", :success)
+    twice_with_same_key(:patch, "/api/endeavors/#{@car_show.id}/reopen", {}, plaintext, "tracked-reopen", :success)
     twice_with_same_key(:patch, "/api/dated_agendas/#{agenda.id}/approve", {}, plaintext, "agenda-approve", :success)
     twice_with_same_key(:patch, "/api/dated_agendas/#{agenda.id}/publish", {}, plaintext, "agenda-publish", :success)
     twice_with_same_key(:patch, "/api/dated_agendas/#{agenda.id}/reopen", {}, plaintext, "agenda-reopen", :success)

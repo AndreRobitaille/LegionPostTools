@@ -16,7 +16,7 @@ class ApiIdempotencyConcurrencyTest < ActionDispatch::IntegrationTest
   end
 
   teardown do
-    TrackedItem.where(organization_id: @organization.id).delete_all
+    Endeavor.where(organization_id: @organization.id).delete_all
     @organization.destroy!
     @person.destroy!
   end
@@ -24,7 +24,7 @@ class ApiIdempotencyConcurrencyTest < ActionDispatch::IntegrationTest
   test "concurrent first uses serialize and perform one mutation" do
     warm_client = ActionDispatch::Integration::Session.new(Rails.application)
     warm_client.get(
-      "/api/tracked_items",
+      "/api/endeavors",
       headers: { "Authorization" => "Bearer #{@plaintext}" },
       as: :json
     )
@@ -38,7 +38,7 @@ class ApiIdempotencyConcurrencyTest < ActionDispatch::IntegrationTest
         ready << true
         start.pop
         client.post(
-          "/api/tracked_items",
+          "/api/endeavors",
           params: { title: "Concurrent Buddy Checks" },
           headers: {
             "Authorization" => "Bearer #{@plaintext}",
@@ -56,7 +56,7 @@ class ApiIdempotencyConcurrencyTest < ActionDispatch::IntegrationTest
 
     assert_equal [ 201, 201 ], results.map(&:first)
     assert_equal 1, results.map(&:last).uniq.size
-    assert_equal 1, @organization.tracked_items.where(title: "Concurrent Buddy Checks").count
+    assert_equal 1, @organization.endeavors.where(title: "Concurrent Buddy Checks").count
     assert_equal 1, @token.agent_api_executions.where(idempotency_key: "concurrent-buddy-checks").count
   end
 end

@@ -46,7 +46,7 @@ digital-versus-print visibility switches.
 | **Show wording on agenda** | When clear, keeps the title but removes document wording from member and Commander screen/print agenda bodies. Commander cues remain separate. |
 | **Carry wording into draft minutes** | Records whether the document wording should seed future draft minutes. It has no approval effect, and the minutes workflow is not built yet. |
 | **Commander's script / cues** | Private script, stage directions, and reminders for the Commander's working copy and private officer API only. |
-| **Tracked item link** | Connects an independent dated snapshot to long-lived business. Linking an existing row in place does not replace its historical title, summary, wording, section, or position. |
+| **Endeavor link** | Connects an independent dated snapshot to coherent continuing Post work. Linking an existing row in place does not replace its historical title, summary, wording, section, or position. |
 | **Position** | Order inside the catalog category or actual agenda section. It is not a global agenda order. |
 | **Lock version** | Dated-item concurrency guard. API clients send the value returned by agenda detail when editing content to avoid overwriting another officer's save. |
 | **Seed/provenance fields** | Slug, source keys/labels, seeded timestamps, and catalog-removal timestamps are app-managed metadata, not agenda content. |

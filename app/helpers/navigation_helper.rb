@@ -6,7 +6,7 @@ module NavigationHelper
     [
       { section: :dashboard, label: "Dashboard", path: root_path },
       { section: :meetings, label: "Meetings", path: dated_agendas_path },
-      { section: :tracked_items, label: "Tracked Items", path: tracked_items_path },
+      { section: :endeavors, label: "Endeavors", path: endeavors_path },
       { section: :people, label: "People", path: people_path }
     ]
   end
@@ -22,7 +22,7 @@ module NavigationHelper
   def nav_section_for(path)
     return :meetings if path == "/dated_agendas" || path.start_with?("/dated_agendas/")
     return :people if path == "/people" || path.start_with?("/people/")
-    return :tracked_items if path == "/tracked_items" || path.start_with?("/tracked_items/")
+    return :endeavors if path == "/endeavors" || path.start_with?("/endeavors/")
     return :admin if path.start_with?("/admin")
     # Profile has no tab of its own; naming it stops the Dashboard tab from
     # falsely highlighting while you are on it.

@@ -1,14 +1,14 @@
 module Api
-  class DatedAgendaTrackedItemsController < BaseController
+  class DatedAgendaEndeavorsController < BaseController
     before_action -> { require_capability("manage_agendas") }
     before_action :set_dated_agenda
 
     def create
       if @dated_agenda.locked_for_editing?
-        return render_error("Reopen this agenda before adding tracked business.", status: :unprocessable_entity)
+        return render_error("Reopen this agenda before adding an Endeavor.", status: :unprocessable_entity)
       end
 
-      tracked_item = organization.tracked_items.active.find(params[:tracked_item_id])
+      endeavor = organization.endeavors.active.find(params[:endeavor_id])
       section = if params[:dated_agenda_section_id].present?
         @dated_agenda.dated_agenda_sections.find(params[:dated_agenda_section_id])
       else
@@ -16,8 +16,8 @@ module Api
       end
 
       item = @dated_agenda.with_lock do
-        DatedAgendaItem.create_from_tracked_item!(
-          tracked_item,
+        DatedAgendaItem.create_from_endeavor!(
+          endeavor,
           dated_agenda: @dated_agenda,
           agenda_section: section,
           position: section.agenda_items.maximum(:position).to_i + 1
@@ -29,15 +29,15 @@ module Api
           id: item.id,
           title: item.title,
           summary: item.summary,
-          tracked_item_id: item.tracked_item_id,
+          endeavor_id: item.endeavor_id,
           dated_agenda_section_id: item.dated_agenda_section_id
         }
       }, status: :created
     rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
       if @dated_agenda.reload.locked_for_editing?
-        render_error("Reopen this agenda before adding tracked business.", status: :unprocessable_entity)
+        render_error("Reopen this agenda before adding an Endeavor.", status: :unprocessable_entity)
       else
-        render_error("That tracked item is already on this agenda.", status: :unprocessable_entity)
+        render_error("That Endeavor is already on this agenda.", status: :unprocessable_entity)
       end
     end
 

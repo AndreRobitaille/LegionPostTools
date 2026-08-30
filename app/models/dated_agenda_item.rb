@@ -8,7 +8,7 @@ class DatedAgendaItem < ApplicationRecord
     inverse_of: :agenda_items
   belongs_to :meeting_type_agenda_item, optional: true
   belongs_to :agenda_item_catalog_entry, optional: true
-  belongs_to :tracked_item, optional: true
+  belongs_to :endeavor, optional: true
   has_many :roll_call_entries,
     -> { order(:position) },
     class_name: "DatedAgendaRollCallEntry",
@@ -23,7 +23,7 @@ class DatedAgendaItem < ApplicationRecord
   validate :catalog_entry_belongs_to_same_organization
   validate :meeting_type_agenda_item_belongs_to_same_meeting_type
   validate :agenda_section_belongs_to_same_dated_agenda
-  validate :tracked_item_belongs_to_same_organization
+  validate :endeavor_belongs_to_same_organization
   validate :agenda_is_editable, on: %i[create update]
   before_destroy :prevent_destroy_when_locked
   after_save :sync_roll_call_snapshot
@@ -33,7 +33,7 @@ class DatedAgendaItem < ApplicationRecord
   validates :position, numericality: { only_integer: true }
   validates :position, uniqueness: { scope: :dated_agenda_section_id }
   validates :agenda_item_catalog_entry_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
-  validates :tracked_item_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
+  validates :endeavor_id, uniqueness: { scope: :dated_agenda_id }, allow_nil: true
 
   scope :ordered, -> {
     joins(:agenda_section).order("dated_agenda_sections.position", "dated_agenda_items.position", "dated_agenda_items.title")
@@ -80,17 +80,17 @@ class DatedAgendaItem < ApplicationRecord
     create!(attrs)
   end
 
-  def self.create_from_tracked_item!(tracked_item, position:, dated_agenda:, agenda_section: nil)
+  def self.create_from_endeavor!(endeavor, position:, dated_agenda:, agenda_section: nil)
     create!(
       dated_agenda: dated_agenda,
       agenda_section: agenda_section || dated_agenda.default_agenda_section,
-      tracked_item: tracked_item,
+      endeavor: endeavor,
       position: position,
-      title: tracked_item.title,
-      summary: tracked_item.summary,
+      title: endeavor.title,
+      summary: endeavor.summary,
       behavior_type: "business_item",
       active: true,
-      body: tracked_item.details.to_s
+      body: endeavor.details.to_s
     )
   end
 
@@ -243,10 +243,10 @@ class DatedAgendaItem < ApplicationRecord
     errors.add(:agenda_section, "must belong to the same dated agenda")
   end
 
-  def tracked_item_belongs_to_same_organization
-    return if dated_agenda.blank? || tracked_item.blank?
-    return if dated_agenda.organization_id == tracked_item.organization_id
+  def endeavor_belongs_to_same_organization
+    return if dated_agenda.blank? || endeavor.blank?
+    return if dated_agenda.organization_id == endeavor.organization_id
 
-    errors.add(:tracked_item, "must belong to the same organization")
+    errors.add(:endeavor, "must belong to the same organization")
   end
 end

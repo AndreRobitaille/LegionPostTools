@@ -13,7 +13,7 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
     @commander = create_user("Commander", capabilities: %w[manage_settings])
     @member = create_user("Member")
-    @tracker = @organization.tracked_items.create!(
+    @endeavor = @organization.endeavors.create!(
       meeting_body: @meeting_body,
       created_by: @commander,
       title: "Buddy Checks",
@@ -86,7 +86,7 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "dated item API links standalone historical business to a tracker in place" do
+  test "dated item API links standalone historical business to a Endeavor in place" do
     agenda, unfinished, = historical_agenda
     item = agenda.dated_agenda_items.create!(
       agenda_section: unfinished,
@@ -103,21 +103,21 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     sign_in_as(@commander)
 
     patch "/api/dated_agendas/#{agenda.id}/items/#{item.id}", params: {
-      tracked_item_id: @tracker.id,
+      endeavor_id: @endeavor.id,
       lock_version: item.lock_version
     }, as: :json
 
     assert_response :success
     item.reload
     assert_equal original_count, agenda.dated_agenda_items.count
-    assert_equal @tracker, item.tracked_item
+    assert_equal @endeavor, item.endeavor
     assert_equal unfinished, item.agenda_section
     assert_equal original_position, item.position
     assert_equal original_wording, item.body.to_plain_text
-    assert_equal @tracker.id, response.parsed_body.dig("dated_agenda_item", "tracked_item_id")
+    assert_equal @endeavor.id, response.parsed_body.dig("dated_agenda_item", "endeavor_id")
   end
 
-  test "dated item API creates standalone and optionally tracked historical rows without changing the catalog" do
+  test "dated item API creates standalone and optionally linked historical rows without changing the catalog" do
     catalog_entry("Existing reusable item", "reports", 1)
     agenda, unfinished, new_business = historical_agenda
     agenda.dated_agenda_items.create!(
@@ -155,13 +155,13 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert standalone.active?
     assert_nil standalone.agenda_item_catalog_entry_id
     assert_nil standalone.meeting_type_agenda_item_id
-    assert_nil standalone.tracked_item_id
+    assert_nil standalone.endeavor_id
     assert_nil standalone.source_key
     assert_nil standalone.seeded_at
 
     post "/api/dated_agendas/#{agenda.id}/items", params: {
       dated_agenda_section_id: new_business.id,
-      tracked_item_id: @tracker.id,
+      endeavor_id: @endeavor.id,
       title: "Buddy Checks status",
       behavior_type: "business_item"
     }, as: :json
@@ -170,7 +170,7 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     linked = agenda.dated_agenda_items.find(response.parsed_body.dig("dated_agenda_item", "id"))
     assert_equal new_business, linked.agenda_section
     assert_equal 1, linked.position
-    assert_equal @tracker, linked.tracked_item
+    assert_equal @endeavor, linked.endeavor
     assert_equal catalog_count, @organization.agenda_item_catalog_entries.count
     assert_equal template_item_count, MeetingTypeAgendaItem.count
   end
@@ -200,11 +200,11 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_match(/reopen/i, response.parsed_body["error"])
   end
 
-  test "standalone dated item creation rejects a tracker from another organization" do
+  test "standalone dated item creation rejects a Endeavor from another organization" do
     agenda, unfinished, = historical_agenda
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     other_body = other.meeting_bodies.create!(name: "Membership", slug: "membership")
-    other_tracker = other.tracked_items.create!(
+    other_endeavor = other.endeavors.create!(
       meeting_body: other_body,
       created_by: @commander,
       title: "Other Post business",
@@ -215,7 +215,7 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_no_difference -> { agenda.dated_agenda_items.count } do
       post "/api/dated_agendas/#{agenda.id}/items", params: {
         dated_agenda_section_id: unfinished.id,
-        tracked_item_id: other_tracker.id,
+        endeavor_id: other_endeavor.id,
         title: "Wrong installation",
         behavior_type: "business_item"
       }, as: :json
@@ -326,30 +326,30 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_equal "completed", token.agent_api_executions.find_by!(idempotency_key: "july-7-unfinished-order").state
   end
 
-  test "tracked business is added to the exact historical section id" do
+  test "Endeavor is added to the exact historical section id" do
     agenda, _unfinished, new_business = historical_agenda
     sign_in_as(@commander)
 
-    post "/api/dated_agendas/#{agenda.id}/tracked_items", params: {
-      tracked_item_id: @tracker.id,
+    post "/api/dated_agendas/#{agenda.id}/endeavors", params: {
+      endeavor_id: @endeavor.id,
       dated_agenda_section_id: new_business.id
     }, as: :json
 
     assert_response :created
-    item = agenda.dated_agenda_items.find_by!(tracked_item: @tracker)
+    item = agenda.dated_agenda_items.find_by!(endeavor: @endeavor)
     assert_equal new_business, item.agenda_section
     assert_equal new_business.id, response.parsed_body.dig("dated_agenda_item", "dated_agenda_section_id")
   end
 
-  test "dated item API rejects a duplicate tracked item and edits only drafts" do
+  test "dated item API rejects a duplicate Endeavor and edits only drafts" do
     agenda, unfinished, = historical_agenda
-    first = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 1, title: "First", behavior_type: "business_item", tracked_item: @tracker, active: true)
+    first = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 1, title: "First", behavior_type: "business_item", endeavor: @endeavor, active: true)
     second = agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 2, title: "Second", behavior_type: "business_item", active: true)
     sign_in_as(@commander)
 
-    patch "/api/dated_agendas/#{agenda.id}/items/#{second.id}", params: { tracked_item_id: @tracker.id }, as: :json
+    patch "/api/dated_agendas/#{agenda.id}/items/#{second.id}", params: { endeavor_id: @endeavor.id }, as: :json
     assert_response :unprocessable_entity
-    assert_nil second.reload.tracked_item_id
+    assert_nil second.reload.endeavor_id
 
     agenda.approve!(@commander)
     patch "/api/dated_agendas/#{agenda.id}/items/#{first.id}", params: { summary: "Changed" }, as: :json
@@ -376,9 +376,9 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_not DatedAgendaItem.exists?(item.id)
   end
 
-  test "whole-agenda API deletion removes a published snapshot but keeps trackers" do
+  test "whole-agenda API deletion removes a published snapshot but keeps Endeavors" do
     agenda, unfinished, = historical_agenda
-    agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 1, title: @tracker.title, behavior_type: "business_item", tracked_item: @tracker, active: true)
+    agenda.dated_agenda_items.create!(agenda_section: unfinished, position: 1, title: @endeavor.title, behavior_type: "business_item", endeavor: @endeavor, active: true)
     agenda.approve!(@commander)
     agenda.publish!(@commander)
     sign_in_as(@commander)
@@ -387,7 +387,7 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_not DatedAgenda.exists?(agenda.id)
-    assert TrackedItem.exists?(@tracker.id)
+    assert Endeavor.exists?(@endeavor.id)
     assert_equal "published", response.parsed_body.dig("deleted_dated_agenda", "status")
   end
 

@@ -4,7 +4,7 @@ class Organization < ApplicationRecord
   has_many :meeting_bodies, dependent: :destroy
   has_many :agenda_item_catalog_entries, dependent: :destroy
   has_many :meeting_types, dependent: :destroy
-  has_many :tracked_items, dependent: :restrict_with_exception
+  has_many :endeavors, dependent: :restrict_with_exception
 
   normalizes :public_email, with: ->(value) { value.strip.downcase }
 

@@ -98,7 +98,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Agenda item fields"
     assert_includes response.body, "body (write) / wording (read)"
     assert_includes response.body, "backfill_historical_business"
-    assert_includes response.body, "tracked_item_id"
+    assert_includes response.body, "endeavor_id"
     assert_includes response.body, "people directory supports `q`"
     assert_not_includes response.body, "group chat"
     assert_not_includes response.body, "next Tuesday"
@@ -122,7 +122,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     paths = response.parsed_body["common_actions"].map { |action| [ action["method"], action["path"] ] }
     assert_not_includes paths, [ "POST", "/api/dated_agendas" ]
-    assert_not_includes paths, [ "POST", "/api/tracked_items" ]
+    assert_not_includes paths, [ "POST", "/api/endeavors" ]
     assert_includes paths, [ "GET", "/api/people" ]
     assert_includes paths, [ "GET", "/api/officers" ]
     assert_not_includes paths, [ "GET", "/api/membership/summary" ]

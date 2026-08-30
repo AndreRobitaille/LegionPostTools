@@ -1,0 +1,7 @@
+<% content_for :title, "New Endeavor" %>
+<%= link_to "← Endeavors", endeavors_path, class: "back" %>
+<div class="page-lead">
+  <h1 class="page-title">New Endeavor</h1>
+  <p class="page-sub">Create a durable identity for coherent Post work that must survive beyond one agenda.</p>
+</div>
+<%= render "form", endeavor: @endeavor %>

@@ -121,17 +121,17 @@ Pillars and their application context are defined in `docs/AMERICAN_LEGION_CONTE
 
 ## MVP Invariants
 
-The current `TrackedItem` implementation is the MVP storage for the concept that will be
-named Endeavor. Until the planned migration, the following invariants apply:
+The `Endeavor` implementation is the MVP storage for this concept. The following
+invariants apply:
 
 - Every record belongs to one `Organization`; all linked meeting records must be scoped to
   the same organization.
 - Identity is deliberate and durable. Completion preserves the record, links, timestamps,
   creator, completion provenance, and history; reopening continues that same identity.
-- `TrackedItemUpdate` entries are append-only. Corrections are later dated updates.
-- `DatedAgendaItem#tracked_item_id` is an optional identity link. Agenda items without an
+- `EndeavorUpdate` entries are append-only. Corrections are later dated updates.
+- `DatedAgendaItem#endeavor_id` is an optional identity link. Agenda items without an
   Endeavor remain first-class records.
-- `DatedAgendaItem.create_from_tracked_item!` snapshots title, summary, and details. The
+- `DatedAgendaItem.create_from_endeavor!` snapshots title, summary, and details. The
   snapshot and its section/order remain independent of later Endeavor changes.
 - The current agenda MVP permits one linked appearance of an Endeavor per `DatedAgenda`.
   This uniqueness rule is not automatically imposed on future minutes, motions, events, or
@@ -158,7 +158,7 @@ This governance decision does not now add or design:
 - dashboards, analytics, public pages, notifications, or automation;
 - automatic AI creation, linking, merging, splitting, or completion;
 - changes to official-minutes authority or immutability; or
-- a second domain model beside `TrackedItem` before the planned rename.
+- a parallel or legacy domain model beside `Endeavor`.
 
 Those capabilities require their own product decisions and should be added only when a
 real Post workflow needs them.

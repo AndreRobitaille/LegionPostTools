@@ -314,7 +314,7 @@
 .st--published { color: var(--color-green); }
 .st--published .st-dot { background: var(--color-green); }
 
-/* Tracked business: still open (gold, outstanding) vs finished (green). */
+/* Endeavors: still open (gold, outstanding) vs finished (green). */
 .st--tracking { color: var(--color-gold-ink); }
 .st--tracking .st-dot { background: var(--color-gold); }
 .st--done { color: var(--color-green); }
@@ -601,7 +601,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .whatnext li { margin: 5px 0; }
 
 /* ---------------------------------------------------------------------------
-   Tracked business. Built from the shared row grammar (.mrow-list / .mrow /
+   Endeavors. Built from the shared row grammar (.mrow-list / .mrow /
    .catrow): identity on the left, the one fact that matters in a quiet column
    at a divider, and the action on that same row — never stranded across the
    page. Importance is the subtle gold left edge the design system already
@@ -613,26 +613,26 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .page-lead-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; max-width: var(--w-main); }
 .page-lead-row .page-lead { margin-top: 0; }
 
-.tracked-docket { max-width: var(--w-main); }
-.tracked-bucket { margin-top: 32px; }
+.endeavor-docket { max-width: var(--w-main); }
+.endeavor-bucket { margin-top: 32px; }
 .mrow--important { border-left: 3px solid var(--color-gold); }
 .mrow--done .mrow-name { color: var(--color-muted); font-weight: 500; }
 .mrow--done .mrow-sub { color: #8b95a1; }
 
 /* Why this piece of business sits in this bucket, in plain words. */
-.tracked-why { display: block; margin-top: 6px; font-size: 15px; line-height: 1.45; color: #4e5966; }
+.endeavor-why { display: block; margin-top: 6px; font-size: 15px; line-height: 1.45; color: #4e5966; }
 
 /* Detail page ------------------------------------------------------------- */
-.tracked-lead { max-width: var(--w-main); margin-bottom: 26px; }
-.tracked-lead .idmeta { margin-top: 10px; }
-.tracked-summary { max-width: 680px; margin: 12px 0 0; color: #46515e; font-size: 17px; line-height: 1.6; }
-.tracked-grid { display: grid; grid-template-columns: minmax(0, 1fr) var(--w-rail); gap: 30px; align-items: start; max-width: var(--w-main); }
-.tracked-record { min-width: 0; }
-.tracked-record > section { margin-bottom: 34px; }
-.tracked-record > section:last-child { margin-bottom: 0; }
+.endeavor-lead { max-width: var(--w-main); margin-bottom: 26px; }
+.endeavor-lead .idmeta { margin-top: 10px; }
+.endeavor-summary { max-width: 680px; margin: 12px 0 0; color: #46515e; font-size: 17px; line-height: 1.6; }
+.endeavor-grid { display: grid; grid-template-columns: minmax(0, 1fr) var(--w-rail); gap: 30px; align-items: start; max-width: var(--w-main); }
+.endeavor-record { min-width: 0; }
+.endeavor-record > section { margin-bottom: 34px; }
+.endeavor-record > section:last-child { margin-bottom: 0; }
 /* Line the first section header up with the top of the rail card beside it. */
-.tracked-record > section:first-child > .sec-head { margin-top: 0; }
-.tracked-context .prose { margin-top: 14px; padding: 18px 20px; background: var(--color-paper); border: 1px solid var(--rule); border-left: 4px solid var(--color-gold); border-radius: var(--radius-control); font-size: 16px; line-height: 1.6; }
+.endeavor-record > section:first-child > .sec-head { margin-top: 0; }
+.endeavor-context .prose { margin-top: 14px; padding: 18px 20px; background: var(--color-paper); border: 1px solid var(--rule); border-left: 4px solid var(--color-gold); border-radius: var(--radius-control); font-size: 16px; line-height: 1.6; }
 
 .continuity { position: relative; list-style: none; margin: 18px 0 0; padding: 0; }
 .continuity::before { content: ""; position: absolute; top: 16px; bottom: 22px; left: 9px; width: 2px; background: linear-gradient(var(--color-gold), #dacba4); }
@@ -645,23 +645,23 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .continuity-copy .prose { margin-top: 6px; font-size: 16px; line-height: 1.6; }
 .continuity-copy .lnk { display: inline-block; margin-top: 9px; }
 
-.tracked-update { max-width: var(--w-form); }
-.tracked-update .panel-lead { margin-bottom: 16px; }
+.endeavor-update { max-width: var(--w-form); }
+.endeavor-update .panel-lead { margin-bottom: 16px; }
 
 /* Rail: the established .card, made sticky beside a long record. */
-.tracked-facts { position: sticky; top: 18px; margin-bottom: 0; }
-.tracked-facts .card-body { padding: 4px 20px 18px; }
-.tracked-facts dl { margin: 0; }
-.tracked-facts dl > div { padding: 14px 0; border-bottom: 1px solid var(--rule-soft); }
-.tracked-facts dl > div:last-child { border-bottom: 0; }
-.tracked-facts dt { margin-bottom: 4px; color: var(--color-muted); font-size: 13px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
-.tracked-facts dd { margin: 0; color: var(--color-ink); font-size: 16px; line-height: 1.45; }
-.tracked-fact-actions { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); }
-.tracked-fact-actions form { margin: 0; }
-.tracked-fact-actions .btn-primary, .tracked-fact-actions .btn-secondary, .tracked-fact-actions button { width: 100%; box-sizing: border-box; text-align: center; }
+.endeavor-facts { position: sticky; top: 18px; margin-bottom: 0; }
+.endeavor-facts .card-body { padding: 4px 20px 18px; }
+.endeavor-facts dl { margin: 0; }
+.endeavor-facts dl > div { padding: 14px 0; border-bottom: 1px solid var(--rule-soft); }
+.endeavor-facts dl > div:last-child { border-bottom: 0; }
+.endeavor-facts dt { margin-bottom: 4px; color: var(--color-muted); font-size: 13px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.endeavor-facts dd { margin: 0; color: var(--color-ink); font-size: 16px; line-height: 1.45; }
+.endeavor-fact-actions { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.endeavor-fact-actions form { margin: 0; }
+.endeavor-fact-actions .btn-primary, .endeavor-fact-actions .btn-secondary, .endeavor-fact-actions button { width: 100%; box-sizing: border-box; text-align: center; }
 
-.tracked-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
-.tracked-form-grid .fl { min-width: 0; }
+.endeavor-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.endeavor-form-grid .fl { min-width: 0; }
 
 /* Type-or-pick date field: text input (DD MMM YYYY) + hidden native picker - */
 .datefield { position: relative; display: inline-flex; align-items: center; }
@@ -1035,9 +1035,9 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .nav-spacer { display: none; }
   .nav-tab--admin { border-left: 0; }
 
-  .tracked-grid { grid-template-columns: minmax(0, 1fr); gap: 26px; }
-  .tracked-facts { position: static; grid-row: 1; }
-  .tracked-form-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .endeavor-grid { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .endeavor-facts { position: static; grid-row: 1; }
+  .endeavor-form-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .page-lead-row { align-items: stretch; flex-direction: column; gap: 16px; }
   .page-lead-row > .btn-primary, .page-lead-row > a { align-self: flex-start; }
   .grid { grid-template-columns: minmax(0, 1fr); }

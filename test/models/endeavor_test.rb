@@ -1,6 +1,6 @@
 require "test_helper"
 
-class TrackedItemTest < ActiveSupport::TestCase
+class EndeavorTest < ActiveSupport::TestCase
   setup do
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
@@ -60,7 +60,7 @@ class TrackedItemTest < ActiveSupport::TestCase
   private
 
   def build_item(attributes = {})
-    TrackedItem.new({
+    Endeavor.new({
       organization: @organization,
       meeting_body: @meeting_body,
       created_by: @user,

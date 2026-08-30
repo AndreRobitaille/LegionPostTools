@@ -1,13 +1,13 @@
 require "test_helper"
 
-class TrackedItemsControllerTest < ActionDispatch::IntegrationTest
+class EndeavorsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
     @meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     @manager = create_user("Manager", capabilities: [ "manage_agendas" ])
     @member = create_user("Member")
-    @tracked_item = @organization.tracked_items.create!(
+    @endeavor = @organization.endeavors.create!(
       meeting_body: @meeting_body,
       created_by: @manager,
       title: "Car Show",
@@ -19,33 +19,33 @@ class TrackedItemsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "signed out users are redirected" do
-    get tracked_items_path
+    get endeavors_path
 
     assert_redirected_to new_session_path
   end
 
-  test "signed in members can read tracked business and continuity" do
-    @tracked_item.updates.create!(author: @manager, body: "The city received the application.")
+  test "signed in members can read Endeavor and continuity" do
+    @endeavor.updates.create!(author: @manager, body: "The city received the application.")
     sign_in_as(@member)
 
-    get tracked_items_path
+    get endeavors_path
     assert_response :success
-    assert_select "h1", text: "Tracked Items"
-    assert_select "a[href=?]", tracked_item_path(@tracked_item), text: /Car Show/
-    assert_select ".tracked-bucket--necessity"
+    assert_select "h1", text: "Endeavors"
+    assert_select "a[href=?]", endeavor_path(@endeavor), text: /Car Show/
+    assert_select ".endeavor-bucket--necessity"
 
-    get tracked_item_path(@tracked_item)
+    get endeavor_path(@endeavor)
     assert_response :success
     assert_select ".continuity", text: /city received the application/
-    assert_select "a[href=?]", edit_tracked_item_path(@tracked_item), count: 0
+    assert_select "a[href=?]", edit_endeavor_path(@endeavor), count: 0
   end
 
-  test "manager creates tracked business" do
+  test "manager creates Endeavor" do
     sign_in_as(@manager)
 
-    assert_difference -> { @organization.tracked_items.count }, 1 do
-      post tracked_items_path, params: {
-        tracked_item: {
+    assert_difference -> { @organization.endeavors.count }, 1 do
+      post endeavors_path, params: {
+        endeavor: {
           title: "Buddy Checks",
           summary: "Call the remaining members",
           meeting_body_id: @meeting_body.id,
@@ -56,21 +56,21 @@ class TrackedItemsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    created = @organization.tracked_items.order(:created_at).last
-    assert_redirected_to tracked_item_path(created)
+    created = @organization.endeavors.order(:created_at).last
+    assert_redirected_to endeavor_path(created)
     assert_equal @manager, created.created_by
     assert_includes created.details.to_s, "Twenty calls remain."
   end
 
-  test "plain member cannot create or edit tracked business" do
+  test "plain member cannot create or edit Endeavor" do
     sign_in_as(@member)
 
-    get new_tracked_item_path
+    get new_endeavor_path
     assert_redirected_to root_path
 
-    patch tracked_item_path(@tracked_item), params: { tracked_item: { title: "Changed" } }
+    patch endeavor_path(@endeavor), params: { endeavor: { title: "Changed" } }
     assert_redirected_to root_path
-    assert_equal "Car Show", @tracked_item.reload.title
+    assert_equal "Car Show", @endeavor.reload.title
   end
 
   test "create rejects another organization's meeting body" do
@@ -78,7 +78,7 @@ class TrackedItemsControllerTest < ActionDispatch::IntegrationTest
     other_body = other.meeting_bodies.create!(name: "Other Membership", slug: "other-membership")
     sign_in_as(@manager)
 
-    post tracked_items_path, params: { tracked_item: { title: "Wrong body", meeting_body_id: other_body.id, importance: "standard" } }
+    post endeavors_path, params: { endeavor: { title: "Wrong body", meeting_body_id: other_body.id, importance: "standard" } }
 
     assert_response :unprocessable_entity
     assert_select ".error-summary", text: /Meeting body must belong to the same organization/
@@ -87,29 +87,29 @@ class TrackedItemsControllerTest < ActionDispatch::IntegrationTest
   test "manager updates and completes then reopens an item" do
     sign_in_as(@manager)
 
-    patch tracked_item_path(@tracked_item), params: { tracked_item: { title: "Annual Car Show", lock_version: @tracked_item.lock_version } }
-    assert_redirected_to tracked_item_path(@tracked_item)
-    assert_equal "Annual Car Show", @tracked_item.reload.title
+    patch endeavor_path(@endeavor), params: { endeavor: { title: "Annual Car Show", lock_version: @endeavor.lock_version } }
+    assert_redirected_to endeavor_path(@endeavor)
+    assert_equal "Annual Car Show", @endeavor.reload.title
 
-    patch complete_tracked_item_path(@tracked_item)
-    assert_redirected_to tracked_item_path(@tracked_item)
-    assert @tracked_item.reload.completed?
-    assert_equal @manager, @tracked_item.completed_by
+    patch complete_endeavor_path(@endeavor)
+    assert_redirected_to endeavor_path(@endeavor)
+    assert @endeavor.reload.completed?
+    assert_equal @manager, @endeavor.completed_by
 
-    patch reopen_tracked_item_path(@tracked_item)
-    assert_redirected_to tracked_item_path(@tracked_item)
-    assert @tracked_item.reload.active?
+    patch reopen_endeavor_path(@endeavor)
+    assert_redirected_to endeavor_path(@endeavor)
+    assert @endeavor.reload.active?
   end
 
   test "stale edit redirects with a useful conflict message" do
     sign_in_as(@manager)
-    stale_version = @tracked_item.lock_version
-    @tracked_item.update!(summary: "Changed elsewhere")
+    stale_version = @endeavor.lock_version
+    @endeavor.update!(summary: "Changed elsewhere")
 
-    patch tracked_item_path(@tracked_item), params: { tracked_item: { title: "Stale title", lock_version: stale_version } }
+    patch endeavor_path(@endeavor), params: { endeavor: { title: "Stale title", lock_version: stale_version } }
 
-    assert_redirected_to tracked_item_path(@tracked_item)
-    assert_equal "This tracked item changed elsewhere. Review the latest version before editing again.", flash[:alert]
+    assert_redirected_to endeavor_path(@endeavor)
+    assert_equal "This Endeavor changed elsewhere. Review the latest version before editing again.", flash[:alert]
   end
 
   private

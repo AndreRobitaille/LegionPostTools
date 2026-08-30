@@ -303,7 +303,7 @@ module Api
         summary: item.summary,
         position: item.position,
         behavior_type: item.behavior_type,
-        tracked_item_id: item.tracked_item_id,
+        endeavor_id: item.endeavor_id,
         wording: item.body.to_plain_text.presence,
         show_wording_on_agenda: item.show_wording_on_agenda,
         show_wording_in_minutes: item.show_wording_in_minutes,

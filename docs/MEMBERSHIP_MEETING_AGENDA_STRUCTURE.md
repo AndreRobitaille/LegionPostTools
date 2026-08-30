@@ -21,11 +21,11 @@ The suggestion uses these stable, ordered sections:
 8. Closing Ceremony & Adjournment
 
 These are real agenda sections. They are the stable first level of the meeting record;
-catalog and tracked items are placed beneath them as the second level. Unfinished Business
+catalog items and Endeavors are placed beneath them as the second level. Unfinished Business
 and New Business are therefore not same-named placeholder items inside same-named
 sections. A dated agenda may leave either section empty until specific business is added.
 The delegated officer API returns each section id and requires that id when a Bot places
-tracked business on an exact historical agenda; it must not infer a placeholder row.
+an Endeavor on an exact historical agenda; it must not infer a placeholder row.
 
 Item detail does not create a third structural level. Ordinary supporting detail—such as
 balances, receipts, bills, and an attachment note beneath the Finance Officer Report—lives
@@ -50,7 +50,7 @@ The catalog and template classify items by their function in the meeting:
 Recurring local work such as Buddy Checks, a car show, brat fry, newsletter, raffle,
 scholarships, or memorial activities is not hard-coded into the reusable suggestion.
 Officers can put that meeting's details into Programs & Activities, add appropriate
-catalog or tracked items, and split a requested decision into New Business.
+catalog items or Endeavors, and split a requested decision into New Business.
 
 ## Catalog changes
 

@@ -1,7 +1,0 @@
-<% content_for :title, "Edit #{@tracked_item.title}" %>
-<%= link_to "← #{@tracked_item.title}", tracked_item_path(@tracked_item), class: "back" %>
-<div class="page-lead">
-  <h1 class="page-title">Edit tracked item</h1>
-  <p class="page-sub">Update the current description without rewriting its dated continuity record.</p>
-</div>
-<%= render "form", tracked_item: @tracked_item %>

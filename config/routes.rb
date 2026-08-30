@@ -30,12 +30,12 @@ Rails.application.routes.draw do
     get :revoke, on: :member
   end
   resources :people, only: %i[index show]
-  resources :tracked_items, except: %i[destroy] do
+  resources :endeavors, except: %i[destroy] do
     member do
       patch :complete
       patch :reopen
     end
-    resources :updates, only: :create, controller: "tracked_item_updates"
+    resources :updates, only: :create, controller: "endeavor_updates"
   end
   resources :dated_agendas, only: %i[index show] do
     get :print, on: :member
@@ -97,7 +97,7 @@ Rails.application.routes.draw do
         patch :refresh_roll_call, on: :member
         resource :roll_call, only: %i[edit update], controller: "dated_agenda_roll_calls"
       end
-      resources :tracked_items, controller: "dated_agenda_tracked_items", only: %i[new create]
+      resources :endeavors, controller: "dated_agenda_endeavors", only: %i[new create]
     end
   end
   resource :passkey_invitation, only: %i[destroy]
@@ -129,14 +129,14 @@ Rails.application.routes.draw do
         end
       end
       post "sections/:section_id/items/reorder", to: "dated_agenda_items#reorder"
-      resources :tracked_items, only: :create, controller: "dated_agenda_tracked_items"
+      resources :endeavors, only: :create, controller: "dated_agenda_endeavors"
     end
-    resources :tracked_items, only: %i[index show create] do
+    resources :endeavors, only: %i[index show create] do
       member do
         patch :complete
         patch :reopen
       end
-      resources :updates, only: :create, controller: "tracked_item_updates"
+      resources :updates, only: :create, controller: "endeavor_updates"
     end
   end
   root "dashboard#show"

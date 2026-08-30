@@ -39,40 +39,40 @@ class DatedAgendaItemTest < ActiveSupport::TestCase
     assert_includes item.body.to_s, "Report text"
   end
 
-  test "create_from_tracked_item snapshots content independently" do
+  test "create_from_endeavor snapshots content independently" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Adjutant"), email_address: "pat-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
-    tracked_item = @organization.tracked_items.create!(created_by: user, title: "Car Show", summary: "Confirm permits", details: "Permit history")
+    endeavor = @organization.endeavors.create!(created_by: user, title: "Car Show", summary: "Confirm permits", details: "Permit history")
 
-    item = DatedAgendaItem.create_from_tracked_item!(tracked_item, position: 1, dated_agenda: @agenda)
-    tracked_item.update!(title: "Changed title", summary: "Changed summary", details: "Changed details")
+    item = DatedAgendaItem.create_from_endeavor!(endeavor, position: 1, dated_agenda: @agenda)
+    endeavor.update!(title: "Changed title", summary: "Changed summary", details: "Changed details")
 
-    assert_equal tracked_item, item.tracked_item
+    assert_equal endeavor, item.endeavor
     assert_equal "Car Show", item.reload.title
     assert_equal "Confirm permits", item.summary
     assert_includes item.body.to_s, "Permit history"
     assert_equal "business_item", item.behavior_type
   end
 
-  test "tracked item must belong to the same organization as the dated agenda" do
+  test "Endeavor must belong to the same organization as the dated agenda" do
     other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     user = User.create!(person: Person.create!(first_name: "Other", last_name: "Adjutant"), email_address: "other-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
-    tracked_item = other.tracked_items.create!(created_by: user, title: "Other business")
+    endeavor = other.endeavors.create!(created_by: user, title: "Other business")
 
-    item = @agenda.dated_agenda_items.build(tracked_item: tracked_item, position: 1, title: "Other business", behavior_type: "business_item")
+    item = @agenda.dated_agenda_items.build(endeavor: endeavor, position: 1, title: "Other business", behavior_type: "business_item")
 
     assert_not item.valid?
-    assert_includes item.errors[:tracked_item], "must belong to the same organization"
+    assert_includes item.errors[:endeavor], "must belong to the same organization"
   end
 
-  test "tracked item can appear only once on an agenda" do
+  test "Endeavor can appear only once on an agenda" do
     user = User.create!(person: Person.create!(first_name: "Pat", last_name: "Adjutant"), email_address: "pat-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
-    tracked_item = @organization.tracked_items.create!(created_by: user, title: "Car Show")
-    DatedAgendaItem.create_from_tracked_item!(tracked_item, position: 1, dated_agenda: @agenda)
+    endeavor = @organization.endeavors.create!(created_by: user, title: "Car Show")
+    DatedAgendaItem.create_from_endeavor!(endeavor, position: 1, dated_agenda: @agenda)
 
-    duplicate = @agenda.dated_agenda_items.build(tracked_item: tracked_item, position: 2, title: "Car Show", behavior_type: "business_item")
+    duplicate = @agenda.dated_agenda_items.build(endeavor: endeavor, position: 2, title: "Car Show", behavior_type: "business_item")
 
     assert_not duplicate.valid?
-    assert_includes duplicate.errors[:tracked_item_id], "has already been taken"
+    assert_includes duplicate.errors[:endeavor_id], "has already been taken"
   end
 
   test "stale item update and destroy fail after parent approval" do

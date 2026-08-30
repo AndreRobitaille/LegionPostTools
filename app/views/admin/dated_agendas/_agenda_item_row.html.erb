@@ -7,8 +7,8 @@
     <span class="agenda-item-name"><%= item.title %></span>
     <% if item.summary.present? %><span class="agenda-item-note"><%= item.summary %></span><% end %>
     <%= render "admin/shared/agenda_item_status_flags", item: item %>
-    <% if item.tracked_item.present? %>
-      <%= link_to "Tracked business", tracked_item_path(item.tracked_item), class: "section-item-source" %>
+    <% if item.endeavor.present? %>
+      <%= link_to "Endeavor", endeavor_path(item.endeavor), class: "section-item-source" %>
     <% end %>
     <% if item.roll_call? %>
       <span class="agenda-roll-call-count"><%= pluralize(item.roll_call_entries.size, "officer row") %> for this meeting</span>

@@ -1,0 +1,49 @@
+<% content_for :title, "Endeavors" %>
+
+<div class="page-lead-row">
+  <div class="page-lead">
+    <h1 class="page-title">Endeavors</h1>
+    <p class="page-sub">Continuing Post work, kept understandable across meetings and officer transitions.</p>
+  </div>
+  <% if current_user.can?("manage_agendas") %>
+    <%= link_to "New Endeavor", new_endeavor_path, class: "btn-primary" %>
+  <% end %>
+</div>
+
+<div class="endeavor-docket">
+  <% if @priority_groups.values.any?(&:any?) %>
+    <% @priority_groups.each do |bucket, items| %>
+      <% next if items.empty? %>
+      <section class="endeavor-bucket endeavor-bucket--<%= bucket %>">
+        <%= render "shared/section_header", label: Endeavor::PRIORITY_BUCKETS.fetch(bucket), meta: pluralize(items.size, "item") %>
+        <div class="mrow-list">
+          <% items.each do |endeavor| %>
+            <%= render "endeavor", endeavor: endeavor %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% else %>
+    <div class="empty">
+      <span class="empty-mark" aria-hidden="true">&#9670;</span>
+      <div>
+        <h2>Nothing is being tracked yet</h2>
+        <p>Start with one coherent body of work that must remain understandable beyond a single meeting.</p>
+        <% if current_user.can?("manage_agendas") %>
+          <div class="btnrow"><%= link_to "New Endeavor", new_endeavor_path, class: "btn-primary" %></div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @completed_items.any? %>
+    <section class="endeavor-bucket">
+      <%= render "shared/section_header", label: "Recently completed", meta: pluralize(@completed_items.size, "item") %>
+      <div class="mrow-list">
+        <% @completed_items.each do |endeavor| %>
+          <%= render "endeavor", endeavor: endeavor %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

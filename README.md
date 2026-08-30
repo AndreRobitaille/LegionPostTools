@@ -19,7 +19,7 @@ The current application foundation includes:
   name, rename, and remove passkeys.
 - Compact authenticated app shell and a minimal authenticated dashboard.
 - Structured agenda catalog, meeting templates, dated agendas, and reusable agenda sections.
-- Tracked post business with dated continuity updates, meeting-priority suggestions, and
+- Endeavors for continuing Post work, with dated continuity updates, meeting-priority suggestions, and
   independent agenda snapshots.
 - Polished member agenda navigation, upcoming-meeting docket, and responsive/printable
   published agendas.
@@ -40,6 +40,10 @@ Most ordinary post members are not expected to log in during early versions. The
 - `AGENTS.md` and `CLAUDE.md` — general agent instructions and Claude-specific collaboration guidance.
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
+- `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, source authority, Four Pillars, and Legion Family boundaries.
+- `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
+- `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
+- `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the first-class Meeting and archive milestone before minutes.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/ARCHITECTURE.md` — architecture and durable product decisions.
 - `docs/ROADMAP.md` — planned development phases.

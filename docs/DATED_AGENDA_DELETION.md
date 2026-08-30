@@ -7,7 +7,7 @@ management page regardless of whether it is draft, approved, or published. This 
 whole-record administrative action, not an edit to the locked agenda snapshot.
 
 Deletion removes the dated agenda, its copied sections and items, and the items' rich
-text. Source meeting-type templates, catalog entries, and linked Tracked Items remain.
+text. Source meeting-type templates, catalog entries, and linked Endeavors remain.
 The member-facing agenda disappears immediately if the record was published. The delegated
 officer API now mirrors this operation at `DELETE /api/dated_agendas/:id`; the generated
 handbook lists it under **Only when asked**, never as a routine agenda action.
@@ -75,7 +75,7 @@ without weakening snapshot locks.
 Coverage should prove that:
 
 - authorized deletion works for draft, approved, and published agendas;
-- dependent sections, items, and rich text are removed while linked Tracked Items remain;
+- dependent sections, items, and rich text are removed while linked Endeavors remain;
 - direct item/section destruction on locked agendas remains blocked;
 - unauthorized and cross-organization delete requests fail;
 - the modal exposes the exact record and warning before submission; and

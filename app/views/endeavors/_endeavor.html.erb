@@ -1,0 +1,28 @@
+<%# Uses the shared row grammar: identity on the left, the one fact that matters
+    in a quiet column at a divider, action on the same row. %>
+<% row_classes = [ "mrow", "catrow" ]
+   row_classes << "mrow--important" if endeavor.important? && endeavor.active?
+   row_classes << "mrow--done" if endeavor.completed?
+   due_label = endeavor_due_label(endeavor) %>
+<%= link_to endeavor_path(endeavor), class: row_classes.join(" ") do %>
+  <span class="mrow-id">
+    <span class="mrow-l1"><span class="mrow-name"><%= endeavor.title %></span></span>
+    <% if endeavor.summary.present? %>
+      <span class="mrow-sub"><%= endeavor.summary %></span>
+    <% end %>
+    <span class="endeavor-why"><%= endeavor_reason(endeavor) %></span>
+  </span>
+  <span class="mrow-status">
+    <% if due_label %>
+      <span class="mrow-kv"><span class="k"><%= due_label %></span> <%= legion_date(endeavor.raise_by_on) %></span>
+    <% elsif endeavor.completed? %>
+      <span class="mrow-kv"><span class="k">Completed</span> <%= legion_date(endeavor.completed_at) %></span>
+    <% end %>
+    <% if endeavor.meeting_body %>
+      <span class="mrow-kv"><span class="k">For</span> <%= endeavor.meeting_body.name %></span>
+    <% end %>
+  </span>
+  <span class="catrow-meta">
+    <span class="catrow-edit">Open <span class="catrow-caret" aria-hidden="true">›</span></span>
+  </span>
+<% end %>

@@ -14,12 +14,12 @@ module Api
         section = @dated_agenda.dated_agenda_sections.find(required_section_id)
         attributes = item_params
         @item = @dated_agenda.dated_agenda_items.new(
-          attributes.except(:lock_version, :dated_agenda_section_id, :tracked_item_id)
+          attributes.except(:lock_version, :dated_agenda_section_id, :endeavor_id)
         )
         @item.agenda_section = section
         @item.position = section.agenda_items.maximum(:position).to_i + 1
         @item.active = true
-        assign_tracked_item(attributes)
+        assign_endeavor(attributes)
         @item.save!
       end
 
@@ -42,7 +42,7 @@ module Api
 
         attributes = item_params
         assign_section(attributes)
-        assign_tracked_item(attributes)
+        assign_endeavor(attributes)
         @item.update!(attributes)
       end
 
@@ -131,7 +131,7 @@ module Api
         :show_wording_in_minutes,
         :lock_version,
         :dated_agenda_section_id,
-        :tracked_item_id
+        :endeavor_id
       )
     end
 
@@ -146,11 +146,11 @@ module Api
       @item.position = section.agenda_items.maximum(:position).to_i + 1
     end
 
-    def assign_tracked_item(attributes)
-      return unless attributes.key?(:tracked_item_id)
+    def assign_endeavor(attributes)
+      return unless attributes.key?(:endeavor_id)
 
-      tracked_item_id = attributes.delete(:tracked_item_id)
-      @item.tracked_item = tracked_item_id.present? ? organization.tracked_items.find(tracked_item_id) : nil
+      endeavor_id = attributes.delete(:endeavor_id)
+      @item.endeavor = endeavor_id.present? ? organization.endeavors.find(endeavor_id) : nil
     end
   end
 end

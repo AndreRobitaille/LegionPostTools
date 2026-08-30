@@ -1,0 +1,7 @@
+<% content_for :title, "Edit #{@endeavor.title}" %>
+<%= link_to "← #{@endeavor.title}", endeavor_path(@endeavor), class: "back" %>
+<div class="page-lead">
+  <h1 class="page-title">Edit Endeavor</h1>
+  <p class="page-sub">Update the current description without rewriting its dated continuity record.</p>
+</div>
+<%= render "form", endeavor: @endeavor %>

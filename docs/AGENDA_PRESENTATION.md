@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Structured agendas, agenda sections, and tracked business are working, but the member
+Structured agendas, agenda sections, and Endeavors are working, but the member
 experience still presents the published agenda as a functional preview and leaves the
 working Meetings destination disabled in primary navigation. This milestone finishes the
 agenda experience before the minutes lifecycle begins.
@@ -40,7 +40,7 @@ Primary navigation contains only real destinations:
 
 - Dashboard
 - Meetings
-- Tracked Items
+- Endeavors
 - People
 - Profile
 - Admin, when the user has an administrative capability

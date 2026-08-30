@@ -1,23 +1,23 @@
-<% content_for :title, @tracked_item.title %>
-<%= link_to "← Tracked Items", tracked_items_path, class: "back" %>
+<% content_for :title, @endeavor.title %>
+<%= link_to "← Endeavors", endeavors_path, class: "back" %>
 
-<div class="tracked-lead">
-  <h1 class="page-title"><%= @tracked_item.title %></h1>
+<div class="endeavor-lead">
+  <h1 class="page-title"><%= @endeavor.title %></h1>
   <div class="idmeta">
-    <%= tracked_item_status_tag(@tracked_item) %>
-    <span class="office"><%= TrackedItem::PRIORITY_BUCKETS.fetch(@tracked_item.priority_bucket) %></span>
+    <%= endeavor_status_tag(@endeavor) %>
+    <span class="office"><%= Endeavor::PRIORITY_BUCKETS.fetch(@endeavor.priority_bucket) %></span>
   </div>
-  <% if @tracked_item.summary.present? %>
-    <p class="tracked-summary"><%= @tracked_item.summary %></p>
+  <% if @endeavor.summary.present? %>
+    <p class="endeavor-summary"><%= @endeavor.summary %></p>
   <% end %>
 </div>
 
-<div class="tracked-grid">
-  <main class="tracked-record">
-    <% if @tracked_item.details.present? %>
-      <section class="tracked-context">
+<div class="endeavor-grid">
+  <main class="endeavor-record">
+    <% if @endeavor.details.present? %>
+      <section class="endeavor-context">
         <%= render "shared/section_header", label: "Background and context" %>
-        <div class="prose"><%= @tracked_item.details %></div>
+        <div class="prose"><%= @endeavor.details %></div>
       </section>
     <% end %>
 
@@ -58,11 +58,11 @@
     </section>
 
     <% if current_user.can?("manage_agendas") %>
-      <section class="tracked-update">
+      <section class="endeavor-update">
         <%= render "shared/section_header", label: "Add an update" %>
         <div class="panel">
           <p class="panel-lead">Record what changed, or what the next officer needs to know. Updates become part of the trail and cannot be rewritten later.</p>
-          <%= form_with model: TrackedItemUpdate.new, url: tracked_item_updates_path(@tracked_item), class: "stacked-form" do |form| %>
+          <%= form_with model: EndeavorUpdate.new, url: endeavor_updates_path(@endeavor), class: "stacked-form" do |form| %>
             <div class="fl">
               <%= form.label :body, "Update" %>
               <%= form.rich_text_area :body, attachments: "false" %>
@@ -74,7 +74,7 @@
     <% end %>
   </main>
 
-  <aside class="card tracked-facts" aria-label="Tracked item details">
+  <aside class="card endeavor-facts" aria-label="Endeavor details">
     <div class="card-head">
       <span class="card-dia" aria-hidden="true">&#9670;</span>
       <span class="card-head-label">Current direction</span>
@@ -83,33 +83,33 @@
       <dl>
         <div>
           <dt>Why it is here</dt>
-          <dd><%= tracked_item_reason(@tracked_item, with_date: true) %></dd>
+          <dd><%= endeavor_reason(@endeavor, with_date: true) %></dd>
         </div>
-        <% if @tracked_item.meeting_body %>
+        <% if @endeavor.meeting_body %>
           <div>
             <dt>Usually discussed by</dt>
-            <dd><%= @tracked_item.meeting_body.name %></dd>
+            <dd><%= @endeavor.meeting_body.name %></dd>
           </div>
         <% end %>
         <div>
           <dt>Started by</dt>
-          <dd><%= @tracked_item.created_by.person.full_name %> · <%= legion_date(@tracked_item.created_at) %></dd>
+          <dd><%= @endeavor.created_by.person.full_name %> · <%= legion_date(@endeavor.created_at) %></dd>
         </div>
-        <% if @tracked_item.completed? %>
+        <% if @endeavor.completed? %>
           <div>
             <dt>Completed</dt>
-            <dd><%= @tracked_item.completed_by.person.full_name %> · <%= legion_date(@tracked_item.completed_at) %></dd>
+            <dd><%= @endeavor.completed_by.person.full_name %> · <%= legion_date(@endeavor.completed_at) %></dd>
           </div>
         <% end %>
       </dl>
       <% if current_user.can?("manage_agendas") %>
-        <div class="tracked-fact-actions">
-          <%= link_to "Edit details", edit_tracked_item_path(@tracked_item), class: "btn-secondary" %>
-          <% if @tracked_item.active? %>
-            <%= button_to "Mark complete", complete_tracked_item_path(@tracked_item), method: :patch, class: "btn-primary",
-                  data: { turbo_confirm: "Mark “#{@tracked_item.title}” complete? Its history stays available." } %>
+        <div class="endeavor-fact-actions">
+          <%= link_to "Edit details", edit_endeavor_path(@endeavor), class: "btn-secondary" %>
+          <% if @endeavor.active? %>
+            <%= button_to "Mark complete", complete_endeavor_path(@endeavor), method: :patch, class: "btn-primary",
+                  data: { turbo_confirm: "Mark “#{@endeavor.title}” complete? Its history stays available." } %>
           <% else %>
-            <%= button_to "Reopen", reopen_tracked_item_path(@tracked_item), method: :patch, class: "btn-secondary" %>
+            <%= button_to "Reopen", reopen_endeavor_path(@endeavor), method: :patch, class: "btn-secondary" %>
           <% end %>
         </div>
       <% end %>

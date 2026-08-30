@@ -14,6 +14,7 @@ class CleanupAgentApiExecutionsJobTest < ActiveJob::TestCase
 
     assert_not AgentApiExecution.exists?(old_execution.id)
     assert AgentApiExecution.exists?(recent_execution.id)
+    assert_equal "/api/tracked_items", recent_execution.reload.request_path
   end
 
   private
@@ -24,6 +25,7 @@ class CleanupAgentApiExecutionsJobTest < ActiveJob::TestCase
       user: user,
       idempotency_key: key,
       request_method: "POST",
+      # Historical audit paths are facts about requests made before the rename.
       request_path: "/api/tracked_items",
       request_fingerprint: Digest::SHA256.hexdigest(key),
       state: "completed",

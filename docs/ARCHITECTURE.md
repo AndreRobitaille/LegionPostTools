@@ -77,11 +77,13 @@ Meeting records are the core product direction.
 - Agenda templates and dated agendas contain structured sections, with agenda items scoped and ordered inside each section.
 - Agenda items are structured records, not one large freeform document.
 - Rich text belongs inside structured records for notes, bullets, ceremony text, and printable context.
-- `TrackedItem` captures long-lived post business such as a Car Show, Buddy Checks,
-  elections, or ceremonies. Its officer updates are append-only, and agenda appearances
-  form a continuity record across meetings.
-- Adding tracked business to a dated agenda creates an independent agenda-item snapshot.
-  Later tracker edits cannot silently rewrite an approved or published agenda.
+- `Endeavor` is the durable identity for coherent Post work such as a Car Show, Buddy
+  Checks effort, election, or ceremony. Its officer updates are append-only, and meeting
+  appearances form a continuity record across meetings.
+- Adding an Endeavor to a dated agenda creates an independent agenda-item snapshot. Later
+  Endeavor edits cannot silently rewrite an approved or published agenda.
+- `DatedAgendaItem#endeavor_id` is optional. A future structured minutes item may copy that
+  identity deliberately when seeded, while preserving its own independent wording.
 - Document-wording visibility and Commander-only cues follow the same catalog-to-template-to-dated
   snapshot boundary. Member documents never render Commander cues.
 - Officer roll call is structured dated-agenda data. It snapshots assignments active on the
@@ -96,7 +98,7 @@ Corrections should appear as later amendments or later meeting records linked ba
 
 ## AI Boundary
 
-AI may draft minutes, summarize transcripts, suggest tracked items, and help place discussion under the right agenda item.
+AI may draft minutes, summarize transcripts, suggest possible Endeavors, and help place discussion under the right agenda item. Humans confirm Endeavor identity.
 
 AI output is never official. Humans review, approve, attest, distribute, and accept official records.
 
@@ -109,8 +111,8 @@ this app only stores post business.
 
 The private API mirrors agenda data operations needed for delegated work: reusable catalog
 maintenance, dated-agenda changes, standalone one-meeting rows, exact same-section item
-ordering, tracked-business continuity, and meeting-scoped officer-list snapshots. Standalone
-rows do not require catalog or tracker records; cross-section moves append and a separate
+ordering, Endeavor continuity, and meeting-scoped officer-list snapshots. Standalone
+rows do not require catalog or Endeavor records; cross-section moves append and a separate
 complete-order action establishes final document order. The API does not turn print
 presentation into JSON or let today's officer directory silently overwrite a historical
 roll call. Deletion, removal, snapshot reset, approval, publication, and reopen remain

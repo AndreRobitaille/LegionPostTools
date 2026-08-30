@@ -1,23 +1,23 @@
 require "test_helper"
 
-class TrackedItemUpdatesControllerTest < ActionDispatch::IntegrationTest
+class EndeavorUpdatesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
     @manager = create_user("Manager", manage_agendas: true)
     @member = create_user("Member")
-    @tracked_item = @organization.tracked_items.create!(created_by: @manager, title: "Buddy Checks")
+    @endeavor = @organization.endeavors.create!(created_by: @manager, title: "Buddy Checks")
   end
 
   test "manager adds an append-only update" do
     sign_in_as(@manager)
 
-    assert_difference -> { @tracked_item.updates.count }, 1 do
-      post tracked_item_updates_path(@tracked_item), params: { tracked_item_update: { body: "Five calls were completed." } }
+    assert_difference -> { @endeavor.updates.count }, 1 do
+      post endeavor_updates_path(@endeavor), params: { endeavor_update: { body: "Five calls were completed." } }
     end
 
-    update = @tracked_item.updates.first
-    assert_redirected_to tracked_item_path(@tracked_item)
+    update = @endeavor.updates.first
+    assert_redirected_to endeavor_path(@endeavor)
     assert_equal @manager, update.author
     assert_includes update.body.to_s, "Five calls were completed."
   end
@@ -25,19 +25,19 @@ class TrackedItemUpdatesControllerTest < ActionDispatch::IntegrationTest
   test "blank update gives plain guidance" do
     sign_in_as(@manager)
 
-    assert_no_difference -> { @tracked_item.updates.count } do
-      post tracked_item_updates_path(@tracked_item), params: { tracked_item_update: { body: "" } }
+    assert_no_difference -> { @endeavor.updates.count } do
+      post endeavor_updates_path(@endeavor), params: { endeavor_update: { body: "" } }
     end
 
-    assert_redirected_to tracked_item_path(@tracked_item)
+    assert_redirected_to endeavor_path(@endeavor)
     assert_equal "Body can't be blank", flash[:alert]
   end
 
   test "plain member cannot add an update" do
     sign_in_as(@member)
 
-    assert_no_difference -> { @tracked_item.updates.count } do
-      post tracked_item_updates_path(@tracked_item), params: { tracked_item_update: { body: "Not allowed" } }
+    assert_no_difference -> { @endeavor.updates.count } do
+      post endeavor_updates_path(@endeavor), params: { endeavor_update: { body: "Not allowed" } }
     end
 
     assert_redirected_to root_path

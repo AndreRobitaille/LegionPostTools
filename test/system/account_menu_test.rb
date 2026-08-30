@@ -77,7 +77,7 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
     click_button "Menu"
 
     assert_link "Meetings"
-    assert_link "Tracked Items"
+    assert_link "Endeavors"
     assert_link "People"
     assert_link "Admin"
     assert_link "Your profile"

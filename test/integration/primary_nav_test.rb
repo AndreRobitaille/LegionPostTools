@@ -37,7 +37,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "nav.nav-bar a.nav-tab", text: "Dashboard"
     assert_select "nav.nav-bar a.nav-tab[href=?]", dated_agendas_path, text: "Meetings"
-    assert_select "nav.nav-bar a.nav-tab[href=?]", tracked_items_path, text: "Tracked Items"
+    assert_select "nav.nav-bar a.nav-tab[href=?]", endeavors_path, text: "Endeavors"
     assert_select "nav.nav-bar", text: /Records/, count: 0
     assert_select "nav.nav-bar .nav-tab--soon", count: 0
     # Profile and Sign out moved off the tab strip into the account menu.
@@ -66,7 +66,7 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".app-menu-nav a.app-menu-link[href=?]", dated_agendas_path, text: "Meetings"
-    assert_select ".app-menu-nav a.app-menu-link[href=?]", tracked_items_path, text: "Tracked Items"
+    assert_select ".app-menu-nav a.app-menu-link[href=?]", endeavors_path, text: "Endeavors"
     assert_select ".app-menu-nav a.app-menu-link[href=?]", admin_root_path, text: "Admin"
   end
 
@@ -130,13 +130,13 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_select "nav.nav-bar a.nav-tab--active", text: "People"
   end
 
-  test "tracked items tab is active within tracked item pages" do
+  test "Endeavors tab is active within Endeavor pages" do
     prepare_setup_complete_state
     sign_in_admin
 
-    get tracked_items_path
+    get endeavors_path
 
-    assert_select "nav.nav-bar a.nav-tab--active", text: "Tracked Items"
+    assert_select "nav.nav-bar a.nav-tab--active", text: "Endeavors"
   end
 
   test "meetings tab is active and marked current on member agenda pages" do

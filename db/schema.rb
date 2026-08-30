@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,7 +111,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.index ["agent_access_token_id"], name: "index_agent_api_executions_on_agent_access_token_id"
     t.index ["state", "created_at"], name: "index_agent_api_executions_on_state_and_created_at"
     t.index ["user_id"], name: "index_agent_api_executions_on_user_id"
-    t.check_constraint "state::text = ANY (ARRAY['processing'::character varying, 'completed'::character varying]::text[])", name: "agent_api_executions_state_check"
+    t.check_constraint "state::text = ANY (ARRAY['processing'::character varying::text, 'completed'::character varying::text])", name: "agent_api_executions_state_check"
   end
 
   create_table "dated_agenda_items", force: :cascade do |t|
@@ -121,6 +121,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.datetime "created_at", null: false
     t.bigint "dated_agenda_id", null: false
     t.bigint "dated_agenda_section_id", null: false
+    t.bigint "endeavor_id"
     t.integer "lock_version", default: 0, null: false
     t.bigint "meeting_type_agenda_item_id"
     t.integer "position", default: 0, null: false
@@ -131,17 +132,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.string "source_label"
     t.text "summary", default: "", null: false
     t.string "title", null: false
-    t.bigint "tracked_item_id"
     t.datetime "updated_at", null: false
     t.index ["agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_item_catalog_entry_id"
     t.index ["dated_agenda_id", "agenda_item_catalog_entry_id"], name: "index_dated_agenda_items_on_agenda_and_catalog_entry", unique: true
+    t.index ["dated_agenda_id", "endeavor_id"], name: "idx_dated_agenda_items_agenda_endeavor", unique: true, where: "(endeavor_id IS NOT NULL)"
     t.index ["dated_agenda_id", "meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_agenda_and_mt_item", unique: true, where: "(meeting_type_agenda_item_id IS NOT NULL)"
     t.index ["dated_agenda_id", "source_key"], name: "index_dated_agenda_items_on_agenda_and_source_key", unique: true, where: "(source_key IS NOT NULL)"
-    t.index ["dated_agenda_id", "tracked_item_id"], name: "idx_dated_agenda_items_agenda_tracked_item", unique: true, where: "(tracked_item_id IS NOT NULL)"
     t.index ["dated_agenda_id"], name: "index_dated_agenda_items_on_dated_agenda_id"
     t.index ["dated_agenda_section_id", "position"], name: "idx_dated_agenda_items_section_position", unique: true
+    t.index ["endeavor_id"], name: "index_dated_agenda_items_on_endeavor_id"
     t.index ["meeting_type_agenda_item_id"], name: "index_dated_agenda_items_on_meeting_type_agenda_item_id"
-    t.index ["tracked_item_id"], name: "index_dated_agenda_items_on_tracked_item_id"
   end
 
   create_table "dated_agenda_roll_call_entries", force: :cascade do |t|
@@ -201,6 +201,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.index ["reopened_by_id"], name: "index_dated_agendas_on_reopened_by_id"
   end
 
+  create_table "endeavor_updates", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_endeavor_updates_on_author_id"
+    t.index ["endeavor_id"], name: "index_endeavor_updates_on_endeavor_id"
+  end
+
+  create_table "endeavors", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.bigint "completed_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "importance", default: "standard", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "meeting_body_id"
+    t.bigint "organization_id", null: false
+    t.date "raise_by_on"
+    t.string "status", default: "active", null: false
+    t.text "summary", default: "", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["completed_by_id"], name: "index_endeavors_on_completed_by_id"
+    t.index ["created_by_id"], name: "index_endeavors_on_created_by_id"
+    t.index ["meeting_body_id"], name: "index_endeavors_on_meeting_body_id"
+    t.index ["organization_id", "raise_by_on"], name: "index_endeavors_on_organization_id_and_raise_by_on"
+    t.index ["organization_id", "status"], name: "index_endeavors_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_endeavors_on_organization_id"
+    t.check_constraint "importance::text = ANY (ARRAY['standard'::character varying::text, 'important'::character varying::text])", name: "endeavors_importance_check"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying::text, 'completed'::character varying::text])", name: "endeavors_status_check"
+  end
+
   create_table "installations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "setup_completed_at"
@@ -228,7 +261,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.index ["created_at"], name: "index_loops_roster_syncs_on_created_at"
     t.index ["requested_by_id"], name: "index_loops_roster_syncs_on_requested_by_id"
     t.index ["roster_import_id"], name: "index_loops_roster_syncs_on_roster_import_id"
-    t.index ["status"], name: "idx_one_active_loops_roster_sync", unique: true, where: "((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying])::text[]))"
+    t.index ["status"], name: "idx_one_active_loops_roster_sync", unique: true, where: "((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]))"
   end
 
   create_table "magic_links", force: :cascade do |t|
@@ -247,7 +280,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.index ["session_id"], name: "index_magic_links_on_session_id"
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
-    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying]::text[])", name: "magic_links_purpose_check"
+    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying::text, 'create_agent_access_token'::character varying::text])", name: "magic_links_purpose_check"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -435,39 +468,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
-  create_table "tracked_item_updates", force: :cascade do |t|
-    t.bigint "author_id", null: false
-    t.datetime "created_at", null: false
-    t.bigint "tracked_item_id", null: false
-    t.datetime "updated_at", null: false
-    t.index ["author_id"], name: "index_tracked_item_updates_on_author_id"
-    t.index ["tracked_item_id"], name: "index_tracked_item_updates_on_tracked_item_id"
-  end
-
-  create_table "tracked_items", force: :cascade do |t|
-    t.datetime "completed_at"
-    t.bigint "completed_by_id"
-    t.datetime "created_at", null: false
-    t.bigint "created_by_id", null: false
-    t.string "importance", default: "standard", null: false
-    t.integer "lock_version", default: 0, null: false
-    t.bigint "meeting_body_id"
-    t.bigint "organization_id", null: false
-    t.date "raise_by_on"
-    t.string "status", default: "active", null: false
-    t.text "summary", default: "", null: false
-    t.string "title", null: false
-    t.datetime "updated_at", null: false
-    t.index ["completed_by_id"], name: "index_tracked_items_on_completed_by_id"
-    t.index ["created_by_id"], name: "index_tracked_items_on_created_by_id"
-    t.index ["meeting_body_id"], name: "index_tracked_items_on_meeting_body_id"
-    t.index ["organization_id", "raise_by_on"], name: "index_tracked_items_on_organization_id_and_raise_by_on"
-    t.index ["organization_id", "status"], name: "index_tracked_items_on_organization_id_and_status"
-    t.index ["organization_id"], name: "index_tracked_items_on_organization_id"
-    t.check_constraint "importance::text = ANY (ARRAY['standard'::character varying, 'important'::character varying]::text[])", name: "tracked_items_importance_check"
-    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'completed'::character varying]::text[])", name: "tracked_items_status_check"
-  end
-
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "disabled_at"
@@ -497,8 +497,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
   add_foreign_key "dated_agenda_items", "agenda_item_catalog_entries"
   add_foreign_key "dated_agenda_items", "dated_agenda_sections"
   add_foreign_key "dated_agenda_items", "dated_agendas"
+  add_foreign_key "dated_agenda_items", "endeavors"
   add_foreign_key "dated_agenda_items", "meeting_type_agenda_items"
-  add_foreign_key "dated_agenda_items", "tracked_items"
   add_foreign_key "dated_agenda_roll_call_entries", "dated_agenda_items"
   add_foreign_key "dated_agenda_roll_call_entries", "people", on_delete: :nullify
   add_foreign_key "dated_agenda_roll_call_entries", "position_titles", on_delete: :nullify
@@ -510,6 +510,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
   add_foreign_key "dated_agendas", "users", column: "approved_by_id"
   add_foreign_key "dated_agendas", "users", column: "published_by_id"
   add_foreign_key "dated_agendas", "users", column: "reopened_by_id"
+  add_foreign_key "endeavor_updates", "endeavors"
+  add_foreign_key "endeavor_updates", "users", column: "author_id"
+  add_foreign_key "endeavors", "meeting_bodies"
+  add_foreign_key "endeavors", "organizations"
+  add_foreign_key "endeavors", "users", column: "completed_by_id"
+  add_foreign_key "endeavors", "users", column: "created_by_id"
   add_foreign_key "loops_roster_syncs", "roster_imports"
   add_foreign_key "loops_roster_syncs", "users", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "magic_links", "sessions"
@@ -526,11 +532,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_060000) do
   add_foreign_key "position_assignments", "position_titles"
   add_foreign_key "position_titles", "organizations"
   add_foreign_key "sessions", "users"
-  add_foreign_key "tracked_item_updates", "tracked_items"
-  add_foreign_key "tracked_item_updates", "users", column: "author_id"
-  add_foreign_key "tracked_items", "meeting_bodies"
-  add_foreign_key "tracked_items", "organizations"
-  add_foreign_key "tracked_items", "users", column: "completed_by_id"
-  add_foreign_key "tracked_items", "users", column: "created_by_id"
   add_foreign_key "users", "people"
 end
