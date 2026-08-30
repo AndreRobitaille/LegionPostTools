@@ -71,10 +71,10 @@ The first-page letterhead follows the selected traditional letterhead direction.
 and organization identity align on the left; the configured meeting location occupies the
 upper right. A paired navy/gold rule is the only ornamental gesture.
 
-The title combines the configurable meeting type and document kind, such as `Membership
+The title combines the snapshotted meeting title and document kind, such as `Membership
 Meeting — Agenda`. Date and time sit immediately beneath it. The location comes from the
-meeting body's configured default, falling back to the installation's Post-wide default; it
-is not copied into each dated agenda.
+historical agenda or minutes snapshot copied from the Meeting, not from today's Meeting
+Body or installation default.
 
 The ordered section gutter remains because order is meaningful in a parliamentary meeting,
 but it loses the screen version's octagonal plaques, continuous decorative rail, all-caps
@@ -91,6 +91,9 @@ The shell identifies a document by type and status rather than changing its visu
 - **Draft minutes** — the same meeting identity and section order, clearly marked draft.
 - **Accepted minutes** — the same shell, marked accepted with later acceptance and attestation
   information. Accepted minutes are immutable; corrections belong to later records.
+
+The detailed authority folio, revision, acceptance, and amendment behavior is defined in
+`docs/MINUTES_LIFECYCLE.md`.
 
 Agenda wording and future minutes wording remain separately controlled. Private Commander
 cues never enter member agendas or minutes.

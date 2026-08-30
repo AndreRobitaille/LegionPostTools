@@ -96,6 +96,12 @@ Accepted official minutes must be immutable. No administrator override should si
 
 Corrections should appear as later amendments or later meeting records linked back to the original record.
 
+Approved minutes revisions are immutable structured artifacts. Attestation exposes one
+exact revision to members while it awaits later same-body acceptance; reopening preserves
+that superseded revision rather than rewriting what members previously saw. Acceptance
+records the procedure that actually occurred and does not require every Post to use a
+motion. See `docs/MINUTES_LIFECYCLE.md`.
+
 ## AI Boundary
 
 AI may draft minutes, summarize transcripts, suggest possible Endeavors, and help place discussion under the right agenda item. Humans confirm Endeavor identity.

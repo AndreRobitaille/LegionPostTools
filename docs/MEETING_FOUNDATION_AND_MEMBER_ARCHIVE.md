@@ -256,7 +256,7 @@ shows only member-visible documents:
 | Published agenda, upcoming | Read the agenda | None |
 | Published agenda, past | Read the agenda | Minutes not published yet |
 | Attested minutes | Read signed minutes; Awaiting acceptance | View agenda |
-| Accepted minutes | Read official minutes; Accepted by motion | View agenda |
+| Accepted minutes | Read official minutes; Accepted at a later meeting | View agenda |
 
 Draft or merely approved agendas remain officer-only. Future draft or Commander-approved
 minutes also remain officer-only. Adjutant attestation is the signature-equivalent point
@@ -332,8 +332,8 @@ idempotency and execution provenance behavior.
 
 ## Future Minutes Contract
 
-Slice 2 will add one structured Minutes record per Meeting. Its detailed design must be
-completed before implementation, but this archive depends on these settled states:
+Slice 2 will add one structured Minutes record per Meeting. Its detailed governing design
+is `docs/MINUTES_LIFECYCLE.md`; this archive depends on these settled states:
 
 ```text
 draft -> approved -> attested -> accepted
@@ -344,7 +344,8 @@ draft -> approved -> attested -> accepted
 - Adjutant attestation records signer and time and makes the minutes member-visible as
   awaiting acceptance.
 - Acceptance belongs to a later same-body Meeting and makes the record official and
-  immutable.
+  immutable. It records the procedure that actually occurred rather than requiring a
+  motion in every installation.
 - Amendments are later linked records; they never overwrite accepted minutes.
 - Transcript source remains restricted and never appears in member or print output.
 - Agenda, minutes, transcript, and Endeavor continuity remain separate records connected
@@ -382,4 +383,4 @@ Before this milestone is complete, verify:
 6. Build the member index/detail archive using agenda states only.
 7. Update the private API and generated handbook.
 8. Complete controller/system/browser/security verification.
-9. Write the detailed structured Minutes Lifecycle design before beginning Slice 2.
+9. Land `docs/MINUTES_LIFECYCLE.md` before beginning Slice 2 implementation.

@@ -21,11 +21,13 @@ The current application foundation includes:
 - Structured agenda catalog, meeting templates, dated agendas, and reusable agenda sections.
 - Endeavors for continuing Post work, with dated continuity updates, meeting-priority suggestions, and
   independent agenda snapshots.
-- Polished member agenda navigation, upcoming-meeting docket, and responsive/printable
-  published agendas.
+- First-class Meeting occurrences, an officer Meeting creator/workspace, and a member
+  archive with prominent upcoming and reverse-chronological past Meetings.
+- Polished Meeting navigation and responsive/printable published agendas.
 
-Minutes drafting and the human review/approval/attestation/acceptance lifecycle are next,
-followed by PDF/export and email distribution.
+OpenAI-assisted structured minutes drafting—with an Adjutant correction workflow and
+manual fallback—is next, followed by the human approval/attestation/acceptance lifecycle,
+minutes PDF/export, and email distribution.
 
 ## Who This Is For
 
@@ -43,7 +45,8 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, source authority, Four Pillars, and Legion Family boundaries.
 - `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
 - `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
-- `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the first-class Meeting and archive milestone before minutes.
+- `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
+- `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for minutes.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/ARCHITECTURE.md` — architecture and durable product decisions.
 - `docs/ROADMAP.md` — planned development phases.

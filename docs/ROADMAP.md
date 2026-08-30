@@ -181,21 +181,21 @@ until connector-style onboarding is worth another protocol surface.
 See `docs/superpowers/specs/2026-08-22-agent-sign-in-and-access-design.md` and
 `docs/superpowers/plans/2026-08-22-agent-sign-in-and-access.md`.
 
-## Next Core Work: Meeting Foundation and Minutes Lifecycle
+## Completed: Meeting Foundation and Member Archive
 
 The first validation case is concrete: an already-held Post meeting has one structured
-agenda and an available recording transcript. Build the next slices so an officer can
-backfill that historical meeting, use the agenda and transcript to prepare structured
-minutes, and carry those minutes through human review without inventing missing facts.
+agenda and an available recording transcript. The first-class Meeting and member archive
+foundation is complete: officers can create occurrences before their documents, agendas
+belong to Meetings with historical heading/place snapshots, members can browse upcoming
+and past Meetings, and the private API follows the same boundary.
 
-The governing design begins in
+The governing foundation design is
 `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md`.
-It settles the first-class Meeting boundary, historical document snapshots, member archive,
-time-zone handling, and the future minutes states that the archive must present honestly.
-Write the more detailed Minutes Lifecycle design before Slice 2 begins; do not attach
-minutes directly to a dated agenda and make the agenda stand in for the meeting.
+It settles the first-class Meeting boundary, historical document snapshots, member
+archive, time-zone handling, and the future minutes states that the archive must present
+honestly.
 
-### Slice 1: First-class Meeting and member archive
+### Completed Slice 1: First-class Meeting and member archive
 
 - Add an organization-owned `Meeting` as the durable occurrence, with its meeting body,
   optional meeting type, local date/time, title, and snapshotted venue name/address. A
@@ -223,6 +223,19 @@ minutes directly to a dated agenda and make the agenda stand in for the meeting.
 - Update the private Meeting/agenda API and generated handbook in the same slice so an
   authorized delegated agent cannot bypass the first-class Meeting boundary.
 
+## Next Core Work: Structured Minutes Lifecycle
+
+The detailed governing design is `docs/MINUTES_LIFECYCLE.md`. Build the next slices so the
+web app can use the historical Meeting, agenda, and transcript as distinct sources to
+prepare an OpenAI-generated structured first pass; let the Adjutant correct it without
+inventing missing facts; and carry one exact revision through human review, attestation,
+later acceptance, and immutable correction history.
+
+Do not attach minutes directly to a dated agenda or make the agenda stand in for the
+Meeting. Build the structured editor and AI generation in the same slice: the editor is
+the safe correction foundation and manual fallback, while the generated first pass is the
+normal Adjutant experience.
+
 ### Slice 2: Private source material and structured draft minutes
 
 - Add one optional `Minutes` record per Meeting, with structured `MinutesSection` and
@@ -242,10 +255,11 @@ minutes directly to a dated agenda and make the agenda stand in for the meeting.
   Treat the transcript as restricted source material, separate from the official minutes,
   excluded from member and print output, and governed by an explicit retention/deletion
   decision before production use.
-- Add AI-assisted transcript-to-draft work only behind a replaceable provider boundary and
-  only after the human-authored workflow works. Record source/run provenance, surface
-  uncertainty, and never invent attendance, motions, seconds, votes, decisions, or
-  Endeavor identity.
+- Implement the manual editor first as the safe domain foundation and fallback, then make
+  an OpenAI-generated first pass the primary Adjutant path before Slice 2 is complete. Use
+  strict structured output behind a replaceable provider boundary; record prompt,
+  source/run, and review provenance; surface uncertainty; and never invent attendance,
+  motions, seconds, votes, decisions, or Endeavor identity.
 
 ### Slice 3: Human review, approval, and attestation
 
@@ -254,7 +268,8 @@ minutes directly to a dated agenda and make the agenda stand in for the meeting.
   proves a handoff state is necessary.
 - `manage_minutes` controls drafting. Commander approval, Adjutant attestation, and later
   acceptance recording use the existing explicit capabilities rather than inferred job
-  titles or administrator power.
+  titles or administrator power. Rename the unused motion-specific acceptance capability
+  to `record_minutes_acceptance` before it is used by this workflow.
 - Attested minutes become the member-visible pre-acceptance record. An explicit reopen may
   return approved or attested minutes to draft, but it must preserve who reopened them and
   when, invalidate the superseded approval/attestation, and require the human workflow
@@ -269,8 +284,9 @@ minutes directly to a dated agenda and make the agenda stand in for the meeting.
 
 ### Slice 4: Acceptance, amendments, and immutability
 
-- Record acceptance by motion at a later Meeting of the same body, with the accepting
-  Meeting, actor, time, outcome, and source minutes item or motion when available.
+- Record acceptance at a later Meeting of the same body, with the accepting Meeting,
+  actor, time, factual disposition, and source minutes item or motion when available. Do
+  not require a fictitious motion when the body accepted the minutes as read or corrected.
 - Accepted minutes are immutable at the database and application layers. There is no
   administrator bypass and no transition back to draft.
 - Corrections adopted during acceptance or discovered later become linked amendment or

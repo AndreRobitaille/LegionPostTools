@@ -4,8 +4,9 @@
 
 The Endeavor MVP is the durable continuity layer for coherent American Legion Post work.
 The behavior-preserving rename from Tracked Item to Endeavor establishes the final domain
-name and `endeavor_id` seam. The next core product work is the Meeting and Minutes
-lifecycle, not expansion into project management.
+name and `endeavor_id` seam. The first-class Meeting foundation and member archive are now
+complete. The next core product work is the structured Minutes lifecycle, not expansion
+into project management.
 
 `docs/ENDEAVOR_GOVERNANCE.md` remains authoritative for identity and ownership rules. This
 plan records implementation order, integration contracts, validation cases, and deferred
@@ -58,10 +59,10 @@ replaces the other. The next implementation must preserve the following contract
   saved Meetings. Meeting deletion is permitted only while no agenda, minutes, or other
   dependent historical record exists.
 
-The first implementation milestone is the Meeting creator and member archive described in
-`docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md`.
-Complete and review the Endeavor rename first, then implement that milestone before adding
-transcripts or minutes tables.
+The completed first implementation milestone is the Meeting creator and member archive
+described in `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md`. The governing design for the
+next milestone is `docs/MINUTES_LIFECYCLE.md`; follow its source, revision, lifecycle,
+confirmation, acceptance, and immutability boundaries before adding minutes tables.
 
 ### Direct identity and source lineage
 
