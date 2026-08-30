@@ -308,6 +308,9 @@ automation do not block these minutes slices.
 
 ## Later Possibilities
 
+- Installation settings administration, including a guided time-zone change that previews
+  affected Meeting and historical document times, requires explicit confirmation, and
+  migrates stored timestamps without silently moving their intended local date or clock time.
 - Document archive.
 - Committee tracking.
 - Calendar/events.

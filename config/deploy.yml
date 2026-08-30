@@ -32,6 +32,7 @@ env:
     WEB_CONCURRENCY: 2
     RAILS_LOG_LEVEL: info
     APP_HOST: members.wipost165.org
+    APP_TIME_ZONE: America/Chicago
     MAIL_PROVIDER: loops
     MAIL_FROM: no-reply@wipost165.org
     WEBAUTHN_ORIGIN: https://members.wipost165.org

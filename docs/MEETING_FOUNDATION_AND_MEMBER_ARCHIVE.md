@@ -142,12 +142,16 @@ Verification must include a Central-time evening and a daylight-saving boundary 
 remaining valid when another installation chooses another zone.
 
 The original agenda workflow parsed officer-entered wall times while Rails was still in
-UTC. Do not activate another zone on an existing installation as a configuration-only
-deployment: the apparent meeting time would move. The Meeting backfill must preview each
-legacy `dated_agendas.starts_at`, reinterpret its components in the intended installation
-zone, and preserve the date and clock time the officer entered while correcting the stored
-UTC instant. Changing zones later is likewise an operator-managed data migration, not a
-routine configuration toggle.
+UTC. Activating Post 165's configured zone therefore includes a one-time migration that
+reinterprets each legacy `dated_agendas.starts_at` using the Organization timezone selected
+during setup. It preserves the date and clock time the officer entered while correcting the
+stored UTC instant. The later Meeting backfill must copy that already-corrected instant and
+must not reinterpret it a second time.
+
+A future Administration setting should make the installation timezone visible and
+changeable without editing deployment files. A change must preview every affected Meeting
+and historical document, require explicit confirmation, and migrate stored timestamps; it
+must not behave like an ordinary configuration toggle that silently moves official records.
 
 ## Data Migration
 
@@ -156,9 +160,9 @@ intentional correction is the legacy `starts_at` storage described in the time-z
 contract:
 
 1. add `meetings` and nullable `dated_agendas.meeting_id`;
-2. preview and correct each legacy agenda start from its UTC-parsed wall time into the
-   installation zone, then create exactly one Meeting preserving the organization,
-   Meeting Body, Meeting Type, title, and corrected UTC start timestamp;
+2. preview each already-corrected agenda start in the installation zone, then create exactly
+   one Meeting preserving the organization, Meeting Body, Meeting Type, title, and UTC start
+   timestamp without another conversion;
 3. snapshot each current effective venue onto both the Meeting and dated agenda;
 4. attach the agenda to its new Meeting;
 5. add the unique index and non-null constraint; and

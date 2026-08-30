@@ -67,8 +67,10 @@ Open `http://localhost:3000`. On a fresh database, the app shows the first-run s
 
 Set `APP_TIME_ZONE` to the installation's Rails or IANA time-zone name so meeting dates
 and times are entered and displayed locally while PostgreSQL continues storing UTC.
-The safe default is `UTC`; Post 165 will use `America/Chicago` after its legacy agenda
-time is corrected during the Meeting backfill.
+The safe default is `UTC`; Post 165 uses `America/Chicago`. Run local development through
+`bin/dev` with the value in `.env`, and configure hosted installations through Kamal's
+clear environment values. Existing installations require a timestamp migration when the
+zone changes.
 
 ## Authentication
 

@@ -52,6 +52,7 @@ Kamal aliases `LEGION_POST_TOOLS_DATABASE_PASSWORD` to the container's `POSTGRES
 Required clear env values:
 
 - `APP_HOST`
+- `APP_TIME_ZONE`
 - `MAIL_PROVIDER=loops` (preferred/default for Post 165)
 - `MAIL_FROM`
 - `WEBAUTHN_ORIGIN`
@@ -67,12 +68,12 @@ If an install is not using Loops, `MAIL_PROVIDER=action_mailer` is the SMTP/Acti
 
 For Post 165, `DB_HOST` should point at the Kamal Postgres accessory hostname on the Docker network.
 
-`APP_TIME_ZONE` is an optional clear env value that controls local meeting entry, display,
-and local-day boundaries; Rails defaults safely to UTC and stores timestamps in UTC. A
-fresh install should set its Rails or IANA zone before creating meeting records. Post 165's
-intended value is `America/Chicago`, but do not add it to the existing deployment until the
-Meeting backfill previews and corrects the legacy agenda wall time. Changing an existing
-installation's zone is a data migration, not a routine configuration toggle.
+`APP_TIME_ZONE` controls local meeting entry, display, and local-day boundaries; Rails
+stores timestamps in UTC. Set it to the same Rails or IANA zone selected for the
+Organization during setup. Post 165 uses `America/Chicago`. Migration `20260830020000`
+performs the one-time conversion of agendas created while Rails still interpreted entered
+wall times as UTC. Changing an established installation's zone later requires a previewed
+data migration; it is not a routine configuration toggle.
 
 ## Persistent SSH control master
 
@@ -151,7 +152,7 @@ Passkeys require HTTPS and do not work by IP address.
 3. Create `~/.ssh/controlmasters` with `mkdir -p ~/.ssh/controlmasters` and `chmod 700 ~/.ssh/controlmasters`.
 4. Start the persistent SSH control master with `ssh -MNf 178.156.250.235`.
 5. Set all required Kamal secrets.
-6. Set clear env values, especially `APP_HOST`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names. On a fresh installation, also set `APP_TIME_ZONE` before creating meeting records.
+6. Set clear env values, especially `APP_HOST`, `APP_TIME_ZONE`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names. Set `APP_TIME_ZONE` before creating meeting records.
 7. Confirm the Kamal service name, image name, and storage names match the Post 165 convention.
 8. Run `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` once as a preflight check.
 9. Run the same `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` command a second time; it should reuse the shared control connection.
