@@ -1,13 +1,10 @@
-require "tmpdir"
-require "timeout"
 require "uri"
 
 class DatedAgendaPdf
-  class GenerationError < StandardError; end
+  GenerationError = BrowserPdfRenderer::GenerationError
 
   VARIANTS = %w[agenda officer_notes].freeze
   TOKEN_LIFETIME = 1.minute
-  RENDER_TIMEOUT = 30.seconds
 
   class << self
     def render(dated_agenda:, variant:, base_url: nil)
@@ -61,39 +58,10 @@ class DatedAgendaPdf
   end
 
   def render
-    Dir.mktmpdir("dated-agenda-pdf") do |directory|
-      pdf_path = File.join(directory, "document.pdf")
-      process_id = Process.spawn(*chromium_command(pdf_path), out: File::NULL, err: File::NULL, pgroup: true)
-      status = wait_for_renderer(process_id)
-
-      raise GenerationError, "PDF renderer failed" unless status.success? && File.exist?(pdf_path)
-
-      pdf = File.binread(pdf_path)
-      raise GenerationError, "PDF renderer returned an invalid document" unless pdf.start_with?("%PDF")
-
-      pdf
-    end
-  rescue Errno::ENOENT
-    raise GenerationError, "PDF renderer is unavailable"
+    BrowserPdfRenderer.render(source_url:, temp_prefix: "dated-agenda-pdf")
   end
 
   private
-
-  def chromium_command(pdf_path)
-    [
-      ENV.fetch("CHROMIUM_BIN", "/usr/bin/chromium"),
-      "--headless=new",
-      "--disable-gpu",
-      "--disable-dev-shm-usage",
-      "--disable-extensions",
-      "--no-sandbox",
-      "--no-pdf-header-footer",
-      "--run-all-compositor-stages-before-draw",
-      "--virtual-time-budget=3000",
-      "--print-to-pdf=#{pdf_path}",
-      source_url
-    ]
-  end
 
   def source_url
     token = self.class.source_token(dated_agenda: @dated_agenda, variant: @variant)
@@ -104,24 +72,5 @@ class DatedAgendaPdf
   def default_base_url
     port = ENV.fetch("PDF_RENDER_PORT", ENV.fetch("PORT", "3000"))
     "http://127.0.0.1:#{port}"
-  end
-
-  def wait_for_renderer(process_id)
-    Timeout.timeout(RENDER_TIMEOUT) do
-      Process.wait2(process_id).last
-    end
-  rescue Timeout::Error
-    terminate_renderer(process_id)
-    raise GenerationError, "PDF renderer timed out"
-  end
-
-  def terminate_renderer(process_id)
-    Process.kill("TERM", -process_id)
-    Timeout.timeout(2.seconds) { Process.wait(process_id) }
-  rescue Timeout::Error
-    Process.kill("KILL", -process_id)
-    Process.wait(process_id)
-  rescue Errno::ESRCH, Errno::ECHILD
-    nil
   end
 end

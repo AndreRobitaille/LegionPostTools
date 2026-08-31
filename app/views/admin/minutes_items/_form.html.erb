@@ -26,8 +26,15 @@
     <%= form.collection_select :endeavor_id, @endeavors, :id, :title, { include_blank: "No Endeavor linked" }, class: "f" %>
     <span class="fl-help">Choose only when this item is part of that same continuing Post endeavor.</span>
   </div>
+  <% if item.agenda_body.present? %>
+    <section class="minutes-editor-agenda-wording" aria-labelledby="minutes-editor-agenda-wording-heading">
+      <h2 id="minutes-editor-agenda-wording-heading">Original agenda wording</h2>
+      <div><%= item.agenda_body %></div>
+      <p>This wording came from the meeting agenda and stays separate from the minutes record.</p>
+    </section>
+  <% end %>
   <div class="fl minutes-rich-text-field">
-    <%= form.label :body, "Factual record" %>
+    <%= form.label :body, "Recorded minutes" %>
     <p class="fl-help">Record what occurred. Put motions and decisions in structured outcomes after saving this item.</p>
     <%= form.rich_text_area :body, attachments: "false" %>
   </div>

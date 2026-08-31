@@ -3,10 +3,22 @@ module Admin
     before_action :require_minutes_access
     before_action -> { require_capability("manage_minutes") }, only: %i[create edit update]
     before_action :set_meeting
-    before_action :set_minutes, only: %i[show edit update]
+    before_action :set_minutes, only: %i[show edit update print]
     before_action :ensure_draft_minutes, only: %i[edit update]
 
     def show; end
+
+    def print
+      pdf = MeetingMinutesPdf.render(minutes: @minutes)
+      send_data pdf,
+        filename: MeetingMinutesPdf.filename(minutes: @minutes),
+        type: "application/pdf",
+        disposition: "inline"
+      no_store
+    rescue MeetingMinutesPdf::GenerationError => error
+      Rails.logger.error("Draft minutes PDF generation failed: #{error.message}")
+      redirect_to admin_meeting_minutes_path(@meeting), alert: "The draft PDF could not be created. Try again."
+    end
 
     def create
       minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
@@ -40,7 +52,7 @@ module Admin
         :transcript,
         minutes: [
           :attendance_entries,
-          { sections: { items: %i[rich_text_body endeavor outcomes] } }
+          { sections: { items: %i[rich_text_agenda_body rich_text_body endeavor outcomes source_dated_agenda_item] } }
         ]
       ).find(params[:meeting_id])
     end

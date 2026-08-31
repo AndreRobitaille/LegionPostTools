@@ -50,13 +50,15 @@ class MeetingMinutesTest < ActiveSupport::TestCase
 
     report = minutes.items.find_by!(title: "Finance report")
     source_report = agenda.dated_agenda_items.find_by!(title: "Finance report")
-    assert_equal source_report.body.to_s, report.body.to_s
-    assert_equal "Treasurer reported a balance.", report.body.to_plain_text.squish
+    assert_equal source_report.body.to_s, report.agenda_body.to_s
+    assert_equal "Treasurer reported a balance.", report.agenda_body.to_plain_text.squish
+    assert_predicate report.body.to_plain_text, :blank?
     assert_equal source_report, report.source_dated_agenda_item
     assert_equal @endeavor, report.endeavor
     assert_match(/\A[0-9a-f-]{36}\z/, report.record_key)
 
     hidden = minutes.items.find_by!(title: "Commander briefing")
+    assert_predicate hidden.agenda_body.to_plain_text, :blank?
     assert_predicate hidden.body.to_plain_text, :blank?
     assert_not_includes hidden.body.to_plain_text, "Private commander cue"
 
@@ -66,7 +68,7 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     assert_equal [ "Adjutant", "Historian" ], attendance.map(&:office_name)
 
     agenda.dated_agenda_items.find_by!(title: "Finance report").body = "Changed later"
-    assert_equal "Treasurer reported a balance.", report.reload.body.to_plain_text.squish
+    assert_equal "Treasurer reported a balance.", report.reload.agenda_body.to_plain_text.squish
   end
 
   test "draft agenda supplies structure but meeting supplies the heading" do

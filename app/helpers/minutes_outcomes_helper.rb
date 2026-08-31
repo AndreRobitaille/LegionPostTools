@@ -9,7 +9,7 @@ module MinutesOutcomesHelper
   def minutes_outcome_disposition_label(disposition)
     {
       "adopted" => "Passed",
-      "lost" => "Failed",
+      "lost" => "Did not pass",
       "withdrawn" => "Withdrawn",
       "postponed" => "Postponed",
       "referred" => "Referred",

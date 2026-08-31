@@ -1,6 +1,6 @@
 module MinutesDrafting
   class Prompt
-    VERSION = "minutes-first-pass-v4"
+    VERSION = "minutes-first-pass-v5"
     SCHEMA_VERSION = "minutes-suggestions-v2"
 
     DEVELOPER_PROMPT = <<~PROMPT.freeze
@@ -52,7 +52,7 @@ module MinutesDrafting
             starts_at: minutes.starts_at.iso8601,
             location_name: minutes.location_name
           },
-          outline: minutes.sections.includes(items: [ :source_dated_agenda_item, :rich_text_body ]).map do |section|
+          outline: minutes.sections.includes(items: [ :source_dated_agenda_item, :rich_text_agenda_body, :rich_text_body ]).map do |section|
             {
               minutes_section_id: section.id,
               title: section.title,
@@ -63,7 +63,8 @@ module MinutesDrafting
                   title: item.title,
                   behavior_type: item.behavior_type,
                   confirmed_endeavor_id: item.endeavor_id,
-                  existing_wording: item.body.present? ? item.body.to_plain_text : nil
+                  agenda_wording: item.agenda_body.present? ? item.agenda_body.to_plain_text : nil,
+                  existing_minutes: item.body.present? ? item.body.to_plain_text : nil
                 }
               end
             }

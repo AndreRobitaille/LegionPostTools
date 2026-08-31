@@ -10,7 +10,7 @@
   <% end %>
 
   <div class="motion-result-choices">
-    <% [ [ "Passed", "adopted" ], [ "Failed", "lost" ], [ "Other outcome", "other" ] ].each do |label, value| %>
+    <% [ [ "Passed", "adopted" ], [ "Did not pass", "lost" ], [ "Other outcome", "other" ] ].each do |label, value| %>
       <% field_id = "#{scope_id}_disposition_#{value}" %>
       <label class="motion-result-choice">
         <%= radio_button_tag "#{form.object_name}[disposition]", value, result_group == value,

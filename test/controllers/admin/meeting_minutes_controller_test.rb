@@ -50,6 +50,26 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert minutes.persisted?
   end
 
+  test "authorized officers can open the current draft as an inline PDF" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+    sign_in_as(@manager)
+    rendered_minutes = nil
+    renderer = lambda do |minutes:|
+      rendered_minutes = minutes
+      "%PDF-1.7\ndraft minutes"
+    end
+
+    with_stubbed_class_method(MeetingMinutesPdf, :render, renderer) do
+      get print_admin_meeting_minutes_path(@meeting)
+    end
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+    assert_match(/inline/, response.headers.fetch("Content-Disposition"))
+    assert_match(/draft-minutes\.pdf/, response.headers.fetch("Content-Disposition"))
+    assert_equal minutes, rendered_minutes
+  end
+
   test "unrelated users cannot open the workspace" do
     MeetingMinutes.create_from_meeting!(meeting: @meeting)
 

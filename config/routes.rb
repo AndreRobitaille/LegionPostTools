@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   get "internal/dated-agenda-pdf-source", to: "dated_agenda_pdf_sources#show", as: :dated_agenda_pdf_source
+  get "internal/meeting-minutes-pdf-source", to: "meeting_minutes_pdf_sources#show", as: :meeting_minutes_pdf_source
 
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
@@ -91,6 +92,7 @@ Rails.application.routes.draw do
     resources :meetings do
       post :agenda, on: :member, action: :create_agenda
       resource :minutes, only: %i[show create edit update], controller: "meeting_minutes" do
+        get :print, on: :member
         resources :draft_runs, only: %i[new create show], controller: "minutes_draft_runs" do
           get :status, on: :member
           resource :attendance_review, only: :update, controller: "minutes_draft_attendance_reviews"

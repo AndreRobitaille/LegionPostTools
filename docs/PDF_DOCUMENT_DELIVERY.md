@@ -2,9 +2,10 @@
 
 ## Purpose
 
-Agenda and officer-document actions must open the same finished US Letter PDF on every
-platform. A member should never have to recognize an intermediate print layout, find a
-browser print command, or understand how a phone turns a print preview into a PDF.
+Agenda, officer-document, and minutes-preview actions must open a finished US Letter PDF
+on every platform. A member or officer should never have to recognize an intermediate
+print layout, find a browser print command, or understand how a phone turns a print
+preview into a PDF.
 
 The concrete document is the official-looking American Legion meeting handout already
 defined in `docs/OFFICIAL_MEETING_DOCUMENTS.md`. This design changes delivery, not its
@@ -15,6 +16,9 @@ approved typography, hierarchy, margins, or content boundaries.
 - **Open agenda PDF** returns the member-safe agenda as `application/pdf`.
 - **Open officer-notes PDF** returns the same document shell with private Commander cues
   and roll call, and remains restricted to users with `manage_agendas`.
+- **Open draft PDF** on an editable minutes workspace returns a current officer-only
+  proof clearly marked **DRAFT - NOT APPROVED**. It is not a minutes publication action
+  and does not create an immutable revision.
 - The response uses `Content-Disposition: inline` and a descriptive `.pdf` filename. A
   desktop or mobile browser may display its native PDF viewer, from which the document can
   be printed, downloaded, or shared.
@@ -32,7 +36,7 @@ verified with Chromium's paged-media implementation, including Letter sizing and
 1. The authenticated member or agenda manager requests a PDF action.
 2. The application confirms the existing agenda and permission scope.
 3. It creates a short-lived signed rendering token containing only the organization,
-   dated-agenda ID, and allowed document variant.
+   exact document ID, and allowed document kind or variant.
 4. A Chromium process inside the application container requests a loopback-only HTML
    source using that token.
 5. Chromium prints the source with background graphics and CSS page sizing, and the
@@ -46,10 +50,14 @@ temporary files.
 
 - The user-facing member action retains the existing published-only lookup.
 - The administrative member agenda and officer-notes actions retain `manage_agendas`.
+- The mutable minutes preview retains the minutes workspace's `manage_minutes` or
+  `view_internal_records` boundary and is never exposed through a member route.
 - The HTML rendering source accepts only loopback requests and a valid expiring signature.
 - Rendering tokens are filtered from logs, expire after one minute, and cannot select a
   different organization, agenda, or document variant.
 - The member PDF never renders Commander cues or roll-call working fields.
+- The draft minutes PDF never renders transcript text, AI suggestions, confidence,
+  evidence ranges, job provenance, or application controls.
 - Responses use `Cache-Control: no-store` because officer documents can contain private
   meeting instructions.
 - User content is rendered through the existing sanitized Action Text output. Chromium

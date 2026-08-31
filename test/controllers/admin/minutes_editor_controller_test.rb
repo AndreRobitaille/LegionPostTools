@@ -42,6 +42,7 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "workspace renders the complete manual editing controls" do
+    @first_item.update!(agenda_body: "Bring the proposal to the membership.", body: "Members discussed the proposal.")
     @first_item.outcomes.create!(
       kind: "motion",
       text: "Fund the memorial project.",
@@ -55,11 +56,27 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href='#{edit_admin_meeting_minutes_path(@meeting)}']", text: "Edit heading"
+    assert_select "a[href='#{print_admin_meeting_minutes_path(@meeting)}']", text: "Open draft PDF"
+    assert_select ".minutes-workflow-band"
+    assert_select ".minutes-evidence-rail", count: 0
     assert_select ".minutes-item-card", count: 2
+    assert_select ".minutes-agenda-wording", text: /Bring the proposal/
+    assert_select ".minutes-recorded-wording", text: /Recorded minutes.*Members discussed/m
     assert_select ".minutes-outcome-disposition--not_recorded", text: "Needs review"
     assert_select "a[href='#{new_admin_meeting_minutes_item_path(@meeting, minutes_section_id: @first_section.id)}']"
     assert_select "a[href='#{new_admin_meeting_minutes_outcome_path(@meeting, minutes_item_id: @first_item.id)}']"
     assert_select "a[href='#{edit_admin_meeting_minutes_attendance_path(@meeting)}']", text: "Record attendance"
+    assert_select ".minutes-order-button", count: 0
+
+    get edit_admin_meeting_minutes_item_path(@meeting, @first_item)
+    assert_response :success
+    assert_select ".minutes-editor-agenda-wording", text: /Original agenda wording.*Bring the proposal/m
+    assert_select "label[for='minutes_item_body']", text: "Recorded minutes"
+
+    get admin_meeting_minutes_path(@meeting, organize: "1")
+    assert_response :success
+    assert_select ".minutes-order-button", minimum: 1
+    assert_select "a[href='#{admin_meeting_minutes_path(@meeting)}']", text: "Finish organizing"
   end
 
   test "internal record viewer sees the workspace but cannot edit it" do

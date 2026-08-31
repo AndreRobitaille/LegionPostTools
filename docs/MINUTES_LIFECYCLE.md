@@ -211,7 +211,8 @@ An editor may add, rename, reorder, or remove sections while draft.
 - optional `source_dated_agenda_item_id`;
 - optional direct `endeavor_id`;
 - snapshotted `title`, `behavior_type`, and `position`;
-- Action Text `body` for factual narrative;
+- Action Text `agenda_body` for the independent snapshot of published agenda wording;
+- Action Text `body` for factual minutes narrative only;
 - a stable opaque `record_key` copied into revisions and used by later amendments;
 - optimistic `lock_version`; and
 - timestamps.
@@ -225,7 +226,8 @@ When seeded from an agenda item:
 
 - always copy the title, behavior, section, position, source item id, and optional direct
   Endeavor id;
-- copy rich-text wording only when `show_wording_in_minutes` is true;
+- copy rich-text wording into `agenda_body` only when `show_wording_in_minutes` is true;
+- leave `body` for facts recorded during or after the Meeting;
 - never copy Commander-only cues;
 - never make later agenda or Endeavor edits rewrite the minutes item; and
 - never infer a missing Endeavor link from title, transcript similarity, catalog entry,
@@ -281,7 +283,7 @@ never enter this identity workflow.
 
 #### Plain-language motion result review
 
-For a motion, label the field **Outcome** and present **Passed**, **Failed**, and
+For a motion, label the field **Outcome** and present **Passed**, **Did not pass**, and
 **Other outcome** as mutually exclusive choices. Store those first two choices as the
 existing `adopted` and `lost` domain values. **Other outcome** reveals the factual choices
 **Withdrawn**, **Postponed**, **Referred**, and **No vote taken**. Do not expose
@@ -291,7 +293,7 @@ When an AI suggestion has `not_recorded`, show an amber **AI could not determine
 result** warning and require the reviewer to choose a result before adding the motion.
 The suggestion remains unreviewed until the reviewer supplies the missing result or
 discards it. Rendered working minutes use the plain phrases **Motion passed** and **Motion
-failed**, even though the stored values remain `adopted` and `lost` for compatibility.
+did not pass**, even though the stored values remain `adopted` and `lost` for compatibility.
 
 This structure does not decide whether a second was legally required, whether debate was
 proper, whether quorum existed, or whether the procedure was valid. It records what the
@@ -608,6 +610,66 @@ anything to OpenAI.
 The page's single job is to help an Adjutant correct an AI-generated first pass into an
 accurate, reviewable Meeting record while always knowing what came from a source, what the
 model inferred, and what remains unconfirmed.
+
+The implemented working-record view keeps that job visually primary. Its subject is the
+Post's record of proceedings; its audience is an Adjutant or other authorized officer who
+may need to read a long record carefully and make a small number of corrections without
+losing their place. The page uses this hierarchy:
+
+```text
+MEETING HEADING                                      [DRAFT - NOT OFFICIAL]
+[Open draft PDF] [Edit meeting heading]
+
+SOURCE AND REVIEW  Transcript | AI review | Attendance
+
+MINUTES RECORD                                      9 sections | 35 items
+I. Opening Ceremony
+    Call to Order                                      [Edit]
+    Recorded narrative...
+    MOTION PASSED
+    Exact motion text; mover; seconder; vote.           [Edit]
+...
+```
+
+- The record receives the full shared 940-pixel reading width. Restricted transcript,
+  AI-review status, and attendance become one compact workflow band above it rather than
+  a permanent side rail that narrows every paragraph.
+- The default view is for reading and targeted correction. Move controls appear only in
+  an explicit **Organize record** mode; they are not allowed to compete with every item on
+  every normal visit. Edit, add-item, and record-motion actions remain plainly visible.
+- Section numbers form a restrained navy record margin. This is the minutes workspace's
+  signature element before the later authority folio exists; it makes the real Meeting
+  order scannable without introducing another card system.
+- Routine agenda-derived items with no narrative remain present but visually quiet. An
+  item with narrative or an outcome receives stronger spacing, never a smaller font.
+- All meaningful working text is at least 15 pixels and interactive text is at least 16
+  pixels. Outcome names, dispositions, people, and votes are exposed together.
+- At narrow widths the workflow band and record stack in source-to-document order, the
+  section margin contracts, and every action remains a full-size reachable target without
+  horizontal scrolling.
+
+The draft workspace also offers **Open draft PDF**. This is a convenience for proofreading
+and taking a working copy to an officer; it is not the later immutable member document.
+It renders the current mutable rows in the shared US Letter shell and repeats
+**DRAFT - NOT APPROVED** in both the heading and page footer. It contains attendance,
+narrative, motions, decisions, and recorded participant names, but never transcript text,
+AI provenance, confidence, review warnings, or editor controls. Its filename also includes
+`draft-minutes`. Generating this officer-only preview does not approve, attest, publish,
+freeze, or otherwise change the minutes record.
+
+Within that PDF, agenda-derived section and item titles remain the meeting-order outline.
+Any snapshotted agenda wording renders immediately below its item title without a minutes
+label. **Recorded minutes** follows the agenda wording and begins a consistently indented
+record block: its blue narrative rule and any motion or decision boxes share the label's
+left edge. The label appears only when narrative or an outcome was actually recorded, so
+a reader can distinguish what was said or done from business merely listed in advance.
+Motions and decisions use labeled factual rows rather than compressing mover, seconder,
+result, and vote notes into one sentence. Passed, did-not-pass, and other outcomes use
+muted green, red, and amber treatments respectively, always paired with a written result.
+Direct Endeavor links are application navigation metadata and do not render in PDFs.
+Print rules keep motion backgrounds white and confine color to dark rules, headings, and
+outlined result labels so ordinary laser/inkjet RGB-to-CMYK conversion stays crisp and
+economical. The labels and structure remain fully understandable in grayscale.
 
 Desktop uses a quiet two-column working layout:
 

@@ -78,7 +78,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
   end
 
   test "using editing and discarding are independent human review actions" do
-    @item.update!(body: "Agenda wording retained.")
+    @item.update!(body: "Human wording retained.")
     run = MinutesDrafting::Generate.call(
       minutes: @minutes,
       requester: @requester,
@@ -94,7 +94,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     MinutesDrafting::ReviewSuggestion.call(suggestion: outcome, reviewer: @requester, action: "discard")
     MinutesDrafting::ReviewSuggestion.call(suggestion: attendance, reviewer: @requester, action: "use")
 
-    assert_equal "Agenda wording retained. Adjutant-corrected wording.", @item.reload.body.to_plain_text.squish
+    assert_equal "Human wording retained. Adjutant-corrected wording.", @item.reload.body.to_plain_text.squish
     assert_empty @item.outcomes
     assert_equal "present", @attendance.reload.status
     assert_equal %w[edited discarded used], run.suggestions.pluck(:review_state)
@@ -102,7 +102,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
   end
 
   test "separately supported paragraphs append without overwriting prior minutes wording" do
-    @item.update!(body: "Agenda wording retained.")
+    @item.update!(body: "Human wording retained.")
     run = MinutesDrafting::Generate.call(
       minutes: @minutes,
       requester: @requester,
@@ -117,9 +117,24 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     end
 
     assert_equal(
-      "Agenda wording retained. First supported paragraph. Second supported paragraph.",
+      "Human wording retained. First supported paragraph. Second supported paragraph.",
       @item.reload.body.to_plain_text.squish
     )
+  end
+
+  test "prompt distinguishes agenda wording from existing minutes" do
+    @item.update!(agenda_body: "Bring committee dates.", body: "The committee reported progress.")
+
+    input = JSON.parse(MinutesDrafting::Prompt.input(
+      minutes: @minutes,
+      source_document: MinutesDrafting::SourceDocument.new(@transcript.source_text)
+    ))
+    item_input = input.fetch("outline").flat_map { |section| section.fetch("items") }
+      .find { |item| item.fetch("minutes_item_id") == @item.id }
+
+    assert_equal "Bring committee dates.", item_input.fetch("agenda_wording")
+    assert_equal "The committee reported progress.", item_input.fetch("existing_minutes")
+    assert_not item_input.key?("existing_wording")
   end
 
   test "stages and applies an added item linked to an exact supplied Endeavor" do

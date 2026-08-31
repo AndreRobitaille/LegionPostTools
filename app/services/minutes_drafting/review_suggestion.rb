@@ -1,5 +1,9 @@
 module MinutesDrafting
   class ReviewSuggestion
+    RICH_TEXT_BLOCK_ELEMENTS = %w[
+      address article aside blockquote div dl figure h1 h2 h3 h4 h5 h6 li ol p pre section table ul
+    ].freeze
+
     def self.call(suggestion:, reviewer:, action:, edits: {})
       new(suggestion:, reviewer:, action:, edits:).call
     end
@@ -106,8 +110,18 @@ module MinutesDrafting
         escaped = ERB::Util.html_escape(paragraph).gsub("\n", "<br>")
         "<p>#{escaped}</p>"
       end.join
-      combined = [ item.body.to_s.presence, paragraphs ].compact.join
+      existing_html = block_wrapped_html(item.rich_text_body&.body&.to_html.presence)
+      combined = [ existing_html, paragraphs ].compact.join
       item.update!(body: ActionText::Content.new(combined))
+    end
+
+    def block_wrapped_html(html)
+      return if html.blank?
+
+      fragment = Nokogiri::HTML5.fragment(html)
+      return html if fragment.children.any? { |node| node.element? && node.name.in?(RICH_TEXT_BLOCK_ELEMENTS) }
+
+      "<p>#{html}</p>"
     end
 
     def record_review!(state, applied_record = nil)

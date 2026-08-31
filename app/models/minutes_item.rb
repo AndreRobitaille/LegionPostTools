@@ -13,6 +13,7 @@ class MinutesItem < ApplicationRecord
     dependent: :destroy,
     inverse_of: :minutes_item
 
+  has_rich_text :agenda_body
   has_rich_text :body
 
   before_validation :assign_record_key, on: :create

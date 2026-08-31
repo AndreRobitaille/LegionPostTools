@@ -90,7 +90,7 @@ class MeetingMinutes < ApplicationRecord
           position: agenda_item.position
         )
         if agenda_item.show_wording_in_minutes? && agenda_item.rich_text_body.present?
-          item.create_rich_text_body!(body: agenda_item.rich_text_body.body)
+          item.create_rich_text_agenda_body!(body: agenda_item.rich_text_body.body)
         end
 
         agenda_item.roll_call_entries.each do |roll_call_entry|
