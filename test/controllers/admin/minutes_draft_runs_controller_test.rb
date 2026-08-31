@@ -77,7 +77,7 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
     get status_admin_meeting_minutes_draft_run_path(@meeting, run, format: :json)
 
     assert_response :success
-    assert_equal "no-cache", response.headers["cache-control"]&.split(",")&.first
+    assert_equal "no-store", response.headers["cache-control"]
     assert_equal "pending", response.parsed_body.fetch("status")
   end
 

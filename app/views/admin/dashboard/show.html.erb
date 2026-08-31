@@ -16,6 +16,14 @@
     <h2 class="hub-sec-h">Meetings &amp; Roster</h2>
     <p class="hub-sec-n">Keep the membership current and preserve each meeting’s records.</p>
     <div class="hub-tiles">
+      <div class="tile">
+        <div class="tile-ic" aria-hidden="true">⚙️</div>
+        <p class="tile-t">Background Jobs</p>
+        <p class="tile-d">Check work that continues after you leave a page, including AI minutes drafts.</p>
+        <div class="tile-actions">
+          <%= link_to "Open job history →", admin_jobs_path, class: "tile-act" %>
+        </div>
+      </div>
       <% if show_roster %>
         <div class="tile<%= " tile--due" if @roster_stale %>">
           <div class="tile-ic" aria-hidden="true">📇</div>

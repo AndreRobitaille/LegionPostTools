@@ -267,6 +267,9 @@ normal Adjutant experience.
   movers and seconders. Show full names and meeting-relevant Post roles, preserve the
   transcript's spoken-name evidence, require a human selection, freeze a full-name snapshot,
   and retain explicit **Not identified** and **Not in roster** paths.
+- Give officers an admin Jobs console for background work. Use durable workflow runs as
+  the authority, show queue health separately, and make failed AI draft retries create a
+  linked new attempt while discard preserves the original record.
 
 ### Slice 3: Human review, approval, and attestation
 

@@ -27,6 +27,11 @@ class User < ApplicationRecord
     foreign_key: :requested_by_id,
     dependent: :restrict_with_exception,
     inverse_of: :requested_by
+  has_many :discarded_minutes_draft_runs,
+    class_name: "MinutesDraftRun",
+    foreign_key: :discarded_by_id,
+    dependent: :nullify,
+    inverse_of: :discarded_by
   has_many :agent_access_tokens, dependent: :destroy
   has_many :sessions, dependent: :destroy
   has_many :magic_links, dependent: :destroy

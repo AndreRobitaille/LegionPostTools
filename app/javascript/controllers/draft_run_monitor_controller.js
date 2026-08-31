@@ -36,6 +36,7 @@ export default class extends Controller {
 
     try {
       const response = await fetch(this.statusUrlValue, {
+        cache: "no-store",
         credentials: "same-origin",
         headers: { Accept: "application/json" }
       })

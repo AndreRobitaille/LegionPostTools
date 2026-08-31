@@ -9,20 +9,21 @@ module MinutesDrafting
       end
     end
 
-    def self.prepare(minutes:, requester:)
-      new(minutes:, requester:, provider: nil).prepare
+    def self.prepare(minutes:, requester:, retry_of: nil)
+      new(minutes:, requester:, provider: nil, retry_of:).prepare
     end
 
     def self.call(minutes: nil, requester: nil, run: nil, provider: MinutesDraftProviders::Openai.new)
       minutes ||= run&.meeting_minutes
       requester ||= run&.requested_by
-      new(minutes:, requester:, provider:).call(run:)
+      new(minutes:, requester:, provider:, retry_of: nil).call(run:)
     end
 
-    def initialize(minutes:, requester:, provider:)
+    def initialize(minutes:, requester:, provider:, retry_of: nil)
       @minutes = minutes
       @requester = requester
       @provider = provider
+      @retry_of = retry_of
     end
 
     def prepare
@@ -58,7 +59,7 @@ module MinutesDrafting
 
     private
 
-    attr_reader :minutes, :requester, :provider
+    attr_reader :minutes, :requester, :provider, :retry_of
 
     def transcript = minutes.meeting.transcript
 
@@ -80,6 +81,7 @@ module MinutesDrafting
         schema_version: Prompt::SCHEMA_VERSION,
         source_sha256: transcript.sha256_digest,
         source_line_count: source_document.lines.length,
+        retry_of: retry_of,
         status: "pending"
       )
     end

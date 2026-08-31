@@ -1,0 +1,37 @@
+<% duration_start = run.started_at || run.created_at %>
+<% duration_end = run.finished_at || Time.current %>
+<%
+  status_label = if run.status == "completed" && run.failed_count.positive?
+    "Completed with problems"
+  elsif run.status == "completed"
+    "Completed"
+  else
+    run.status.titleize
+  end
+%>
+<article class="jobs-run jobs-run--<%= run.status %>">
+  <div class="jobs-run-main">
+    <div class="jobs-run-title-line">
+      <div>
+        <p class="jobs-run-type">Roster email sync</p>
+        <h3><%= run.roster_import.uploaded_filename %></h3>
+      </div>
+      <span class="jobs-run-status"><%= status_label %></span>
+    </div>
+    <p class="jobs-run-meta">
+      Requested <%= legion_datetime(run.created_at) %>
+      <% if run.requested_by %>by <%= run.requested_by.person.full_name %><% end %>
+      <% if run.started_at %> · <%= distance_of_time_in_words(duration_start, duration_end) %><% end %>
+    </p>
+    <% if run.status == "failed" %>
+      <p class="jobs-run-message"><%= run.error_message.presence || "The roster email sync stopped before it finished." %></p>
+    <% elsif run.status == "completed" %>
+      <p class="jobs-run-message"><%= run.synced_count %> synced · <%= run.failed_count %> failed · <%= run.missing_email_count + run.invalid_email_count + run.shared_email_count %> skipped</p>
+    <% else %>
+      <p class="jobs-run-message">The roster email audience is being updated in the background.</p>
+    <% end %>
+  </div>
+  <div class="jobs-run-actions">
+    <%= link_to "Open sync", admin_loops_roster_sync_path(run), class: "jobs-run-link" %>
+  </div>
+</article>

@@ -19,7 +19,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "full admin sees all six tiles and their links" do
+  test "full admin sees all administration groups and their links" do
     prepare_setup_complete_state
     admin = sign_in_member(can_manage_settings: true, can_manage_agendas: true)
 
@@ -36,6 +36,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
     assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
+    assert_select "a[href=?]", admin_jobs_path, text: /Open job history/
     assert_select "a[href=?]", admin_position_titles_path, text: /Manage positions/
     assert_select "a[href=?]", admin_administrators_path, text: /View administrators/
   end
@@ -57,7 +58,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_admin_roster_import_path, count: 0
   end
 
-  test "minutes manager reaches the hub and sees only the meeting records tile" do
+  test "minutes manager reaches the hub and sees meeting records and background jobs" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: false, can_manage_minutes: true)
 
@@ -65,6 +66,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
+    assert_select "a[href=?]", admin_jobs_path, text: /Open job history/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
     assert_select "a[href=?]", admin_meeting_types_path, count: 0
     assert_select "a[href=?]", new_admin_roster_import_path, count: 0

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -441,6 +441,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_080000) do
   create_table "minutes_draft_runs", force: :cascade do |t|
     t.datetime "completed_at"
     t.datetime "created_at", null: false
+    t.datetime "discarded_at"
+    t.bigint "discarded_by_id"
     t.string "error_category"
     t.integer "input_tokens"
     t.bigint "meeting_minutes_id", null: false
@@ -455,6 +457,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_080000) do
     t.string "reasoning_effort", null: false
     t.integer "reasoning_tokens"
     t.bigint "requested_by_id", null: false
+    t.bigint "retry_of_id"
     t.string "schema_version", null: false
     t.integer "source_line_count", null: false
     t.string "source_sha256", null: false
@@ -463,10 +466,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_080000) do
     t.string "text_verbosity", null: false
     t.integer "total_tokens"
     t.datetime "updated_at", null: false
+    t.index ["discarded_by_id"], name: "index_minutes_draft_runs_on_discarded_by_id"
     t.index ["meeting_minutes_id", "created_at"], name: "index_minutes_draft_runs_on_meeting_minutes_id_and_created_at"
     t.index ["meeting_minutes_id"], name: "index_minutes_draft_runs_on_meeting_minutes_id"
     t.index ["meeting_transcript_id"], name: "index_minutes_draft_runs_on_meeting_transcript_id"
     t.index ["requested_by_id"], name: "index_minutes_draft_runs_on_requested_by_id"
+    t.index ["retry_of_id"], name: "idx_one_active_minutes_draft_retry", unique: true, where: "((retry_of_id IS NOT NULL) AND ((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[])))"
+    t.index ["retry_of_id"], name: "index_minutes_draft_runs_on_retry_of_id"
+    t.index ["status", "discarded_at"], name: "index_minutes_draft_runs_on_status_and_discarded_at"
     t.check_constraint "source_line_count > 0", name: "minutes_draft_runs_source_line_count_check"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "minutes_draft_runs_status_check"
   end
@@ -759,6 +766,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_080000) do
   add_foreign_key "minutes_attendance_entries", "position_titles", on_delete: :nullify
   add_foreign_key "minutes_draft_runs", "meeting_minutes", column: "meeting_minutes_id"
   add_foreign_key "minutes_draft_runs", "meeting_transcripts"
+  add_foreign_key "minutes_draft_runs", "minutes_draft_runs", column: "retry_of_id"
+  add_foreign_key "minutes_draft_runs", "users", column: "discarded_by_id", on_delete: :nullify
   add_foreign_key "minutes_draft_runs", "users", column: "requested_by_id"
   add_foreign_key "minutes_draft_suggestions", "dated_agenda_items", column: "source_dated_agenda_item_id"
   add_foreign_key "minutes_draft_suggestions", "minutes_attendance_entries"

@@ -1,0 +1,51 @@
+<% meeting = run.meeting_minutes.meeting %>
+<% duration_start = run.started_at || run.created_at %>
+<% duration_end = run.completed_at || Time.current %>
+<%
+  status_label = if run.discarded?
+    "Discarded"
+  elsif run.succeeded?
+    "Completed"
+  else
+    run.status.titleize
+  end
+%>
+<article class="jobs-run jobs-run--<%= run.status %><%= " jobs-run--discarded" if run.discarded? %>">
+  <div class="jobs-run-main">
+    <div class="jobs-run-title-line">
+      <div>
+        <p class="jobs-run-type">AI minutes draft<%= " · retry of run ##{run.retry_of_id}" if run.retry_of_id %></p>
+        <h3><%= meeting.title %></h3>
+      </div>
+      <span class="jobs-run-status"><%= status_label %></span>
+    </div>
+
+    <p class="jobs-run-meta">
+      Requested <%= legion_datetime(run.created_at.in_time_zone(meeting.organization.timezone)) %>
+      by <%= run.requested_by.person.full_name %>
+      <% if run.started_at %> · <%= distance_of_time_in_words(duration_start, duration_end) %><% end %>
+    </p>
+
+    <% if run.failed? %>
+      <p class="jobs-run-message"><%= minutes_draft_error_message(run) %></p>
+    <% elsif run.running? || run.pending? %>
+      <p class="jobs-run-message">The draft continues in the background. The minutes workspace is unchanged until a person reviews suggestions.</p>
+    <% else %>
+      <p class="jobs-run-message"><%= pluralize(run.suggestions.size, "suggestion") %> prepared for human review.</p>
+    <% end %>
+
+    <% if run.discarded? %>
+      <p class="jobs-run-discard-note">Removed from attention <%= legion_datetime(run.discarded_at.in_time_zone(meeting.organization.timezone)) %> by <%= run.discarded_by&.person&.full_name || "a former administrator" %>. The run was not deleted.</p>
+    <% end %>
+  </div>
+
+  <div class="jobs-run-actions">
+    <% if run.failed? && !run.discarded? %>
+      <%= button_to "Retry as new run", retry_admin_job_path(run), method: :post, class: "btn-primary", data: { turbo_confirm: "Send this meeting transcript to OpenAI again and create a new linked draft run? The failed run will remain in history." } %>
+      <%= button_to "Discard from attention", discard_admin_job_path(run), method: :patch, class: "btn-secondary", data: { turbo_confirm: "Remove this failed run from needs attention? Its history will be preserved." } %>
+    <% elsif run.discarded? %>
+      <%= button_to "Return to attention", restore_admin_job_path(run), method: :patch, class: "btn-secondary" %>
+    <% end %>
+    <%= link_to run.succeeded? ? "Review run" : "Open run", admin_meeting_minutes_draft_run_path(meeting, run), class: "jobs-run-link" %>
+  </div>
+</article>

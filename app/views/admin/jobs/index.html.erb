@@ -1,0 +1,84 @@
+<% content_for :title, "Background jobs" %>
+<%
+  ledger_kicker = @filter == "attention" ? "Officer action" : "Run record"
+  ledger_heading = case @filter
+  when "attention" then "Needs attention"
+  when "discarded" then "Discarded runs"
+  else "Run history"
+  end
+  worker_heading = if !@queue_health.available?
+    "Worker health unavailable"
+  elsif @queue_health.worker_available?
+    "Worker available"
+  else
+    "Worker not responding"
+  end
+%>
+
+<%= link_to admin_root_path, class: "back" do %>&larr; Administration<% end %>
+
+<div class="jobs-lead">
+  <div class="page-lead">
+    <p class="jobs-kicker">Operations blotter</p>
+    <h1 class="page-title">Background jobs</h1>
+    <p class="page-sub">See work that continues after you leave a page, and handle runs that need attention.</p>
+  </div>
+  <%= link_to "Refresh status", admin_jobs_path(filter: @filter), class: "btn-secondary jobs-refresh" %>
+</div>
+
+<section class="jobs-health<%= " jobs-health--warning" unless @queue_health.worker_available? %>" aria-label="Background worker health">
+  <div class="jobs-health-signal">
+    <span class="jobs-signal-dot" aria-hidden="true"></span>
+    <div>
+      <strong><%= worker_heading %></strong>
+      <small>
+        <% if @queue_health.last_worker_heartbeat_at %>
+          Last checked in <%= time_ago_in_words(@queue_health.last_worker_heartbeat_at) %> ago
+        <% elsif @queue_health.available? %>
+          No recent worker heartbeat was found
+        <% else %>
+          Queue health could not be read
+        <% end %>
+      </small>
+    </div>
+  </div>
+  <dl class="jobs-health-counts">
+    <div><dt>Waiting</dt><dd><%= @queue_health.waiting_count %></dd></div>
+    <div><dt>Working</dt><dd><%= @queue_health.working_count %></dd></div>
+  </dl>
+</section>
+
+<% if @queue_health.failed_execution_count.positive? %>
+  <p class="jobs-system-warning" role="status"><strong><%= pluralize(@queue_health.failed_execution_count, "queue execution") %></strong> stopped at the system level. Durable failed runs appear below when the workflow can be retried safely.</p>
+<% end %>
+
+<nav class="jobs-filters" aria-label="Job history filters">
+  <%= link_to "Current", admin_jobs_path, class: "jobs-filter#{" is-active" if @filter.nil?}", aria: { current: (@filter.nil? ? "page" : nil) } %>
+  <%= link_to admin_jobs_path(filter: "attention"), class: "jobs-filter#{" is-active" if @filter == "attention"}", aria: { current: (@filter == "attention" ? "page" : nil) } do %>
+    Needs attention <span><%= @attention_count %></span>
+  <% end %>
+  <%= link_to "Discarded", admin_jobs_path(filter: "discarded"), class: "jobs-filter#{" is-active" if @filter == "discarded"}", aria: { current: (@filter == "discarded" ? "page" : nil) } %>
+</nav>
+
+<section class="jobs-ledger" aria-labelledby="jobs-ledger-heading">
+  <header class="jobs-ledger-head">
+    <div>
+      <p class="jobs-kicker"><%= ledger_kicker %></p>
+      <h2 id="jobs-ledger-heading"><%= ledger_heading %></h2>
+    </div>
+    <p>Newest first</p>
+  </header>
+
+  <% if @runs.empty? %>
+    <div class="jobs-empty">
+      <strong><%= @filter == "attention" ? "No runs need attention." : "No runs appear in this view." %></strong>
+      <p><%= @filter == "attention" ? "Failed work will appear here with a plain next step." : "Background work will be recorded here after it starts." %></p>
+    </div>
+  <% else %>
+    <div class="jobs-run-list">
+      <% @runs.each do |run| %>
+        <%= render run.is_a?(MinutesDraftRun) ? "minutes_draft_run" : "loops_roster_sync", run: run %>
+      <% end %>
+    </div>
+  <% end %>
+</section>

@@ -43,6 +43,13 @@ Rails.application.routes.draw do
   end
   namespace :admin do
     root "dashboard#show"
+    resources :jobs, only: :index do
+      member do
+        post :retry
+        patch :discard
+        patch :restore
+      end
+    end
     resources :people, only: [] do
       resource :user_account, only: %i[create destroy] do
         patch :roster_control, on: :member

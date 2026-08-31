@@ -47,7 +47,7 @@ module Admin
     end
 
     def status
-      expires_now
+      response.headers["Cache-Control"] = "no-store"
       render json: { status: @run.status, updated_at: @run.updated_at.iso8601 }
     end
 
