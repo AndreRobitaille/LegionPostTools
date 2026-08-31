@@ -55,7 +55,12 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert body["rules"].any? { |rule| rule.match?(/historical snapshot/i) }
     fields = body.fetch("agenda_item_fields").index_by { |field| field["name"] }
     assert_match(/on-screen member agenda/i, fields.fetch("summary")["meaning"])
-    assert_match(/Send body.*returns.*wording/i, fields.fetch("body (write) / wording (read)")["meaning"])
+    body_guidance = fields.fetch("body (write) / wording (read)")["meaning"]
+    assert_match(/sanitized HTML fragment/i, body_guidance)
+    assert_match(%r{<ul><li>.*</li></ul>}i, body_guidance)
+    assert_match(/literal •.*not converted/i, body_guidance)
+    assert_match(/plain text as wording.*omit body/i, body_guidance)
+    assert_match(/same sanitized HTML fragments as body/i, fields.fetch("commander_notes")["meaning"])
     assert_match(/never chooses.*section/i, fields.fetch("category")["meaning"])
     assert_match(/working-minutes item/i, fields.fetch("show_wording_in_minutes")["meaning"])
     minutes_fields = body.fetch("minutes_fields").index_by { |field| field["name"] }
@@ -70,6 +75,11 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert body["common_actions"].any? { |action| action["path"] == "/api/dated_agendas" && action["method"] == "POST" }
     assert body["common_actions"].any? { |action| action["name"] == "create_standalone_dated_agenda_item" }
     assert body["common_actions"].any? { |action| action["name"] == "update_dated_agenda_item" }
+    rich_text_guidance = body.dig("calling", "rich_text")
+    assert_match(/plain newlines and literal •.*display inline/i, rich_text_guidance)
+    assert_match(/omit both write fields.*unrelated attributes/i, rich_text_guidance)
+    create_item = body["common_actions"].find { |action| action["name"] == "create_standalone_dated_agenda_item" }
+    assert_includes create_item.fetch("example"), "<ul><li>Post Excellence Award</li>"
     assert body["common_actions"].any? { |action| action["name"] == "reorder_dated_agenda_section_items" }
     assert body["common_actions"].any? { |action| action["name"] == "replace_dated_roll_call" }
     assert body["common_actions"].any? { |action| action["path"] == "/api/membership/summary" }
@@ -112,6 +122,9 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Meeting body"
     assert_includes response.body, "Agenda item fields"
     assert_includes response.body, "body (write) / wording (read)"
+    assert_includes response.body, "<ul><li>...</li></ul>"
+    assert_includes response.body, "literal `•` characters"
+    assert_includes response.body, "omit those write fields when changing unrelated attributes"
     assert_includes response.body, "backfill_historical_business"
     assert_includes response.body, "endeavor_id"
     assert_includes response.body, "people directory supports `q`"

@@ -42,6 +42,7 @@ class AgentHandbook
     "session" => "You must already be signed in on this browser. The session cookie is httponly; do not use curl on the same machine unless that curl sends this browser's cookies.",
     "csrf" => "Every POST, PATCH, PUT, or DELETE needs header X-CSRF-Token set to csrf_token from this handbook. Refresh the token by GET /api again if a write returns 422 about authenticity.",
     "json" => "For JSON, send Accept: application/json. Dates and times are ISO 8601. Use this installation's timezone.",
+    "rich_text" => "Agenda body and commander_notes writes accept sanitized HTML fragments. Use semantic HTML such as <p> for paragraphs and <ul><li>...</li></ul> for bullet lists. Plain newlines and literal • characters are not converted to HTML structure and may display inline. Agenda reads return plain text in wording and commander_notes, so omit both write fields when changing unrelated attributes instead of sending the plain-text read value back.",
     "lists" => "The people directory supports a q name filter. Other resources do not provide fuzzy search: list the collection, read titles, and pick an id. Do not create a second Car Show because you skipped the list.",
     "drafts" => "Agenda and minutes creates are drafts. Minutes edits fail unless status is draft. Minutes approval and attestation are exact, separate Only when asked actions and record delegated-agent provenance.",
     "transcripts" => "Transcript content is never embedded in Meeting, minutes, Jobs, or handbook responses. Request GET /api/meetings/:meeting_id/transcript?include_content=true only when the work requires the restricted source.",
@@ -119,7 +120,7 @@ class AgentHandbook
     {
       name: "body (write) / wording (read)",
       applies_to: "catalog and dated item API",
-      meaning: "Member/minutes document wording. Send body when creating or updating; API detail returns its plain text as wording. Rich text remains stored in the app."
+      meaning: "Member/minutes document wording. Send body as a sanitized HTML fragment: use <p> for paragraphs and <ul><li>...</li></ul> for bullet lists. Plain newlines and literal • characters are not converted to paragraphs or lists and may display inline. API detail returns plain text as wording, not round-trippable HTML; omit body when changing unrelated fields."
     },
     {
       name: "show_wording_on_agenda",
@@ -134,7 +135,7 @@ class AgentHandbook
     {
       name: "commander_notes",
       applies_to: "catalog, meeting-type item, dated item",
-      meaning: "Private script, stage directions, or reminders shown only in the Commander's working copy and private manage-agendas API. Never member-facing."
+      meaning: "Private script, stage directions, or reminders shown only in the Commander's working copy and private manage-agendas API. Never member-facing. API writes accept the same sanitized HTML fragments as body, while reads return plain text; omit commander_notes when changing unrelated fields."
     },
     {
       name: "endeavor_id",
@@ -369,9 +370,9 @@ class AgentHandbook
       example: "POST /api/dated_agendas/:id/endeavors\n{\"endeavor_id\":1,\"dated_agenda_section_id\":28}" },
     { name: "create_standalone_dated_agenda_item", method: "POST", path: "/api/dated_agendas/:dated_agenda_id/items", capability: "manage_agendas", group: :common,
       summary: "Create one meeting-specific item on a draft agenda without creating a catalog entry or Endeavor. The section id, title, and behavior_type are required; the item appends to that section.",
-      example: "POST /api/dated_agendas/:dated_agenda_id/items\n{\"dated_agenda_section_id\":28,\"title\":\"Newsletter\",\"summary\":\"July distribution report\",\"behavior_type\":\"business_item\",\"body\":\"The July newsletter was mailed.\",\"show_wording_on_agenda\":true,\"show_wording_in_minutes\":true}" },
+      example: "POST /api/dated_agendas/:dated_agenda_id/items\n{\"dated_agenda_section_id\":28,\"title\":\"Commander's Report\",\"summary\":\"Monthly report\",\"behavior_type\":\"report_slot\",\"body\":\"<p>The Commander reported:</p><ul><li>Post Excellence Award</li><li>County Fair booth</li></ul>\",\"show_wording_on_agenda\":true,\"show_wording_in_minutes\":true}" },
     { name: "update_dated_agenda_item", method: "PATCH", path: "/api/dated_agendas/:dated_agenda_id/items/:id", capability: "manage_agendas", group: :common,
-      summary: "Edit a draft agenda item or link an existing standalone row to a human-confirmed Endeavor in place. Supply lock_version from agenda detail when editing content.",
+      summary: "Edit a draft agenda item or link an existing standalone row to a human-confirmed Endeavor in place. Supply lock_version from agenda detail when editing content. Because agenda reads expose rich text as plain text, omit body and commander_notes when changing unrelated fields.",
       example: "PATCH /api/dated_agendas/:dated_agenda_id/items/:id\n{\"endeavor_id\":5,\"lock_version\":0}" },
     { name: "reorder_dated_agenda_section_items", method: "POST", path: "/api/dated_agendas/:dated_agenda_id/sections/:section_id/items/reorder", capability: "manage_agendas", group: :common,
       summary: "Replace one draft section's active item order. Supply every active item id currently in that section exactly once; cross-section moves use the item PATCH first.",
@@ -516,6 +517,7 @@ class AgentHandbook
     end
     lines << "- JSON: send `Accept: application/json`."
     lines << "- Datetimes: ISO 8601 in #{@organization.timezone}."
+    lines << "- Rich text: agenda `body` and `commander_notes` writes accept sanitized HTML fragments. Use `<p>` for paragraphs and `<ul><li>...</li></ul>` for bullet lists. Plain newlines and literal `•` characters are not converted to HTML structure and may display inline. Reads return plain text in `wording` and `commander_notes`, so omit those write fields when changing unrelated attributes."
     lines << "- The people directory supports `q` for name filtering. Other lists do not provide fuzzy search; list, read titles, and pick an id."
     lines << "- Agenda and minutes creates stay **draft**. Approve or publish an agenda only when the human explicitly asked. Official minutes actions are unavailable through this API."
     lines << ""
@@ -565,6 +567,7 @@ class AgentHandbook
   def calling_instructions
     common = {
       "json" => CALLING.fetch("json"),
+      "rich_text" => CALLING.fetch("rich_text"),
       "lists" => CALLING.fetch("lists"),
       "drafts" => CALLING.fetch("drafts"),
       "transcripts" => CALLING.fetch("transcripts"),

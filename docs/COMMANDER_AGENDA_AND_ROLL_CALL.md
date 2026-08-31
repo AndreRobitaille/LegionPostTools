@@ -42,10 +42,10 @@ digital-versus-print visibility switches.
 | **Agenda section** | The actual first-level placement for a template or dated snapshot. Moving an item places it at the end of the selected section. |
 | **Item kind / behavior type** | Records item-level workflow intent, not hierarchy. Officer roll call is specialized today; report, motion/decision, ceremony, and reading kinds preserve intent for later minutes work. Legacy section headings are historical compatibility only. |
 | **Active** | At catalog level, hides an item from Add-item choices without removing it. At meeting-type level, omits it from future dated agendas. Neither setting rewrites an existing dated snapshot. |
-| **Document wording / `body`** | Rich member/minutes content. The API accepts `body` on writes and returns plain text as `wording` on reads. |
+| **Document wording / `body`** | Rich member/minutes content. API writes accept a sanitized HTML fragment: use `<p>` for paragraphs and `<ul><li>...</li></ul>` for bullets. Plain newlines and literal `•` characters are not converted to HTML structure and may display inline. Reads return plain text as `wording`, so omit `body` when changing unrelated fields instead of round-tripping that plain text. |
 | **Show wording on agenda** | When clear, keeps the title but removes document wording from member and Commander screen/print agenda bodies. Commander cues remain separate. |
 | **Carry wording into draft minutes** | Controls whether the document wording seeds an independent `agenda_wording` snapshot when working minutes are created. It has no approval effect. |
-| **Commander's script / cues** | Private script, stage directions, and reminders for the Commander's working copy and private officer API only. |
+| **Commander's script / cues** | Private script, stage directions, and reminders for the Commander's working copy and private officer API only. `commander_notes` writes follow the same HTML-fragment rules as `body`; reads are plain text, so omit the field from unrelated updates. |
 | **Endeavor link** | Connects an independent dated snapshot to coherent continuing Post work. Linking an existing row in place does not replace its historical title, summary, wording, section, or position. |
 | **Position** | Order inside the catalog category or actual agenda section. It is not a global agenda order. |
 | **Lock version** | Dated-item concurrency guard. API clients send the value returned by agenda detail when editing content to avoid overwriting another officer's save. |

@@ -75,6 +75,13 @@ position, active state, or lock version. Both creation and reorder recheck draft
 while holding the dated-agenda lock. Reorder changes only positions and does not accept or
 advance item lock versions.
 
+`body` and `commander_notes` writes accept sanitized HTML fragments. Agents use semantic
+HTML such as `<p>` for paragraphs and `<ul><li>...</li></ul>` for bullet lists; plain
+newlines and literal `•` characters are not converted to HTML structure and may therefore
+display inline. Agenda reads expose these fields as plain text (`wording` for `body`), not
+as round-trippable HTML. An update that changes another attribute omits both rich-text
+fields rather than sending the plain-text read value back and losing its structure.
+
 ### Dated roll call
 
 - `GET /api/position_titles` lists active office ids and names needed to build a roll call.
