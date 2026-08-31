@@ -40,9 +40,13 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
       suggestion("outcome", @item.id, body: "Purchase flags.", outcome_kind: "motion", disposition: "adopted"),
       suggestion("attendance", @attendance.id, attendance_status: "present")
     ])
+    @run = MinutesDrafting::Generate.prepare(minutes: @minutes, requester: @requester)
+
+    assert_predicate @run, :pending?
+    assert_nil @run.started_at
 
     assert_no_changes -> { @item.reload.body.to_plain_text } do
-      @run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+      @run = MinutesDrafting::Generate.call(run: @run, provider: FakeProvider.new(result))
     end
 
     assert_predicate @run, :succeeded?

@@ -85,6 +85,7 @@ Rails.application.routes.draw do
       post :agenda, on: :member, action: :create_agenda
       resource :minutes, only: %i[show create edit update], controller: "meeting_minutes" do
         resources :draft_runs, only: %i[new create show], controller: "minutes_draft_runs" do
+          get :status, on: :member
           resource :attendance_review, only: :update, controller: "minutes_draft_attendance_reviews"
         end
         resources :draft_suggestions, only: %i[edit update], controller: "minutes_draft_suggestions" do

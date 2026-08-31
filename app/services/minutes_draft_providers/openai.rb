@@ -3,6 +3,7 @@ module MinutesDraftProviders
     MODEL = ENV.fetch("OPENAI_MINUTES_MODEL", "gpt-5.6-sol")
     REASONING_EFFORT = ENV.fetch("OPENAI_MINUTES_REASONING_EFFORT", "high")
     TEXT_VERBOSITY = ENV.fetch("OPENAI_MINUTES_TEXT_VERBOSITY", "medium")
+    TIMEOUT_SECONDS = Integer(ENV.fetch("OPENAI_MINUTES_TIMEOUT_SECONDS", "360"))
     PROVIDER = "openai"
 
     def initialize(client: nil)
@@ -67,7 +68,7 @@ module MinutesDraftProviders
         token = Rails.application.credentials.openai_access_token.presence || ENV["OPENAI_ACCESS_TOKEN"].presence || ENV["OPENAI_API_KEY"].presence
         raise Error.new(category: "configuration") if token.blank?
 
-        OpenAI::Client.new(api_key: token, log_level: :off, max_retries: 1, timeout: 180)
+        OpenAI::Client.new(api_key: token, log_level: :off, max_retries: 1, timeout: TIMEOUT_SECONDS)
       end
     end
   end

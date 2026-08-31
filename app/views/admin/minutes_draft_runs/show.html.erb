@@ -1,16 +1,30 @@
-<% content_for :title, "Review minutes draft — #{@meeting.title}" %>
+<% if @run.succeeded? %>
+  <% page_title = "Review" %>
+  <% eyebrow = "AI working suggestions · not minutes" %>
+  <% heading = "Review the first pass" %>
+<% elsif @run.failed? %>
+  <% page_title = "AI draft" %>
+  <% eyebrow = "AI draft dispatch · working record" %>
+  <% heading = "Draft not created" %>
+<% else %>
+  <% page_title = "AI draft" %>
+  <% eyebrow = "AI draft dispatch · working record" %>
+  <% heading = "Preparing the first pass" %>
+<% end %>
+
+<% content_for :title, "#{page_title} — #{@meeting.title}" %>
 <%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
 
 <div class="page-lead-row ai-review-lead">
   <div class="page-lead">
-    <p class="minutes-eyebrow">AI working suggestions &middot; not minutes</p>
-    <h1 class="page-title">Review the first pass</h1>
+    <p class="minutes-eyebrow"><%= eyebrow %></p>
+    <h1 class="page-title"><%= heading %></h1>
     <p class="page-sub"><%= @meeting.title %></p>
   </div>
-  <%= render "review_counter", run: @run %>
+  <%= render "review_counter", run: @run if @run.succeeded? %>
 </div>
 
-<%= render "admin/minutes_outcomes/roster_data", people: @minutes_people, id: "minutes_roster_people" %>
+<%= render "admin/minutes_outcomes/roster_data", people: @minutes_people, id: "minutes_roster_people" if @run.succeeded? %>
 
 <% if @run.failed? %>
   <section class="ai-draft-failure" role="alert">
@@ -82,8 +96,49 @@
     </aside>
   </div>
 <% else %>
-  <section class="ai-draft-failure" role="status">
-    <h2>The draft is still being prepared.</h2>
-    <p>Return to this page in a moment. The working minutes are unchanged until you review suggestions.</p>
+  <section
+    class="ai-draft-dispatch"
+    data-controller="draft-run-monitor"
+    data-state="<%= @run.status %>"
+    data-draft-run-monitor-status-url-value="<%= status_admin_meeting_minutes_draft_run_path(@meeting, @run, format: :json) %>"
+    data-draft-run-monitor-destination-url-value="<%= admin_meeting_minutes_draft_run_path(@meeting, @run) %>"
+    aria-labelledby="draft-dispatch-heading">
+    <header class="ai-draft-dispatch-head">
+      <div>
+        <p class="meeting-workflow-kicker">Background draft</p>
+        <h2 id="draft-dispatch-heading" data-draft-run-monitor-target="heading"><%= @run.running? ? "OpenAI is preparing suggestions" : "Your draft is in line" %></h2>
+      </div>
+      <span class="ai-draft-dispatch-badge" data-draft-run-monitor-target="badge"><%= @run.running? ? "Drafting" : "Queued" %></span>
+    </header>
+
+    <p class="ai-draft-dispatch-message" data-draft-run-monitor-target="message" aria-live="polite">
+      <%= @run.running? ? "OpenAI is organizing source-linked suggestions. This can take up to several minutes." : "The request is recorded and waiting for the background drafting worker." %>
+    </p>
+
+    <ol class="ai-draft-dispatch-track" aria-label="Draft progress">
+      <li class="is-complete">
+        <span>1</span>
+        <div><strong>Request received</strong><small><%= time_tag @run.created_at, @run.created_at.in_time_zone(@meeting.organization.timezone).strftime("%-I:%M %p") %></small></div>
+      </li>
+      <li class="is-active">
+        <span>2</span>
+        <div><strong data-draft-run-monitor-target="stageTitle"><%= @run.running? ? "Preparing suggestions" : "Waiting for worker" %></strong><small>Agenda and transcript stay protected</small></div>
+      </li>
+      <li>
+        <span>3</span>
+        <div><strong>Human review</strong><small>Nothing enters the minutes automatically</small></div>
+      </li>
+    </ol>
+
+    <div class="ai-draft-dispatch-note">
+      <strong>You do not need to keep this page open.</strong>
+      <p>The work continues in the background. Return from the minutes workspace at any time to check this run.</p>
+    </div>
+
+    <div class="ai-draft-dispatch-actions">
+      <button type="button" class="btn-secondary" data-draft-run-monitor-target="checkButton" data-action="draft-run-monitor#checkNow">Check status now</button>
+      <%= link_to "Return to minutes", admin_meeting_minutes_path(@meeting), class: "ai-draft-dispatch-return" %>
+    </div>
+    <noscript><p class="ai-draft-dispatch-noscript">Automatic status checks require JavaScript. Refresh this page to check the draft.</p></noscript>
   </section>
 <% end %>

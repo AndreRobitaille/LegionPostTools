@@ -849,7 +849,18 @@ review rather than forced into a misleading destination.
 Use strict Structured Outputs rather than asking the model to imitate JSON in prose. Do
 not enable web search, file search, code execution, or other tools. Do not let the model
 read the current Post roster to infer speakers or attendance. The initial request is
-foreground and stateless with `store: false`.
+stateless with `store: false` and runs in Solid Queue rather than inside the initiating
+web request. Creating a run returns the Adjutant immediately to an authenticated
+draft-dispatch page. That page monitors the durable `pending`, `running`, `succeeded`,
+and `failed` states and moves to the existing review ledger when the run finishes. The
+Adjutant may safely leave and return while OpenAI is working.
+
+The waiting interface follows the established **The 1919** document system. Its single
+job is to make the handoff legible to a low-confidence computer user: request received,
+OpenAI working, then human review. It must show only recorded states, not invented
+percentages or pseudo-progress. Use a restrained dispatch-docket treatment in navy,
+cream, and gold; keep a manual status check available; announce state changes accessibly;
+and avoid animation that implies more precision than the application has.
 
 The prompt lives in versioned application code or a later guarded prompt-template store;
 the Adjutant sees a plain explanation of what the app will do, not a prompt-engineering
@@ -908,10 +919,11 @@ standard. Their suggestions may retain anonymous or aggregate counts and general
 but never names or identifying health, benefit, financial, or case details. Reviewers must
 not relocate private details to another item merely to preserve them.
 
-Provider timeout, refusal, schema failure, context overflow, or partial output leaves the
-minutes scaffold intact and explains the next action: retry, reduce the transcript, or
-continue manually. Persist safe error category and request id, never transcript or model
-output in logs.
+Provider timeout, refusal, schema failure, context overflow, partial output, or an
+unexpected worker failure leaves the minutes scaffold intact and explains the next
+action: retry, reduce the transcript, or continue manually. The browser must not time out
+while the background draft is still progressing. Persist safe error category and request
+id, never transcript or model output in logs.
 
 Preflight estimates whether the selected model can accept the full prompt without
 truncation. The first implementation fails clearly rather than silently dropping early

@@ -9,8 +9,14 @@ module MinutesDrafting
       end
     end
 
-    def self.call(minutes:, requester:, provider: MinutesDraftProviders::Openai.new)
-      new(minutes:, requester:, provider:).call
+    def self.prepare(minutes:, requester:)
+      new(minutes:, requester:, provider: nil).prepare
+    end
+
+    def self.call(minutes: nil, requester: nil, run: nil, provider: MinutesDraftProviders::Openai.new)
+      minutes ||= run&.meeting_minutes
+      requester ||= run&.requested_by
+      new(minutes:, requester:, provider:).call(run:)
     end
 
     def initialize(minutes:, requester:, provider:)
@@ -19,11 +25,20 @@ module MinutesDrafting
       @provider = provider
     end
 
-    def call
+    def prepare
       validate_source!
       source_document = SourceDocument.new(transcript.source_text)
-      run = create_run!(source_document)
-      run.update!(status: "running", started_at: Time.current)
+      create_run!(source_document)
+    rescue MinutesDraftProviders::Error, MeetingTranscript::SourcePurgedError, ArgumentError
+      fail_run!(nil, category: "source_unavailable")
+    end
+
+    def call(run: nil)
+      validate_source!
+      source_document = SourceDocument.new(transcript.source_text)
+      validate_run_source!(run) if run
+      run ||= create_run!(source_document)
+      return run unless begin_run!(run)
 
       result = provider.draft(
         input: Prompt.input(minutes:, source_document:),
@@ -67,6 +82,22 @@ module MinutesDrafting
         source_line_count: source_document.lines.length,
         status: "pending"
       )
+    end
+
+    def validate_run_source!(run)
+      source_matches = run.meeting_minutes == minutes &&
+        run.meeting_transcript == transcript &&
+        run.source_sha256 == transcript.sha256_digest
+      raise MinutesDraftProviders::Error.new(category: "source_unavailable") unless source_matches
+    end
+
+    def begin_run!(run)
+      run.with_lock do
+        return false unless run.pending?
+
+        run.update!(status: "running", started_at: Time.current)
+      end
+      true
     end
 
     def persist_result!(run, result, source_document)

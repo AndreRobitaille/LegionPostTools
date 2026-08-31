@@ -87,7 +87,9 @@ module MinutesDraftSuggestionsHelper
       "incomplete" => "OpenAI returned an incomplete draft. Nothing was applied.",
       "refusal" => "OpenAI did not return draft suggestions. Nothing was applied.",
       "source_unavailable" => "The transcript source is no longer available for drafting.",
-      "provider_error" => "OpenAI could not create the draft. Retry later or continue manually."
+      "provider_error" => "OpenAI could not create the draft. Retry later or continue manually.",
+      "queue_error" => "The background draft worker could not be started. Retry or continue manually.",
+      "worker_error" => "The background draft stopped unexpectedly. Retry or continue manually."
     }.fetch(run.error_category, "The draft could not be created. Nothing was applied to the minutes.")
   end
 end

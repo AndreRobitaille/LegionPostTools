@@ -1,7 +1,10 @@
 require "test_helper"
 
 class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
+    clear_enqueued_jobs
     @organization = Organization.create!(
       name: "Robert E. Burns Post 165",
       unit_type: "american_legion_post",
@@ -40,6 +43,42 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".ai-draft-disclosure-main", text: /Endeavor titles and summaries/
     assert_select "input[type='submit'][value='Send transcript and create draft']"
     assert_select ".ai-draft-no-bulk", text: /no accept-all action/i
+  end
+
+  test "starting a draft returns immediately and enqueues background generation" do
+    sign_in_as(@manager)
+
+    assert_difference -> { @minutes.draft_runs.count }, 1 do
+      assert_enqueued_with(job: MinutesDraftGenerationJob) do
+        post admin_meeting_minutes_draft_runs_path(@meeting)
+      end
+    end
+
+    run = @minutes.draft_runs.recent.first
+    assert_predicate run, :pending?
+    assert_nil run.started_at
+    assert_redirected_to admin_meeting_minutes_draft_run_path(@meeting, run)
+  end
+
+  test "pending draft page monitors its authenticated status without pretending to know a percentage" do
+    run = create_run!(status: "pending")
+    sign_in_as(@manager)
+
+    get admin_meeting_minutes_draft_run_path(@meeting, run)
+
+    assert_response :success
+    assert_select "[data-controller='draft-run-monitor'][data-state='pending']"
+    assert_select "h1", text: "Preparing the first pass"
+    assert_select ".ai-draft-dispatch", text: /do not need to keep this page open/i
+    assert_select ".ai-draft-dispatch-track li", count: 3
+    assert_select "button", text: "Check status now"
+    assert_no_match(/\d+%/, response.body)
+
+    get status_admin_meeting_minutes_draft_run_path(@meeting, run, format: :json)
+
+    assert_response :success
+    assert_equal "no-cache", response.headers["cache-control"]&.split(",")&.first
+    assert_equal "pending", response.parsed_body.fetch("status")
   end
 
   test "a proposed Endeavor link is visible and editable before use" do
@@ -320,7 +359,7 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
 
   private
 
-  def create_run!
+  def create_run!(status: "succeeded")
     @minutes.draft_runs.create!(
       meeting_transcript: @transcript,
       requested_by: @manager,
@@ -333,8 +372,9 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
       schema_version: MinutesDrafting::Prompt::SCHEMA_VERSION,
       source_sha256: @transcript.sha256_digest,
       source_line_count: 1,
-      status: "succeeded",
-      completed_at: Time.current
+      status: status,
+      started_at: status == "running" ? Time.current : nil,
+      completed_at: status.in?(%w[succeeded failed]) ? Time.current : nil
     )
   end
 
