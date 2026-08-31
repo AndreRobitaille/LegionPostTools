@@ -1,0 +1,36 @@
+<div class="motion-verification" aria-label="Verify the motion">
+  <%= render "admin/minutes_outcomes/result_fields",
+    form: form,
+    scope_id: scope_id,
+    current_disposition: current_disposition,
+    suggested_disposition: suggested_disposition %>
+
+  <% if show_mover_picker || show_seconder_picker %>
+    <div class="motion-identity-grid">
+      <% if show_mover_picker %>
+        <%= render "admin/minutes_outcomes/person_picker",
+          form: form,
+          scope_id: scope_id,
+          role: :mover,
+          people: people,
+          selected_person_id: mover_person_id,
+          suggested_name: suggested_mover_name,
+          source_label: source_label,
+          roster_source_id: roster_source_id,
+          unidentified: mover_unidentified %>
+      <% end %>
+      <% if show_seconder_picker %>
+        <%= render "admin/minutes_outcomes/person_picker",
+          form: form,
+          scope_id: scope_id,
+          role: :seconder,
+          people: people,
+          selected_person_id: seconder_person_id,
+          suggested_name: suggested_seconder_name,
+          source_label: source_label,
+          roster_source_id: roster_source_id,
+          unidentified: seconder_unidentified %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

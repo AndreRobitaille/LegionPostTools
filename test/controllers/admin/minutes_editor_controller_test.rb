@@ -56,7 +56,7 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a[href='#{edit_admin_meeting_minutes_path(@meeting)}']", text: "Edit heading"
     assert_select ".minutes-item-card", count: 2
-    assert_select ".minutes-outcome-disposition--not_recorded", text: "Not recorded"
+    assert_select ".minutes-outcome-disposition--not_recorded", text: "Needs review"
     assert_select "a[href='#{new_admin_meeting_minutes_item_path(@meeting, minutes_section_id: @first_section.id)}']"
     assert_select "a[href='#{new_admin_meeting_minutes_outcome_path(@meeting, minutes_item_id: @first_item.id)}']"
     assert_select "a[href='#{edit_admin_meeting_minutes_attendance_path(@meeting)}']", text: "Record attendance"
@@ -141,7 +141,9 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "manager records explicit outcomes without inferred names" do
+  test "manager records motion results and roster-backed participants" do
+    mover = Person.create!(first_name: "Alice", last_name: "Member", roster_member_status: "Active")
+    seconder = Person.create!(first_name: "Robert", last_name: "Legionnaire", roster_member_status: "Active")
     sign_in_as(@manager)
 
     assert_difference -> { MinutesOutcome.count }, 1 do
@@ -149,16 +151,19 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
         minutes_outcome: {
           kind: "motion",
           text: "Fund the memorial project.",
-          mover_name: "",
-          seconder_name: "",
-          disposition: "not_recorded",
+          mover_person_id: mover.id,
+          seconder_person_id: seconder.id,
+          disposition: "adopted",
           vote_summary: ""
         }
       }
     end
     first = @first_item.outcomes.first
-    assert_equal "not_recorded", first.disposition
-    assert_nil first.mover_name
+    assert_equal "adopted", first.disposition
+    assert_equal mover, first.mover_person
+    assert_equal seconder, first.seconder_person
+    assert_equal "Alice Member", first.mover_name
+    assert_equal "Robert Legionnaire", first.seconder_name
 
     second = @first_item.outcomes.create!(kind: "decision", text: "Meet next Tuesday.", disposition: "no_vote", position: 2)
     patch move_admin_meeting_minutes_outcome_path(@meeting, second, direction: "up")
@@ -168,19 +173,55 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
       minutes_outcome: {
         kind: "motion",
         text: first.text,
-        mover_name: "A. Member",
-        seconder_name: "",
-        disposition: "adopted",
+        mover_person_id: mover.id,
+        seconder_unidentified: "1",
+        disposition: "lost",
         vote_summary: "unanimous",
         lock_version: first.reload.lock_version
       }
     }
-    assert_equal "A. Member", first.reload.mover_name
-    assert_equal "adopted", first.disposition
+    assert_equal "Alice Member", first.reload.mover_name
+    assert_nil first.seconder_person
+    assert_nil first.seconder_name
+    assert_equal "lost", first.disposition
 
     assert_difference -> { MinutesOutcome.count }, -1 do
       delete admin_meeting_minutes_outcome_path(@meeting, second)
     end
+  end
+
+  test "motion form uses plain result choices and roster search" do
+    Person.create!(first_name: "Dean", last_name: "Legionnaire", roster_member_status: "Active")
+    sign_in_as(@manager)
+
+    get new_admin_meeting_minutes_outcome_path(@meeting, minutes_item_id: @first_item.id)
+
+    assert_response :success
+    assert_select "legend", text: "Outcome"
+    assert_select "input[type='radio'][name='minutes_outcome[disposition]'][value='adopted']"
+    assert_select "input[type='radio'][name='minutes_outcome[disposition]'][value='lost']"
+    assert_select "input[type='radio'][name='minutes_outcome[disposition]'][value='other']"
+    assert_select "input[type='radio'][value='not_recorded']", count: 0
+    assert_select "input[type='search'][name='minutes_outcome[mover_search]']"
+    assert_select "script#minutes_roster_people", text: /Dean/
+  end
+
+  test "other motion result stores the specific recorded outcome" do
+    sign_in_as(@manager)
+
+    assert_difference -> { MinutesOutcome.count }, 1 do
+      post admin_meeting_minutes_outcomes_path(@meeting, minutes_item_id: @first_item.id), params: {
+        minutes_outcome: {
+          kind: "motion",
+          text: "Send the proposal to the executive committee.",
+          disposition: "other",
+          other_disposition: "referred",
+          vote_summary: ""
+        }
+      }
+    end
+
+    assert_equal "referred", @first_item.outcomes.last.disposition
   end
 
   test "manager records officer attendance while preserving explicit unknowns" do

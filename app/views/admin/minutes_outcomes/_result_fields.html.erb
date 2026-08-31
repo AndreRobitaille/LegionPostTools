@@ -1,0 +1,35 @@
+<% result_group = minutes_outcome_result_group(current_disposition) %>
+<% other_disposition = current_disposition if result_group == "other" %>
+<fieldset class="motion-result-review" data-controller="motion-result">
+  <legend>Outcome</legend>
+
+  <% if suggested_disposition == "not_recorded" %>
+    <p class="motion-result-source motion-result-source--unresolved" role="note">
+      <strong>AI could not determine the result.</strong> Choose what happened before adding this motion.
+    </p>
+  <% end %>
+
+  <div class="motion-result-choices">
+    <% [ [ "Passed", "adopted" ], [ "Failed", "lost" ], [ "Other outcome", "other" ] ].each do |label, value| %>
+      <% field_id = "#{scope_id}_disposition_#{value}" %>
+      <label class="motion-result-choice">
+        <%= radio_button_tag "#{form.object_name}[disposition]", value, result_group == value,
+              id: field_id,
+              required: true,
+              data: { motion_result_target: "choice", action: "motion-result#change" } %>
+        <span><%= label %></span>
+      </label>
+    <% end %>
+  </div>
+
+  <div class="motion-result-other" data-motion-result-target="other">
+    <%= label_tag "#{scope_id}_other_disposition", "Other recorded outcome" %>
+    <%= select_tag "#{form.object_name}[other_disposition]",
+          options_for_select(MinutesOutcomesHelper::OTHER_MOTION_DISPOSITIONS, other_disposition),
+          include_blank: "Choose the outcome",
+          id: "#{scope_id}_other_disposition",
+          class: "f",
+          disabled: result_group != "other",
+          data: { motion_result_target: "otherSelect" } %>
+  </div>
+</fieldset>

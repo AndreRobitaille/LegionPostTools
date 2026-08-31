@@ -72,7 +72,7 @@
                       <li>
                         <div class="minutes-outcome-heading">
                           <strong><%= outcome.kind.humanize %></strong>
-                          <span class="minutes-outcome-disposition minutes-outcome-disposition--<%= outcome.disposition %>"><%= outcome.disposition.humanize %></span>
+                          <span class="minutes-outcome-disposition minutes-outcome-disposition--<%= outcome.disposition %>"><%= minutes_outcome_disposition_label(outcome.disposition) %></span>
                         </div>
                         <p><%= outcome.text %></p>
                         <% details = [ ("Moved by #{outcome.mover_name}" if outcome.mover_name), ("Seconded by #{outcome.seconder_name}" if outcome.seconder_name), outcome.vote_summary ].compact %>

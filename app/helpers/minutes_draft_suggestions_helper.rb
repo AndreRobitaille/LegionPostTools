@@ -28,9 +28,6 @@ module MinutesDraftSuggestionsHelper
     when "outcome"
       [
         suggestion.payload.fetch("text"),
-        "Disposition: #{suggestion.payload.fetch('disposition').humanize}",
-        ("Moved by: #{suggestion.payload['mover_name']}" if suggestion.payload["mover_name"]),
-        ("Seconded by: #{suggestion.payload['seconder_name']}" if suggestion.payload["seconder_name"]),
         suggestion.payload["vote_summary"]
       ].compact.join("\n")
     when "attendance"
@@ -54,6 +51,14 @@ module MinutesDraftSuggestionsHelper
       "edited" => "Edited and added",
       "discarded" => "Discarded"
     }.fetch(suggestion.review_state)
+  end
+
+  def minutes_suggestion_review_facts(suggestion)
+    return suggestion.missing_facts unless suggestion.kind == "outcome"
+
+    suggestion.missing_facts.reject do |fact|
+      fact.match?(/\b(mover|seconder|made the motion|seconded)\b/i)
+    end
   end
 
   def minutes_attendance_review_options = ATTENDANCE_REVIEW_OPTIONS

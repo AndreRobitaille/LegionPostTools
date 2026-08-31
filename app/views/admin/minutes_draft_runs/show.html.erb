@@ -10,6 +10,8 @@
   <%= render "review_counter", run: @run %>
 </div>
 
+<%= render "admin/minutes_outcomes/roster_data", people: @minutes_people, id: "minutes_roster_people" %>
+
 <% if @run.failed? %>
   <section class="ai-draft-failure" role="alert">
     <p class="meeting-workflow-kicker">Draft not created</p>
@@ -45,7 +47,13 @@
         <%= render partial: "suggestion_card",
           collection: @suggestions,
           as: :suggestion,
-          locals: { meeting: @meeting, source_document: @source_document, inline_error: nil } %>
+          locals: {
+            meeting: @meeting,
+            source_document: @source_document,
+            inline_error: nil,
+            people: @minutes_people,
+            submitted_values: {}
+          } %>
       <% elsif @attendance_entries.empty? %>
         <div class="ai-no-suggestions">
           <h3>No source-supported suggestions were returned.</h3>

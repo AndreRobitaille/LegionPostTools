@@ -1,22 +1,24 @@
 module Admin
   class MinutesDraftSuggestionsController < MinutesDraftController
     before_action :set_suggestion
-    before_action :set_endeavors, only: %i[edit update]
+    before_action :set_endeavors, :set_people, only: %i[edit update]
 
     def edit; end
 
     def update
-      review!("edit", suggestion_params)
+      @submitted_review_values = suggestion_params.to_h
+      review!("edit", review_edits)
       redirect_to run_path, notice: "Edited suggestion added to the working minutes."
-    rescue ActiveRecord::RecordInvalid, KeyError
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, KeyError
       @suggestion.errors.add(:base, "Review the proposed wording and required facts.") if @suggestion.errors.empty?
       render :edit, status: :unprocessable_entity
     end
 
     def use
-      review!("use")
+      @submitted_review_values = suggestion_params.to_h
+      review!("use", review_edits)
       render_review_result(notice: "Suggestion added to the working minutes.")
-    rescue ActiveRecord::RecordInvalid, KeyError
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, KeyError
       render_review_result(
         alert: "That suggestion could not be used. Review the current minutes and try again.",
         status: :unprocessable_entity
@@ -54,16 +56,30 @@ module Admin
         :kind,
         :text,
         :disposition,
-        :mover_name,
-        :seconder_name,
+        :other_disposition,
+        :mover_person_id,
+        :mover_unidentified,
+        :seconder_person_id,
+        :seconder_unidentified,
         :vote_summary,
         :status,
         :endeavor_id
       )
     end
 
+    def review_edits
+      return normalized_outcome_attributes(suggestion_params) if @suggestion.kind == "outcome"
+      return suggestion_params if action_name == "update"
+
+      {}
+    end
+
     def set_endeavors
       @endeavors = @organization.endeavors.order(:title)
+    end
+
+    def set_people
+      @minutes_people = minutes_people
     end
 
     def run_path
@@ -81,7 +97,9 @@ module Admin
                 suggestion: @suggestion.reload,
                 meeting: @meeting,
                 source_document: source_document,
-                inline_error: alert
+                inline_error: alert,
+                people: minutes_people,
+                submitted_values: @submitted_review_values || {}
               }
             ),
             turbo_stream.replace(

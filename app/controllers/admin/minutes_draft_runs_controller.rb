@@ -31,6 +31,7 @@ module Admin
         .index_by(&:minutes_attendance_entry_id)
       @attendance_entries = @minutes.attendance_entries
       @suggestions = suggestions.reject { |suggestion| suggestion.kind == "attendance" }
+      @minutes_people = minutes_people
       if @run.meeting_transcript.source_available?
         @source_document = MinutesDrafting::SourceDocument.new(@run.meeting_transcript.source_text)
       end

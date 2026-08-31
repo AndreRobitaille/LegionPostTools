@@ -252,23 +252,46 @@ motions in narrative so decisions can later be found and rendered consistently.
 - integer `position`, optimistic `lock_version`, and timestamps.
 
 For a `decision`, mover and seconder normally remain blank. For a motion, those names are
-optional because the source may not establish them. **Not recorded** is a deliberate,
-visible value; a blank field must never cause the app or AI to assume adoption.
+optional because the source may not establish them. `not_recorded` is a deliberate draft
+warning produced when the source or AI first pass does not establish a result; it is not a
+normal peer choice for the human reviewer, and a blank field must never cause the app or AI
+to assume that a motion passed.
 
-#### Future roster-backed participant resolution
+#### Roster-backed participant resolution
 
-The human review workflow should replace the free-text-only mover and seconder fields with
+The human review workflow replaces the free-text-only mover and seconder fields with
 an inline roster-backed identity resolver. The source wording remains visible, and the AI
 may preserve exactly the first name, nickname, or uncertain spelling it heard, but it must
 not choose a `Person` from similarity or likelihood.
 
-The reviewer chooses a full roster name, with the person's current or meeting-date Post
-role shown for disambiguation. The picker must also offer **Not identified** and **Not in
-roster — record the supplied name** paths. A confirmed choice writes `mover_person_id` or
-`seconder_person_id` and freezes the full displayed name into the corresponding name
-snapshot. Later roster or role changes never rewrite that minutes record. The same pattern
-may later support other attributed participants when the source and minutes format call for
-it. Sick Call and Service Officer case details never enter this identity workflow.
+The review card exposes one compact **Motion record** with **Outcome**, **Moved by**, and
+**Seconded by** visible together. Do not hide these fields behind progressive disclosure or
+repeat the same result and names in a separate AI summary. The **Edit before using** page
+uses the same three-part structure. Both surfaces show **AI heard** above the resolver.
+The reviewer searches the bounded Post roster locally and explicitly chooses a full name;
+fuzzy ranking may help find candidates but never confirms one. The picker also offers
+**Could not identify from the roster** when the source supplied a name that the reviewer
+cannot safely resolve. A confirmed choice writes `mover_person_id` or
+`seconder_person_id` and freezes the person's full displayed name into the corresponding
+name snapshot. Later roster or role changes never rewrite that minutes record. The ordinary
+outcome editor uses the same picker so later edits cannot degrade a verified identity back
+to ambiguous free text. The same pattern may later support other attributed participants
+when the source and minutes format call for it. Sick Call and Service Officer case details
+never enter this identity workflow.
+
+#### Plain-language motion result review
+
+For a motion, label the field **Outcome** and present **Passed**, **Failed**, and
+**Other outcome** as mutually exclusive choices. Store those first two choices as the
+existing `adopted` and `lost` domain values. **Other outcome** reveals the factual choices
+**Withdrawn**, **Postponed**, **Referred**, and **No vote taken**. Do not expose
+`not_recorded` as an equivalent radio choice.
+
+When an AI suggestion has `not_recorded`, show an amber **AI could not determine the
+result** warning and require the reviewer to choose a result before adding the motion.
+The suggestion remains unreviewed until the reviewer supplies the missing result or
+discards it. Rendered working minutes use the plain phrases **Motion passed** and **Motion
+failed**, even though the stored values remain `adopted` and `lost` for compatibility.
 
 This structure does not decide whether a second was legally required, whether debate was
 proper, whether quorum existed, or whether the procedure was valid. It records what the

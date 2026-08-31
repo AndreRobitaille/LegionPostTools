@@ -22,10 +22,11 @@
       <p class="ai-suggestion-endeavor"><span>Related Endeavor</span><strong><%= endeavor_label %></strong></p>
     <% end %>
 
-    <% if suggestion.missing_facts.any? %>
+    <% review_facts = minutes_suggestion_review_facts(suggestion) %>
+    <% if review_facts.any? %>
       <div class="ai-missing-facts">
         <strong>Check before using</strong>
-        <ul><% suggestion.missing_facts.each do |fact| %><li><%= fact %></li><% end %></ul>
+        <ul><% review_facts.each do |fact| %><li><%= fact %></li><% end %></ul>
       </div>
     <% end %>
 
@@ -38,7 +39,39 @@
       <% end %>
     </details>
 
-    <% if suggestion.unreviewed? %>
+    <% if suggestion.unreviewed? && suggestion.kind == "outcome" %>
+      <% values = submitted_values.to_h.stringify_keys %>
+      <% current_disposition = minutes_review_disposition(values, suggestion.payload["disposition"]) %>
+      <%= form_with url: use_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion),
+            scope: :minutes_draft_suggestion,
+            class: "motion-verification-form motion-record-shell" do |form| %>
+        <div class="motion-record-heading">
+          <h4>Motion record</h4>
+          <p>Confirm the outcome and the people named in the record.</p>
+        </div>
+        <%= render "admin/minutes_outcomes/verification_fields",
+          form: form,
+          scope_id: "suggestion_#{suggestion.id}",
+          people: people,
+          current_disposition: current_disposition,
+          suggested_disposition: suggestion.payload["disposition"],
+          mover_person_id: values["mover_person_id"],
+          seconder_person_id: values["seconder_person_id"],
+          suggested_mover_name: suggestion.payload["mover_name"],
+          suggested_seconder_name: suggestion.payload["seconder_name"],
+          source_label: "AI heard",
+          roster_source_id: "minutes_roster_people",
+          show_mover_picker: true,
+          show_seconder_picker: true,
+          mover_unidentified: values["mover_unidentified"],
+          seconder_unidentified: values["seconder_unidentified"] %>
+        <div class="ai-motion-primary-action"><%= form.submit "Add motion", class: "btn-primary" %></div>
+      <% end %>
+      <div class="ai-suggestion-actions ai-suggestion-actions--secondary">
+        <%= link_to "Edit wording and details", edit_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), class: "btn-secondary", data: { turbo_frame: "_top" } %>
+        <%= button_to "Discard", discard_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), method: :post, class: "ai-discard-button" %>
+      </div>
+    <% elsif suggestion.unreviewed? %>
       <div class="ai-suggestion-actions">
         <%= button_to (suggestion.kind == "item_summary" ? "Add to minutes" : "Use suggestion"), use_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), method: :post, class: "btn-primary" %>
         <%= link_to "Edit before using", edit_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), class: "btn-secondary", data: { turbo_frame: "_top" } %>

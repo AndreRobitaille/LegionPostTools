@@ -7,6 +7,8 @@
   <p class="page-sub"><%= minutes_suggestion_target_label(@suggestion) %> &middot; The corrected value will enter the ordinary working minutes.</p>
 </div>
 
+<%= render "admin/minutes_outcomes/roster_data", people: @minutes_people, id: "minutes_roster_people" %>
+
 <%= form_with model: @suggestion, url: admin_meeting_minutes_draft_suggestion_path(@meeting, @suggestion), class: "stacked-form ai-suggestion-edit-form" do |form| %>
   <% if @suggestion.errors.any? %>
     <div class="error-summary" role="alert">
@@ -19,13 +21,32 @@
   <% when "item_summary" %>
     <div class="fl"><%= form.label :body, "Paragraph to add to this minutes item" %><%= form.text_area :body, value: @suggestion.payload["body"], rows: 10, class: "f", required: true %></div>
   <% when "outcome" %>
+    <% values = (@submitted_review_values || {}).stringify_keys %>
+    <% current_disposition = minutes_review_disposition(values, @suggestion.payload["disposition"]) %>
     <div class="fl"><%= form.label :text, "Motion or decision" %><%= form.text_area :text, value: @suggestion.payload["text"], rows: 6, class: "f", required: true %></div>
     <div class="fl"><%= form.label :kind, "Record type" %><%= form.select :kind, MinutesOutcome::KINDS.map { |value| [ value.humanize, value ] }, { selected: @suggestion.payload["kind"] }, class: "f" %></div>
-    <div class="fl"><%= form.label :disposition %><%= form.select :disposition, MinutesOutcome::DISPOSITIONS.map { |value| [ value.humanize, value ] }, { selected: @suggestion.payload["disposition"] }, class: "f" %></div>
-    <div class="minutes-outcome-name-grid">
-      <div class="fl"><%= form.label :mover_name, "Moved by (leave blank if unknown)" %><%= form.text_field :mover_name, value: @suggestion.payload["mover_name"], class: "f" %></div>
-      <div class="fl"><%= form.label :seconder_name, "Seconded by (leave blank if unknown)" %><%= form.text_field :seconder_name, value: @suggestion.payload["seconder_name"], class: "f" %></div>
-    </div>
+    <section class="motion-edit-record motion-record-shell" aria-labelledby="motion-record-heading">
+      <div class="motion-record-heading">
+        <h2 id="motion-record-heading">Motion record</h2>
+        <p>Confirm the outcome and match any names to the Post roster.</p>
+      </div>
+      <%= render "admin/minutes_outcomes/verification_fields",
+        form: form,
+        scope_id: "suggestion_#{@suggestion.id}_edit",
+        people: @minutes_people,
+        current_disposition: current_disposition,
+        suggested_disposition: @suggestion.payload["disposition"],
+        mover_person_id: values["mover_person_id"],
+        seconder_person_id: values["seconder_person_id"],
+        suggested_mover_name: @suggestion.payload["mover_name"],
+        suggested_seconder_name: @suggestion.payload["seconder_name"],
+        source_label: "AI heard",
+        roster_source_id: "minutes_roster_people",
+        show_mover_picker: true,
+        show_seconder_picker: true,
+        mover_unidentified: values["mover_unidentified"],
+        seconder_unidentified: values["seconder_unidentified"] %>
+    </section>
     <div class="fl"><%= form.label :vote_summary, "Vote result (leave blank if unknown)" %><%= form.text_field :vote_summary, value: @suggestion.payload["vote_summary"], class: "f" %></div>
   <% when "attendance" %>
     <div class="fl"><%= form.label :status, "Attendance status" %><%= form.select :status, MinutesAttendanceEntry::STATUSES.map { |value| [ value.humanize, value ] }, { selected: @suggestion.payload["status"] }, class: "f" %></div>

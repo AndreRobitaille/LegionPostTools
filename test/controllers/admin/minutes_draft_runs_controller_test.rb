@@ -219,6 +219,93 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".app-flash", count: 0
   end
 
+  test "motion review shows AI names and requires a human result" do
+    Person.create!(first_name: "Dean", last_name: "Verified", roster_member_status: "Active")
+    run = create_run!
+    suggestion = outcome_suggestion!(run, disposition: "not_recorded", mover_name: "Dean", seconder_name: "Jim")
+    sign_in_as(@manager)
+
+    get admin_meeting_minutes_draft_run_path(@meeting, run)
+
+    assert_response :success
+    assert_select ".motion-person-picker-head", text: /AI heard:.*Dean/
+    assert_select ".motion-person-picker-head", text: /AI heard:.*Jim/
+    assert_select ".motion-result-source--unresolved", text: /AI could not determine the result/
+    assert_select "input[type='radio'][name='minutes_draft_suggestion[disposition]'][value='adopted']"
+    assert_select "input[type='radio'][name='minutes_draft_suggestion[disposition]'][value='lost']"
+    assert_select "input[type='radio'][name='minutes_draft_suggestion[disposition]'][value='other']"
+    assert_select "input[type='radio'][value='not_recorded']", count: 0
+    assert_select "input[type='submit'][value='Add motion']"
+
+    post use_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion),
+      headers: { "Accept" => Mime[:turbo_stream].to_s }
+
+    assert_response :unprocessable_entity
+    assert_predicate suggestion.reload, :unreviewed?
+    assert_empty @item.outcomes
+  end
+
+  test "motion with a known result and no names exposes the full record" do
+    run = create_run!
+    outcome_suggestion!(run, disposition: "adopted", mover_name: nil, seconder_name: nil)
+    sign_in_as(@manager)
+
+    get admin_meeting_minutes_draft_run_path(@meeting, run)
+
+    assert_response :success
+    assert_select ".motion-record-heading", text: /Motion record/
+    assert_select ".motion-result-choice", text: /Passed/ do
+      assert_select "input[value='adopted'][checked]"
+    end
+    assert_select ".motion-person-picker", count: 2
+    assert_select ".motion-person-picker-head", text: /Moved by.*AI did not identify a name/
+    assert_select ".motion-person-picker-head", text: /Seconded by.*AI did not identify a name/
+    assert_select "input[type='submit'][value='Add motion']"
+  end
+
+  test "verified motion links roster people and preserves the AI-heard names" do
+    mover = Person.create!(first_name: "Dean", last_name: "Verified", roster_member_status: "Active")
+    seconder = Person.create!(first_name: "James", last_name: "Confirmed", roster_member_status: "Active")
+    run = create_run!
+    suggestion = outcome_suggestion!(run, disposition: "not_recorded", mover_name: "Dean", seconder_name: "Jim")
+    original_payload = suggestion.payload.deep_dup
+    sign_in_as(@manager)
+
+    post use_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion),
+      params: {
+        minutes_draft_suggestion: {
+          disposition: "adopted",
+          mover_person_id: mover.id,
+          seconder_person_id: seconder.id
+        }
+      },
+      headers: { "Accept" => Mime[:turbo_stream].to_s }
+
+    assert_response :success
+    outcome = @item.outcomes.reload.sole
+    assert_equal "adopted", outcome.disposition
+    assert_equal mover, outcome.mover_person
+    assert_equal seconder, outcome.seconder_person
+    assert_equal "Dean Verified", outcome.mover_name
+    assert_equal "James Confirmed", outcome.seconder_name
+    assert_equal original_payload, suggestion.reload.payload
+    assert_equal "used", suggestion.review_state
+  end
+
+  test "edit-before-using shows the same roster verification controls" do
+    run = create_run!
+    suggestion = outcome_suggestion!(run, disposition: "lost", mover_name: "Dean", seconder_name: "Jim")
+    sign_in_as(@manager)
+
+    get edit_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion)
+
+    assert_response :success
+    assert_select ".motion-person-picker-head", text: /AI heard:.*Dean/
+    assert_select ".motion-person-picker-head", text: /AI heard:.*Jim/
+    assert_select "input[type='radio'][value='lost'][checked]"
+    assert_select "input[type='search'][name='minutes_draft_suggestion[mover_search]']"
+  end
+
   test "internal viewers cannot initiate or review AI draft runs" do
     viewer = create_user_with("view_internal_records")
     run = create_run!
@@ -259,6 +346,25 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
       source_start_line: 1,
       source_end_line: 1,
       confidence: "high",
+      missing_facts: []
+    )
+  end
+
+  def outcome_suggestion!(run, disposition:, mover_name:, seconder_name:)
+    run.suggestions.create!(
+      minutes_item: @item,
+      kind: "outcome",
+      payload: {
+        kind: "motion",
+        text: "Fund the memorial project.",
+        disposition: disposition,
+        mover_name: mover_name,
+        seconder_name: seconder_name,
+        vote_summary: nil
+      },
+      source_start_line: 1,
+      source_end_line: 1,
+      confidence: "medium",
       missing_facts: []
     )
   end

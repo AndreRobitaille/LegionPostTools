@@ -1,0 +1,43 @@
+<% picker_id = "#{scope_id}_#{role}_person" %>
+<% selected_person = people.detect { |person| person.id.to_s == selected_person_id.to_s } %>
+<% unidentified = ActiveModel::Type::Boolean.new.cast(unidentified) %>
+<div class="motion-person-picker"
+     data-controller="person-picker"
+     data-person-picker-source-id-value="<%= roster_source_id %>"
+     data-person-picker-selected-id-value="<%= selected_person_id %>">
+  <div class="motion-person-picker-head">
+    <strong><%= role.to_s == "mover" ? "Moved by" : "Seconded by" %></strong>
+    <% if suggested_name.present? %>
+      <span><%= source_label %>: <b><%= suggested_name %></b></span>
+    <% elsif source_label == "AI heard" %>
+      <span>AI did not identify a name</span>
+    <% end %>
+  </div>
+
+  <%= hidden_field_tag "#{form.object_name}[#{role}_person_id]", selected_person_id,
+        id: "#{picker_id}_id", data: { person_picker_target: "id" } %>
+
+  <label for="<%= picker_id %>_search">Actual person from the Post roster</label>
+  <div class="motion-person-search">
+    <%= search_field_tag "#{form.object_name}[#{role}_search]", selected_person&.full_name,
+          id: "#{picker_id}_search",
+          class: "f",
+          placeholder: "Type a first or last name",
+          autocomplete: "off",
+          disabled: unidentified,
+          role: "combobox",
+          aria: { autocomplete: "list", expanded: "false", controls: "#{picker_id}_results" },
+          data: {
+            person_picker_target: "input",
+            action: "input->person-picker#search keydown->person-picker#navigate focus->person-picker#search"
+          } %>
+    <button type="button" class="motion-person-clear" data-person-picker-target="clear" data-action="person-picker#clear">Clear</button>
+  </div>
+  <div id="<%= picker_id %>_results" class="motion-person-results" role="listbox" hidden data-person-picker-target="results"></div>
+
+  <label class="motion-person-unidentified">
+    <%= check_box_tag "#{form.object_name}[#{role}_unidentified]", "1", unidentified,
+          data: { person_picker_target: "unidentified", action: "person-picker#toggleUnidentified" } %>
+    <span>Could not identify this person from the roster</span>
+  </label>
+</div>

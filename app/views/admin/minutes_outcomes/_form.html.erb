@@ -1,4 +1,5 @@
 <% form_url = outcome.persisted? ? admin_meeting_minutes_outcome_path(meeting, outcome) : admin_meeting_minutes_outcomes_path(meeting, minutes_item_id: outcome.minutes_item_id) %>
+<%= render "admin/minutes_outcomes/roster_data", people: @minutes_people, id: "minutes_roster_people" %>
 <%= form_with model: outcome, url: form_url, class: "stacked-form minutes-editor-form" do |form| %>
   <% if outcome.errors.any? %>
     <div class="error-summary" role="alert">
@@ -16,21 +17,22 @@
     <%= form.text_area :text, class: "f", rows: 5, required: true, autofocus: true %>
     <span class="fl-help">Use factual wording. Do not fill in a mover, second, vote, or result that the source does not establish.</span>
   </div>
-  <div class="minutes-outcome-name-grid">
-    <div class="fl">
-      <%= form.label :mover_name, "Mover (if recorded)" %>
-      <%= form.text_field :mover_name, class: "f" %>
-    </div>
-    <div class="fl">
-      <%= form.label :seconder_name, "Seconder (if recorded)" %>
-      <%= form.text_field :seconder_name, class: "f" %>
-    </div>
-  </div>
-  <div class="fl">
-    <%= form.label :disposition, "Recorded result" %>
-    <%= form.select :disposition, MinutesOutcome::DISPOSITIONS.map { |value| [ value.humanize, value ] }, {}, class: "f" %>
-    <span class="fl-help"><strong>Not recorded</strong> is the correct choice when the result cannot be established.</span>
-  </div>
+  <%= render "admin/minutes_outcomes/verification_fields",
+    form: form,
+    scope_id: "outcome_#{outcome.persisted? ? outcome.id : 'new'}",
+    people: @minutes_people,
+    current_disposition: outcome.disposition,
+    suggested_disposition: nil,
+    mover_person_id: outcome.mover_person_id,
+    seconder_person_id: outcome.seconder_person_id,
+    suggested_mover_name: (outcome.mover_name if outcome.mover_person_id.blank?),
+    suggested_seconder_name: (outcome.seconder_name if outcome.seconder_person_id.blank?),
+    source_label: "Previously recorded",
+    roster_source_id: "minutes_roster_people",
+    show_mover_picker: true,
+    show_seconder_picker: true,
+    mover_unidentified: false,
+    seconder_unidentified: false %>
   <div class="fl">
     <%= form.label :vote_summary, "Vote wording (optional)" %>
     <%= form.text_field :vote_summary, class: "f", placeholder: "For example: unanimous or 7–2" %>

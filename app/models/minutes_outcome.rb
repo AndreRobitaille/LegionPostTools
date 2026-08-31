@@ -19,7 +19,16 @@ class MinutesOutcome < ApplicationRecord
     numericality: { only_integer: true, greater_than: 0 },
     uniqueness: { scope: :minutes_item_id }
 
+  before_validation :snapshot_participant_names
+
   def self.reorder!(minutes_item, ordered_ids)
     reorder_within!(minutes_item.outcomes, ordered_ids)
+  end
+
+  private
+
+  def snapshot_participant_names
+    self.mover_name = mover_person&.full_name if will_save_change_to_mover_person_id?
+    self.seconder_name = seconder_person&.full_name if will_save_change_to_seconder_person_id?
   end
 end

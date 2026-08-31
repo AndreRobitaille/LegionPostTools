@@ -18,7 +18,9 @@ module MinutesDrafting
         if action == "discard"
           record_review!("discarded")
         elsif action.in?(%w[use edit])
-          applied_record = apply_payload!(action == "edit" ? edited_payload : suggestion.payload)
+          payload = edits.present? ? edited_payload : suggestion.payload
+          validate_payload!(payload)
+          applied_record = apply_payload!(payload)
           record_review!(action == "edit" ? "edited" : "used", applied_record)
         else
           raise ArgumentError, "Unknown review action"
@@ -35,11 +37,24 @@ module MinutesDrafting
     def edited_payload
       allowed = case suggestion.kind
       when "item_summary" then %w[body]
-      when "outcome" then %w[kind text disposition mover_name seconder_name vote_summary]
+      when "outcome" then %w[kind text disposition mover_person_id mover_name seconder_person_id seconder_name vote_summary]
       when "attendance" then %w[status]
       when "additional_item" then %w[title body endeavor_id]
       end
       suggestion.payload.merge(edits.slice(*allowed)).compact
+    end
+
+    def validate_payload!(payload)
+      return unless suggestion.kind == "outcome"
+
+      suggestion.errors.add(:base, "Choose what happened to the motion.") if payload["disposition"] == "not_recorded"
+      if payload["mover_name"].present? && payload["mover_person_id"].blank?
+        suggestion.errors.add(:base, "Confirm the mover from the roster or mark the person as unidentified.")
+      end
+      if payload["seconder_name"].present? && payload["seconder_person_id"].blank?
+        suggestion.errors.add(:base, "Confirm the seconder from the roster or mark the person as unidentified.")
+      end
+      raise ActiveRecord::RecordInvalid, suggestion if suggestion.errors.any?
     end
 
     def apply_payload!(payload)
@@ -52,7 +67,9 @@ module MinutesDrafting
           kind: payload.fetch("kind"),
           text: payload.fetch("text"),
           disposition: payload.fetch("disposition"),
+          mover_person_id: payload["mover_person_id"],
           mover_name: payload["mover_name"],
+          seconder_person_id: payload["seconder_person_id"],
           seconder_name: payload["seconder_name"],
           vote_summary: payload["vote_summary"],
           position: item.outcomes.maximum(:position).to_i + 1
