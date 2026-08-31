@@ -1,13 +1,14 @@
 # Agent Agenda API Parity Design
 
-**Status:** Approved for implementation August 29, 2026.
+**Status:** Implemented August 29, 2026. The August 31 accounts/transcript/minutes/Jobs
+extension is specified separately in `2026-08-31-agent-minutes-api-parity-design.md`.
 
 ## Purpose
 
 The officer-agent API must keep pace with the agenda work available to the signed-in
 officer. This is especially important for historical reconstruction: an officer should be
 able to give a delegated Bot the source business for a past meeting and have it create or
-reuse Tracked Items, place them in the correct historical sections, and verify the dated
+reuse Endeavors, place them in the correct historical sections, and verify the dated
 agenda without re-entering every item in the browser.
 
 The Bot remains an agent of the signed-in person and receives no separate authority.
@@ -47,17 +48,17 @@ All routes are private and require `manage_agendas`.
 ### Dated agendas and items
 
 - `DELETE /api/dated_agendas/:id` mirrors whole-record deletion and is documented only
-  when asked. It may remove a draft, approved, or published agenda; linked Tracked Items
+  when asked. It may remove a draft, approved, or published agenda; linked Endeavors
   remain.
 - `POST /api/dated_agendas/:dated_agenda_id/items` creates a meeting-specific draft item
-  without first creating a reusable catalog entry or long-lived Tracked Item. It requires
+  without first creating a reusable catalog entry or long-lived Endeavor. It requires
   an exact `dated_agenda_section_id`, appends to that section, and may optionally link an
-  existing Tracked Item while preserving supplied historical wording.
+  existing Endeavor while preserving supplied historical wording.
 - `PATCH /api/dated_agendas/:dated_agenda_id/items/:id` edits a draft snapshot's title,
   summary, document wording, Commander cues, display flags, item kind, section, or
-  `tracked_item_id`.
+  `endeavor_id`.
 - Changing `dated_agenda_section_id` appends the item to that section. Linking an existing
-  active Tracked Item happens in place and therefore preserves the historical row's
+  active Endeavor happens in place and therefore preserves the historical row's
   section, position, and wording without creating a duplicate.
 - `DELETE /api/dated_agendas/:dated_agenda_id/items/:id` removes only a draft snapshot item
   and is documented only when asked.
@@ -69,7 +70,7 @@ All routes are private and require `manage_agendas`.
 
 Standalone creation accepts only dated-snapshot content fields: title, summary, body,
 Commander notes, behavior type, wording controls, required section id, and optional
-Tracked Item id. It does not accept catalog/template lineage, source/seed fields,
+Endeavor id. It does not accept catalog/template lineage, source/seed fields,
 position, active state, or lock version. Both creation and reorder recheck draft status
 while holding the dated-agenda lock. Reorder changes only positions and does not accept or
 advance item lock versions.
@@ -97,9 +98,9 @@ from an empty section.
 1. List dated agendas and select the exact July 7 start date, then fetch agenda detail.
 2. Confirm the agenda is a draft. Reopen a locked agenda only on a live human instruction.
 3. Read the ids of the existing `Unfinished Business` and `New Business` sections.
-4. List Tracked Items before creating anything.
+4. List Endeavors before creating anything.
 5. For each distinct matter:
-   - reuse a matching active tracker when one exists;
+   - reuse a matching active Endeavor when one exists;
    - otherwise create one only when the matter is long-lived business that should continue
      across meetings, using supplied facts without inventing decisions or outcomes;
    - if a standalone dated item already represents the matter, link it in place with the
@@ -107,13 +108,13 @@ from an empty section.
    - if long-lived business has no dated row, add its tracker snapshot to the correct
      section using `dated_agenda_section_id`;
    - if it is one-meeting business with no existing row, POST a standalone item directly
-     into the correct section without creating catalog or tracker records.
+     into the correct section without creating catalog or Endeavor records.
 6. Reorder each changed section from the complete officer-supplied item order. Do not rely
    on the order in which create, link, or move requests happened.
 7. Preserve historical classification: a matter introduced as New Business on July 7
-   remains in that July 7 section even if it is unfinished today. Current tracker status
+   remains in that July 7 section even if it is unfinished today. Current Endeavor status
    does not rewrite the past agenda's classification.
-8. Re-fetch both the agenda and Tracked Items, and report created, reused, linked, and
+8. Re-fetch both the agenda and Endeavors, and report created, reused, linked, and
    skipped matters. Do not approve or publish unless explicitly asked.
 
 The newly synced local production copy demonstrates the required mixed case: the July 7
@@ -131,7 +132,9 @@ Linking Buddy Checks in place is the required no-duplicate behavior.
 - Deletion, catalog removal, roll-call refresh, agenda reopen, approval, and publication
   are listed under `only_when_asked` in the generated handbook.
 - JSON errors use the existing 401/403/404/422 envelope. Cross-installation ids return 404.
-- No endpoint accepts minutes, attendance outcomes, votes, attestations, or acceptance.
+- At the time of this agenda slice, no endpoint accepted minutes or attendance outcomes.
+  The later August 31 parity slice added working-minutes and review endpoints only; official
+  approval, attestation, acceptance, and amendment remain unavailable.
 
 ## Documentation strategy
 

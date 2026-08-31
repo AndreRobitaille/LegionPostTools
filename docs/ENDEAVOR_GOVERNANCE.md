@@ -136,7 +136,7 @@ invariants apply:
 - The current agenda MVP permits one linked appearance of an Endeavor per `DatedAgenda`.
   This uniqueness rule is not automatically imposed on future minutes, motions, events, or
   documents.
-- Future structured minutes items must preserve an optional direct identity link when they
+- Structured minutes items preserve an optional direct identity link when they
   concern an Endeavor, including when seeded from a linked `DatedAgendaItem`. Minutes text
   remains an independent meeting snapshot.
 - Status, importance, raise-by date, usual meeting body, Pillar classification, and future

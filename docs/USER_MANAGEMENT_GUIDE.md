@@ -197,6 +197,20 @@ Important distinctions:
 At least one enabled person must retain **Manage settings**. The application prevents an
 administrator from removing or disabling the last such account.
 
+## Delegating Account Work to an Agent
+
+The private API is intended to let a bot or agent perform ordinary administrator work for
+the signed-in person, not merely report what the website contains. With that person's
+current **Manage settings** permission, the agent may inspect an exact person's account,
+create or enable it, disable sign-in, or return a roster-managed account to automatic
+roster control. The same last-administrator protection, roster eligibility rules, email
+validation, and separation between account, Post role, and app permissions still apply.
+
+Account disable and return-to-roster-control actions appear under **Only when asked** in
+the live `GET /api` handbook. A personal agent token is delegated access and must be kept
+in secure credential storage; it never grants authority the person does not currently
+hold and is not proof of fresh intent for an official minutes act.
+
 ## Officer Turnover Checklist
 
 When an office changes hands:

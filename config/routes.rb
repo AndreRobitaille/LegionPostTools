@@ -139,7 +139,11 @@ Rails.application.routes.draw do
   resource :dashboard, only: %i[show], controller: "dashboard"
   namespace :api do
     get "/", to: "handbook#show"
-    resources :people, only: %i[index show]
+    resources :people, only: %i[index show] do
+      resource :account, only: %i[show create destroy], controller: "user_accounts" do
+        patch :roster_control
+      end
+    end
     resources :officers, only: %i[index]
     resources :position_titles, only: %i[index]
     get "membership/summary", to: "membership#summary"
@@ -148,7 +152,35 @@ Rails.application.routes.draw do
     get "membership/people/:id", to: "membership#person"
     resources :meeting_bodies, only: %i[index]
     resources :meeting_types, only: %i[index]
-    resources :meetings, only: %i[index show create update destroy]
+    resources :meetings, only: %i[index show create update destroy] do
+      resource :transcript, only: %i[show create], controller: "meeting_transcripts"
+      resource :minutes, only: %i[show create update], controller: "meeting_minutes" do
+        get :print
+        resource :attendance, only: :update, controller: "minutes_attendance"
+        post "sections/reorder", to: "minutes_sections#reorder"
+        post "sections/:section_id/items/reorder", to: "minutes_items#reorder"
+        post "items/:item_id/outcomes/reorder", to: "minutes_outcomes#reorder"
+        resources :sections, only: %i[create update destroy], controller: "minutes_sections"
+        resources :items, only: %i[create update destroy], controller: "minutes_items"
+        resources :outcomes, only: %i[create update destroy], controller: "minutes_outcomes"
+        resources :draft_runs, only: %i[index show create], controller: "minutes_draft_runs" do
+          member do
+            post :retry
+            patch :discard
+            patch :restore
+            patch :attendance
+          end
+          resources :suggestions, only: [], controller: "minutes_draft_suggestions" do
+            member do
+              patch :use
+              patch :edit
+              patch :discard
+            end
+          end
+        end
+      end
+    end
+    get "jobs", to: "jobs#index"
     resources :agenda_item_catalog_entries, only: %i[index create update destroy] do
       post :reorder, on: :collection
     end

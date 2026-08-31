@@ -44,7 +44,7 @@ digital-versus-print visibility switches.
 | **Active** | At catalog level, hides an item from Add-item choices without removing it. At meeting-type level, omits it from future dated agendas. Neither setting rewrites an existing dated snapshot. |
 | **Document wording / `body`** | Rich member/minutes content. The API accepts `body` on writes and returns plain text as `wording` on reads. |
 | **Show wording on agenda** | When clear, keeps the title but removes document wording from member and Commander screen/print agenda bodies. Commander cues remain separate. |
-| **Carry wording into draft minutes** | Records whether the document wording should seed future draft minutes. It has no approval effect, and the minutes workflow is not built yet. |
+| **Carry wording into draft minutes** | Controls whether the document wording seeds an independent `agenda_wording` snapshot when working minutes are created. It has no approval effect. |
 | **Commander's script / cues** | Private script, stage directions, and reminders for the Commander's working copy and private officer API only. |
 | **Endeavor link** | Connects an independent dated snapshot to coherent continuing Post work. Linking an existing row in place does not replace its historical title, summary, wording, section, or position. |
 | **Position** | Order inside the catalog category or actual agenda section. It is not a global agenda order. |

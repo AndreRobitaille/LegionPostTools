@@ -1,11 +1,19 @@
 # Structured Minutes Lifecycle
 
+**Implementation status (August 31, 2026):** Slice 2 is complete. Restricted transcript
+paste, structured working minutes, source-linked OpenAI drafting, in-place human review,
+roster-verified motion participants, deliberate attendance/results, the Jobs ledger, the
+print-ready draft PDF, and private delegated API/handbook parity are implemented. Slices 3
+and 4—the official approval, attestation, acceptance, amendment, and immutability
+workflow—remain design requirements, not shipped behavior.
+
 ## Purpose
 
 Minutes are the Post's durable account of what happened at a Meeting. They are not an
 edited agenda, a transcript, an Endeavor update, or a single rich-text page. This design
 defines the structured drafting, human authority, member visibility, acceptance,
-correction, and immutability rules required before minutes implementation begins.
+correction, and immutability rules governing both the implemented draft workflow and the
+remaining official-record lifecycle.
 
 The first proof case is an already-held Post meeting with a structured agenda and an
 available transcript. The expected Adjutant workflow is AI-assisted: the app assembles a
@@ -15,10 +23,11 @@ accepting, or discarding what the model attempted. The result still passes throu
 approval and Adjutant attestation, and either records later acceptance or remains honestly
 marked as awaiting acceptance.
 
-This specification governs Slices 2 through 5 of `docs/ROADMAP.md`. Slice 2 implements the
-structured editor and source model first as engineering prerequisites, then completes the
-same slice with the OpenAI-generated first pass as the primary user path. Later slices add
-the official lifecycle, acceptance and amendments, PDF delivery, and delegated API access.
+This specification governs Slices 2 through 5 of `docs/ROADMAP.md`. The completed Slice 2
+implemented the structured editor and source model first, then the OpenAI-generated first
+pass, print-ready working PDF, Jobs ledger, and delegated draft API. Later slices add the
+official lifecycle, acceptance and amendments, finalized document delivery, and any
+human-confirmed official-action API.
 
 ## Source and Authority Boundary
 
@@ -104,8 +113,8 @@ does not infer acceptance merely because time passed or another Meeting occurred
 - approval, Adjutant attestation, reopen, acceptance, and amendment provenance;
 - immutable approved revisions and accepted official records;
 - member Meeting-page and document progression;
-- the shared print-first official document shell and later PDF generation; and
-- private API/handbook parity after the HTML workflow is proven.
+- the shared print-first document shell, draft PDF, and later immutable official PDFs; and
+- private API/handbook parity for ordinary delegated draft and administrative work.
 
 ### Deliberately excluded from the first AI-assisted slice
 
@@ -338,8 +347,8 @@ is the primary path.
 
 Transcript reads require `manage_minutes` or `view_internal_records`. Transcript content
 is excluded from member serializers, document renderers, logs, search indexing, error
-messages, and agent handbook examples. Draft API access waits for the later delegated
-slice and must return transcript content only when explicitly requested.
+messages, and agent handbook examples. The delegated API returns it only through the exact
+transcript endpoint with `include_content=true`.
 
 At creation, the officer must choose a retention policy:
 
@@ -999,22 +1008,29 @@ retention unless the configured API project has approved controls.
 
 ## Private API and Agent Handbook
 
-Add API behavior only after the corresponding HTML behavior is stable.
+API behavior follows only corresponding HTML behavior that is stable. The implemented
+surface is specified in
+`docs/superpowers/specs/2026-08-31-agent-minutes-api-parity-design.md`; the signed-in
+`GET /api` handbook is the live permission-filtered endpoint reference.
 
 ### Draft slice
 
-With `manage_minutes`, list/show minutes working records; create minutes for an exact
-`meeting_id`; edit draft heading, sections, items, attendance, and outcomes; and reorder
-within exact sections. Preserve optimistic locking, organization scope, idempotency, and
+With `manage_minutes`, an officer's delegated agent can list/show working records; create
+minutes for an exact `meeting_id`; edit draft heading, sections, items, attendance, and
+outcomes; reorder exact child sets; review AI suggestions; and inspect durable runs and
+queue health. `view_internal_records` permits corresponding read-only minutes, transcript,
+and draft-PDF access. Preserve optimistic locking, organization scope, idempotency, and
 `AgentApiExecution` provenance.
 
-The web app, not a delegated agent, initiates the normal OpenAI first-pass run. Later API
-parity may allow an authorized agent to request a draft run, but model suggestions retain
-the same source evidence and human review states.
+An authorized delegated agent may initiate an OpenAI first-pass run only on direct human
+instruction. That action and retry are separated under **Only when asked** because they
+transmit the restricted transcript to the configured provider. Runs remain durable
+background records; retries create linked attempts; suggestions retain source evidence,
+uncertainty, and the same use/edit/discard review states as the web workflow.
 
 Transcript content is a separate explicit endpoint requiring `manage_minutes` or
-`view_internal_records`. It is never embedded in ordinary Meeting or minutes responses.
-Destructive transcript purge is listed only when asked.
+`view_internal_records`. It is never embedded in ordinary Meeting, minutes, Jobs, or
+handbook responses. Transcript purge is not yet an API action.
 
 ### Official actions
 
@@ -1154,24 +1170,25 @@ before each minutes slice is considered complete.
 
 ## Implementation Sequence
 
-1. Land this design and reconcile roadmap/capability language.
-2. Add `MeetingMinutes`, structured sections/items/outcomes/attendance, Meeting constraints,
+1. **Complete:** Land this design and reconcile roadmap/capability language.
+2. **Complete:** Add `MeetingMinutes`, structured sections/items/outcomes/attendance, Meeting constraints,
    and thorough model tests.
-3. Add transcript paste/text upload with explicit retention, provider disclosure, and
+3. **Complete for paste:** Add transcript paste with explicit retention, provider disclosure, and
    restricted access.
-4. Implement agenda seeding and the complete manual editor as the safe working foundation.
-5. Add the OpenAI Responses API provider, versioned prompt, strict structured output,
+4. **Complete:** Implement agenda seeding and the complete manual editor as the safe working foundation.
+5. **Complete:** Add the OpenAI Responses API provider, versioned prompt, strict structured output,
    draft-run provenance, and source-bound suggestion staging.
-6. Complete the historical Meeting + agenda + transcript AI-first drafting and correction
+6. **Complete:** Complete the historical Meeting + agenda + transcript AI-first drafting and correction
    case, including provider failure/manual fallback.
 7. Add immutable revisions, append-only lifecycle events, and the record/action/version-
    bound confirmation boundary.
 8. Add Commander approval, distinct-person Adjutant attestation, member visibility, and
    transparent reopen behavior.
 9. Add later same-body acceptance, correction amendments, and database-layer immutability.
-10. Add the member document, shared print shell integration, and generated PDF verification.
-11. Add draft API/handbook parity; add official-action API behavior only through confirmed
-    pending actions with agent provenance.
+10. **Partly complete:** Add shared print-shell integration and verified draft PDF. Member,
+    attested, accepted, and amended documents wait for the corresponding lifecycle states.
+11. **Draft portion complete:** Add draft API/handbook parity. Add official-action API
+    behavior only through confirmed pending actions with agent provenance.
 
 ## Deferred Decisions That Do Not Block Slice 2
 

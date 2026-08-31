@@ -1,6 +1,7 @@
 # Officer Agent Operability Design
 
-**Status:** Implemented August 22, 2026 and reconciled with the August 29 agenda surface.
+**Status:** Implemented August 22, 2026 and reconciled with the August 29 agenda and
+August 31 accounts/transcript/draft-minutes/Jobs surfaces.
 The first installation was designed around
 the Commander workflow, but the shipped standing brief is personalized for any
 signed-in member and names their current assigned office only when one exists.
@@ -10,18 +11,22 @@ signed-in member and names their current assigned office only when one exists.
 A Post Commander (or another officer with the same app grants) should be able to
 point Grok Bot — and later a similar machine-resident agent — at LegionPostTools
 and have it do real officer work: create a draft PEC agenda, put the car show on
-the next meeting, turn morning group-chat noise into tracked business.
+the next meeting, turn morning group-chat noise into continuing Post business.
 
 The Bot is the assistant. It uses judgment. The app stays a predictable American
 Legion operations tool. This is not a public website, not a chatbot inside the
 app, and not an automation engine that scans Facebook or iMessage.
 
-This spec is the door for that Bot. Minutes, PDF, and email distribution are not
-built yet; the handbook grows when those workflows exist.
+This spec established the door for that Bot. The handbook has since grown to include
+account controls, restricted transcripts, structured working minutes, source-linked AI
+review, Jobs, and draft-PDF retrieval. Email distribution and official minutes actions are
+not built yet.
 
 The post-August-29 agenda API parity, including historical business backfill, dated-item
 editing, roll-call snapshots, catalog operations, and explicit destructive boundaries, is
 specified in `2026-08-29-agent-agenda-api-parity-design.md`.
+The draft-minutes and administrative extension is specified in
+`2026-08-31-agent-minutes-api-parity-design.md`.
 
 ## Jobs this phase must support
 
@@ -34,14 +39,14 @@ Examples:
 
 The Bot does the language and matching. The API only lists and mutates. There is
 no search, fuzzy match, or “did you mean Car Show.” If the Bot cannot match a
-name, it lists tracked items (or meeting types, or upcoming agendas) and
+name, it lists Endeavors (or meeting types, or upcoming agendas) and
 decides.
 
 ### 2. Morning group-chat triage
 
 Grok Bot already lives on a cloud VM. A routine can pull the officer group chat
 each morning. Chat never enters this app. The Bot asks LegionPostTools what is
-already on the books, then may create a tracked item, append an update, or add
+already on the books, then may create an Endeavor, append an update, or add
 existing business to the next **draft** agenda.
 
 ## Product Boundary
@@ -49,15 +54,15 @@ existing business to the next **draft** agenda.
 In scope for this phase:
 
 - A private, session-authenticated JSON surface for work that already exists:
-  meeting types, meeting bodies, dated agendas, tracked items.
+  meeting types, meeting bodies, dated agendas, and Endeavors.
 - A private generated handbook at `GET /api` so the Bot can operate without a
   human manual and without MCP or public docs.
 - The same `can?` rules as the HTML app. The Bot acts as the signed-in user
   (Commander/admin in the first installation).
 - Draft-only writes unless the human explicitly asks to approve or publish an
   agenda.
-- CSRF for JSON POSTs via the existing Rails authenticity token (the Bot reads
-  it from the signed-in app).
+- CSRF for session-authenticated JSON writes via the handbook token; bearer writes use
+  mandatory idempotency keys and execution provenance.
 
 Out of scope for this phase:
 
@@ -66,8 +71,8 @@ Out of scope for this phase:
   Access phase subsequently added personal agent tokens for terminal use.
 - Search, autocomplete, or synonym matching.
 - Chat ingest, schedulers, or “scan the group chat” jobs inside Rails.
-- Minutes, transcripts, PDF, or email distribution. When those exist, add them
-  to the handbook; do not pretend they exist now.
+- Email distribution and finalized official-minutes documents. Working minutes,
+  transcripts, draft PDF, and their review ledger now exist and are in the handbook.
 - A dedicated weaker bot user. The Bot uses the particular member's own user and
   current grants.
 - Auto-approve, auto-publish, or any implied approve/attest/accept of minutes.
@@ -124,8 +129,9 @@ An unauthenticated hit on `/api` returns 401 and a short public sentence: this
 is a private post operations app; sign in, then open `/api`. No member, roster,
 or meeting data.
 
-The handbook is generated from a single in-app catalog of actions, not a
-hand-written README. When a later phase adds minutes, the catalog grows.
+The handbook is generated from a single in-app catalog of actions, not a hand-written
+README. It now permission-filters agenda, accounts, transcript, working-minutes, AI-review,
+Jobs, and draft-PDF actions for the current caller.
 
 ## Auth and browser gates
 
@@ -143,25 +149,27 @@ hand-written README. When a later phase adds minutes, the catalog grows.
 | Bot / LLM | App |
 |---|---|
 | “Next Tuesday,” “PEC,” “the car show,” “next meeting” | ISO datetimes, ids, exact titles in lists |
-| Matching a topic to a tracked item | `GET` list of tracked items |
-| Deciding a chat message is new post business | Current agendas + active tracked items |
+| Matching a topic to an Endeavor | `GET` list of Endeavors |
+| Deciding a chat message is new post business | Current agendas + active Endeavors |
 | Whether to create vs add vs skip | Duplicate detection is “look at the list” |
 | Approving or publishing | Only when the human said so |
 
 Do not add SQL search, pg_trgm, or ranking. Index payloads stay small and
 complete enough to choose: id, title, status, dates, meeting body, and whether
-a tracked item is already on an upcoming agenda.
+an Endeavor is already on an upcoming agenda.
 
 ## API shape
 
 A small `Api` namespace. HTML controllers stay HTML (they redirect). API
 controllers return JSON and call the same model methods the UI already uses. The initial
-surface covered agenda creation and tracked-item work. The August 29 parity extension also
+surface covered agenda creation and continuing-business work. The August 29 parity extension also
 covers catalog maintenance, standalone dated-item creation, exact section ordering,
 dated-item editing/removal, whole-agenda deletion, and dated roll-call replacement/refresh;
-see the linked parity design for safety decisions.
+the August 31 extension covers account state, restricted transcript evidence, structured
+working minutes, roster identity, AI review, durable Jobs, and draft-PDF retrieval. See the
+linked parity designs for safety decisions and the live `GET /api` handbook for routes.
 
-Suggested first resources (all under `/api`, all session + `can?`):
+Core resources (all under `/api`, session or bearer plus current capabilities):
 
 - `GET /api` — handbook
 - `GET /api/meeting_bodies`
@@ -169,25 +177,32 @@ Suggested first resources (all under `/api`, all session + `can?`):
 - `GET /api/position_titles`
 - `GET/POST/PATCH /api/agenda_item_catalog_entries` and complete-order `POST .../reorder`
 - `GET /api/dated_agendas` — upcoming first, include status and body/type
-- `GET /api/dated_agendas/:id` — sections and items, including tracked-item links,
+- `GET /api/dated_agendas/:id` — sections and items, including Endeavor links,
   document controls, Commander cues, and the dated officer-list snapshot
-- `POST /api/dated_agendas` — create **draft** from meeting type + body + `starts_at`
-- `POST /api/dated_agendas/:id/tracked_items` — snapshot an existing tracked item into an
+- `POST /api/dated_agendas` — attach a **draft** agenda to an exact existing `meeting_id`
+- `POST /api/dated_agendas/:id/endeavors` — snapshot an existing Endeavor into an
   exact section on a draft; 422 if locked or already present
 - `POST /api/dated_agendas/:dated_agenda_id/items` — create a standalone one-meeting row in
-  an exact section without creating catalog or tracker records
-- `PATCH/DELETE /api/dated_agendas/:dated_agenda_id/items/:id` — edit, link to tracked
+  an exact section without creating catalog or Endeavor records
+- `PATCH/DELETE /api/dated_agendas/:dated_agenda_id/items/:id` — edit, link to continuing
   business in place, move, or explicitly remove a draft snapshot row
 - `POST /api/dated_agendas/:dated_agenda_id/sections/:section_id/items/reorder` — submit the
   complete active same-section item order after creates, links, or moves
 - `PATCH .../items/:item_id/roll_call` — replace a draft's meeting-scoped officer snapshot
 - `GET /api/position_titles` and `POST .../roll_call/refresh` — resolve office ids and,
   only when asked, reset from assignments active on the meeting date
-- `GET /api/tracked_items` — active first; include raise-by, importance, usual body, upcoming-agenda ids
-- `GET /api/tracked_items/:id`
-- `POST /api/tracked_items`
-- `POST /api/tracked_items/:id/updates`
-- `PATCH /api/tracked_items/:id/complete` and `reopen`
+- `GET /api/endeavors` — active first; include raise-by, importance, usual body, and upcoming-agenda ids
+- `GET /api/endeavors/:id`
+- `POST /api/endeavors`
+- `POST /api/endeavors/:id/updates`
+- `PATCH /api/endeavors/:id/complete` and `reopen`
+- `GET/POST/DELETE /api/people/:person_id/account` and `PATCH .../roster_control`
+- `GET/POST /api/meetings/:meeting_id/transcript`, with content only on explicit read
+- `GET/POST/PATCH /api/meetings/:meeting_id/minutes` plus structured sections, items,
+  outcomes, exact reorders, and attendance replacement
+- `GET/POST /api/meetings/:meeting_id/minutes/draft_runs` plus source-linked suggestion
+  review and linked retry/discard/restore actions
+- `GET /api/meetings/:meeting_id/minutes/print` and `GET /api/jobs`
 
 Approve/publish/reopen and destructive or snapshot-reset actions are omitted from the
 common path and documented under **Only when asked**. This includes whole-agenda deletion,
@@ -213,15 +228,15 @@ rich fields when needed for a single record.
 - A dated roll call is a historical meeting snapshot. Today's officer list must not replace
   it unless the human explicitly requests refresh.
 - Do not invent minutes, votes, or attestations.
-- Always list before creating, so the Car Show does not become a second tracked
-  item.
+- Always list before creating, so the Car Show does not become a second Endeavor.
 - Chat content is not stored. Only post business the officer would have entered
   by hand.
 
 ## What later phases add
 
-When minutes exist: handbook entries for draft/review, and still no silent edit
-of accepted minutes.
+Draft/review minutes entries now exist. Later phases add the exact human-confirmation
+workflow for approval, attestation, acceptance, amendment, and immutable official
+documents; there is still no silent edit of accepted minutes.
 
 The completed access phase added cross-device email-code sign-in and a revocable personal
 agent token on Profile. It carries the user's current delegated grants, but it does not
@@ -240,10 +255,10 @@ Grok Bot, signed in as Commander on its VM, can:
 
 1. Open `/api` and learn the live actions.
 2. Create a draft PEC (or Membership) agenda for a date it computed.
-3. Put existing tracked business on that draft, or create tracked business
+3. Put an existing Endeavor on that draft, or create an Endeavor
    after listing and failing to find it.
 4. Create a standalone historical row when business belongs only to that meeting, or link
-   a long-lived row to a Tracked Item in place without duplication.
+   a long-lived row to an Endeavor in place without duplication.
 5. Set each changed section to the complete officer-supplied order rather than relying on
    create sequence.
 6. Read and, when asked, edit a dated officer-list snapshot without changing role history.

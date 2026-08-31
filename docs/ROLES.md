@@ -161,10 +161,22 @@ must use the same policy and return the same class of information for the same p
 - A person with a scoped duty and that person's agent may access only the granted slice.
 - A Past Post Commander and that person's agent receive the standard member baseline
   unless another current source of authority applies.
+- A person with `manage_minutes` and that person's agent may perform ordinary structured
+  draft-minutes work, including restricted transcript work and human review of AI
+  suggestions. `view_internal_records` supplies corresponding read-only evidence access.
+- A person with `manage_settings` and that person's agent may inspect and manage login
+  account state through the same last-administrator and roster-control protections as the
+  website.
 
 Do not create bot-only shortcuts, bot-only restrictions, or a second set of authorization
 rules. API serializers must still select fields deliberately; they must not dump complete
 database records simply because the caller is authenticated.
+
+The exception is not a weaker bot role but a stronger proof requirement for an official
+act. A session or bearer token delegates the person's routine authority; it does not prove
+fresh intent to approve, attest, accept, or amend exact minutes. Those actions remain
+unavailable to the API until the one-use record/action/version-bound human confirmation
+described in `docs/MINUTES_LIFECYCLE.md` exists.
 
 Bulk access is a usability requirement where the person is authorized to work with the
 whole set. It must not be simulated through repeated single-person lookups. Conversely,

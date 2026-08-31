@@ -5,8 +5,8 @@
 The Endeavor MVP is the durable continuity layer for coherent American Legion Post work.
 The behavior-preserving rename from Tracked Item to Endeavor establishes the final domain
 name and `endeavor_id` seam. The first-class Meeting foundation and member archive are now
-complete. The next core product work is the structured Minutes lifecycle, not expansion
-into project management.
+complete, as is structured draft-minutes seeding and human-reviewed AI assistance. The next
+core product work is the official Minutes lifecycle, not expansion into project management.
 
 `docs/ENDEAVOR_GOVERNANCE.md` remains authoritative for identity and ownership rules. This
 plan records implementation order, integration contracts, validation cases, and deferred
@@ -32,10 +32,11 @@ The rename must be reviewed and landed as its own coherent change before Meeting
 Minutes implementation begins so the new work starts from a clean schema and review
 boundary.
 
-## Immediate integration: Meeting and Minutes
+## Implemented draft integration and remaining official lifecycle
 
 Minutes are official meeting records; Endeavors are continuity records. Neither owns or
-replaces the other. The next implementation must preserve the following contract.
+replaces the other. The implemented draft integration and remaining official lifecycle
+preserve the following contract.
 
 ### First-class Meeting occurrence
 
@@ -59,10 +60,11 @@ replaces the other. The next implementation must preserve the following contract
   saved Meetings. Meeting deletion is permitted only while no agenda, minutes, or other
   dependent historical record exists.
 
-The completed first implementation milestone is the Meeting creator and member archive
-described in `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md`. The governing design for the
-next milestone is `docs/MINUTES_LIFECYCLE.md`; follow its source, revision, lifecycle,
-confirmation, acceptance, and immutability boundaries before adding minutes tables.
+The completed Meeting creator and member archive are described in
+`docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md`. Structured draft minutes now implement
+the source and direct-identity boundary. The governing design for the remaining lifecycle
+is `docs/MINUTES_LIFECYCLE.md`; follow its revision, confirmation, acceptance, and
+immutability boundaries before making drafts official.
 
 ### Direct identity and source lineage
 
@@ -129,7 +131,7 @@ first proof of the integration. The workflow should demonstrate that an officer 
 2. attach the existing dated agenda to that Meeting without rewriting the agenda;
 3. confirm that the Meeting appears in the member archive with its published agenda and
    that an upcoming Meeting without an agenda is labeled honestly;
-4. paste or upload the transcript as private source material;
+4. paste the transcript as private source material;
 5. seed structured draft minutes from the agenda, including direct Endeavor links and
    source lineage;
 6. review transcript-assisted wording, add unplanned business, record actual attendance,

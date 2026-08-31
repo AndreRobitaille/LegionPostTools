@@ -34,7 +34,8 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 
 ## Production Readiness Side-Roadmap
 
-As a bounded operational track, prepare the first real production installation for Robert E. Burns Post 165. This does not replace Structured Agendas as the next core product workflow.
+As a bounded operational track, prepare the first real production installation for Robert
+E. Burns Post 165. This did not replace the core product sequence.
 
 Completed for the first production setup:
 
@@ -80,7 +81,7 @@ Still pending:
 - Plain-language old-business priority suggestions from active Endeavors.
 - Independent Endeavor snapshots added to chosen sections of draft agendas.
 - Read access for signed-in members and management through `manage_agendas`.
-- A final `endeavor_id` identity seam for future structured minutes items, without making
+- A final `endeavor_id` identity seam used by structured minutes items, without making
   meeting wording depend on later Endeavor edits.
 
 See `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` for the completed foundation, the minutes
@@ -157,14 +158,18 @@ Build:
 
 The first slice deliberately did not build TUI, CLI package, MCP, public `llms.txt`,
 chat ingest, or minutes endpoints. The completed access phase added personal agent
-tokens without adding those broader protocol surfaces.
+tokens, and the completed draft-minutes parity extension now exposes the ordinary
+officer/admin work that exists in the HTML app without adding those broader protocol
+surfaces.
 
 See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`,
 `docs/superpowers/plans/2026-08-22-officer-agent-operability.md`, and
 `docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md`.
 
-When minutes, PDF, or distribution ship, add them to the handbook. MCP still waits
-until connector-style onboarding is worth another protocol surface.
+Draft minutes, their print-ready PDF, transcript review, AI runs, background-job status,
+and account controls are now in the generated handbook. Official minutes actions and
+distribution remain future work. MCP still waits until connector-style onboarding is
+worth another protocol surface.
 
 ## Completed: Agent Sign-in and Access
 
@@ -223,7 +228,7 @@ honestly.
 - Update the private Meeting/agenda API and generated handbook in the same slice so an
   authorized delegated agent cannot bypass the first-class Meeting boundary.
 
-## Next Core Work: Structured Minutes Lifecycle
+## Structured Minutes Lifecycle
 
 The detailed governing design is `docs/MINUTES_LIFECYCLE.md`. Build the next slices so the
 web app can use the historical Meeting, agenda, and transcript as distinct sources to
@@ -236,7 +241,7 @@ Meeting. Build the structured editor and AI generation in the same slice: the ed
 the safe correction foundation and manual fallback, while the generated first pass is the
 normal Adjutant experience.
 
-### Slice 2: Private source material and structured draft minutes
+### Completed Slice 2: Private source material and structured draft minutes
 
 - Add one optional `Minutes` record per Meeting, with structured `MinutesSection` and
   `MinutesItem` children rather than one large rich-text document.
@@ -270,6 +275,14 @@ normal Adjutant experience.
 - Give officers an admin Jobs console for background work. Use durable workflow runs as
   the authority, show queue health separately, and make failed AI draft retries create a
   linked new attempt while discard preserves the original record.
+- Expose the proven workflow through the private API so a bot or agent can perform ordinary
+  `manage_minutes` work on the officer's behalf: attach and explicitly read restricted
+  transcripts, create and edit the structured draft, review AI suggestions and attendance,
+  resolve roster identities, inspect durable runs, and retrieve the draft PDF. Keep AI
+  transmission/retry and destructive/account-control changes under **Only when asked**.
+- Preserve the authority boundary: no API route approves, attests, accepts, amends, or
+  otherwise makes minutes official. Those identity-bound actions wait for Slice 3's exact
+  one-use human confirmation.
 
 ### Slice 3: Human review, approval, and attestation
 
@@ -306,14 +319,14 @@ normal Adjutant experience.
 - Present accepted minutes as the primary historical document, attested minutes as
   awaiting acceptance, and the published agenda as a retained secondary document.
 
-### Slice 5: Delivery and delegated access
+### Slice 5: Official delivery and remaining delegated access
 
-- Generate the finalized US Letter minutes PDF from the shared print-first meeting
-  document system after the official lifecycle is correct.
+- Promote the existing print-ready draft-minutes document into finalized attested and
+  official PDFs from immutable revisions after the official lifecycle is correct.
 - Add email distribution and delivery records after final document generation is stable.
-- Add draft-minutes API and generated-handbook guidance only after the HTML workflow is
-  proven. Add official-action API surfaces only with the same one-use human confirmation,
-  idempotency, and execution audit required by the browser workflow.
+- Draft-minutes API and generated-handbook parity are complete. Add official-action API
+  surfaces only with the same one-use human confirmation, idempotency, and execution audit
+  required by the browser workflow.
 
 The guided catalog-item creation improvement, Endeavor merge/split tools, Four Pillars,
 events, assignments, dashboards, reminders, general document archives, and broad AI

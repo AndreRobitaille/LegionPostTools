@@ -75,6 +75,7 @@ yarn-debug.log*
 !/docs/superpowers/specs/
 /docs/superpowers/specs/*
 !/docs/superpowers/specs/2026-08-30-roster-managed-user-access-design.md
+!/docs/superpowers/specs/2026-08-31-agent-minutes-api-parity-design.md
 .worktrees/
 
 # Ignore key files for decrypting credentials and more.

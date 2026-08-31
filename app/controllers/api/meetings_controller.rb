@@ -1,6 +1,7 @@
 module Api
   class MeetingsController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    before_action :require_meeting_read_access, only: %i[index show]
+    before_action -> { require_capability("manage_agendas") }, only: %i[create update destroy]
     before_action :set_meeting, only: %i[show update destroy]
 
     def index
@@ -38,7 +39,7 @@ module Api
 
     def destroy
       unless @meeting.empty_record?
-        return render_error("Remove the meeting's agenda before deleting the meeting.", status: :unprocessable_entity)
+        return render_error("Remove the meeting's agenda and other draft documents before deleting the meeting. Historical records cannot be deleted.", status: :unprocessable_entity)
       end
 
       deleted = meeting_payload(@meeting)
@@ -50,13 +51,25 @@ module Api
 
     private
 
+    def require_meeting_read_access
+      require_authentication
+      return if performed?
+      return if current_user.can_any?("manage_agendas", "manage_minutes", "view_internal_records")
+
+      render_error("You do not have permission to open that.", status: :forbidden)
+    end
+
     def set_meeting
-      @meeting = organization.meetings.includes(:dated_agenda).find(params[:id])
+      @meeting = organization.meetings.includes(meeting_includes).find(params[:id])
     end
 
     def ordered_meetings
-      meetings = organization.meetings.includes(:meeting_body, :meeting_type, :dated_agenda)
+      meetings = organization.meetings.includes(meeting_includes)
       meetings.upcoming.to_a + meetings.past.to_a
+    end
+
+    def meeting_includes
+      [ :meeting_body, :meeting_type, :dated_agenda, { transcript: { created_by: :person } }, :minutes ]
     end
 
     def meeting_attributes

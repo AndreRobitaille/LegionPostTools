@@ -8,8 +8,8 @@ This document summarizes current architecture and durable product decisions.
 - PostgreSQL.
 - Hotwire/Turbo with importmap.
 - Tailwind CSS.
-- Action Text is installed and present for planned rich text workflows.
-- Active Storage is installed and present for planned file and artifact workflows.
+- Action Text stores rich content inside structured agenda, Endeavor, and minutes records.
+- Active Storage supports roster-import source files and constrained transcript text files.
 - Solid Queue for background jobs.
 - Docker and Kamal for deployment.
 
@@ -82,13 +82,24 @@ Meeting records are the core product direction.
   appearances form a continuity record across meetings.
 - Adding an Endeavor to a dated agenda creates an independent agenda-item snapshot. Later
   Endeavor edits cannot silently rewrite an approved or published agenda.
-- `DatedAgendaItem#endeavor_id` is optional. A future structured minutes item may copy that
+- `DatedAgendaItem#endeavor_id` is optional. A structured minutes item may copy that
   identity deliberately when seeded, while preserving its own independent wording.
 - Document-wording visibility and Commander-only cues follow the same catalog-to-template-to-dated
   snapshot boundary. Member documents never render Commander cues.
 - Officer roll call is structured dated-agenda data. It snapshots assignments active on the
   meeting date so later officer changes cannot rewrite a historical working document; recorded
   attendance belongs to the minutes lifecycle.
+- `MeetingMinutes` is the one structured working record for a Meeting. Its independently
+  ordered sections, items, outcomes, attendance rows, heading snapshots, agenda lineage,
+  and direct Endeavor links remain relational rather than collapsing into one document.
+- `MeetingTranscript` is restricted source evidence owned by the Meeting. Content is kept
+  out of member views, print, routine serializers, logs, and Jobs responses.
+- `MinutesDraftRun` is the durable authority for each background OpenAI attempt. Suggestions
+  are source-linked review records; using, editing, or discarding them never turns AI output
+  into an official record. Retry creates a linked attempt and discard preserves history.
+- The working-minutes PDF is an officer-only print artifact generated from the same
+  structured draft. Agenda wording and Recorded minutes remain visually distinct, motions
+  remain structured, and direct Endeavor navigation metadata does not print.
 
 ## Official Records
 
@@ -115,19 +126,26 @@ JSON surface and a generated handbook at `/api`. It is still not the authority o
 Group chat, email, and other outside channels stay in the agent’s own tools;
 this app only stores post business.
 
-The private API mirrors agenda data operations needed for delegated work: reusable catalog
-maintenance, dated-agenda changes, standalone one-meeting rows, exact same-section item
-ordering, Endeavor continuity, and meeting-scoped officer-list snapshots. Standalone
-rows do not require catalog or Endeavor records; cross-section moves append and a separate
-complete-order action establishes final document order. The API does not turn print
-presentation into JSON or let today's officer directory silently overwrite a historical
-roll call. Deletion, removal, snapshot reset, approval, publication, and reopen remain
-explicit **only when asked** actions in the live handbook.
+The private API is the machine-friendly operating surface for a bot or agent acting for
+the authenticated person. It mirrors ordinary officer/admin work that exists in the app:
+account access controls; Meeting and agenda operations; Endeavor continuity; restricted
+transcript attachment/read; structured draft-minutes editing; roster-backed motion and
+attendance review; durable AI runs; Jobs status; and draft-PDF retrieval. It uses the same
+current capabilities as HTML, session CSRF or bearer idempotency, organization scoping,
+optimistic locks, and agent-execution provenance. It does not turn print presentation into
+JSON or let today's officer directory silently overwrite a historical snapshot.
+
+AI transmission/retry, account-control changes, deletion, removal, snapshot reset, agenda
+approval/publication, and reopen are explicit **Only when asked** actions in the live
+handbook. No private API route approves, attests, accepts, amends, or otherwise makes
+minutes official; those future routes require exact one-use human confirmation in addition
+to delegated authentication.
 
 Provider-specific AI integration should stay behind replaceable service boundaries. OpenAI is expected first, but the domain should not depend directly on one provider.
 
 See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` and
-`docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md`.
+`docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md`, and
+`docs/superpowers/specs/2026-08-31-agent-minutes-api-parity-design.md`.
 
 ## Deferred Architecture
 

@@ -1,5 +1,10 @@
 # Meeting Foundation and Member Archive
 
+**Milestone status:** Implemented. This document preserves the foundation's original
+scope. The later structured draft-minutes layer is now implemented as described in
+`docs/MINUTES_LIFECYCLE.md`; approval, attestation, acceptance, amendments, and member
+minutes progression remain future work.
+
 ## Purpose
 
 LegionPostTools currently treats a dated agenda as the closest thing to a meeting. That
@@ -330,10 +335,11 @@ Update the generated handbook and examples atomically. Do not leave an agent-onl
 that creates a free-standing dated agenda. Bearer-authenticated mutations keep existing
 idempotency and execution provenance behavior.
 
-## Future Minutes Contract
+## Minutes Contract and Current Boundary
 
-Slice 2 will add one structured Minutes record per Meeting. Its detailed governing design
-is `docs/MINUTES_LIFECYCLE.md`; this archive depends on these settled states:
+Slice 2 added one structured `MeetingMinutes` record per Meeting, restricted transcript
+source, AI-assisted review, and a draft PDF. Its detailed governing design is
+`docs/MINUTES_LIFECYCLE.md`; the archive still depends on these remaining official states:
 
 ```text
 draft -> approved -> attested -> accepted

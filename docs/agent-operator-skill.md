@@ -25,5 +25,8 @@ within this account's current app grants.
   expired token.
 
 Neither a browser session nor an agent token proves fresh human intent for an
-official-record act.
+official-record act. Within the user's current grants, the private API is intended for
+ordinary officer/admin execution—not merely read-only reporting. Its live handbook covers
+meetings, agendas, accounts, transcripts, structured draft minutes, AI review, and Jobs as
+those capabilities permit.
 Further reading is `/api`, not this note.

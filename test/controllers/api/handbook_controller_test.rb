@@ -57,7 +57,11 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_match(/on-screen member agenda/i, fields.fetch("summary")["meaning"])
     assert_match(/Send body.*returns.*wording/i, fields.fetch("body (write) / wording (read)")["meaning"])
     assert_match(/never chooses.*section/i, fields.fetch("category")["meaning"])
-    assert_match(/future draft minutes/i, fields.fetch("show_wording_in_minutes")["meaning"])
+    assert_match(/working-minutes item/i, fields.fetch("show_wording_in_minutes")["meaning"])
+    minutes_fields = body.fetch("minutes_fields").index_by { |field| field["name"] }
+    assert_match(/reviewed record/i, minutes_fields.fetch("body")["meaning"])
+    assert_match(/source-agenda snapshot/i, minutes_fields.fetch("agenda_wording")["meaning"])
+    assert_match(/Passed/i, minutes_fields.fetch("disposition")["meaning"])
     workflow = body.fetch("guided_workflows").find { |entry| entry["name"] == "backfill_historical_business" }
     assert_not_nil workflow
     assert workflow.fetch("steps").any? { |step| step.match?(/link.*in place/i) }
@@ -69,6 +73,14 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert body["common_actions"].any? { |action| action["name"] == "reorder_dated_agenda_section_items" }
     assert body["common_actions"].any? { |action| action["name"] == "replace_dated_roll_call" }
     assert body["common_actions"].any? { |action| action["path"] == "/api/membership/summary" }
+    assert body["common_actions"].any? { |action| action["name"] == "show_working_minutes" }
+    assert body["common_actions"].any? { |action| action["name"] == "create_working_minutes" }
+    assert body["common_actions"].any? { |action| action["name"] == "replace_minutes_attendance" }
+    assert body["common_actions"].any? { |action| action["name"] == "show_user_account" }
+    assert body["common_actions"].any? { |action| action["name"] == "list_background_jobs" }
+    minutes_workflow = body.fetch("guided_workflows").find { |entry| entry["name"] == "prepare_and_review_draft_minutes" }
+    assert_not_nil minutes_workflow
+    assert minutes_workflow.fetch("steps").any? { |step| step.match?(/do not approve, attest, accept/i) }
     asked = body["only_when_asked"].map { |action| action["name"] }
     assert_includes asked, "approve_dated_agenda"
     assert_includes asked, "publish_dated_agenda"
@@ -76,6 +88,9 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes asked, "delete_dated_agenda"
     assert_includes asked, "remove_dated_agenda_item"
     assert_includes asked, "refresh_dated_roll_call"
+    assert_includes asked, "request_ai_minutes_draft"
+    assert_includes asked, "retry_ai_minutes_draft"
+    assert_includes asked, "disable_user_account"
     assert_equal false, body["common_actions"].any? { |action| action["name"]&.start_with?("approve") }
     assert body["domain"].present?
     assert body["calling"].present?
@@ -128,7 +143,27 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes paths, [ "GET", "/api/membership/summary" ]
     assert_equal "directory", response.parsed_body.dig("caller", "people_access")
     assert_equal [], response.parsed_body["agenda_item_fields"]
+    assert_equal [], response.parsed_body["minutes_fields"]
     assert_equal [], response.parsed_body["guided_workflows"]
+  end
+
+  test "internal-record viewer receives minutes reads without mutations or restricted transcript content" do
+    viewer = create_user("Viewer", capabilities: %w[view_internal_records])
+    sign_in_as(viewer)
+
+    get "/api", as: :json
+
+    assert_response :success
+    common = response.parsed_body.fetch("common_actions").index_by { |action| action["name"] }
+    assert common.key?("list_meetings")
+    assert common.key?("show_working_minutes")
+    assert common.key?("print_draft_minutes")
+    assert common.key?("read_transcript_content")
+    assert_not common.key?("create_working_minutes")
+    assert_not common.key?("create_transcript")
+    assert_not common.key?("list_background_jobs")
+    assert response.parsed_body.fetch("minutes_fields").present?
+    assert_equal [], response.parsed_body.fetch("guided_workflows")
   end
 
   test "current configured membership officer receives membership actions without app grants" do

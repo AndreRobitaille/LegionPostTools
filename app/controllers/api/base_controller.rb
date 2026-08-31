@@ -294,6 +294,196 @@ module Api
         agenda: meeting.dated_agenda ? {
           id: meeting.dated_agenda.id,
           status: meeting.dated_agenda.status
+        } : nil,
+        transcript: meeting.transcript ? transcript_summary_payload(meeting.transcript) : nil,
+        minutes: meeting.minutes ? minutes_summary_payload(meeting.minutes) : nil
+      }
+    end
+
+    def transcript_summary_payload(transcript)
+      {
+        id: transcript.id,
+        meeting_id: transcript.meeting_id,
+        source_kind: transcript.source_kind,
+        original_filename: transcript.original_filename,
+        byte_size: transcript.byte_size,
+        media_type: transcript.media_type,
+        retention_policy: transcript.retention_policy,
+        source_available: transcript.source_available?,
+        created_by: directory_person_payload(transcript.created_by.person),
+        created_at: transcript.created_at.iso8601,
+        purged_at: transcript.purged_at&.iso8601
+      }
+    end
+
+    def minutes_summary_payload(minutes)
+      {
+        id: minutes.id,
+        meeting_id: minutes.meeting_id,
+        status: minutes.status,
+        title: minutes.title,
+        starts_at: minutes.starts_at.iso8601,
+        location_name: minutes.location_name,
+        lock_version: minutes.lock_version,
+        updated_at: minutes.updated_at.iso8601
+      }
+    end
+
+    def minutes_detail_payload(minutes)
+      minutes_summary_payload(minutes).merge(
+        location_address: minutes.location_address,
+        meeting_body: meeting_body_payload(minutes.meeting_body),
+        meeting_type: meeting_type_payload(minutes.meeting_type),
+        draft_pdf_path: "/api/meetings/#{minutes.meeting_id}/minutes/print",
+        attendance: minutes.attendance_entries.map { |entry| minutes_attendance_payload(entry) },
+        sections: minutes.sections.map { |section| minutes_section_payload(section) },
+        draft_runs: minutes.draft_runs.map { |run| minutes_draft_run_payload(run) }
+      )
+    end
+
+    def minutes_section_payload(section)
+      {
+        id: section.id,
+        title: section.title,
+        position: section.position,
+        source_dated_agenda_section_id: section.source_dated_agenda_section_id,
+        lock_version: section.lock_version,
+        items: section.items.map { |item| minutes_item_payload(item) }
+      }
+    end
+
+    def minutes_item_payload(item)
+      {
+        id: item.id,
+        minutes_section_id: item.minutes_section_id,
+        source_dated_agenda_item_id: item.source_dated_agenda_item_id,
+        endeavor_id: item.endeavor_id,
+        record_key: item.record_key,
+        title: item.title,
+        behavior_type: item.behavior_type,
+        position: item.position,
+        agenda_wording: item.agenda_body.to_plain_text.presence,
+        body: item.body.to_plain_text.presence,
+        lock_version: item.lock_version,
+        outcomes: item.outcomes.map { |outcome| minutes_outcome_payload(outcome) }
+      }
+    end
+
+    def minutes_outcome_payload(outcome)
+      {
+        id: outcome.id,
+        minutes_item_id: outcome.minutes_item_id,
+        kind: outcome.kind,
+        text: outcome.text,
+        mover_person_id: outcome.mover_person_id,
+        mover_name: outcome.mover_name,
+        seconder_person_id: outcome.seconder_person_id,
+        seconder_name: outcome.seconder_name,
+        disposition: outcome.disposition,
+        disposition_label: minutes_disposition_label(outcome.disposition),
+        vote_summary: outcome.vote_summary,
+        position: outcome.position,
+        lock_version: outcome.lock_version
+      }
+    end
+
+    def minutes_disposition_label(disposition)
+      {
+        "adopted" => "Passed",
+        "lost" => "Did not pass",
+        "withdrawn" => "Withdrawn",
+        "postponed" => "Postponed",
+        "referred" => "Referred",
+        "no_vote" => "No vote taken",
+        "not_recorded" => "Needs review"
+      }.fetch(disposition)
+    end
+
+    def minutes_attendance_payload(entry)
+      {
+        id: entry.id,
+        dated_agenda_roll_call_entry_id: entry.dated_agenda_roll_call_entry_id,
+        position_title_id: entry.position_title_id,
+        person_id: entry.person_id,
+        office_name: entry.office_name,
+        person_name: entry.person_name,
+        status: entry.status,
+        position: entry.position,
+        lock_version: entry.lock_version
+      }
+    end
+
+    def minutes_draft_run_payload(run, include_suggestions: false)
+      payload = {
+        id: run.id,
+        meeting_minutes_id: run.meeting_minutes_id,
+        meeting_id: run.meeting_minutes.meeting_id,
+        meeting_transcript_id: run.meeting_transcript_id,
+        status: run.status,
+        provider: run.provider,
+        model: run.model,
+        reasoning_effort: run.reasoning_effort,
+        text_verbosity: run.text_verbosity,
+        prompt_version: run.prompt_version,
+        schema_version: run.schema_version,
+        source_line_count: run.source_line_count,
+        requested_by: directory_person_payload(run.requested_by.person),
+        retry_of_id: run.retry_of_id,
+        discarded: run.discarded?,
+        discarded_at: run.discarded_at&.iso8601,
+        error_category: run.error_category,
+        input_tokens: run.input_tokens,
+        output_tokens: run.output_tokens,
+        reasoning_tokens: run.reasoning_tokens,
+        total_tokens: run.total_tokens,
+        started_at: run.started_at&.iso8601,
+        completed_at: run.completed_at&.iso8601,
+        created_at: run.created_at.iso8601,
+        updated_at: run.updated_at.iso8601,
+        review_counts: run.suggestions.reorder(nil).group(:review_state).count
+      }
+      payload[:suggestions] = run.suggestions.map { |suggestion| minutes_draft_suggestion_payload(suggestion) } if include_suggestions
+      payload
+    end
+
+    def minutes_draft_suggestion_payload(suggestion)
+      {
+        id: suggestion.id,
+        kind: suggestion.kind,
+        confidence: suggestion.confidence,
+        review_state: suggestion.review_state,
+        payload: suggestion.payload,
+        missing_facts: suggestion.missing_facts,
+        source_start_line: suggestion.source_start_line,
+        source_end_line: suggestion.source_end_line,
+        minutes_item_id: suggestion.minutes_item_id,
+        minutes_attendance_entry_id: suggestion.minutes_attendance_entry_id,
+        minutes_section_id: suggestion.minutes_section_id,
+        source_dated_agenda_item_id: suggestion.source_dated_agenda_item_id,
+        reviewed_by: suggestion.reviewed_by ? directory_person_payload(suggestion.reviewed_by.person) : nil,
+        reviewed_at: suggestion.reviewed_at&.iso8601,
+        applied_record_type: suggestion.applied_record_type,
+        applied_record_id: suggestion.applied_record_id
+      }
+    end
+
+    def user_account_payload(person)
+      user = person.user
+      {
+        person_id: person.id,
+        person_name: person.roster_display_name,
+        roster_managed: person.roster_backed?,
+        roster_status: person.roster_member_status,
+        roster_removed_at: person.roster_removed_at&.iso8601,
+        account: user ? {
+          id: user.id,
+          email_address: user.email_address,
+          enabled: user.disabled_at.blank?,
+          disabled_at: user.disabled_at&.iso8601,
+          disabled_reason: user.disabled_reason,
+          disabled_reason_detail: user.disabled_reason_detail,
+          login_access_override: user.login_access_override,
+          capabilities: user.permission_grants.order(:capability).pluck(:capability)
         } : nil
       }
     end

@@ -66,6 +66,28 @@ Required clear env values:
 
 If an install is not using Loops, `MAIL_PROVIDER=action_mailer` is the SMTP/Action Mailer alternative. Configure the usual SMTP delivery settings for that install.
 
+AI minutes drafting reads `openai_access_token` from Rails encrypted credentials. Add it
+with `VISUAL=nvim bin/rails credentials:edit`; never edit `config/credentials.yml.enc`
+directly and never put the token in `.env`, Kamal clear environment values, documentation,
+or Git output. The encrypted credentials file is deployed with the application image and
+production's `RAILS_MASTER_KEY` decrypts it, so a separate production edit is unnecessary
+when development and production intentionally share that credentials file and master key.
+An installation may instead supply `OPENAI_ACCESS_TOKEN` or `OPENAI_API_KEY` as a Kamal
+secret, but use only one deliberate source.
+
+Optional clear tuning values are `OPENAI_MINUTES_MODEL` (default `gpt-5.6-sol`),
+`OPENAI_MINUTES_REASONING_EFFORT` (default `high`),
+`OPENAI_MINUTES_TEXT_VERBOSITY` (default `medium`), and
+`OPENAI_MINUTES_TIMEOUT_SECONDS` (default `360`). Do not lower the model merely to reduce
+cost without evaluating representative Post transcripts.
+
+AI drafting runs through Solid Queue and may take several minutes. Production must keep a
+Solid Queue worker active (`SOLID_QUEUE_IN_PUMA=true` in the current single-host profile,
+or a separately configured worker). After deployment, use **Administration -> Jobs** or
+`GET /api/jobs` with an authorized account to verify worker heartbeat, queue depth, and
+durable run state. Retrying a failed minutes run creates a linked attempt; discarding only
+removes it from the attention list and does not erase history.
+
 For Post 165, `DB_HOST` should point at the Kamal Postgres accessory hostname on the Docker network.
 
 `APP_TIME_ZONE` controls local meeting entry, display, and local-day boundaries; Rails
