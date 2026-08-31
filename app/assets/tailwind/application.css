@@ -1168,9 +1168,40 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .ai-suggestion-ledger-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding: 21px 24px 18px; background: var(--color-ivory); border-bottom: 1px solid var(--rule-strong); }
 .ai-suggestion-ledger-head h2 { margin: 0; color: var(--color-navy); font-family: var(--font-serif); font-size: 24px; }
 .ai-suggestion-ledger-head > p { max-width: 290px; margin: 0; color: var(--color-muted); font-size: 13px; line-height: 1.45; text-align: right; }
+.ai-suggestion-ledger > turbo-frame { display: block; }
+.ai-attendance-sheet { background: #f7f2e5; border-bottom: 1px solid var(--rule-strong); }
+.ai-attendance-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 20px 24px 17px; }
+.ai-attendance-head h3 { margin: 0; color: var(--color-navy); font-family: var(--font-serif); font-size: 21px; }
+.ai-attendance-head p:last-child { margin: 6px 0 0; color: var(--color-muted); font-size: 13px; line-height: 1.45; }
+.ai-attendance-head > span { flex: 0 0 auto; color: var(--color-gold-ink); font-size: 11px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.ai-attendance-feedback { margin: 0 24px 14px; padding: 10px 13px; border-radius: var(--radius-control); font-size: 13px; line-height: 1.4; }
+.ai-attendance-feedback--saved { color: #245b36; background: #e8f3ea; border: 1px solid #b8d5bf; }
+.ai-attendance-feedback--error, .ai-inline-error { color: #71151e; background: #fbeaea; border: 1px solid #e3c3c3; }
+.ai-attendance-columns, .ai-attendance-row { display: grid; grid-template-columns: minmax(215px, 1fr) repeat(4, 88px); }
+.ai-attendance-columns { color: #fff; background: var(--color-navy); }
+.ai-attendance-columns span { display: flex; align-items: center; justify-content: center; min-height: 38px; padding: 7px 6px; border-left: 1px solid rgba(230,205,139,.28); font-size: 10px; font-weight: 850; line-height: 1.2; text-align: center; text-transform: uppercase; }
+.ai-attendance-columns span:first-child { justify-content: flex-start; padding-left: 18px; border-left: 0; text-align: left; }
+.ai-attendance-row { min-width: 0; margin: 0; padding: 0; background: #fff; border: 0; border-top: 1px solid var(--rule); }
+.ai-attendance-row:first-child { border-top: 0; }
+.ai-attendance-officer { min-width: 0; padding: 12px 16px 11px 18px; }
+.ai-attendance-officer strong, .ai-attendance-officer span, .ai-attendance-officer small { display: block; }
+.ai-attendance-officer strong { color: var(--color-navy); font-size: 14px; line-height: 1.3; }
+.ai-attendance-officer span { margin-top: 2px; color: var(--color-muted); font-size: 12px; line-height: 1.35; }
+.ai-attendance-officer small { margin-top: 5px; color: var(--color-gold-ink); font-size: 10px; font-weight: 850; letter-spacing: .035em; line-height: 1.3; text-transform: uppercase; }
+.ai-attendance-officer small.ai-attendance-recorded { color: var(--color-green); }
+.ai-attendance-choice { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; padding: 9px 5px; border-left: 1px solid var(--rule); cursor: pointer; }
+.ai-attendance-choice input { width: 17px; height: 17px; margin: 0; accent-color: var(--color-navy); }
+.ai-attendance-choice span { display: none; color: var(--color-navy); font-size: 12px; font-weight: 800; }
+.ai-attendance-choice:has(input:checked) { background: #edf3f7; box-shadow: inset 0 -3px 0 var(--color-officer-blue); }
+.ai-attendance-choice:has(input:focus-visible) { position: relative; z-index: 1; outline: 3px solid var(--color-gold); outline-offset: -3px; }
+.ai-attendance-row--vacant { color: var(--color-muted); background: #f2f3f4; }
+.ai-attendance-row--vacant .ai-attendance-officer strong { color: #5d6873; }
+.ai-attendance-vacant { display: flex; grid-column: 2 / -1; align-items: center; justify-content: center; color: #6e5a2b; border-left: 1px solid var(--rule); font-size: 12px; font-style: italic; }
+.ai-attendance-actions { display: flex; align-items: center; gap: 14px; padding: 16px 18px 18px; border-top: 1px solid var(--rule-strong); }
+.ai-attendance-actions p { margin: 0; color: var(--color-muted); font-size: 12px; line-height: 1.4; }
 .ai-suggestion-card { position: relative; padding: 22px 24px 22px 48px; border-top: 1px solid var(--rule); }
-.ai-suggestion-card:first-of-type { border-top: 0; }
-.ai-suggestion-card--used, .ai-suggestion-card--edited, .ai-suggestion-card--discarded { background: #f8f9fa; }
+.ai-suggestion-card--used, .ai-suggestion-card--edited { background: #f2f8f3; box-shadow: inset 4px 0 0 #6f9a78; }
+.ai-suggestion-card--discarded { background: #f8f9fa; }
 .ai-suggestion-card--discarded .ai-suggestion-proposal { color: var(--color-muted); text-decoration: line-through; text-decoration-color: #b8bec5; }
 .ai-suggestion-source-ribbon { position: absolute; top: 0; bottom: 0; left: 0; width: 30px; box-sizing: border-box; padding: 12px 7px; color: var(--color-navy); background: #e9d7a9; border-right: 1px solid #ccb472; font-family: var(--font-mono); font-size: 10px; font-weight: 850; line-height: 1.25; text-align: center; writing-mode: vertical-rl; transform: rotate(180deg); }
 .ai-suggestion-source-ribbon span { color: var(--color-gold-ink); letter-spacing: .1em; text-transform: uppercase; }
@@ -1198,7 +1229,12 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .ai-discard-button { min-height: 42px; padding: 8px 10px; color: var(--color-muted); background: transparent; border: 0; font-family: inherit; font-size: 14px; font-weight: 750; text-decoration: underline; cursor: pointer; }
 .ai-discard-button:hover { color: var(--color-legionred); }
 .ai-discard-button:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
-.ai-reviewed-note { margin: 14px 0 0; color: var(--color-muted); font-size: 12px; }
+.ai-inline-error { margin: 13px 0 0; padding: 10px 12px; font-size: 13px; line-height: 1.4; }
+.ai-suggestion-complete { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-top: 15px; padding: 10px 12px; border-radius: var(--radius-control); font-size: 12px; }
+.ai-suggestion-complete strong { font-size: 13px; }
+.ai-suggestion-complete span { color: var(--color-muted); }
+.ai-suggestion-complete--used, .ai-suggestion-complete--edited { color: #245b36; background: #e1efe4; border: 1px solid #b8d5bf; }
+.ai-suggestion-complete--discarded { color: var(--color-muted); background: #e9ecef; border: 1px solid #d5d9dd; }
 .ai-run-facts { padding: 20px; color: #eaf0f7; background: var(--color-navy); border-top: 4px solid var(--color-gold); border-radius: var(--radius-card); }
 .ai-run-facts .meeting-workflow-kicker { color: var(--color-gold-hi); }
 .ai-run-facts h2 { margin: 0 0 12px; color: #fff; font-family: var(--font-serif); font-size: 22px; }
@@ -1424,6 +1460,17 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .ai-review-lead { align-items: flex-start; flex-direction: column; }
   .ai-suggestion-ledger-head { align-items: flex-start; flex-direction: column; padding: 19px 16px 16px; }
   .ai-suggestion-ledger-head > p { max-width: none; text-align: left; }
+  .ai-attendance-head { align-items: flex-start; flex-direction: column; gap: 9px; padding: 18px 15px 15px; }
+  .ai-attendance-feedback { margin-right: 15px; margin-left: 15px; }
+  .ai-attendance-columns { display: none; }
+  .ai-attendance-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ai-attendance-officer { grid-column: 1 / -1; padding: 13px 14px 10px; }
+  .ai-attendance-choice { justify-content: flex-start; gap: 8px; min-height: 45px; padding: 8px 12px; border-top: 1px solid var(--rule); }
+  .ai-attendance-choice:nth-of-type(odd) { border-left: 0; }
+  .ai-attendance-choice span { display: inline; }
+  .ai-attendance-vacant { grid-column: 1 / -1; min-height: 45px; border-top: 1px solid var(--rule); border-left: 0; }
+  .ai-attendance-actions { align-items: stretch; flex-direction: column; padding: 15px; }
+  .ai-attendance-actions .btn-primary { width: 100%; box-sizing: border-box; }
   .ai-suggestion-card { padding: 20px 14px 20px 42px; }
   .ai-suggestion-heading { flex-direction: column; gap: 9px; }
   .ai-suggestion-actions { align-items: stretch; flex-direction: column; }

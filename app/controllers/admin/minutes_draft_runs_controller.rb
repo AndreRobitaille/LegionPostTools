@@ -19,13 +19,18 @@ module Admin
     end
 
     def show
-      @suggestions = @run.suggestions.includes(
+      suggestions = @run.suggestions.includes(
         :minutes_item,
         :minutes_attendance_entry,
         :minutes_section,
         :source_dated_agenda_item,
         :reviewed_by
       )
+      @attendance_suggestions_by_entry_id = suggestions
+        .select { |suggestion| suggestion.kind == "attendance" }
+        .index_by(&:minutes_attendance_entry_id)
+      @attendance_entries = @minutes.attendance_entries
+      @suggestions = suggestions.reject { |suggestion| suggestion.kind == "attendance" }
       if @run.meeting_transcript.source_available?
         @source_document = MinutesDrafting::SourceDocument.new(@run.meeting_transcript.source_text)
       end

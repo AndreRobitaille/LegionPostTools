@@ -7,7 +7,7 @@
     <h1 class="page-title">Review the first pass</h1>
     <p class="page-sub"><%= @meeting.title %></p>
   </div>
-  <span class="ai-review-counter"><%= pluralize(@run.suggestions.unreviewed.count, "suggestion") %> to review</span>
+  <%= render "review_counter", run: @run %>
 </div>
 
 <% if @run.failed? %>
@@ -28,61 +28,33 @@
           <p class="meeting-workflow-kicker">Adjutant review ledger</p>
           <h2 id="suggestion-ledger-heading">Check every proposed fact</h2>
         </div>
-        <p>Use adds the proposal to the editable working record. Edit lets you correct it first.</p>
+        <p>Review attendance as one officer sheet, then use, edit, or discard each remaining proposal.</p>
       </div>
 
+      <% if @attendance_entries.any? %>
+        <%= render "attendance_sheet",
+          run: @run,
+          meeting: @meeting,
+          attendance_entries: @attendance_entries,
+          suggestions_by_entry_id: @attendance_suggestions_by_entry_id,
+          saved: false,
+          error: nil %>
+      <% end %>
+
       <% if @suggestions.any? %>
-        <% @suggestions.each do |suggestion| %>
-          <article class="ai-suggestion-card ai-suggestion-card--<%= suggestion.review_state %>" aria-labelledby="suggestion-<%= suggestion.id %>-heading">
-            <div class="ai-suggestion-source-ribbon">
-              <span>Source</span>
-              L<%= format("%04d", suggestion.source_start_line) %><% if suggestion.source_end_line != suggestion.source_start_line %>–L<%= format("%04d", suggestion.source_end_line) %><% end %>
-            </div>
-            <div class="ai-suggestion-heading">
-              <div>
-                <p><%= minutes_suggestion_kind_label(suggestion) %> &middot; <%= suggestion.confidence.capitalize %> confidence</p>
-                <h3 id="suggestion-<%= suggestion.id %>-heading"><%= minutes_suggestion_target_label(suggestion) %></h3>
-              </div>
-              <span class="ai-review-state ai-review-state--<%= suggestion.review_state %>"><%= suggestion.review_state.humanize %></span>
-            </div>
-
-            <div class="ai-suggestion-proposal"><%= simple_format(minutes_suggestion_proposal(suggestion)) %></div>
-
-            <% if (endeavor_label = minutes_suggestion_endeavor_label(suggestion)) %>
-              <p class="ai-suggestion-endeavor"><span>Related Endeavor</span><strong><%= endeavor_label %></strong></p>
-            <% end %>
-
-            <% if suggestion.missing_facts.any? %>
-              <div class="ai-missing-facts">
-                <strong>Check before using</strong>
-                <ul><% suggestion.missing_facts.each do |fact| %><li><%= fact %></li><% end %></ul>
-              </div>
-            <% end %>
-
-            <details class="ai-source-evidence">
-              <summary>Read supporting transcript lines</summary>
-              <% if @source_document %>
-                <pre><%= @source_document.excerpt(suggestion.source_start_line, suggestion.source_end_line) %></pre>
-              <% else %>
-                <p>The restricted source has been purged; this range is retained only as provenance.</p>
-              <% end %>
-            </details>
-
-            <% if suggestion.unreviewed? %>
-              <div class="ai-suggestion-actions">
-                <%= button_to (suggestion.kind == "item_summary" ? "Add to minutes" : "Use suggestion"), use_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion), method: :post, class: "btn-primary" %>
-                <%= link_to "Edit before using", edit_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion), class: "btn-secondary" %>
-                <%= button_to "Discard", discard_admin_meeting_minutes_draft_suggestion_path(@meeting, suggestion), method: :post, class: "ai-discard-button" %>
-              </div>
-            <% else %>
-              <p class="ai-reviewed-note">Reviewed <%= legion_datetime(suggestion.reviewed_at) %> by <%= suggestion.reviewed_by.person.full_name %>.</p>
-            <% end %>
-          </article>
-        <% end %>
-      <% else %>
+        <%= render partial: "suggestion_card",
+          collection: @suggestions,
+          as: :suggestion,
+          locals: { meeting: @meeting, source_document: @source_document, inline_error: nil } %>
+      <% elsif @attendance_entries.empty? %>
         <div class="ai-no-suggestions">
           <h3>No source-supported suggestions were returned.</h3>
           <p>The working minutes remain available for manual editing. This is safer than filling gaps from an uncertain transcript.</p>
+        </div>
+      <% else %>
+        <div class="ai-no-suggestions ai-no-suggestions--compact">
+          <h3>No other suggestions to review.</h3>
+          <p>Finish the officer attendance sheet above, or return to the working minutes.</p>
         </div>
       <% end %>
     </main>

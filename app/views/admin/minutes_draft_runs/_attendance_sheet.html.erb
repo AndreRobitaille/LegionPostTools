@@ -1,0 +1,67 @@
+<%= turbo_frame_tag "attendance_review" do %>
+  <section class="ai-attendance-sheet" aria-labelledby="ai-attendance-heading">
+    <div class="ai-attendance-head">
+      <div>
+        <p class="meeting-workflow-kicker">Officer roll call</p>
+        <h3 id="ai-attendance-heading">Review attendance together</h3>
+        <p>AI choices are suggestions. Check every row, then save this sheet.</p>
+      </div>
+      <span><%= pluralize(attendance_entries.count { |entry| entry.status != "vacant" }, "officer") %></span>
+    </div>
+
+    <% if saved %>
+      <p class="ai-attendance-feedback ai-attendance-feedback--saved" role="status"><strong>Attendance saved.</strong> The working minutes now use these choices.</p>
+    <% elsif error.present? %>
+      <p class="ai-attendance-feedback ai-attendance-feedback--error" role="alert"><%= error %></p>
+    <% end %>
+
+    <%= form_with url: admin_meeting_minutes_draft_run_attendance_review_path(meeting, run), method: :patch, class: "ai-attendance-form" do %>
+      <div class="ai-attendance-columns" aria-hidden="true">
+        <span>Office and member</span>
+        <% minutes_attendance_review_options.each do |label, _value| %><span><%= label %></span><% end %>
+      </div>
+
+      <div class="ai-attendance-rows">
+        <% attendance_entries.each do |entry| %>
+          <% suggestion = suggestions_by_entry_id[entry.id] %>
+          <% if entry.status == "vacant" %>
+            <div class="ai-attendance-row ai-attendance-row--vacant">
+              <div class="ai-attendance-officer">
+                <strong><%= entry.office_name %></strong>
+                <span>Office vacant</span>
+              </div>
+              <strong class="ai-attendance-vacant">Vacant</strong>
+              <%= hidden_field_tag "attendance_entries[#{entry.id}][status]", "vacant" %>
+              <%= hidden_field_tag "attendance_entries[#{entry.id}][lock_version]", entry.lock_version %>
+            </div>
+          <% else %>
+            <fieldset class="ai-attendance-row">
+              <legend class="sr-only"><%= entry.office_name %> — <%= entry.person_name || "Person not named" %></legend>
+              <div class="ai-attendance-officer">
+                <strong><%= entry.office_name %></strong>
+                <span><%= entry.person_name || "Person not named" %></span>
+                <% if (source_label = minutes_attendance_source_label(suggestion)) %>
+                  <small><%= source_label %></small>
+                <% elsif entry.status != "not_recorded" %>
+                  <small class="ai-attendance-recorded">Currently recorded <%= entry.status.humanize.downcase %></small>
+                <% end %>
+              </div>
+              <% minutes_attendance_review_options.each do |label, value| %>
+                <label class="ai-attendance-choice">
+                  <%= radio_button_tag "attendance_entries[#{entry.id}][status]", value, minutes_attendance_review_value(entry, suggestion) == value, required: true %>
+                  <span><%= label %></span>
+                </label>
+              <% end %>
+              <%= hidden_field_tag "attendance_entries[#{entry.id}][lock_version]", entry.lock_version %>
+            </fieldset>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="ai-attendance-actions">
+        <%= submit_tag "Save attendance review", class: "btn-primary" %>
+        <p><strong>Not established</strong> is correct when the transcript does not settle attendance.</p>
+      </div>
+    <% end %>
+  </section>
+<% end %>

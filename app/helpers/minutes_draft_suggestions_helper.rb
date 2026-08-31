@@ -1,4 +1,11 @@
 module MinutesDraftSuggestionsHelper
+  ATTENDANCE_REVIEW_OPTIONS = [
+    [ "Present", "present" ],
+    [ "Absent", "absent" ],
+    [ "Excused", "excused" ],
+    [ "Not established", "not_recorded" ]
+  ].freeze
+
   def minutes_suggestion_kind_label(suggestion)
     {
       "item_summary" => "Draft paragraph",
@@ -38,6 +45,32 @@ module MinutesDraftSuggestionsHelper
 
   def minutes_suggestion_endeavor_label(suggestion)
     suggestion.payload["endeavor_title"] if suggestion.kind == "additional_item"
+  end
+
+  def minutes_suggestion_review_label(suggestion)
+    {
+      "unreviewed" => "Needs review",
+      "used" => "Added",
+      "edited" => "Edited and added",
+      "discarded" => "Discarded"
+    }.fetch(suggestion.review_state)
+  end
+
+  def minutes_attendance_review_options = ATTENDANCE_REVIEW_OPTIONS
+
+  def minutes_attendance_review_value(entry, suggestion)
+    return "vacant" if entry.status == "vacant"
+    return suggestion.payload.fetch("status") if suggestion&.unreviewed?
+
+    entry.status
+  end
+
+  def minutes_attendance_source_label(suggestion)
+    return unless suggestion&.unreviewed?
+
+    range = format("L%04d", suggestion.source_start_line)
+    range += "–L#{format('%04d', suggestion.source_end_line)}" if suggestion.source_end_line != suggestion.source_start_line
+    "AI suggests #{suggestion.payload.fetch('status').humanize.downcase} · #{range}"
   end
 
   def minutes_draft_error_message(run)

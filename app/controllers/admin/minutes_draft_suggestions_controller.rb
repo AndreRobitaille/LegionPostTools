@@ -15,16 +15,19 @@ module Admin
 
     def use
       review!("use")
-      redirect_to run_path, notice: "Suggestion added to the working minutes."
+      render_review_result(notice: "Suggestion added to the working minutes.")
     rescue ActiveRecord::RecordInvalid, KeyError
-      redirect_to run_path, alert: "That suggestion could not be used. Review the current minutes and try again."
+      render_review_result(
+        alert: "That suggestion could not be used. Review the current minutes and try again.",
+        status: :unprocessable_entity
+      )
     end
 
     def discard
       review!("discard")
-      redirect_to run_path, notice: "Suggestion discarded."
+      render_review_result(notice: "Suggestion discarded.")
     rescue ActiveRecord::RecordInvalid
-      redirect_to run_path, alert: "That suggestion has already been reviewed."
+      render_review_result(alert: "That suggestion has already been reviewed.", status: :unprocessable_entity)
     end
 
     private
@@ -65,6 +68,38 @@ module Admin
 
     def run_path
       admin_meeting_minutes_draft_run_path(@meeting, @suggestion.minutes_draft_run)
+    end
+
+    def render_review_result(notice: nil, alert: nil, status: :ok)
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace(
+              ActionView::RecordIdentifier.dom_id(@suggestion, :review),
+              partial: "admin/minutes_draft_runs/suggestion_card",
+              locals: {
+                suggestion: @suggestion.reload,
+                meeting: @meeting,
+                source_document: source_document,
+                inline_error: alert
+              }
+            ),
+            turbo_stream.replace(
+              "ai_review_counter",
+              partial: "admin/minutes_draft_runs/review_counter",
+              locals: { run: @suggestion.minutes_draft_run }
+            )
+          ], status: status
+        end
+        format.html do
+          redirect_to run_path, notice: notice, alert: alert
+        end
+      end
+    end
+
+    def source_document
+      transcript = @suggestion.minutes_draft_run.meeting_transcript
+      MinutesDrafting::SourceDocument.new(transcript.source_text) if transcript.source_available?
     end
   end
 end

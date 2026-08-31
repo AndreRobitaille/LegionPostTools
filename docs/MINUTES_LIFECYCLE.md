@@ -624,6 +624,21 @@ source. There is no one-click **Accept all**. Section-level review is allowed on
 every contained warning, attendance result, and motion/decision outcome has an explicit
 human disposition.
 
+Using or discarding an individual suggestion updates that ledger row in place. The page
+must preserve the Adjutant's scroll position, replace the action with a plain **Added to
+minutes**, **Edited and added**, or **Discarded** state, and update the remaining-review
+count without a page-level flash or redirect to the top.
+
+Attendance is the deliberate exception to the one-card-per-suggestion presentation. Show
+one officer roll-call sheet containing every snapshotted office. Each named officer has a
+mutually exclusive radio group for **Present**, **Absent**, **Excused**, and the safety
+escape **Not established**; a vacant office remains visibly fixed as **Vacant**. An
+unreviewed model proposal preselects and labels its supported choice, while rows without a
+supported proposal retain their current minutes value. **Save attendance review** is one
+bounded human review of the visible roll-call sheet, not a general accept-all action. It
+records every displayed choice, marks matching attendance suggestions used and corrected
+choices edited, preserves optimistic-lock failures, and updates the sheet in place.
+
 The side column is a truthful source and lifecycle boundary, not a collection of equal
 cards. At narrow widths, the selected source excerpt appears immediately after the field
 being reviewed rather than forcing the Adjutant to jump between distant page regions.
@@ -1014,6 +1029,10 @@ the first grant is used by this workflow.
 - response/request identifiers, model, token counts, prompt and source digests, and
   suggestion source ranges are recorded without copying transcript text into logs;
 - suggestions move independently through unreviewed, used, edited, and discarded states;
+- individual suggestion actions and the bounded attendance sheet update in place without
+  losing scroll position, while retaining an ordinary HTML fallback;
+- attendance review covers every snapshotted office, preserves explicit vacancies and
+  unknowns, and records AI-matching versus human-corrected suggestion provenance;
 - reruns preserve human edits and default to unresolved content rather than replacing the
   working draft;
 - provider refusal, timeout, malformed output, and oversized-context failures leave the
