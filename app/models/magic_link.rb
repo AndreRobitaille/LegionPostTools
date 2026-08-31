@@ -1,7 +1,7 @@
 class MagicLink < ApplicationRecord
   TOKEN_TTL = 15.minutes
   MAX_FAILED_ATTEMPTS = 5
-  PURPOSES = %w[sign_in create_agent_access_token].freeze
+  PURPOSES = %w[sign_in create_agent_access_token official_minutes_action].freeze
 
   belongs_to :user
   belongs_to :session, optional: true
@@ -74,7 +74,7 @@ class MagicLink < ApplicationRecord
   end
 
   def reauthentication?
-    purpose == "create_agent_access_token"
+    purpose != "sign_in"
   end
 
   class << self

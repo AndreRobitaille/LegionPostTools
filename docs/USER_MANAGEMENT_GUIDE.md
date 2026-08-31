@@ -206,10 +206,11 @@ create or enable it, disable sign-in, or return a roster-managed account to auto
 roster control. The same last-administrator protection, roster eligibility rules, email
 validation, and separation between account, Post role, and app permissions still apply.
 
-Account disable and return-to-roster-control actions appear under **Only when asked** in
-the live `GET /api` handbook. A personal agent token is delegated access and must be kept
-in secure credential storage; it never grants authority the person does not currently
-hold and is not proof of fresh intent for an official minutes act.
+Account disable, minutes approval, and minutes attestation actions appear under **Only
+when asked** in the live `GET /api` handbook. A personal agent token is delegated access
+and must be kept in secure credential storage. It never grants authority the person does
+not currently hold; when the human explicitly requests an exact official act, the API
+records the token, idempotency execution, record version, and content digest.
 
 ## Officer Turnover Checklist
 

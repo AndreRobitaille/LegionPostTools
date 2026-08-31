@@ -80,7 +80,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert body["common_actions"].any? { |action| action["name"] == "list_background_jobs" }
     minutes_workflow = body.fetch("guided_workflows").find { |entry| entry["name"] == "prepare_and_review_draft_minutes" }
     assert_not_nil minutes_workflow
-    assert minutes_workflow.fetch("steps").any? { |step| step.match?(/do not approve, attest, accept/i) }
+    assert minutes_workflow.fetch("steps").any? { |step| step.match?(/Approve or attest only when the human explicitly requests/i) }
     asked = body["only_when_asked"].map { |action| action["name"] }
     assert_includes asked, "approve_dated_agenda"
     assert_includes asked, "publish_dated_agenda"

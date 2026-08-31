@@ -1,0 +1,60 @@
+<article class="minutes-outline minutes-record member-minutes-document">
+  <header class="minutes-outline-head">
+    <div>
+      <p class="meeting-workflow-kicker">Revision <%= revision.number %></p>
+      <h2>Minutes record</h2>
+    </div>
+    <p class="member-minutes-digest">Record <code><%= revision.sha256.first(12) %></code></p>
+  </header>
+
+  <% attendance = revision.payload.fetch("attendance") %>
+  <% if attendance.any? %>
+    <section class="revision-attendance">
+      <h3>Officer attendance</h3>
+      <dl>
+        <% attendance.each do |entry| %>
+          <div><dt><%= entry.fetch("office_name") %></dt><dd><%= entry["person_name"].presence || "Vacant" %> — <%= entry.fetch("status").humanize %></dd></div>
+        <% end %>
+      </dl>
+    </section>
+  <% end %>
+
+  <% revision.payload.fetch("sections").each_with_index do |section, section_index| %>
+    <section class="minutes-section">
+      <div class="minutes-section-rail" aria-hidden="true"><span><%= section_index + 1 %></span></div>
+      <div class="minutes-section-content">
+        <h3><%= section.fetch("title") %></h3>
+        <% if section.fetch("items").any? %>
+          <ol class="minutes-item-list">
+            <% section.fetch("items").each do |item| %>
+              <li class="minutes-item-card<%= " minutes-item-card--substantive" if item["body_html"].present? || item.fetch("outcomes").any? %>">
+                <span class="minutes-item-title"><%= item.fetch("title") %></span>
+                <% if item["agenda_body_html"].present? %><div class="minutes-agenda-wording"><%= sanitize(item["agenda_body_html"]) %></div><% end %>
+                <% if item["body_html"].present? %>
+                  <div class="minutes-recorded-wording">
+                    <p class="minutes-recorded-wording-label">Recorded minutes</p>
+                    <div><%= sanitize(item["body_html"]) %></div>
+                  </div>
+                <% end %>
+                <% if item.fetch("outcomes").any? %>
+                  <ol class="minutes-outcome-list">
+                    <% item.fetch("outcomes").each do |outcome| %>
+                      <li>
+                        <div class="minutes-outcome-heading"><strong><%= outcome.fetch("kind").humanize %></strong><span class="minutes-outcome-disposition"><%= revision_outcome_label(outcome.fetch("disposition")) %></span></div>
+                        <p><%= outcome.fetch("text") %></p>
+                        <% details = [("Moved by #{outcome['mover_name']}" if outcome["mover_name"]), ("Seconded by #{outcome['seconder_name']}" if outcome["seconder_name"]), outcome["vote_summary"]].compact %>
+                        <% if details.any? %><p class="minutes-outcome-details"><%= details.join(" · ") %></p><% end %>
+                      </li>
+                    <% end %>
+                  </ol>
+                <% end %>
+              </li>
+            <% end %>
+          </ol>
+        <% else %>
+          <p class="minutes-empty-note">No business was recorded in this section.</p>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</article>

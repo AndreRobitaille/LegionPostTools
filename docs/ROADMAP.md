@@ -129,9 +129,9 @@ Immediate jobs this phase must unlock:
 
 Grok Bot is intended to be the signed-in user's delegate for ordinary work, not a
 weaker integration account. Browser sessions and personal agent tokens are credential
-choices; either represents the user's current delegated grants. Official minutes are different:
-approval, attestation, signature, acceptance, and amendment will require app-enforced
-proof of fresh human intent that the Bot cannot infer or create for itself.
+choices; either represents the user's current delegated grants. Official minutes actions
+still require an explicit human instruction and exact capability. A bearer token may
+execute that instruction and must leave idempotent agent-token provenance.
 
 Build:
 
@@ -153,8 +153,9 @@ Build:
   `allow_browser`).
 - Bearer-authenticated mutations require persisted idempotency keys and record agent-token
   execution provenance.
-- Before any official-minutes mutation is exposed to an agent, add one-use,
-  record-and-action-bound human confirmation plus agent-execution audit provenance.
+- Bind each official-minutes mutation to the exact record/action/version and preserve
+  agent-execution audit provenance. Bearer tokens may execute the human's current
+  capability when the human explicitly requests the act.
 
 The first slice deliberately did not build TUI, CLI package, MCP, public `llms.txt`,
 chat ingest, or minutes endpoints. The completed access phase added personal agent
@@ -280,11 +281,15 @@ normal Adjutant experience.
   transcripts, create and edit the structured draft, review AI suggestions and attendance,
   resolve roster identities, inspect durable runs, and retrieve the draft PDF. Keep AI
   transmission/retry and destructive/account-control changes under **Only when asked**.
-- Preserve the authority boundary: no API route approves, attests, accepts, amends, or
-  otherwise makes minutes official. Those identity-bound actions wait for Slice 3's exact
-  one-use human confirmation.
+- Preserve the authority boundary: approval and attestation require their explicit
+  capabilities and exact record digest. The API may execute them on the human's direct
+  instruction and records bearer-token provenance.
 
 ### Slice 3: Human review, approval, and attestation
+
+**Implemented:** exact immutable approval revisions, different-person Adjutant
+attestation, append-only lifecycle records, signed-in one-use confirmation, direct
+idempotent bearer execution, and member-visible attested minutes awaiting acceptance.
 
 - Keep the MVP state machine small: `draft` -> `approved` -> `attested` -> `accepted`.
   Review is an activity within draft, not a separate persisted status unless officer use
@@ -297,13 +302,10 @@ normal Adjutant experience.
   return approved or attested minutes to draft, but it must preserve who reopened them and
   when, invalidate the superseded approval/attestation, and require the human workflow
   again.
-- Approval, attestation, signature-equivalent confirmation, and acceptance require fresh,
-  one-use, record/action/version-bound human intent. Reuse the current passkey-preferred,
-  email-code fallback reauthentication boundary where appropriate, but do not treat a
-  browser session or bearer token alone as proof.
-- Do not expose official-record mutations to an agent until the confirmation record and
-  agent-execution provenance exist. Agents may help create and edit drafts within the
-  signed-in user's grants; they cannot make a record official.
+- Signed-in approval and attestation use fresh, one-use, record/action/version-bound
+  confirmation with passkey-preferred, email-code fallback reauthentication. Bearer
+  tokens carry the same human capability, may execute the exact explicitly requested act,
+  and must preserve idempotency plus agent-token provenance.
 
 ### Slice 4: Acceptance, amendments, and immutability
 
@@ -324,9 +326,9 @@ normal Adjutant experience.
 - Promote the existing print-ready draft-minutes document into finalized attested and
   official PDFs from immutable revisions after the official lifecycle is correct.
 - Add email distribution and delivery records after final document generation is stable.
-- Draft-minutes API and generated-handbook parity are complete. Add official-action API
-  surfaces only with the same one-use human confirmation, idempotency, and execution audit
-  required by the browser workflow.
+- Draft-minutes, approval, and attestation API/handbook parity are complete. Add
+  acceptance and amendment surfaces with the same exact capability, idempotency, and
+  execution-audit rules.
 
 The guided catalog-item creation improvement, Endeavor merge/split tools, Four Pillars,
 events, assignments, dashboards, reminders, general document archives, and broad AI

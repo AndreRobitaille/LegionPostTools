@@ -35,6 +35,7 @@ class User < ApplicationRecord
   has_many :agent_access_tokens, dependent: :destroy
   has_many :sessions, dependent: :destroy
   has_many :magic_links, dependent: :destroy
+  has_many :official_action_confirmations, dependent: :restrict_with_exception
 
   normalizes :email_address, with: ->(value) { value.strip.downcase }
 

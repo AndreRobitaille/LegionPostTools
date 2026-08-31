@@ -18,9 +18,10 @@ token, or a future supported credential, it acts with that person's current auth
 Changing or revoking the person's access must also change or revoke what the agent can
 do. Using an agent never expands the person's authority.
 
-This delegated access still does not prove fresh human intent for identity-bound official
-acts. Approval, attestation, acceptance, signing, or amendment of official records may
-require a separate trusted confirmation even when the person otherwise has permission.
+This delegated access carries the person's current capability. A bearer token may execute
+an identity-bound official act when the human explicitly requests that exact act. The app
+must preserve the agent-token execution, idempotency, record version, and content digest
+rather than presenting the agent as an independent authority.
 
 ## Distinct Kinds of Role
 
@@ -172,11 +173,10 @@ Do not create bot-only shortcuts, bot-only restrictions, or a second set of auth
 rules. API serializers must still select fields deliberately; they must not dump complete
 database records simply because the caller is authenticated.
 
-The exception is not a weaker bot role but a stronger proof requirement for an official
-act. A session or bearer token delegates the person's routine authority; it does not prove
-fresh intent to approve, attest, accept, or amend exact minutes. Those actions remain
-unavailable to the API until the one-use record/action/version-bound human confirmation
-described in `docs/MINUTES_LIFECYCLE.md` exists.
+Official acts are not a second permission system. Signed-in HTML uses a fresh one-use
+confirmation for the exact record. Bearer API calls use the person's same explicit
+capability and may execute only an exact human-requested act, with idempotency and
+agent-token provenance recorded alongside the lifecycle event.
 
 Bulk access is a usability requirement where the person is authorized to work with the
 whole set. It must not be simulated through repeated single-person lookups. Conversely,

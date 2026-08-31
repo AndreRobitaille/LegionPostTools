@@ -24,9 +24,10 @@ within this account's current app grants.
   change. A 401 means the user must sign in again or replace a revoked or
   expired token.
 
-Neither a browser session nor an agent token proves fresh human intent for an
-official-record act. Within the user's current grants, the private API is intended for
-ordinary officer/admin execution—not merely read-only reporting. Its live handbook covers
-meetings, agendas, accounts, transcripts, structured draft minutes, AI review, and Jobs as
-those capabilities permit.
+Within the user's current grants, the private API is intended for officer/admin execution,
+not merely read-only reporting. A bearer token may perform an official minutes act its
+human can perform only when that human explicitly requests the exact act; the API records
+idempotent agent-token provenance. The live handbook covers meetings, agendas, accounts,
+transcripts, structured minutes, approval, attestation, AI review, and Jobs as those
+capabilities permit.
 Further reading is `/api`, not this note.

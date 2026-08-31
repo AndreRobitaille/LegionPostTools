@@ -7,6 +7,7 @@ class AgentAccessToken < ApplicationRecord
   belongs_to :user
   belongs_to :revoked_by, class_name: "User", optional: true
   has_many :agent_api_executions, dependent: :destroy
+  has_many :official_action_confirmations, dependent: :restrict_with_exception
 
   validates :public_id, :secret_digest, :display_hint, :name, :expires_at, presence: true
   validates :public_id, uniqueness: true

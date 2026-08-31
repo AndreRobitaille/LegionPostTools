@@ -27,11 +27,18 @@ Rails.application.routes.draw do
     get :magic_link, on: :collection
     post :magic_link, on: :collection
   end
+  resource :official_action_reauthentication, only: %i[new create] do
+    post :verify, on: :collection
+    get :magic_link, on: :collection
+    post :magic_link, on: :collection
+  end
   resources :agent_access_tokens, only: %i[index new create destroy] do
     get :revoke, on: :member
   end
   resources :people, only: %i[index show]
-  resources :meetings, only: %i[index show]
+  resources :meetings, only: %i[index show] do
+    resource :minutes, only: :show, controller: "meeting_minutes"
+  end
   resources :endeavors, except: %i[destroy] do
     member do
       patch :complete
@@ -93,6 +100,8 @@ Rails.application.routes.draw do
       post :agenda, on: :member, action: :create_agenda
       resource :minutes, only: %i[show create edit update], controller: "meeting_minutes" do
         get :print, on: :member
+        resource :approval, only: %i[new create], controller: "minutes_approvals"
+        resource :attestation, only: %i[new create], controller: "minutes_attestations"
         resources :draft_runs, only: %i[new create show], controller: "minutes_draft_runs" do
           get :status, on: :member
           resource :attendance_review, only: :update, controller: "minutes_draft_attendance_reviews"
@@ -156,6 +165,8 @@ Rails.application.routes.draw do
       resource :transcript, only: %i[show create], controller: "meeting_transcripts"
       resource :minutes, only: %i[show create update], controller: "meeting_minutes" do
         get :print
+        resource :approval, only: :create, controller: "minutes_approvals"
+        resource :attestation, only: :create, controller: "minutes_attestations"
         resource :attendance, only: :update, controller: "minutes_attendance"
         post "sections/reorder", to: "minutes_sections#reorder"
         post "sections/:section_id/items/reorder", to: "minutes_items#reorder"

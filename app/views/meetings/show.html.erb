@@ -15,7 +15,11 @@
   <dl class="meeting-facts">
     <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
     <div><dt>Documents</dt><dd>
-      <% if @published_agenda %>
+      <% if @attested_minutes %>
+        <%= link_to "Read minutes awaiting acceptance", meeting_minutes_path(@meeting), class: "meeting-document-link" %>
+        <span class="meeting-document-note">Attested by <%= @attested_minutes.current_revision.attestation.attester_name %>. These have not yet been accepted by the membership.</span>
+        <% if @published_agenda %><%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-secondary" %><% end %>
+      <% elsif @published_agenda %>
         <%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-link" %>
         <% if @meeting.starts_at < Time.zone.today.beginning_of_day %>
           <span class="meeting-document-note">Minutes have not been published yet.</span>

@@ -117,7 +117,10 @@ motion. See `docs/MINUTES_LIFECYCLE.md`.
 
 AI may draft minutes, summarize transcripts, suggest possible Endeavors, and help place discussion under the right agenda item. Humans confirm Endeavor identity.
 
-AI output is never official. Humans review, approve, attest, distribute, and accept official records.
+AI output is never official. Humans remain responsible for review, approval, attestation,
+distribution, and acceptance. A delegated agent may execute an exact act the human
+explicitly requests within that person's current capability; the audit record identifies
+the agent-token execution.
 
 The signed-in user may also assign an agent (Grok Bot, later others) to operate
 the existing app on their behalf. The generated standing brief identifies that
@@ -136,10 +139,10 @@ optimistic locks, and agent-execution provenance. It does not turn print present
 JSON or let today's officer directory silently overwrite a historical snapshot.
 
 AI transmission/retry, account-control changes, deletion, removal, snapshot reset, agenda
-approval/publication, and reopen are explicit **Only when asked** actions in the live
-handbook. No private API route approves, attests, accepts, amends, or otherwise makes
-minutes official; those future routes require exact one-use human confirmation in addition
-to delegated authentication.
+approval/publication, minutes approval/attestation, and reopen are explicit **Only when
+asked** actions in the live handbook. Minutes approval and attestation use the same human
+capabilities in HTML and bearer-token API calls. Bearer writes remain idempotent and record
+delegated-agent provenance. Acceptance, amendments, and minutes reopen remain unimplemented.
 
 Provider-specific AI integration should stay behind replaceable service boundaries. OpenAI is expected first, but the domain should not depend directly on one provider.
 

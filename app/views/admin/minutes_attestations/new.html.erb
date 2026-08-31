@@ -1,0 +1,26 @@
+<% content_for :title, "Attest exact minutes" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+
+<div class="page-lead">
+  <p class="minutes-eyebrow">Adjutant attestation</p>
+  <h1 class="page-title">Release this revision to members</h1>
+  <p class="page-sub"><%= @minutes.title %></p>
+</div>
+
+<section class="official-confirmation-summary official-confirmation-summary--attest">
+  <h2>What this does</h2>
+  <p>Attests that revision <%= @minutes.current_revision.number %> is the minutes record being presented to members. It will appear as awaiting acceptance, not as accepted or official.</p>
+  <dl>
+    <div><dt>Approved by</dt><dd><%= @minutes.current_revision.approver_name %>, <%= @minutes.current_revision.approver_office %></dd></div>
+    <div><dt>Revision digest</dt><dd><code><%= @minutes.current_revision.sha256.first(12) %></code></dd></div>
+    <div><dt>Member visibility</dt><dd>Visible after attestation</dd></div>
+  </dl>
+</section>
+
+<% if @confirmation&.confirmed_at? %>
+  <%= button_to "Attest and release to members", admin_meeting_minutes_attestation_path(@meeting),
+        params: { confirmation_id: @confirmation.id }, class: "btn-confirm" %>
+<% else %>
+  <%= button_to "Confirm identity to attest", admin_meeting_minutes_attestation_path(@meeting),
+        params: ({ confirmation_id: @confirmation.id } if @confirmation), class: "btn-primary" %>
+<% end %>

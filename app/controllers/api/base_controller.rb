@@ -325,7 +325,8 @@ module Api
         starts_at: minutes.starts_at.iso8601,
         location_name: minutes.location_name,
         lock_version: minutes.lock_version,
-        updated_at: minutes.updated_at.iso8601
+        updated_at: minutes.updated_at.iso8601,
+        lifecycle: minutes_lifecycle_payload(minutes)
       }
     end
 
@@ -339,6 +340,49 @@ module Api
         sections: minutes.sections.map { |section| minutes_section_payload(section) },
         draft_runs: minutes.draft_runs.map { |run| minutes_draft_run_payload(run) }
       )
+    end
+
+    def minutes_lifecycle_payload(minutes)
+      revision = minutes.current_revision
+      {
+        status: minutes.status,
+        approval_ready: minutes.draft? ? minutes.approval_ready? : nil,
+        revision: revision ? revision_payload(revision) : nil,
+        member_visible: minutes.attested? || minutes.accepted?,
+        member_minutes_path: ("/meetings/#{minutes.meeting_id}/minutes" if minutes.attested? || minutes.accepted?),
+        next_action: minutes_next_action(minutes)
+      }
+    end
+
+    def minutes_next_action(minutes)
+      {
+        "draft" => "approve",
+        "approved" => "attest",
+        "attested" => "await_membership_acceptance"
+      }[minutes.status]
+    end
+
+    def revision_payload(revision)
+      {
+        id: revision.id,
+        number: revision.number,
+        sha256: revision.sha256,
+        approved_by: revision.approver_name,
+        approver_office: revision.approver_office,
+        approved_at: revision.approved_at.iso8601,
+        attestation: revision.attestation ? attestation_payload(revision.attestation) : nil
+      }
+    end
+
+    def attestation_payload(attestation)
+      {
+        id: attestation.id,
+        attested_by: attestation.attester_name,
+        attester_office: attestation.attester_office,
+        attested_at: attestation.attested_at.iso8601,
+        recorded_by: directory_person_payload(attestation.recorded_by.person),
+        confirmation_method: attestation.official_action_confirmation.confirmation_method
+      }
     end
 
     def minutes_section_payload(section)

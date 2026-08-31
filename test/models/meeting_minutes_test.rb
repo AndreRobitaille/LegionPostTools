@@ -170,6 +170,67 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     assert Meeting.exists?(meeting.id)
   end
 
+  test "approval snapshots an exact revision and a different Adjutant can attest it" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    item = minutes.sections.first.items.create!(
+      title: "Service report",
+      behavior_type: "report_slot",
+      position: 1,
+      body: "The chair reported that twelve families received assistance."
+    )
+    item.outcomes.create!(kind: "decision", text: "Continue the program.", disposition: "no_vote", position: 1)
+    commander = create_officer!("Casey", "Commander", "approve_minutes")
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+    commander_token, = AgentAccessToken.issue!(user: commander, name: "Commander agent", expires_in: 1.day)
+
+    approval = OfficialActionConfirmation.for_delegated_agent!(
+      minutes:,
+      agent_access_token: commander_token,
+      action: "approve"
+    )
+    revision = minutes.approve_with_confirmation!(confirmation: approval)
+
+    assert_predicate minutes.reload, :approved?
+    assert_equal revision, minutes.current_revision
+    assert_equal "Casey Officer", revision.approver_name
+    assert_equal "Commander", revision.approver_office
+    assert_equal "The chair reported that twelve families received assistance.",
+      ActionText::Content.new(revision.payload.dig("sections", 0, "items", 0, "body_html")).to_plain_text
+    assert_equal revision.sha256, minutes.digest_for("attest")
+    assert_equal "delegated_agent", minutes.lifecycle_events.last.metadata.fetch("confirmation_method")
+
+    external = OfficialActionConfirmation.record_external!(
+      minutes:,
+      user: adjutant,
+      action: "attest",
+      evidence_note: "Written approval supplied to the recorder."
+    )
+    attestation = minutes.attest_with_confirmation!(confirmation: external, recorded_by: commander)
+
+    assert_predicate minutes.reload, :attested?
+    assert_equal "Alex Officer", attestation.attester_name
+    assert_equal "Adjutant", attestation.attester_office
+    assert_equal commander, attestation.recorded_by
+    assert_equal "external_written_confirmation", minutes.lifecycle_events.last.metadata.fetch("confirmation_method")
+  end
+
+  test "approver cannot attest the same revision" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    officer = create_officer!("Dual", "Commander", "approve_minutes", "attest_minutes")
+    token, = AgentAccessToken.issue!(user: officer, name: "Officer agent", expires_in: 1.day)
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: token, action: "approve"))
+    confirmation = OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: token, action: "attest")
+
+    error = assert_raises(ActiveRecord::RecordInvalid) do
+      minutes.attest_with_confirmation!(confirmation:)
+    end
+
+    assert_match(/different person/, error.record.errors.full_messages.to_sentence)
+    assert_predicate minutes.reload, :approved?
+    assert_nil minutes.current_revision.attestation
+    assert_nil confirmation.reload.consumed_at
+  end
+
   private
 
   def past_meeting
@@ -184,6 +245,17 @@ class MeetingMinutesTest < ActiveSupport::TestCase
   def create_user!(name)
     person = Person.create!(first_name: name, last_name: "Officer")
     User.create!(person: person, email_address: "#{name.parameterize}-#{SecureRandom.hex(3)}@example.com")
+  end
+
+  def create_officer!(first_name, office, *capabilities)
+    user = create_user!(first_name)
+    title = @organization.position_titles.find_or_create_by!(name: office) do |position|
+      position.display_order = @organization.position_titles.count + 1
+      position.active = true
+    end
+    title.position_assignments.create!(person: user.person, starts_on: 1.year.ago.to_date)
+    capabilities.each { |capability| user.permission_grants.create!(capability:) }
+    user
   end
 
   def build_agenda_with_sources

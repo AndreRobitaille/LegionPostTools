@@ -45,6 +45,7 @@ class BrowserPdfRenderer
       "--disable-extensions",
       "--no-sandbox",
       "--no-pdf-header-footer",
+      "--user-data-dir=#{File.join(File.dirname(pdf_path), "chromium-profile")}",
       "--run-all-compositor-stages-before-draw",
       "--virtual-time-budget=3000",
       "--print-to-pdf=#{pdf_path}",

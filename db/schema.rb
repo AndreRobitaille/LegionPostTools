@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_030100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -284,7 +284,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["session_id"], name: "index_magic_links_on_session_id"
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
-    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying::text, 'create_agent_access_token'::character varying::text])", name: "magic_links_purpose_check"
+    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying, 'official_minutes_action'::character varying]::text[])", name: "magic_links_purpose_check"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -303,6 +303,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
 
   create_table "meeting_minutes", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.bigint "current_revision_id"
     t.text "location_address"
     t.string "location_name", null: false
     t.integer "lock_version", default: 0, null: false
@@ -314,12 +315,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.string "status", default: "draft", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.index ["current_revision_id"], name: "index_meeting_minutes_on_current_revision_id"
     t.index ["meeting_body_id"], name: "index_meeting_minutes_on_meeting_body_id"
     t.index ["meeting_id"], name: "index_meeting_minutes_on_meeting_id", unique: true
     t.index ["meeting_type_id"], name: "index_meeting_minutes_on_meeting_type_id"
     t.index ["organization_id", "starts_at"], name: "index_meeting_minutes_on_organization_id_and_starts_at"
     t.index ["organization_id"], name: "index_meeting_minutes_on_organization_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'approved'::character varying, 'attested'::character varying, 'accepted'::character varying]::text[])", name: "meeting_minutes_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'approved'::character varying::text, 'attested'::character varying::text, 'accepted'::character varying::text])", name: "meeting_minutes_status_check"
   end
 
   create_table "meeting_transcripts", force: :cascade do |t|
@@ -345,8 +347,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["purged_by_id"], name: "index_meeting_transcripts_on_purged_by_id"
     t.index ["sha256_digest"], name: "index_meeting_transcripts_on_sha256_digest"
     t.check_constraint "byte_size >= 0", name: "meeting_transcripts_byte_size_check"
-    t.check_constraint "retention_policy::text = ANY (ARRAY['delete_after_acceptance'::character varying, 'retain_restricted'::character varying]::text[])", name: "meeting_transcripts_retention_policy_check"
-    t.check_constraint "source_kind::text = ANY (ARRAY['pasted_text'::character varying, 'text_upload'::character varying]::text[])", name: "meeting_transcripts_source_kind_check"
+    t.check_constraint "retention_policy::text = ANY (ARRAY['delete_after_acceptance'::character varying::text, 'retain_restricted'::character varying::text])", name: "meeting_transcripts_retention_policy_check"
+    t.check_constraint "source_kind::text = ANY (ARRAY['pasted_text'::character varying::text, 'text_upload'::character varying::text])", name: "meeting_transcripts_source_kind_check"
   end
 
   create_table "meeting_type_agenda_items", force: :cascade do |t|
@@ -435,7 +437,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["person_id"], name: "index_minutes_attendance_entries_on_person_id"
     t.index ["position_title_id"], name: "index_minutes_attendance_entries_on_position_title_id"
     t.check_constraint "\"position\" > 0", name: "minutes_attendance_position_check"
-    t.check_constraint "status::text = ANY (ARRAY['present'::character varying, 'absent'::character varying, 'excused'::character varying, 'vacant'::character varying, 'not_recorded'::character varying]::text[])", name: "minutes_attendance_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['present'::character varying::text, 'absent'::character varying::text, 'excused'::character varying::text, 'vacant'::character varying::text, 'not_recorded'::character varying::text])", name: "minutes_attendance_status_check"
+  end
+
+  create_table "minutes_attestations", force: :cascade do |t|
+    t.datetime "attested_at", null: false
+    t.bigint "attested_by_id", null: false
+    t.string "attester_name", null: false
+    t.string "attester_office", null: false
+    t.datetime "created_at", null: false
+    t.bigint "minutes_revision_id", null: false
+    t.bigint "official_action_confirmation_id", null: false
+    t.bigint "recorded_by_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["attested_by_id"], name: "index_minutes_attestations_on_attested_by_id"
+    t.index ["minutes_revision_id"], name: "index_minutes_attestations_on_minutes_revision_id", unique: true
+    t.index ["official_action_confirmation_id"], name: "index_minutes_attestations_on_official_action_confirmation_id", unique: true
+    t.index ["recorded_by_id"], name: "index_minutes_attestations_on_recorded_by_id"
   end
 
   create_table "minutes_draft_runs", force: :cascade do |t|
@@ -475,7 +493,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["retry_of_id"], name: "index_minutes_draft_runs_on_retry_of_id"
     t.index ["status", "discarded_at"], name: "index_minutes_draft_runs_on_status_and_discarded_at"
     t.check_constraint "source_line_count > 0", name: "minutes_draft_runs_source_line_count_check"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying]::text[])", name: "minutes_draft_runs_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'running'::character varying::text, 'succeeded'::character varying::text, 'failed'::character varying::text])", name: "minutes_draft_runs_status_check"
   end
 
   create_table "minutes_draft_suggestions", force: :cascade do |t|
@@ -505,9 +523,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["minutes_section_id"], name: "index_minutes_draft_suggestions_on_minutes_section_id"
     t.index ["reviewed_by_id"], name: "index_minutes_draft_suggestions_on_reviewed_by_id"
     t.index ["source_dated_agenda_item_id"], name: "index_minutes_draft_suggestions_on_source_dated_agenda_item_id"
-    t.check_constraint "confidence::text = ANY (ARRAY['high'::character varying, 'medium'::character varying, 'low'::character varying]::text[])", name: "minutes_draft_suggestions_confidence_check"
-    t.check_constraint "kind::text = ANY (ARRAY['item_summary'::character varying, 'outcome'::character varying, 'attendance'::character varying, 'additional_item'::character varying]::text[])", name: "minutes_draft_suggestions_kind_check"
-    t.check_constraint "review_state::text = ANY (ARRAY['unreviewed'::character varying, 'used'::character varying, 'edited'::character varying, 'discarded'::character varying]::text[])", name: "minutes_draft_suggestions_review_state_check"
+    t.check_constraint "confidence::text = ANY (ARRAY['high'::character varying::text, 'medium'::character varying::text, 'low'::character varying::text])", name: "minutes_draft_suggestions_confidence_check"
+    t.check_constraint "kind::text = ANY (ARRAY['item_summary'::character varying::text, 'outcome'::character varying::text, 'attendance'::character varying::text, 'additional_item'::character varying::text])", name: "minutes_draft_suggestions_kind_check"
+    t.check_constraint "review_state::text = ANY (ARRAY['unreviewed'::character varying::text, 'used'::character varying::text, 'edited'::character varying::text, 'discarded'::character varying::text])", name: "minutes_draft_suggestions_review_state_check"
     t.check_constraint "source_start_line > 0 AND source_end_line >= source_start_line", name: "minutes_draft_suggestions_source_range_check"
   end
 
@@ -530,6 +548,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.check_constraint "\"position\" > 0", name: "minutes_items_position_check"
   end
 
+  create_table "minutes_lifecycle_events", force: :cascade do |t|
+    t.bigint "actor_id", null: false
+    t.string "actor_name", null: false
+    t.string "actor_office", null: false
+    t.datetime "created_at", null: false
+    t.string "event_type", null: false
+    t.string "from_status", null: false
+    t.bigint "meeting_minutes_id", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.bigint "minutes_revision_id", null: false
+    t.datetime "occurred_at", null: false
+    t.bigint "official_action_confirmation_id", null: false
+    t.bigint "recorded_by_id", null: false
+    t.string "to_status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_minutes_lifecycle_events_on_actor_id"
+    t.index ["meeting_minutes_id"], name: "index_minutes_lifecycle_events_on_meeting_minutes_id"
+    t.index ["minutes_revision_id"], name: "index_minutes_lifecycle_events_on_minutes_revision_id"
+    t.index ["official_action_confirmation_id"], name: "idx_on_official_action_confirmation_id_7ceb2b7c93", unique: true
+    t.index ["recorded_by_id"], name: "index_minutes_lifecycle_events_on_recorded_by_id"
+    t.check_constraint "event_type::text = ANY (ARRAY['approved'::character varying, 'attested'::character varying]::text[])", name: "minutes_lifecycle_events_type_check"
+  end
+
   create_table "minutes_outcomes", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "disposition", default: "not_recorded", null: false
@@ -549,8 +590,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["mover_person_id"], name: "index_minutes_outcomes_on_mover_person_id"
     t.index ["seconder_person_id"], name: "index_minutes_outcomes_on_seconder_person_id"
     t.check_constraint "\"position\" > 0", name: "minutes_outcomes_position_check"
-    t.check_constraint "disposition::text = ANY (ARRAY['adopted'::character varying, 'lost'::character varying, 'withdrawn'::character varying, 'postponed'::character varying, 'referred'::character varying, 'no_vote'::character varying, 'not_recorded'::character varying]::text[])", name: "minutes_outcomes_disposition_check"
-    t.check_constraint "kind::text = ANY (ARRAY['motion'::character varying, 'decision'::character varying]::text[])", name: "minutes_outcomes_kind_check"
+    t.check_constraint "disposition::text = ANY (ARRAY['adopted'::character varying::text, 'lost'::character varying::text, 'withdrawn'::character varying::text, 'postponed'::character varying::text, 'referred'::character varying::text, 'no_vote'::character varying::text, 'not_recorded'::character varying::text])", name: "minutes_outcomes_disposition_check"
+    t.check_constraint "kind::text = ANY (ARRAY['motion'::character varying::text, 'decision'::character varying::text])", name: "minutes_outcomes_kind_check"
+  end
+
+  create_table "minutes_revisions", force: :cascade do |t|
+    t.datetime "approved_at", null: false
+    t.bigint "approved_by_id", null: false
+    t.string "approver_name", null: false
+    t.string "approver_office", null: false
+    t.datetime "created_at", null: false
+    t.bigint "meeting_minutes_id", null: false
+    t.integer "number", null: false
+    t.jsonb "payload", null: false
+    t.string "sha256", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_id"], name: "index_minutes_revisions_on_approved_by_id"
+    t.index ["meeting_minutes_id", "number"], name: "index_minutes_revisions_on_meeting_minutes_id_and_number", unique: true
+    t.index ["meeting_minutes_id", "sha256"], name: "index_minutes_revisions_on_meeting_minutes_id_and_sha256"
+    t.index ["meeting_minutes_id"], name: "index_minutes_revisions_on_meeting_minutes_id"
+    t.check_constraint "number > 0", name: "minutes_revisions_number_check"
   end
 
   create_table "minutes_sections", force: :cascade do |t|
@@ -565,6 +624,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
     t.index ["meeting_minutes_id"], name: "index_minutes_sections_on_meeting_minutes_id"
     t.index ["source_dated_agenda_section_id"], name: "index_minutes_sections_on_source_dated_agenda_section_id"
     t.check_constraint "\"position\" > 0", name: "minutes_sections_position_check"
+  end
+
+  create_table "official_action_confirmations", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "agent_access_token_id"
+    t.string "confirmation_method", default: "in_app", null: false
+    t.datetime "confirmed_at"
+    t.datetime "consumed_at"
+    t.string "content_digest", null: false
+    t.datetime "created_at", null: false
+    t.text "evidence_note"
+    t.datetime "expires_at", null: false
+    t.bigint "meeting_minutes_id", null: false
+    t.integer "record_lock_version", null: false
+    t.bigint "session_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["agent_access_token_id"], name: "index_official_action_confirmations_on_agent_access_token_id"
+    t.index ["meeting_minutes_id"], name: "index_official_action_confirmations_on_meeting_minutes_id"
+    t.index ["session_id"], name: "index_official_action_confirmations_on_session_id"
+    t.index ["user_id"], name: "index_official_action_confirmations_on_user_id"
+    t.check_constraint "action::text = ANY (ARRAY['approve'::character varying, 'attest'::character varying]::text[])", name: "official_action_confirmations_action_check"
+    t.check_constraint "confirmation_method::text = ANY (ARRAY['in_app'::character varying, 'delegated_agent'::character varying, 'external_written_confirmation'::character varying]::text[])", name: "official_action_confirmations_method_check"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -747,6 +829,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
   add_foreign_key "meeting_minutes", "meeting_bodies"
   add_foreign_key "meeting_minutes", "meeting_types"
   add_foreign_key "meeting_minutes", "meetings"
+  add_foreign_key "meeting_minutes", "minutes_revisions", column: "current_revision_id"
   add_foreign_key "meeting_minutes", "organizations"
   add_foreign_key "meeting_transcripts", "meetings"
   add_foreign_key "meeting_transcripts", "organizations"
@@ -764,6 +847,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
   add_foreign_key "minutes_attendance_entries", "meeting_minutes", column: "meeting_minutes_id"
   add_foreign_key "minutes_attendance_entries", "people", on_delete: :nullify
   add_foreign_key "minutes_attendance_entries", "position_titles", on_delete: :nullify
+  add_foreign_key "minutes_attestations", "minutes_revisions"
+  add_foreign_key "minutes_attestations", "official_action_confirmations"
+  add_foreign_key "minutes_attestations", "users", column: "attested_by_id"
+  add_foreign_key "minutes_attestations", "users", column: "recorded_by_id"
   add_foreign_key "minutes_draft_runs", "meeting_minutes", column: "meeting_minutes_id"
   add_foreign_key "minutes_draft_runs", "meeting_transcripts"
   add_foreign_key "minutes_draft_runs", "minutes_draft_runs", column: "retry_of_id"
@@ -778,11 +865,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_020000) do
   add_foreign_key "minutes_items", "dated_agenda_items", column: "source_dated_agenda_item_id"
   add_foreign_key "minutes_items", "endeavors"
   add_foreign_key "minutes_items", "minutes_sections"
+  add_foreign_key "minutes_lifecycle_events", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "minutes_lifecycle_events", "minutes_revisions"
+  add_foreign_key "minutes_lifecycle_events", "official_action_confirmations"
+  add_foreign_key "minutes_lifecycle_events", "users", column: "actor_id"
+  add_foreign_key "minutes_lifecycle_events", "users", column: "recorded_by_id"
   add_foreign_key "minutes_outcomes", "minutes_items"
   add_foreign_key "minutes_outcomes", "people", column: "mover_person_id", on_delete: :nullify
   add_foreign_key "minutes_outcomes", "people", column: "seconder_person_id", on_delete: :nullify
+  add_foreign_key "minutes_revisions", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "minutes_revisions", "users", column: "approved_by_id"
   add_foreign_key "minutes_sections", "dated_agenda_sections", column: "source_dated_agenda_section_id"
   add_foreign_key "minutes_sections", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "official_action_confirmations", "agent_access_tokens"
+  add_foreign_key "official_action_confirmations", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "official_action_confirmations", "sessions"
+  add_foreign_key "official_action_confirmations", "users"
   add_foreign_key "passkey_credentials", "users"
   add_foreign_key "permission_grants", "users"
   add_foreign_key "position_assignments", "people"

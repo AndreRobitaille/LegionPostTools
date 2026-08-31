@@ -93,6 +93,31 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/must be in the past/, flash[:alert])
   end
 
+  test "Commander sees the exact-draft approval action and begins one-use confirmation" do
+    @manager.permission_grants.create!(capability: "approve_minutes")
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+    session_record = sign_in_as(@manager)
+
+    get admin_meeting_minutes_path(@meeting)
+    assert_response :success
+    assert_select "a[href='#{new_admin_meeting_minutes_approval_path(@meeting)}']", text: "Approve exact draft"
+    assert_select ".minutes-lifecycle-rail", text: /Commander approval.*Adjutant release.*Membership acceptance/m
+
+    get new_admin_meeting_minutes_approval_path(@meeting)
+    assert_response :success
+    assert_select "h1", text: "Approve this exact draft"
+
+    assert_difference -> { OfficialActionConfirmation.count }, 1 do
+      post admin_meeting_minutes_approval_path(@meeting)
+    end
+    assert_redirected_to new_official_action_reauthentication_path
+    confirmation = OfficialActionConfirmation.last
+    assert_equal minutes, confirmation.meeting_minutes
+    assert_equal @manager, confirmation.user
+    assert_equal session_record, confirmation.session
+    assert_equal "approve", confirmation.action
+  end
+
   private
 
   def create_user_with(*capabilities)

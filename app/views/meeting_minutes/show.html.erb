@@ -1,0 +1,27 @@
+<% content_for :title, "Minutes awaiting acceptance - #{@meeting.title}" %>
+<%= link_to meeting_path(@meeting), class: "back" do %>&larr; Meeting record<% end %>
+
+<header class="member-minutes-head">
+  <p class="minutes-eyebrow">Attested minutes</p>
+  <h1 class="page-title"><%= @revision.payload.fetch("title") %></h1>
+  <p class="page-sub"><%= @revision.payload.fetch("meeting_body_name") %> &middot; <%= legion_datetime(Time.zone.parse(@revision.payload.fetch("starts_at"))) %></p>
+  <div class="member-minutes-status">
+    <strong>Awaiting acceptance</strong>
+    <span>Presented to members for action at a later meeting. These minutes are not yet accepted or official.</span>
+  </div>
+</header>
+
+<section class="minutes-endorsements" aria-label="Minutes approval and attestation">
+  <div>
+    <span>Commander approval</span>
+    <strong><%= @revision.approver_name %></strong>
+    <small><%= @revision.approver_office %> · <%= legion_datetime(@revision.approved_at) %></small>
+  </div>
+  <div>
+    <span>Adjutant attestation</span>
+    <strong><%= @revision.attestation.attester_name %></strong>
+    <small><%= @revision.attestation.attester_office %> · <%= legion_datetime(@revision.attestation.attested_at) %></small>
+  </div>
+</section>
+
+<%= render "revision", revision: @revision %>

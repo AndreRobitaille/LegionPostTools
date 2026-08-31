@@ -1,7 +1,10 @@
 module MeetingsHelper
   def meeting_record_state(meeting)
     if internal_minutes_access?
-      return [ "#{meeting.minutes.status.humanize} minutes", "meeting-state--minutes" ] if meeting.minutes
+      if meeting.minutes
+        label = meeting.minutes.attested? ? "Minutes awaiting acceptance" : "#{meeting.minutes.status.humanize} minutes"
+        return [ label, "meeting-state--minutes" ]
+      end
       return [ "Transcript ready", "meeting-state--transcript" ] if meeting.transcript
     end
 
@@ -16,6 +19,10 @@ module MeetingsHelper
   end
 
   def member_meeting_state(meeting)
+    if meeting.minutes&.attested?
+      return [ "Minutes awaiting acceptance", "meeting-state--minutes" ]
+    end
+
     if meeting.dated_agenda&.published?
       [ "Agenda published", "meeting-state--published" ]
     elsif meeting.starts_at < Time.zone.today.beginning_of_day
@@ -23,6 +30,18 @@ module MeetingsHelper
     else
       [ "Agenda not published yet", "meeting-state--quiet" ]
     end
+  end
+
+  def revision_outcome_label(disposition)
+    {
+      "adopted" => "Passed",
+      "lost" => "Did not pass",
+      "withdrawn" => "Withdrawn",
+      "postponed" => "Postponed",
+      "referred" => "Referred",
+      "no_vote" => "No vote taken",
+      "not_recorded" => "Not recorded"
+    }.fetch(disposition, disposition.to_s.humanize)
   end
 
   def admin_meeting_action(meeting)

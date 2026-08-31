@@ -1751,7 +1751,93 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .confirm-dialog-actions form, .confirm-dialog-actions button { width: 100%; }
 }
 
+.minutes-lifecycle-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: var(--w-main); margin: -6px 0 26px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.minutes-lifecycle-step { position: relative; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; min-width: 0; padding: 16px 14px; border-left: 1px solid var(--rule); color: var(--color-muted); }
+.minutes-lifecycle-step:first-child { border-left: 0; }
+.minutes-lifecycle-step > span { display: flex; align-items: center; justify-content: center; width: 31px; height: 31px; color: #fff; background: #8a949f; border-radius: 50%; font-family: var(--font-serif); font-weight: 700; }
+.minutes-lifecycle-step strong, .minutes-lifecycle-step small { display: block; }
+.minutes-lifecycle-step strong { color: var(--color-navy); font-size: 15px; line-height: 1.25; }
+.minutes-lifecycle-step small { margin-top: 4px; color: var(--color-muted); font-size: 13px; line-height: 1.35; }
+.minutes-lifecycle-step.is-complete > span { background: var(--color-green); }
+.minutes-lifecycle-step.is-current { background: #edf4f8; box-shadow: inset 0 -4px 0 var(--color-officer-blue); }
+.minutes-lifecycle-step.is-current > span { background: var(--color-officer-blue); }
+.minutes-draft-stamp--attested { color: var(--color-green); background: #edf4e8; border-color: #a9c49d; transform: none; }
+
+.official-confirmation-summary { max-width: var(--w-form); margin: 22px 0; padding: 22px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-left: 5px solid var(--color-officer-blue); border-radius: var(--radius-card); }
+.official-confirmation-summary--approve { border-left-color: var(--color-gold-ink); }
+.official-confirmation-summary--attest { border-left-color: var(--color-green); }
+.official-confirmation-summary h2 { margin: 0 0 10px; color: var(--color-navy); font-family: var(--font-serif); font-size: 24px; }
+.official-confirmation-summary > p { margin: 7px 0; color: #526171; font-size: 16px; line-height: 1.55; }
+.official-confirmation-summary dl { margin: 17px -24px -22px; }
+.official-confirmation-summary dl > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; padding: 12px 24px; border-top: 1px solid var(--rule); }
+.official-confirmation-summary dt { color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.official-confirmation-summary dd { margin: 0; color: var(--color-ink); font-size: 15px; }
+.official-confirmation-summary code, .member-minutes-digest code { color: var(--color-navy); font-size: .95em; }
+
+.member-minutes-head { max-width: var(--w-main); margin: 12px 0 20px; }
+.member-minutes-status { display: flex; align-items: baseline; gap: 14px; max-width: var(--w-doc); margin-top: 18px; padding: 14px 16px; color: #2f5334; background: #edf4e8; border: 1px solid #b8cbaa; border-left: 5px solid var(--color-green); border-radius: var(--radius-control); }
+.member-minutes-status strong { flex: 0 0 auto; font-size: 16px; }
+.member-minutes-status span { font-size: 15px; line-height: 1.45; }
+.minutes-endorsements { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: var(--w-doc); margin-bottom: 20px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.minutes-endorsements > div { padding: 16px 18px; border-left: 1px solid var(--rule); }
+.minutes-endorsements > div:first-child { border-left: 0; }
+.minutes-endorsements span, .minutes-endorsements strong, .minutes-endorsements small { display: block; }
+.minutes-endorsements span { color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.minutes-endorsements strong { margin-top: 6px; color: var(--color-navy); font-family: var(--font-serif); font-size: 19px; }
+.minutes-endorsements small { margin-top: 4px; color: var(--color-muted); font-size: 14px; }
+.member-minutes-document { max-width: var(--w-doc); }
+.member-minutes-digest { margin: 0; color: var(--color-muted); font-size: 13px; }
+.revision-attendance { padding: 22px 26px; border-bottom: 1px solid var(--rule); }
+.revision-attendance h3 { margin: 0 0 12px; color: var(--color-navy); font-family: var(--font-serif); font-size: 20px; }
+.revision-attendance dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; gap: 1px 24px; }
+.revision-attendance dl > div { display: grid; grid-template-columns: minmax(105px, .8fr) minmax(0, 1.2fr); gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule-soft); }
+.revision-attendance dt { color: var(--color-navy); font-size: 14px; font-weight: 800; }
+.revision-attendance dd { margin: 0; color: #526171; font-size: 14px; }
+.meeting-document-secondary { display: block; margin-top: 10px; color: var(--color-navy); font-size: 15px; font-weight: 700; }
+
+@media (max-width: 560px) {
+  .minutes-lifecycle-rail { grid-template-columns: minmax(0, 1fr); }
+  .minutes-lifecycle-step { border-top: 1px solid var(--rule); border-left: 0; }
+  .minutes-lifecycle-step:first-child { border-top: 0; }
+  .minutes-lifecycle-step.is-current { box-shadow: inset 4px 0 0 var(--color-officer-blue); }
+  .official-confirmation-summary { padding: 19px 17px; }
+  .official-confirmation-summary dl { margin: 16px -17px -19px; }
+  .official-confirmation-summary dl > div { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 12px 17px; }
+  .member-minutes-status { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .minutes-endorsements { grid-template-columns: minmax(0, 1fr); }
+  .minutes-endorsements > div { border-top: 1px solid var(--rule); border-left: 0; }
+  .minutes-endorsements > div:first-child { border-top: 0; }
+  .revision-attendance { padding: 19px 14px; }
+  .revision-attendance dl { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media print {
+  .member-minutes-head .page-title { font-size: 18pt; }
+  .member-minutes-status { padding: 7pt 9pt; background: #fff; border-color: #777; }
+  .minutes-endorsements { break-inside: avoid; page-break-inside: avoid; background: #fff; }
+  .member-minutes-document { max-width: none; border: 0; box-shadow: none; }
+  .member-minutes-document .minutes-outline-head { padding: 10pt 12pt; }
+  .member-minutes-document .revision-attendance { padding: 10pt 12pt; }
+  .member-minutes-document .minutes-section { grid-template-columns: 34px minmax(0, 1fr); }
+  .member-minutes-document .minutes-section-rail { padding-top: 10pt; }
+  .member-minutes-document .minutes-section-content { padding: 10pt 12pt 11pt; }
+  .member-minutes-document .minutes-section h3 { margin-bottom: 5pt; font-size: 12pt; }
+  .member-minutes-document .minutes-item-card { padding: 4pt 0; font-size: 10.25pt; line-height: 1.38; }
+  .member-minutes-document .minutes-item-card:not(.minutes-item-card--substantive) { padding: 1.5pt 0; }
+  .member-minutes-document .minutes-item-card--substantive { margin: 0; padding: 5pt 6pt; }
+  .member-minutes-document .minutes-recorded-wording { margin-top: 3pt; padding-left: 6pt; }
+  .member-minutes-document .minutes-recorded-wording > div { font-size: 10.5pt; line-height: 1.38; }
+  .member-minutes-document .minutes-recorded-wording > div p { margin-bottom: 4pt; }
+  .member-minutes-document .minutes-outcome-list { margin-top: 5pt; }
+  .member-minutes-document .minutes-outcome-list > li { margin-top: 5pt; padding: 5pt 6pt; }
+  .member-minutes-document .minutes-outcome-list p { margin-top: 4pt; font-size: 10pt; line-height: 1.38; }
+  .member-minutes-document .minutes-outcome-list .minutes-outcome-details { font-size: 9.5pt; }
+  .member-minutes-document .minutes-section:last-child .minutes-section-content { padding-top: 6pt; padding-bottom: 6pt; }
+  .member-minutes-document .minutes-section:last-child .minutes-item-card { padding-top: 1pt; padding-bottom: 1pt; }
+  .member-minutes-document .minutes-section:last-child .minutes-item-card--substantive { padding: 3pt 5pt; }
+  .member-minutes-document .minutes-section:last-child .minutes-recorded-wording { margin-top: 1pt; }
+  .member-minutes-digest { display: none; }
+
   .back, .btnrow, .agenda-page-actions, .app-header, .app-main > .app-flash, .nav-bar, .nav-inner { display: none !important; }
   html, body, .print-body, .agenda-doc { background: #fff !important; }
   html, body { margin: 0; color: #000; }

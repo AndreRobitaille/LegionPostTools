@@ -2,8 +2,9 @@
 
 **Milestone status:** Implemented. This document preserves the foundation's original
 scope. The later structured draft-minutes layer is now implemented as described in
-`docs/MINUTES_LIFECYCLE.md`; approval, attestation, acceptance, amendments, and member
-minutes progression remain future work.
+`docs/MINUTES_LIFECYCLE.md`. Commander approval, Adjutant attestation, and member-visible
+minutes awaiting acceptance are now implemented; acceptance and amendments remain future
+work.
 
 ## Purpose
 

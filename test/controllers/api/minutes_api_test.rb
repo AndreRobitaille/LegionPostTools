@@ -193,6 +193,41 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "bearer tokens approve and attest with their human capabilities and provenance" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+    approver = create_user("Commander", "approve_minutes")
+    attester = create_user("Adjutant", "attest_minutes")
+    commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, active: true)
+    adjutant_title = @organization.position_titles.create!(name: "Adjutant", display_order: 2, active: true)
+    commander_title.position_assignments.create!(person: approver.person, starts_on: 1.year.ago.to_date)
+    adjutant_title.position_assignments.create!(person: attester.person, starts_on: 1.year.ago.to_date)
+    _approval_token, approval_plaintext = AgentAccessToken.issue!(user: approver, name: "Commander agent", expires_in: 1.day)
+    _attestation_token, attestation_plaintext = AgentAccessToken.issue!(user: attester, name: "Adjutant agent", expires_in: 1.day)
+
+    post "/api/meetings/#{@meeting.id}/minutes/approval", headers: {
+      "Authorization" => "Bearer #{approval_plaintext}",
+      "Idempotency-Key" => "approve-august-minutes"
+    }, as: :json
+
+    assert_response :success
+    assert_equal "approved", response.parsed_body.dig("minutes", "status")
+    assert_equal "delegated_agent", response.parsed_body.dig("execution", "mode")
+    assert_equal "attest", response.parsed_body.dig("minutes", "lifecycle", "next_action")
+
+    post "/api/meetings/#{@meeting.id}/minutes/attestation", headers: {
+      "Authorization" => "Bearer #{attestation_plaintext}",
+      "Idempotency-Key" => "attest-august-minutes"
+    }, as: :json
+
+    assert_response :success
+    assert_equal "attested", response.parsed_body.dig("minutes", "status")
+    assert response.parsed_body.dig("minutes", "lifecycle", "member_visible")
+    assert_equal "/meetings/#{@meeting.id}/minutes", response.parsed_body.dig("minutes", "lifecycle", "member_minutes_path")
+    assert_equal "await_membership_acceptance", response.parsed_body.dig("minutes", "lifecycle", "next_action")
+    assert_equal attester.person.full_name, response.parsed_body.dig("attestation", "attested_by")
+    assert_equal 2, minutes.lifecycle_events.count
+  end
+
   private
 
   def create_user(label, capability = nil)

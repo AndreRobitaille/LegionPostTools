@@ -1,0 +1,17 @@
+<% content_for :title, "Confirm this official action" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Confirm your identity</h1>
+  <p class="page-sub">Finish the one-use confirmation for this exact minutes action.</p>
+</div>
+
+<section class="profile-section">
+  <%= render "shared/section_header", label: "Email link received" %>
+  <div class="panel">
+    <p class="panel-lead">Use the button below in the same signed-in browser. The link works once and expires after 15 minutes.</p>
+    <%= form_with url: magic_link_official_action_reauthentication_path, method: :post do |form| %>
+      <%= hidden_field_tag :token, params[:token] %>
+      <%= form.button "Confirm identity", class: "btn-primary" %>
+    <% end %>
+  </div>
+</section>

@@ -1,11 +1,11 @@
 # Structured Minutes Lifecycle
 
-**Implementation status (August 31, 2026):** Slice 2 is complete. Restricted transcript
-paste, structured working minutes, source-linked OpenAI drafting, in-place human review,
-roster-verified motion participants, deliberate attendance/results, the Jobs ledger, the
-print-ready draft PDF, and private delegated API/handbook parity are implemented. Slices 3
-and 4—the official approval, attestation, acceptance, amendment, and immutability
-workflow—remain design requirements, not shipped behavior.
+**Implementation status (August 31, 2026):** Slices 2 and the approval/attestation portion
+of Slice 3 are complete. Restricted transcript drafting, human review, the Jobs ledger,
+the draft PDF, immutable approved revisions, different-person Adjutant attestation,
+member-visible minutes awaiting acceptance, signed-in confirmation, and direct delegated
+API/handbook parity are implemented. Reopen, acceptance, amendments, and finalized
+official PDFs remain design requirements, not shipped behavior.
 
 ## Purpose
 
@@ -89,12 +89,10 @@ does not infer acceptance merely because time passed or another Meeting occurred
   the working record to draft. It never deletes the superseded revision or attestation.
 - Accepted minutes never reopen. Corrections are immutable linked amendments adopted or
   recorded at later Meetings.
-- Official actions require a fresh, one-use confirmation bound to the exact record,
-  action, revision or lock version, and content digest. A session or bearer token alone is
-  never enough.
-- Agents may assist with drafts under the person's current `manage_minutes` authority.
-  They cannot approve, attest, accept, or amend a record without the exact human
-  confirmation and execution provenance designed here.
+- Signed-in official actions require a fresh, one-use confirmation bound to the exact
+  record, action, revision or lock version, and content digest. Bearer tokens carry their
+  human owner's current capability and may execute an exact explicitly requested action
+  with idempotency and delegated-agent provenance.
 
 ## Product Boundary
 
@@ -567,7 +565,7 @@ complete chain in order.
 Recent authentication is useful for creating an agent token, but it is not specific
 enough for official records. Add a reusable `OfficialActionConfirmation` boundary.
 
-Each confirmation is bound to:
+Each signed-in confirmation is bound to:
 
 - one user and current session;
 - one record type/id;
@@ -585,14 +583,16 @@ official mutation. Capability, user status, session, record version, digest, and
 state are rechecked at consumption. A stale confirmation fails safely and changes nothing.
 
 No administrator implication grants `approve_minutes`, `attest_minutes`, or
-`record_minutes_acceptance`. There is no bypass for support staff, console UI, bearer
-tokens, or an agent. Emergency repair of corrupt data is an exceptional database operation
-outside normal product behavior and must never masquerade as a valid lifecycle act.
+`record_minutes_acceptance`. A bearer token exercises only its human owner's explicit
+capability, records the token in the official-action confirmation, and relies on the API's
+persisted idempotency execution. Written confirmation received outside the app may be
+recorded only with both the named actor and the separate recorder preserved; it must not
+masquerade as an in-app click.
 
-The initial lifecycle implementation exposes confirmations only through signed-in HTML.
-The later API may let an agent prepare an exact pending action and direct the human to its
-confirmation page. The agent can complete only that confirmed action, with idempotency and
-`AgentApiExecution` provenance linking the confirmation and mutation.
+The lifecycle exposes approval and attestation through signed-in HTML and direct bearer
+API calls. API execution requires the matching human capability, an explicit request for
+the exact act, an `Idempotency-Key`, a current record digest, and `AgentApiExecution`
+provenance. Acceptance, amendments, and reopen remain unavailable.
 
 ## Officer Workflow
 

@@ -87,6 +87,7 @@ class PasskeysController < ApplicationController
     stored_credential.update!(sign_count: credential.sign_count, last_used_at: Time.current)
     if reauthenticating?
       Current.session.reauthenticate!
+      confirm_pending_official_action! if session[:reauthentication_purpose] == OfficialActionReauthenticationsController::PURPOSE
       session.delete(:reauthentication_purpose)
     else
       start_new_session_for(stored_credential.user)
@@ -111,7 +112,18 @@ class PasskeysController < ApplicationController
   private
 
   def reauthenticating?
-    authenticated? && session[:reauthentication_purpose] == AgentAccessReauthenticationsController::PURPOSE
+    authenticated? && session[:reauthentication_purpose].in?([
+      AgentAccessReauthenticationsController::PURPOSE,
+      OfficialActionReauthenticationsController::PURPOSE
+    ])
+  end
+
+  def confirm_pending_official_action!
+    confirmation = current_user.official_action_confirmations.find_by!(
+      id: session[OfficialActionReauthenticationsController::PENDING_SESSION_KEY],
+      session: Current.session
+    )
+    confirmation.confirm!(session: Current.session)
   end
 
   def public_key_credential_params

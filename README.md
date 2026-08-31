@@ -30,9 +30,12 @@ The current application foundation includes:
   attendance, an administrative Jobs ledger, and print-ready draft-minutes PDFs.
 - Private session-or-bearer API parity for ordinary delegated officer/admin work across
   meetings, agendas, accounts, transcripts, draft minutes, AI review, and Jobs.
+- Exact immutable Commander-approved minutes revisions, different-person Adjutant
+  attestation, member-visible minutes awaiting acceptance, and matching signed-in and
+  bearer-token actions with audit provenance.
 
-The next core work is the human approval/attestation/acceptance lifecycle and immutable
-correction history, followed by finalized official document delivery and email distribution.
+The next core work is membership acceptance and immutable correction history, followed by
+finalized official document delivery and email distribution.
 
 ## Who This Is For
 
@@ -52,6 +55,8 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for minutes.
+- `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — implemented Commander approval,
+  Adjutant release, member presentation, and delegated API provenance.
 - `docs/superpowers/specs/2026-08-31-agent-minutes-api-parity-design.md` — delegated
   officer/admin parity for accounts, transcripts, working minutes, AI review, and Jobs.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.

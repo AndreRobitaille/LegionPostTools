@@ -1,0 +1,50 @@
+<% content_for :title, "Confirm this official action" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Confirm your identity</h1>
+  <p class="page-sub">This one-use check is tied to the exact minutes revision and action below.</p>
+</div>
+
+<section class="official-confirmation-summary" aria-labelledby="official-action-heading">
+  <p class="meeting-workflow-kicker">Official minutes action</p>
+  <h2 id="official-action-heading"><%= @confirmation.action == "approve" ? "Approve for Adjutant attestation" : "Attest and release to members" %></h2>
+  <p><strong><%= @confirmation.meeting_minutes.title %></strong></p>
+  <p>Digest <code><%= @confirmation.content_digest.first(12) %></code> · expires <%= legion_datetime(@confirmation.expires_at) %></p>
+</section>
+
+<section class="profile-section">
+  <%= render "shared/section_header", label: "Choose how to confirm" %>
+  <div class="panel">
+    <% if cookies.encrypted[OfficialActionReauthenticationsController::PENDING_COOKIE].present? %>
+      <div class="agent-reauth-code">
+        <h2>Enter the emailed code</h2>
+        <p class="panel-lead">Enter the code in this browser, or use the secure link from the same email.</p>
+        <%= form_with url: verify_official_action_reauthentication_path, method: :post, class: "stacked-form" do |form| %>
+          <div class="fl">
+            <%= form.label :code, "8-digit confirmation code" %>
+            <%= form.text_field :code, class: "f agent-code-input", inputmode: "numeric",
+                  autocomplete: "one-time-code", placeholder: "1234 5678", maxlength: 9,
+                  required: true, autofocus: true %>
+          </div>
+          <%= form.button "Confirm identity", class: "btn-primary" %>
+        <% end %>
+        <%= button_to "Send a new code and link", official_action_reauthentication_path,
+              method: :post, class: "lnk agent-reauth-resend" %>
+      </div>
+    <% else %>
+      <p class="panel-lead">Send a one-time code and secure link to <strong><%= current_user.email_address %></strong>.</p>
+      <%= button_to "Email me a code and link", official_action_reauthentication_path,
+            method: :post, class: "btn-primary" %>
+    <% end %>
+
+    <% if current_user.passkey_credentials.any? %>
+      <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= @confirmation.action == 'approve' ? new_admin_meeting_minutes_approval_path(@confirmation.meeting_minutes.meeting, confirmation_id: @confirmation.id) : new_admin_meeting_minutes_attestation_path(@confirmation.meeting_minutes.meeting, confirmation_id: @confirmation.id) %>">
+        <div class="entry-orline">Or use a passkey</div>
+        <button type="button" class="btn-secondary" data-action="passkey#authenticate" data-passkey-target="submit">Confirm with a passkey</button>
+        <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<p class="profile-crosslink"><%= link_to "Cancel and return to the minutes", admin_meeting_minutes_path(@confirmation.meeting_minutes.meeting), class: "lnk" %></p>

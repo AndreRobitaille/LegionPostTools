@@ -51,8 +51,8 @@
     <span class="meeting-state meeting-state--quiet">Restricted officer record</span>
     <p>Draft minutes and source material are available only to officers with minutes or internal-record access.</p>
   <% elsif @meeting.minutes %>
-    <span class="meeting-state meeting-state--minutes"><%= @meeting.minutes.status.humanize %> minutes</span>
-    <p>The working record keeps the meeting outline, attendance, outcomes, and source material separate until people approve the exact document.</p>
+    <span class="meeting-state meeting-state--minutes"><%= @meeting.minutes.attested? ? "Visible to members · Awaiting acceptance" : "#{@meeting.minutes.status.humanize} minutes" %></span>
+    <p><%= @meeting.minutes.draft? ? "The working record keeps the meeting outline, attendance, outcomes, and source material separate until people approve the exact document." : "The approved revision is locked and its approval history is preserved." %></p>
     <%= link_to "Open minutes workspace", admin_meeting_minutes_path(@meeting), class: "btn-primary" %>
   <% elsif @meeting.starts_at > Time.current %>
     <span class="meeting-state meeting-state--quiet">Meeting has not occurred</span>

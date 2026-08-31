@@ -52,4 +52,39 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{dated_agenda_path(agenda)}']", text: /Read the published agenda/
     assert_select ".meeting-document-note", text: /Minutes have not been published yet/
   end
+
+  test "attested revision is member visible while still awaiting acceptance" do
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.ago, title: "July Membership")
+    minutes = MeetingMinutes.create_from_meeting!(meeting:)
+    minutes.sections.first.items.create!(title: "Adjutant report", behavior_type: "report_slot", position: 1, body: "The minutes were read.")
+    approver = lifecycle_user("Commander", "approve_minutes")
+    attester = lifecycle_user("Adjutant", "attest_minutes")
+    approval_token, = AgentAccessToken.issue!(user: approver, name: "Approval", expires_in: 1.day)
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: approval_token, action: "approve"))
+    attestation = OfficialActionConfirmation.record_external!(minutes:, user: attester, action: "attest", evidence_note: "Written approval.")
+    minutes.attest_with_confirmation!(confirmation: attestation, recorded_by: approver)
+    sign_in_as(@user)
+
+    get meeting_path(meeting)
+    assert_response :success
+    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /minutes awaiting acceptance/i
+
+    get meeting_minutes_path(meeting)
+    assert_response :success
+    assert_select ".member-minutes-status", text: /Awaiting acceptance/
+    assert_select ".minutes-endorsements", text: /Commander approval.*Adjutant attestation/m
+    assert_select ".minutes-item-title", text: "Adjutant report"
+    assert_no_match(/official minutes/i, response.body)
+  end
+
+  private
+
+  def lifecycle_user(office, capability)
+    person = Person.create!(first_name: "Test", last_name: office)
+    user = User.create!(person:, email_address: "#{office.downcase}-#{SecureRandom.hex(3)}@example.com", email_verified_at: Time.current)
+    user.permission_grants.create!(capability:)
+    title = @organization.position_titles.find_or_create_by!(name: office) { |record| record.display_order = @organization.position_titles.count + 1 }
+    title.position_assignments.create!(person:, starts_on: 1.year.ago.to_date)
+    user
+  end
 end

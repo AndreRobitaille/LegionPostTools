@@ -1,6 +1,7 @@
 # Agent Minutes and Recent-Workflow API Parity Design
 
-**Status:** Implemented August 31, 2026.
+**Status:** Implemented August 31, 2026; approval/attestation parity extended by
+`docs/MINUTES_APPROVAL_AND_ATTESTATION.md` later that day.
 
 ## Purpose
 
@@ -9,10 +10,10 @@ Meetings shipped. Since then the application added roster-controlled login acces
 structured draft minutes, restricted transcripts, OpenAI-assisted drafting and human
 review, durable background runs, a Jobs ledger, and a print-ready draft-minutes PDF.
 
-This change brings the private API and generated `/api` handbook up to the proven HTML
-workflow. It does not make AI authoritative and does not expose any official-record act.
-The agent remains a delegate of the signed-in person and receives only that person's
-current capabilities.
+This change brought the private API and generated `/api` handbook up to the then-proven
+draft HTML workflow. The later approval/attestation slice added direct, idempotent bearer
+actions using the same person's explicit capabilities and lifecycle provenance. AI output
+does not become authoritative; the agent remains the person's delegate.
 
 ## Safety boundary
 
@@ -28,9 +29,9 @@ current capabilities.
   the installation and exact Meeting, and use existing bearer idempotency/provenance.
 - AI suggestions remain proposals. An API caller must explicitly use, edit, or discard
   each proposal; no generation response directly rewrites working minutes.
-- Approval, attestation, reopening an official revision, acceptance, amendments, and
-  transcript purge remain unavailable until the exact one-use human-confirmation design
-  exists. The handbook must say that no endpoint should be guessed for those acts.
+- Approval and attestation are now exact **Only when asked** bearer actions with explicit
+  capabilities, current content/revision digests, idempotency, and agent-token provenance.
+  Reopen, acceptance, amendments, and transcript purge remain unavailable.
 
 ## Meeting and account parity
 
@@ -128,7 +129,8 @@ The generated handbook is the canonical live API manual. In the same change:
 - add a guided transcript-to-reviewed-draft workflow;
 - classify transcript upload, AI run request, account control, and destructive draft-row
   changes under their proper authority boundary;
-- keep official actions explicitly unavailable;
+- document approval and attestation under **Only when asked**, while keeping reopen,
+  acceptance, and amendments explicitly unavailable;
 - update the operator design, architecture, roadmap, README, Meeting foundation, minutes
   lifecycle, user-management guide, deployment notes, and documentation maps to match the
   implementation; and

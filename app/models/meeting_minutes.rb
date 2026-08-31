@@ -5,6 +5,7 @@ class MeetingMinutes < ApplicationRecord
   belongs_to :meeting, inverse_of: :minutes
   belongs_to :meeting_body, inverse_of: :meeting_minutes
   belongs_to :meeting_type, optional: true, inverse_of: :meeting_minutes
+  belongs_to :current_revision, class_name: "MinutesRevision", optional: true
 
   has_many :sections,
     -> { order(:position, :title) },
@@ -22,6 +23,17 @@ class MeetingMinutes < ApplicationRecord
     class_name: "MinutesDraftRun",
     dependent: :restrict_with_exception,
     inverse_of: :meeting_minutes
+  has_many :revisions,
+    -> { order(:number) },
+    class_name: "MinutesRevision",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting_minutes
+  has_many :lifecycle_events,
+    -> { order(:occurred_at, :id) },
+    class_name: "MinutesLifecycleEvent",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting_minutes
+  has_many :official_action_confirmations, dependent: :restrict_with_exception
 
   normalizes :title, :location_name, with: ->(value) { value.to_s.strip }
 
@@ -69,6 +81,138 @@ class MeetingMinutes < ApplicationRecord
   def attested? = status == "attested"
   def accepted? = status == "accepted"
 
+  def approval_ready?
+    attendance_entries.none? { |entry| entry.status == "not_recorded" } &&
+      (!latest_successful_draft_run || latest_successful_draft_run.suggestions.unreviewed.none?)
+  end
+
+  def digest_for(action)
+    case action.to_s
+    when "approve"
+      Digest::SHA256.hexdigest(JSON.generate(revision_payload))
+    when "attest"
+      current_revision&.sha256 || "missing-revision"
+    else
+      raise ArgumentError, "Unsupported official minutes action."
+    end
+  end
+
+  def approve_with_confirmation!(confirmation:, recorded_by: confirmation.user)
+    confirmation.consume!(user: confirmation.user, session: confirmation.session) do
+      with_lock do
+        reload
+        require_transition!(confirmation:, action: "approve", from: "draft", capability: "approve_minutes")
+        unless approval_ready?
+          errors.add(:base, "Resolve attendance and the latest AI review before approval.")
+          raise ActiveRecord::RecordInvalid, self
+        end
+
+        now = Time.current
+        revision = revisions.create!(
+          number: revisions.maximum(:number).to_i + 1,
+          payload: revision_payload,
+          sha256: digest_for("approve"),
+          approved_by: confirmation.user,
+          approver_name: confirmation.user.person.full_name,
+          approver_office: officer_label(confirmation.user),
+          approved_at: now
+        )
+        update!(status: "approved", current_revision: revision)
+        record_lifecycle_event!(
+          revision:,
+          confirmation:,
+          actor: confirmation.user,
+          recorded_by:,
+          event_type: "approved",
+          from_status: "draft",
+          to_status: "approved",
+          occurred_at: now
+        )
+      end
+    end
+    current_revision
+  end
+
+  def attest_with_confirmation!(confirmation:, recorded_by: confirmation.user)
+    confirmation.consume!(user: confirmation.user, session: confirmation.session) do
+      with_lock do
+        reload
+        require_transition!(confirmation:, action: "attest", from: "approved", capability: "attest_minutes")
+        if current_revision.approved_by.person_id == confirmation.user.person_id
+          errors.add(:base, "The Adjutant attesting minutes must be a different person from the approver.")
+          raise ActiveRecord::RecordInvalid, self
+        end
+
+        now = Time.current
+        current_revision.create_attestation!(
+          attested_by: confirmation.user,
+          recorded_by:,
+          official_action_confirmation: confirmation,
+          attester_name: confirmation.user.person.full_name,
+          attester_office: officer_label(confirmation.user),
+          attested_at: now
+        )
+        update!(status: "attested")
+        record_lifecycle_event!(
+          revision: current_revision,
+          confirmation:,
+          actor: confirmation.user,
+          recorded_by:,
+          event_type: "attested",
+          from_status: "approved",
+          to_status: "attested",
+          occurred_at: now
+        )
+      end
+    end
+    current_revision.attestation
+  end
+
+  def revision_payload
+    {
+      "title" => title,
+      "starts_at" => starts_at.iso8601(6),
+      "location_name" => location_name,
+      "location_address" => location_address,
+      "meeting_body_name" => meeting_body.name,
+      "attendance" => attendance_entries.map do |entry|
+        {
+          "office_name" => entry.office_name,
+          "person_name" => entry.person_name,
+          "status" => entry.status,
+          "position" => entry.position
+        }
+      end,
+      "sections" => sections.map do |section|
+        {
+          "title" => section.title,
+          "position" => section.position,
+          "items" => section.items.map do |item|
+            {
+              "record_key" => item.record_key,
+              "title" => item.title,
+              "behavior_type" => item.behavior_type,
+              "position" => item.position,
+              "agenda_body_html" => item.rich_text_agenda_body&.body&.to_html,
+              "body_html" => item.rich_text_body&.body&.to_html,
+              "outcomes" => item.outcomes.map do |outcome|
+                {
+                  "kind" => outcome.kind,
+                  "text" => outcome.text,
+                  "mover_name" => outcome.mover_name,
+                  "seconder_name" => outcome.seconder_name,
+                  "disposition" => outcome.disposition,
+                  "vote_summary" => outcome.vote_summary,
+                  "position" => outcome.position
+                }
+              end
+            }
+          end
+        }
+      end
+    }
+  end
+
   def seed_from_agenda!(agenda)
     attendance_position = 0
 
@@ -110,6 +254,42 @@ class MeetingMinutes < ApplicationRecord
   end
 
   private
+
+  def latest_successful_draft_run
+    draft_runs.detect(&:succeeded?)
+  end
+
+  def require_transition!(confirmation:, action:, from:, capability:)
+    unless status == from && confirmation.meeting_minutes_id == id && confirmation.action == action &&
+        confirmation.record_lock_version == lock_version && confirmation.content_digest == digest_for(action) &&
+        confirmation.user.can?(capability)
+      errors.add(:base, "The minutes or authority changed. Start the confirmation again.")
+      raise ActiveRecord::RecordInvalid, self
+    end
+  end
+
+  def officer_label(user)
+    user.person.current_role_label.presence || "Authorized officer"
+  end
+
+  def record_lifecycle_event!(revision:, confirmation:, actor:, recorded_by:, event_type:, from_status:, to_status:, occurred_at:)
+    lifecycle_events.create!(
+      minutes_revision: revision,
+      actor:,
+      recorded_by:,
+      official_action_confirmation: confirmation,
+      event_type:,
+      from_status:,
+      to_status:,
+      actor_name: actor.person.full_name,
+      actor_office: officer_label(actor),
+      occurred_at:,
+      metadata: {
+        "confirmation_method" => confirmation.confirmation_method,
+        "evidence_note" => confirmation.evidence_note
+      }.compact
+    )
+  end
 
   def associations_describe_same_meeting
     return if organization.blank? || meeting.blank? || meeting_body.blank?
