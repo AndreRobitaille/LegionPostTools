@@ -3,14 +3,15 @@
 <% row_classes = [ "mrow", "catrow" ]
    row_classes << "mrow--important" if endeavor.important? && endeavor.active?
    row_classes << "mrow--done" if endeavor.completed?
-   due_label = endeavor_due_label(endeavor) %>
+   show_planning = current_user.can?("manage_agendas")
+   due_label = show_planning ? endeavor_due_label(endeavor) : nil %>
 <%= link_to endeavor_path(endeavor), class: row_classes.join(" ") do %>
   <span class="mrow-id">
     <span class="mrow-l1"><span class="mrow-name"><%= endeavor.title %></span></span>
     <% if endeavor.summary.present? %>
       <span class="mrow-sub"><%= endeavor.summary %></span>
     <% end %>
-    <span class="endeavor-why"><%= endeavor_reason(endeavor) %></span>
+    <% if show_planning && endeavor.active? %><span class="endeavor-why"><%= endeavor_reason(endeavor) %></span><% end %>
   </span>
   <span class="mrow-status">
     <% if due_label %>
@@ -23,6 +24,6 @@
     <% end %>
   </span>
   <span class="catrow-meta">
-    <span class="catrow-edit">Open <span class="catrow-caret" aria-hidden="true">›</span></span>
+    <span class="catrow-edit">View details <span class="catrow-caret" aria-hidden="true">›</span></span>
   </span>
 <% end %>

@@ -30,6 +30,15 @@ class MeetingMinutesPdfTest < ActiveSupport::TestCase
     )
   end
 
+  test "filename identifies attested minutes without calling them official" do
+    @minutes.update_column(:status, "attested")
+
+    assert_equal(
+      "membership-meeting-2026-07-07-attested-minutes.pdf",
+      MeetingMinutesPdf.filename(minutes: @minutes)
+    )
+  end
+
   test "signed source token fixes the organization and minutes record" do
     token = MeetingMinutesPdf.source_token(minutes: @minutes)
 

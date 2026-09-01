@@ -1,9 +1,16 @@
-<% state, state_class = member_meeting_state(meeting) %>
-<%= link_to meeting_path(meeting), class: "agenda-docket-row", aria: { label: "View #{meeting.title}" } do %>
+<% action = member_meeting_document_action(meeting) %>
+<article class="agenda-docket-row member-meeting-row">
   <%= render "shared/meeting_date_plate", meeting: meeting %>
   <span class="agenda-docket-copy">
-    <span class="agenda-docket-title"><%= meeting.title %></span>
-    <span class="agenda-docket-meta"><%= meeting.meeting_body.name %> &middot; <%= legion_time(meeting.starts_at) %></span>
-    <span class="meeting-state <%= state_class %>"><%= state %></span>
+    <span class="agenda-docket-title"><%= member_meeting_title(meeting) %></span>
+    <% if show_schedule %><span class="agenda-docket-meta"><%= legion_time(meeting.starts_at) %><% if meeting.location_name.present? %> &middot; <%= meeting.location_name %><% end %></span><% end %>
+    <% if action[:note] %><span class="member-meeting-note member-meeting-note--<%= action[:state] %>"><%= action[:note] %></span><% end %>
   </span>
-<% end %>
+  <span class="member-meeting-row-action">
+    <% if action[:path] %>
+      <%= link_to action[:label], action[:path], class: "member-document-action member-document-action--#{action[:state]}", aria: { label: "#{action[:label]} for #{member_meeting_title(meeting)} on #{legion_date(meeting.starts_at)}" } %>
+    <% else %>
+      <span class="member-document-action member-document-action--unavailable" aria-disabled="true"><%= action[:label] %></span>
+    <% end %>
+  </span>
+</article>

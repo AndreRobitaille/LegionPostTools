@@ -1,2 +1,2 @@
-<% content_for :title, "Draft minutes - #{@minutes.title}" %>
+<% content_for :title, "#{minutes_document_presentation(@minutes).fetch(:kind)} - #{@minutes.title}" %>
 <%= render "meeting_minutes/minutes_document", minutes: @minutes, organization: @organization %>

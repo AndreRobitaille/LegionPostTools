@@ -108,6 +108,12 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal "", Person.new.service_summary
   end
 
+  test "service_summary translates roster codes and suppresses missing sentinels" do
+    assert_equal "Army · Persian Gulf", Person.new(roster_branch: "USA", roster_war_era: "PERSIAN_GULF").service_summary
+    assert_equal "Navy · Global War on Terrorism", Person.new(roster_branch: "USN", roster_war_era: "GW_TERRORISM").service_summary
+    assert_equal "Air Force", Person.new(roster_branch: "USAF", roster_war_era: "MISSING").service_summary
+  end
+
   test "roster_paid_through_display shows PUFL or the year" do
     assert_equal "Paid up for life", Person.new(roster_membership_type: "Paid Up For Life member").roster_paid_through_display
     assert_equal "Paid through: 2027", Person.new(roster_paid_through_year: 2027).roster_paid_through_display

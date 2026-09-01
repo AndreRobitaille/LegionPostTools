@@ -11,6 +11,7 @@ class MeetingMinutesPdfSourcesController < ApplicationController
       :meeting_body,
       :meeting_type,
       :attendance_entries,
+      current_revision: :attestation,
       sections: { items: %i[rich_text_agenda_body rich_text_body outcomes] }
     ).find(payload.fetch("meeting_minutes_id"))
 

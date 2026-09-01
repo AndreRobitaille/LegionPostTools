@@ -38,8 +38,8 @@
                   <span class="continuity-meta">
                     Carried to <%= entry.dated_agenda.meeting_body.name %> · <%= legion_time(entry.dated_agenda.starts_at) %>
                   </span>
-                  <% if entry.dated_agenda.published? %>
-                    <%= link_to "Read the published agenda", dated_agenda_path(entry.dated_agenda), class: "lnk" %>
+                  <% if (document = endeavor_timeline_document(entry.dated_agenda)) %>
+                    <%= link_to document.first, document.last, class: "lnk" %>
                   <% end %>
                 <% end %>
               </div>
@@ -77,14 +77,16 @@
   <aside class="card endeavor-facts" aria-label="Endeavor details">
     <div class="card-head">
       <span class="card-dia" aria-hidden="true">&#9670;</span>
-      <span class="card-head-label">Current direction</span>
+      <span class="card-head-label"><%= @endeavor.completed? ? "Completion record" : "Endeavor details" %></span>
     </div>
     <div class="card-body">
       <dl>
-        <div>
-          <dt>Why it is here</dt>
-          <dd><%= endeavor_reason(@endeavor, with_date: true) %></dd>
-        </div>
+        <% if @endeavor.active? && current_user.can?("manage_agendas") %>
+          <div>
+            <dt>Why it is here</dt>
+            <dd><%= endeavor_reason(@endeavor, with_date: true) %></dd>
+          </div>
+        <% end %>
         <% if @endeavor.meeting_body %>
           <div>
             <dt>Usually discussed by</dt>

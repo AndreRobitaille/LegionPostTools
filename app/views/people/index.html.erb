@@ -8,5 +8,7 @@
 <% if full_membership_access? %>
   <%= render "membership_directory" %>
 <% else %>
-  <%= render "member_directory" %>
+  <div class="member-directory">
+    <%= render "member_directory" %>
+  </div>
 <% end %>

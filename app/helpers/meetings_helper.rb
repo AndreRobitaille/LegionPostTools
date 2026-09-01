@@ -1,4 +1,40 @@
 module MeetingsHelper
+  def member_meeting_title(meeting)
+    default_title = Meeting.default_title(
+      meeting_body: meeting.meeting_body,
+      meeting_type: meeting.meeting_type,
+      starts_at: meeting.starts_at
+    )
+
+    meeting.title == default_title ? (meeting.meeting_type&.name.presence || meeting.meeting_body.name) : meeting.title
+  end
+
+  def member_meeting_document_action(meeting)
+    if meeting.minutes&.attested?
+      return {
+        label: "View minutes",
+        path: meeting_minutes_path(meeting),
+        note: "Awaiting member acceptance",
+        state: "minutes"
+      }
+    end
+
+    if meeting.dated_agenda&.published?
+      return {
+        label: "View agenda",
+        path: dated_agenda_path(meeting.dated_agenda),
+        note: ("Minutes not available yet" if member_past_meeting?(meeting)),
+        state: "agenda"
+      }
+    end
+
+    if member_past_meeting?(meeting)
+      { label: "No documents available", path: nil, note: nil, state: "unavailable" }
+    else
+      { label: "Agenda not published yet", path: nil, note: nil, state: "unavailable" }
+    end
+  end
+
   def meeting_record_state(meeting)
     if internal_minutes_access?
       if meeting.minutes
@@ -58,5 +94,11 @@ module MeetingsHelper
 
   def internal_minutes_access?
     current_user.can_any?("manage_minutes", "view_internal_records")
+  end
+
+  private
+
+  def member_past_meeting?(meeting)
+    meeting.starts_at < Time.zone.today.beginning_of_day
   end
 end

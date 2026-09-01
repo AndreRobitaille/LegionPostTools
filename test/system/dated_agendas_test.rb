@@ -234,12 +234,10 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_current_path meetings_path
     assert_selector "a.nav-tab--active[aria-current='page']", text: /Meetings/i
     assert_no_selector ".nav-tab", text: "Records"
-    assert_selector ".meeting-next-card", text: @agenda.title
-
-    find(".meeting-next-card", text: @agenda.title).click
-
-    assert_current_path meeting_path(@agenda.meeting)
-    click_link "Read the published agenda"
+    assert_selector ".member-meeting-card--featured", text: @agenda.meeting.meeting_type.name
+    within ".member-meeting-card--featured" do
+      click_link "View agenda"
+    end
 
     assert_current_path dated_agenda_path(@agenda)
     assert_selector ".agenda-masthead h1", text: "Membership Meeting — Agenda"

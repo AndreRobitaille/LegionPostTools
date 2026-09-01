@@ -15,7 +15,14 @@ class MeetingMinutesPdf
         minutes.meeting_type&.name&.parameterize.presence ||
         minutes.meeting_body.name.parameterize
 
-      "#{meeting_name}-#{minutes.starts_at.to_date.iso8601}-draft-minutes.pdf"
+      document_suffix = {
+        "draft" => "draft-minutes",
+        "approved" => "approved-minutes",
+        "attested" => "attested-minutes",
+        "accepted" => "official-minutes"
+      }.fetch(minutes.status)
+
+      "#{meeting_name}-#{minutes.starts_at.to_date.iso8601}-#{document_suffix}.pdf"
     end
 
     def source_token(minutes:)

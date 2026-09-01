@@ -38,6 +38,50 @@ class EndeavorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".continuity", text: /city received the application/
     assert_select "a[href=?]", edit_endeavor_path(@endeavor), count: 0
+    assert_select "body", text: /Raise by|Due in|Why it is here/, count: 0
+  end
+
+  test "completed Endeavor shows completion instead of overdue planning language" do
+    @endeavor.update!(raise_by_on: 1.week.ago.to_date)
+    @endeavor.complete!(@manager)
+    sign_in_as(@member)
+
+    get endeavors_path
+
+    assert_select "a[href=?]", endeavor_path(@endeavor), text: /Completed.*View details/m
+    assert_select "a[href=?]", endeavor_path(@endeavor), text: /Overdue|Raise by|Due in/, count: 0
+
+    get endeavor_path(@endeavor)
+
+    assert_select ".card-head-label", text: "Completion record"
+    assert_select ".endeavor-facts", text: /Completed/
+    assert_select ".endeavor-facts", text: /Overdue|Why it is here|Current direction/, count: 0
+  end
+
+  test "continuity promotes an attested meeting from agenda to minutes" do
+    meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
+    agenda = create_dated_agenda!(
+      organization: @organization,
+      meeting_body: @meeting_body,
+      meeting_type:,
+      starts_at: 1.week.ago,
+      title: "Membership Meeting"
+    )
+    DatedAgendaItem.create_from_endeavor!(
+      @endeavor,
+      position: 1,
+      dated_agenda: agenda
+    )
+    agenda.approve!(@manager)
+    agenda.publish!(@manager)
+    minutes = MeetingMinutes.create_from_meeting!(meeting: agenda.meeting)
+    minutes.update!(status: "attested")
+    sign_in_as(@member)
+
+    get endeavor_path(@endeavor)
+
+    assert_select "a[href=?]", meeting_minutes_path(agenda.meeting), text: "Read the attested minutes"
+    assert_select "a[href=?]", dated_agenda_path(agenda), count: 0
   end
 
   test "manager creates Endeavor" do

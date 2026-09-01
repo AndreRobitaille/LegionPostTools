@@ -16,8 +16,8 @@ module Admin
         disposition: "inline"
       no_store
     rescue MeetingMinutesPdf::GenerationError => error
-      Rails.logger.error("Draft minutes PDF generation failed: #{error.message}")
-      redirect_to admin_meeting_minutes_path(@meeting), alert: "The draft PDF could not be created. Try again."
+      Rails.logger.error("Minutes PDF generation failed: #{error.message}")
+      redirect_to admin_meeting_minutes_path(@meeting), alert: "The minutes PDF could not be created. Try again."
     end
 
     def create

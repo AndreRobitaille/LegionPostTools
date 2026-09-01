@@ -15,4 +15,7 @@
       <% status_lines.each do |line| %><span class="mrow-kv"><%= line %></span><% end %>
     </span>
   <% end %>
+  <% if local_assigns[:action_label].present? %>
+    <span class="mrow-cue"><%= action_label %> <span aria-hidden="true">›</span></span>
+  <% end %>
 <% end %>

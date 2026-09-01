@@ -24,10 +24,38 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     get meetings_path
 
     assert_response :success
-    assert_select ".meeting-next-card[href='#{meeting_path(next_meeting)}']", text: /Next Membership Meeting/
-    assert_select ".meeting-list-section a[href='#{meeting_path(later)}']", text: /Later Membership Meeting/
-    assert_select ".meeting-year#meetings-2025 a[href='#{meeting_path(past)}']", text: /August 2025 Meeting/
+    assert_select ".meeting-next .member-meeting-card", text: /Next Membership Meeting/
+    assert_select ".meeting-list-section .member-meeting-row", text: /Later Membership Meeting/
+    assert_select ".meeting-year#meetings-2025 .member-meeting-row", text: /August 2025 Meeting/
     assert_select ".meeting-year-rail a[href='#meetings-2025']", text: "2025"
+    assert_select "a[href='#{meeting_path(next_meeting)}']", count: 0
+    assert_select "a[href='#{meeting_path(later)}']", count: 0
+    assert_select "a[href='#{meeting_path(past)}']", count: 0
+  end
+
+  test "index links directly to a published upcoming agenda and removes generated title repetition" do
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.from_now)
+    agenda = DatedAgenda.create_from_template!(meeting:)
+    publisher = lifecycle_user("Publisher", "manage_agendas")
+    agenda.approve!(publisher)
+    agenda.publish!(publisher)
+    sign_in_as(@user)
+
+    get meetings_path
+
+    assert_select ".meeting-next h2", text: "Membership Meeting"
+    assert_select "a[href=?]", dated_agenda_path(agenda), text: "View agenda"
+    assert_select ".member-meeting-schedule", text: /#{Regexp.escape(meeting.location_name)}/
+    assert_select ".meeting-next", text: /Membership Meeting —/, count: 0
+  end
+
+  test "index presents unavailable upcoming agendas as noninteractive" do
+    create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.from_now)
+    sign_in_as(@user)
+
+    get meetings_path
+
+    assert_select ".member-document-action--unavailable[aria-disabled=true]", text: "Agenda not published yet"
   end
 
   test "meeting without an agenda is visible with honest state text" do
@@ -75,6 +103,11 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".minutes-endorsements", text: /Commander approval.*Adjutant attestation/m
     assert_select ".minutes-item-title", text: "Adjutant report"
     assert_no_match(/official minutes/i, response.body)
+
+    get meetings_path
+    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: "View minutes"
+    assert_select ".member-meeting-note", text: "Awaiting member acceptance"
+    assert_select ".meeting-year .agenda-docket-meta", count: 0
   end
 
   private

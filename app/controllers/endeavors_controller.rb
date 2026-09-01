@@ -94,7 +94,7 @@ class EndeavorsController < ApplicationController
     # Timestamped by the meeting date, not when the row was created: the entry is
     # about the meeting the business was carried to, and the reader sees that same
     # date on the card. Two disagreeing dates on one entry is just confusing.
-    appearances = @endeavor.dated_agenda_items.includes(dated_agenda: :meeting_body).map do |agenda_item|
+    appearances = @endeavor.dated_agenda_items.includes(dated_agenda: [ :meeting_body, { meeting: :minutes } ]).map do |agenda_item|
       [ agenda_item.dated_agenda.starts_at, :agenda, agenda_item ]
     end
     @timeline_entries = (updates + appearances).sort_by { |time, _, _| time }.reverse

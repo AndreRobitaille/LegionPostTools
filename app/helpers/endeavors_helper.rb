@@ -20,6 +20,8 @@ module EndeavorsHelper
   # On a list row the date has its own column, so the reason carries only the
   # judgement. Where it stands alone (the detail rail), pass with_date: true.
   def endeavor_reason(endeavor, on: Date.current, with_date: false)
+    return "Completed on #{legion_date(endeavor.completed_at)}." if endeavor.completed?
+
     date = endeavor.raise_by_on
 
     if date.blank?
@@ -41,9 +43,17 @@ module EndeavorsHelper
 
   # The one fact worth its own column on a list row.
   def endeavor_due_label(endeavor, on: Date.current)
-    return nil if endeavor.raise_by_on.blank?
+    return nil if endeavor.completed? || endeavor.raise_by_on.blank?
 
     endeavor.raise_by_on < on ? "Overdue since" : "Raise by"
+  end
+
+  def endeavor_timeline_document(agenda)
+    if agenda.meeting.minutes&.attested?
+      [ "Read the attested minutes", meeting_minutes_path(agenda.meeting) ]
+    elsif agenda.published?
+      [ "Read the published agenda", dated_agenda_path(agenda) ]
+    end
   end
 
   private

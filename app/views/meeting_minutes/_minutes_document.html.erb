@@ -1,12 +1,16 @@
 <% mailing_address_lines = organization.mailing_address_lines %>
 <% mailing_address_lines.fill("", mailing_address_lines.length...2) %>
+<% presentation = minutes_document_presentation(minutes) %>
+<% payload = minutes_document_payload(minutes) %>
+<% revision = minutes.current_revision %>
+<% attestation = revision&.attestation %>
 
 <% content_for :head do %>
   <%= content_tag :style,
         ":root { " \
           "--agenda-footer-address-line-one: #{mailing_address_lines.first.to_json}; " \
           "--agenda-footer-address-line-two: #{mailing_address_lines.second.to_json}; " \
-          "--agenda-footer-email: #{"DRAFT - NOT APPROVED".to_json}; " \
+          "--agenda-footer-email: #{presentation.fetch(:status).upcase.to_json}; " \
         "}".html_safe,
         nonce: content_security_policy_nonce %>
 <% end %>
@@ -23,12 +27,12 @@
         <% end %>
       </div>
 
-      <% if minutes.location_name.present? || minutes.location_address.present? %>
+      <% if payload["location_name"].present? || payload["location_address"].present? %>
         <div class="agenda-meeting-location">
           <p class="agenda-meeting-location-label">Meeting location</p>
-          <% if minutes.location_name.present? %><p class="agenda-meeting-location-name"><%= minutes.location_name %></p><% end %>
-          <% if minutes.location_address.present? %>
-            <p class="agenda-meeting-location-address"><%= simple_format(minutes.location_address, {}, wrapper_tag: "span") %></p>
+          <% if payload["location_name"].present? %><p class="agenda-meeting-location-name"><%= payload["location_name"] %></p><% end %>
+          <% if payload["location_address"].present? %>
+            <p class="agenda-meeting-location-address"><%= simple_format(payload["location_address"], {}, wrapper_tag: "span") %></p>
           <% end %>
         </div>
       <% end %>
@@ -37,27 +41,28 @@
     <div class="agenda-letterhead-rule" aria-hidden="true"><span></span></div>
 
     <div class="agenda-meeting-heading">
-      <p class="minutes-doc-draft-label">Draft - not approved</p>
-      <h1><%= minutes.meeting_type&.name || minutes.meeting_body.name %> - Draft minutes</h1>
+      <p class="minutes-doc-status-label minutes-doc-status-label--<%= minutes.status %>"><%= presentation.fetch(:status) %></p>
+      <h1><%= minutes.meeting_type&.name || payload.fetch("meeting_body_name") %> - <%= presentation.fetch(:kind) %></h1>
       <p class="agenda-meeting-when">
-        <time datetime="<%= minutes.starts_at.to_date.iso8601 %>"><%= legion_date(minutes.starts_at) %></time>
+        <% document_starts_at = Time.zone.parse(payload.fetch("starts_at")) %>
+        <time datetime="<%= document_starts_at.to_date.iso8601 %>"><%= legion_date(document_starts_at) %></time>
         <span aria-hidden="true">·</span>
-        <time datetime="<%= minutes.starts_at.iso8601 %>"><%= legion_time(minutes.starts_at) %></time>
+        <time datetime="<%= document_starts_at.iso8601 %>"><%= legion_time(document_starts_at) %></time>
       </p>
     </div>
   </header>
 
-  <% if minutes.attendance_entries.any? %>
+  <% if payload.fetch("attendance").any? %>
     <section class="minutes-doc-attendance" aria-labelledby="minutes-doc-attendance-heading">
       <h2 id="minutes-doc-attendance-heading">Officer roll call</h2>
       <table>
         <thead><tr><th>Office</th><th>Officer</th><th>Attendance</th></tr></thead>
         <tbody>
-          <% minutes.attendance_entries.each do |entry| %>
+          <% payload.fetch("attendance").each do |entry| %>
             <tr>
-              <th scope="row"><%= entry.office_name %></th>
-              <td><%= entry.person_name.presence || (entry.status == "vacant" ? "Vacant" : "Not recorded") %></td>
-              <td><%= entry.status.humanize %></td>
+              <th scope="row"><%= entry.fetch("office_name") %></th>
+              <td><%= entry["person_name"].presence || (entry.fetch("status") == "vacant" ? "Vacant" : "Not recorded") %></td>
+              <td><%= entry.fetch("status").humanize %></td>
             </tr>
           <% end %>
         </tbody>
@@ -66,47 +71,47 @@
   <% end %>
 
   <div class="agenda-outline minutes-doc-outline">
-    <% minutes.sections.each_with_index do |section, section_index| %>
+    <% payload.fetch("sections").each_with_index do |section, section_index| %>
       <section class="agenda-chapter minutes-doc-section">
         <div class="agenda-chapter-rail" aria-hidden="true">
           <span class="agenda-chapter-number"><%= section_index + 1 %></span>
         </div>
         <div class="agenda-chapter-content">
-          <header class="agenda-chapter-head"><h2><%= section.title %></h2></header>
+          <header class="agenda-chapter-head"><h2><%= section.fetch("title") %></h2></header>
           <ol class="agenda-chapter-items minutes-doc-items">
-            <% if section.items.empty? %><li class="agenda-chapter-empty">No business recorded.</li><% end %>
-            <% section.items.each do |item| %>
+            <% if section.fetch("items").empty? %><li class="agenda-chapter-empty">No business recorded.</li><% end %>
+            <% section.fetch("items").each do |item| %>
               <li class="agenda-item minutes-doc-item">
-                <h3 class="agenda-item-title"><%= item.title %></h3>
-                <% if item.agenda_body.present? %>
-                  <div class="agenda-item-body minutes-doc-agenda-wording"><%= item.agenda_body %></div>
+                <h3 class="agenda-item-title"><%= item.fetch("title") %></h3>
+                <% if item["agenda_body_html"].present? %>
+                  <div class="agenda-item-body minutes-doc-agenda-wording"><%= sanitize(item["agenda_body_html"]) %></div>
                 <% end %>
-                <% if item.body.present? || item.outcomes.any? %>
+                <% if item["body_html"].present? || item.fetch("outcomes").any? %>
                   <div class="minutes-doc-recorded">
                     <p class="minutes-doc-narrative-label">Recorded minutes</p>
-                    <% if item.body.present? %>
+                    <% if item["body_html"].present? %>
                       <div class="minutes-doc-narrative">
-                        <div class="agenda-item-body"><%= item.body %></div>
+                        <div class="agenda-item-body"><%= sanitize(item["body_html"]) %></div>
                       </div>
                     <% end %>
-                    <% item.outcomes.each do |outcome| %>
-                      <% outcome_tone = { "adopted" => "passed", "lost" => "failed" }.fetch(outcome.disposition, "other") %>
+                    <% item.fetch("outcomes").each do |outcome| %>
+                      <% outcome_tone = { "adopted" => "passed", "lost" => "failed" }.fetch(outcome.fetch("disposition"), "other") %>
                       <section class="minutes-doc-outcome minutes-doc-outcome--<%= outcome_tone %>">
                         <p class="minutes-doc-outcome-head">
-                          <strong><%= outcome.kind.humanize %></strong>
+                          <strong><%= outcome.fetch("kind").humanize %></strong>
                         </p>
-                        <p class="minutes-doc-outcome-text"><%= outcome.text %></p>
+                        <p class="minutes-doc-outcome-text"><%= outcome.fetch("text") %></p>
                         <dl class="minutes-doc-outcome-facts">
-                          <% if outcome.kind == "motion" %>
-                            <div><dt>Moved by</dt><dd><%= outcome.mover_name.presence || "Not recorded" %></dd></div>
-                            <div><dt>Seconded by</dt><dd><%= outcome.seconder_name.presence || "Not recorded" %></dd></div>
+                          <% if outcome.fetch("kind") == "motion" %>
+                            <div><dt>Moved by</dt><dd><%= outcome["mover_name"].presence || "Not recorded" %></dd></div>
+                            <div><dt>Seconded by</dt><dd><%= outcome["seconder_name"].presence || "Not recorded" %></dd></div>
                           <% end %>
                           <div>
                             <dt>Result</dt>
-                            <dd><span class="minutes-doc-result"><%= minutes_outcome_disposition_label(outcome.disposition) %></span></dd>
+                            <dd><span class="minutes-doc-result"><%= revision_outcome_label(outcome.fetch("disposition")) %></span></dd>
                           </div>
-                          <% if outcome.vote_summary.present? %>
-                            <div class="minutes-doc-outcome-note"><dt>Vote / notes</dt><dd><%= outcome.vote_summary %></dd></div>
+                          <% if outcome["vote_summary"].present? %>
+                            <div class="minutes-doc-outcome-note"><dt>Vote / notes</dt><dd><%= outcome["vote_summary"] %></dd></div>
                           <% end %>
                         </dl>
                       </section>
@@ -121,17 +126,25 @@
     <% end %>
   </div>
 
-  <aside class="minutes-authority-folio minutes-authority-folio--draft">
+  <aside class="minutes-authority-folio minutes-authority-folio--<%= minutes.status %>">
     <p>Record of authority</p>
     <dl>
-      <div><dt>Status</dt><dd>Working draft - not approved, attested, or accepted</dd></div>
-      <div><dt>Source</dt><dd>Current editable minutes record</dd></div>
+      <div><dt>Status</dt><dd><%= presentation.fetch(:authority) %></dd></div>
+      <% if revision %>
+        <div><dt>Approved for attestation</dt><dd><%= revision.approver_name %>, <%= revision.approver_office %> · <%= legion_datetime(revision.approved_at) %></dd></div>
+      <% end %>
+      <% if attestation %>
+        <div><dt>Attested</dt><dd><%= attestation.attester_name %>, <%= attestation.attester_office %> · <%= legion_datetime(attestation.attested_at) %></dd></div>
+      <% end %>
+      <% if minutes.attested? %><div><dt>Acceptance</dt><dd>Awaiting action at a later <%= payload.fetch("meeting_body_name") %></dd></div><% end %>
+      <div><dt>Source</dt><dd><%= revision ? "Immutable approved revision #{revision.number}" : "Current editable minutes record" %></dd></div>
+      <% if revision %><div><dt>Revision</dt><dd><%= revision.number %> · <%= revision.sha256.first(12) %></dd></div><% end %>
     </dl>
   </aside>
 
   <footer class="agenda-doc-footer">
     <span><%= simple_format(organization.mailing_address, {}, wrapper_tag: "span") if organization.mailing_address.present? %></span>
     <span><%= mail_to organization.public_email if organization.public_email.present? %></span>
-    <span>Draft - not approved</span>
+    <span><%= presentation.fetch(:status) %></span>
   </footer>
 </article>

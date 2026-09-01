@@ -25,7 +25,7 @@
     </span>
   </div>
   <div class="btnrow">
-    <%= link_to @minutes.draft? ? "Open draft PDF" : "Open working-copy PDF", print_admin_meeting_minutes_path(@meeting), class: "btn-secondary", data: { turbo: false } %>
+    <%= link_to minutes_pdf_action_label(@minutes), print_admin_meeting_minutes_path(@meeting), class: "btn-secondary", data: { turbo: false } %>
     <% if editable %>
       <%= link_to "Edit heading", edit_admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
       <% if organizing %>

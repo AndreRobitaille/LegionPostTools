@@ -8,6 +8,7 @@
       <%= @person.full_name %><% if @person.current_role_label %> &middot; <%= @person.current_role_label %><% end %>
     </p>
   </div>
+  <%= link_to "View your directory listing", person_path(@person), class: "btn-secondary profile-directory-link" %>
 </div>
 
 <section class="profile-section">
@@ -75,9 +76,3 @@
     <%= link_to "Manage agent access", agent_access_tokens_path, class: "btn-secondary" %>
   </div>
 </section>
-
-<%# The post's own record of you lives in the directory, not here: roster data,
-    post roles, and who may sign in are the post's business, not self-service. %>
-<p class="profile-crosslink">
-  <%= link_to "See how you appear in the post directory", person_path(@person), class: "lnk" %>
-</p>

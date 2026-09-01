@@ -1,5 +1,23 @@
 class Person < ApplicationRecord
   DIRECTORY_HIDDEN_STATUSES = %w[deceased expired].freeze
+  SERVICE_BRANCH_LABELS = {
+    "USA" => "Army",
+    "USAF" => "Air Force",
+    "USCG" => "Coast Guard",
+    "USMC" => "Marine Corps",
+    "USN" => "Navy"
+  }.freeze
+  SERVICE_ERA_LABELS = {
+    "GW_TERRORISM" => "Global War on Terrorism",
+    "KOREA" => "Korean War",
+    "LEBANON_GRENADA" => "Lebanon/Grenada",
+    "MISSING" => nil,
+    "OTHER" => "Other era",
+    "PANAMA" => "Panama",
+    "PERSIAN_GULF" => "Persian Gulf",
+    "VIETNAM" => "Vietnam",
+    "WWII" => "World War II"
+  }.freeze
 
   has_one :user, dependent: :destroy
   has_many :position_assignments, dependent: :destroy
@@ -68,7 +86,9 @@ class Person < ApplicationRecord
   end
 
   def service_summary
-    [ roster_branch, roster_war_era ].compact_blank.join(" · ")
+    branch = SERVICE_BRANCH_LABELS.fetch(roster_branch, roster_branch.presence)
+    era = SERVICE_ERA_LABELS.fetch(roster_war_era, roster_war_era.presence)
+    [ branch, era ].compact_blank.join(" · ")
   end
 
   def paid_up_for_life?

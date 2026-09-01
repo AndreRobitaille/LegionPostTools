@@ -57,10 +57,10 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "h1", organization.name
-    assert_match "Signed in as #{person.full_name}", response.body
-    assert_select ".hub-sec-h", text: "Meetings"
-    assert_select "a[href=?]", meetings_path, text: /View meetings/
+    assert_select ".app-brand-name", organization.name
+    assert_select "h1", "Post meetings"
+    assert_no_match "Signed in as #{person.full_name}", response.body
+    assert_select "a[href=?]", meetings_path, text: /Browse all meetings/
   end
 
   test "signed in user in recovery installed state can reach dashboard" do
@@ -73,10 +73,10 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "h1", organization.name
-    assert_match "Signed in as #{person.full_name}", response.body
-    assert_select ".hub-sec-h", text: "Meetings"
-    assert_select "a[href=?]", meetings_path, text: /View meetings/
+    assert_select ".app-brand-name", organization.name
+    assert_select "h1", "Post meetings"
+    assert_no_match "Signed in as #{person.full_name}", response.body
+    assert_select "a[href=?]", meetings_path, text: /Browse all meetings/
   end
 
   test "stale sessions older than 180 days are expired" do
@@ -117,19 +117,41 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     active_session.reload
 
     assert_response :success
-    assert_equal organization.name, response.parsed_body.at("h1").text
+    assert_equal "Post meetings", response.parsed_body.at("h1").text
     assert active_session.last_seen_at > 10.minutes.ago
   end
 
   test "shows the passkey invite when the user has no passkeys" do
-    user = signed_in_member
+    signed_in_member
     get root_path
     assert_response :success
-    assert_match "Add a passkey", response.body
-    assert_select "h2", "A passkey is not a password"
+    assert_match "Optional sign-in", response.body
+    assert_select "h2", "Sign in faster with a passkey"
     assert_select "button", text: "Set up a passkey"
     assert_select "button", text: "Not now"
-    assert_select "body", text: /always keep signing in by email/
+    assert_select "body", text: /Email sign-in will still work/
+  end
+
+  test "shows the next and most recent meetings with direct document actions" do
+    signed_in_member
+    organization = Organization.first
+    body = organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    type = organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
+    past = create_meeting!(organization:, meeting_body: body, meeting_type: type, starts_at: 1.week.ago)
+    upcoming = create_meeting!(organization:, meeting_body: body, meeting_type: type, starts_at: 1.week.from_now)
+    publisher = User.create!(person: Person.create!(first_name: "Agenda", last_name: "Publisher"), email_address: "publisher@example.com")
+    agenda = DatedAgenda.create_from_template!(meeting: upcoming)
+    agenda.approve!(publisher)
+    agenda.publish!(publisher)
+
+    get root_path
+
+    assert_response :success
+    assert_select ".member-dashboard-section", text: /Next meeting.*Membership Meeting.*View agenda/m
+    assert_select "a[href=?]", dated_agenda_path(agenda), text: "View agenda"
+    assert_select ".member-dashboard-section", text: /Most recent meeting.*No documents available/m
+    assert_select ".member-meeting-card", text: /#{past.starts_at.in_time_zone.strftime('%d').to_i}/
+    assert_select "a[href=?]", meeting_path(past), count: 0
   end
 
   test "hides the passkey invite when the user already has a passkey" do
@@ -137,7 +159,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     PasskeyCredential.create!(user: user, external_id: "cid", public_key: "pk", sign_count: 0)
     get root_path
     assert_response :success
-    assert_no_match "Add a passkey", response.body
+    assert_select ".pk-card--sidebar", count: 0
   end
 
   test "shows roster email review prompt when needed" do
@@ -201,7 +223,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
 
     get root_path
     assert_response :success
-    assert_no_match "Add a passkey", response.body
+    assert_select ".pk-card--sidebar", count: 0
   end
 
   private

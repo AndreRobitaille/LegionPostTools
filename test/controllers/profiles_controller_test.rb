@@ -41,7 +41,16 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
 
     get profile_path
 
-    assert_select ".profile-crosslink a[href=?]", person_path(@person)
+    assert_select ".profile-directory-link[href=?]", person_path(@person), text: "View your directory listing"
+  end
+
+  test "keeps personal agent access available to members" do
+    sign_in_as(@user)
+
+    get profile_path
+
+    assert_select ".sec-head-label", text: "Agent access"
+    assert_select "a[href=?]", agent_access_tokens_path, text: "Manage agent access"
   end
 
   test "shows only the signed-in member's passkeys" do

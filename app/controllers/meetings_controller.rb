@@ -3,9 +3,15 @@ class MeetingsController < ApplicationController
   before_action :set_organization
 
   def index
-    @upcoming_meetings = @organization.meetings.upcoming.includes(:meeting_body, :dated_agenda, minutes: { current_revision: :attestation }).to_a
+    meetings = @organization.meetings.includes(
+      :meeting_body,
+      :meeting_type,
+      :dated_agenda,
+      minutes: { current_revision: :attestation }
+    )
+    @upcoming_meetings = meetings.upcoming.to_a
     @next_meeting = @upcoming_meetings.shift
-    @past_meetings_by_year = @organization.meetings.past.includes(:meeting_body, :dated_agenda, minutes: { current_revision: :attestation }).group_by do |meeting|
+    @past_meetings_by_year = meetings.past.group_by do |meeting|
       meeting.starts_at.in_time_zone.year
     end
   end

@@ -1,0 +1,18 @@
+<% action = member_meeting_document_action(meeting) %>
+<article class="member-meeting-card<%= " member-meeting-card--featured" if local_assigns.fetch(:featured, false) %>">
+  <%= render "shared/meeting_date_plate", meeting: meeting %>
+  <div class="member-meeting-card-copy">
+    <h2<% if local_assigns[:heading_id] %> id="<%= heading_id %>"<% end %>><%= member_meeting_title(meeting) %></h2>
+    <% if local_assigns.fetch(:show_schedule, false) %>
+      <p class="member-meeting-schedule"><%= legion_time(meeting.starts_at) %><% if meeting.location_name.present? %> &middot; <%= meeting.location_name %><% end %></p>
+    <% end %>
+    <% if action[:note] %><p class="member-meeting-note member-meeting-note--<%= action[:state] %>"><%= action[:note] %></p><% end %>
+  </div>
+  <div class="member-meeting-card-action">
+    <% if action[:path] %>
+      <%= link_to action[:label], action[:path], class: "member-document-action member-document-action--#{action[:state]}" %>
+    <% else %>
+      <span class="member-document-action member-document-action--unavailable" aria-disabled="true"><%= action[:label] %></span>
+    <% end %>
+  </div>
+</article>

@@ -8,17 +8,7 @@
 <% if @next_meeting %>
   <section class="meeting-next" aria-labelledby="next-meeting-heading">
     <div class="meeting-next-kicker">Next assembly</div>
-    <%= link_to meeting_path(@next_meeting), class: "meeting-next-card" do %>
-      <%= render "shared/meeting_date_plate", meeting: @next_meeting %>
-      <span class="meeting-next-copy">
-        <h2 id="next-meeting-heading"><%= @next_meeting.title %></h2>
-        <span class="meeting-next-meta"><%= @next_meeting.meeting_body.name %> &middot; <%= legion_time(@next_meeting.starts_at) %></span>
-        <span class="meeting-next-place"><%= @next_meeting.location_name %></span>
-        <% state, state_class = member_meeting_state(@next_meeting) %>
-        <span class="meeting-state <%= state_class %>"><%= state %></span>
-      </span>
-      <span class="meeting-next-action">View meeting <span aria-hidden="true">&rsaquo;</span></span>
-    <% end %>
+    <%= render "member_meeting_card", meeting: @next_meeting, featured: true, show_schedule: true, heading_id: "next-meeting-heading" %>
   </section>
 <% else %>
   <section class="meeting-next meeting-next--empty" aria-labelledby="next-meeting-heading">
@@ -32,7 +22,7 @@
   <section class="meeting-list-section" aria-labelledby="later-meetings-heading">
     <%= render "shared/section_header", label: "Also coming up", meta: pluralize(@upcoming_meetings.size, "meeting") %>
     <div class="agenda-docket meeting-docket">
-      <%= render partial: "meeting_row", collection: @upcoming_meetings, as: :meeting %>
+      <%= render partial: "meeting_row", collection: @upcoming_meetings, as: :meeting, locals: { show_schedule: true } %>
     </div>
   </section>
 <% end %>
@@ -57,7 +47,7 @@
       <section class="meeting-year" id="meetings-<%= year %>" aria-labelledby="meetings-<%= year %>-heading">
         <h3 id="meetings-<%= year %>-heading"><%= year %></h3>
         <div class="agenda-docket meeting-docket">
-          <%= render partial: "meeting_row", collection: meetings, as: :meeting %>
+          <%= render partial: "meeting_row", collection: meetings, as: :meeting, locals: { show_schedule: false } %>
         </div>
       </section>
     <% end %>
