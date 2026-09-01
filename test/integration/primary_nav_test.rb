@@ -107,11 +107,11 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_select "nav.nav-bar a.nav-tab--admin", text: /Admin/
   end
 
-  test "agenda manager sees Admin tab linking to the hub" do
+  test "agenda manager sees Officer tools tab linking to the hub" do
     prepare_setup_complete_state
     sign_in_agenda_manager
     get root_path
-    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_root_path, text: /Admin/
+    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_root_path, text: /Officer tools/
     assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_agenda_item_catalog_entries_path, count: 0
   end
 

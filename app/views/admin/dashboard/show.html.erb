@@ -1,21 +1,31 @@
-<% content_for :title, "Administration" %>
+<% technical_admin = current_user.can?("manage_settings") %>
+<% content_for :title, admin_area_name %>
 
 <div class="page-lead">
-  <h1 class="page-title">Administration</h1>
-  <p class="page-sub">Everything that keeps the post’s tools running.</p>
+  <h1 class="page-title"><%= admin_area_name %></h1>
+  <p class="page-sub"><%= technical_admin ? "Everything that keeps the post’s tools running." : "Meeting preparation and records for your Post duties." %></p>
 </div>
 
-<% show_roster = current_user.can?("manage_settings") %>
+<% unless technical_admin %>
+  <% role_summary = current_user.person.active_role_labels.to_sentence.presence || "Meeting and records duties" %>
+  <aside class="officer-workspace-context" aria-label="Officer access boundary">
+    <p><span>Scoped officer access</span> <%= role_summary %></p>
+    <strong>Meeting and records tools are available for your duties.</strong>
+    <small>Account, permission, and system settings remain with application administrators.</small>
+  </aside>
+<% end %>
+
+<% show_roster = technical_admin %>
 <% show_agendas = current_user.can?("manage_agendas") %>
 <% show_meeting_records = show_agendas || current_user.can?("manage_minutes") || current_user.can?("view_internal_records") %>
-<% show_positions = current_user.can?("manage_settings") %>
-<% show_admins = current_user.can?("manage_settings") %>
+<% show_positions = technical_admin %>
+<% show_admins = technical_admin %>
 
 <% if show_roster || show_meeting_records %>
   <section class="hub-sec">
-    <h2 class="hub-sec-h">Meetings &amp; Roster</h2>
-    <p class="hub-sec-n">Keep the membership current and preserve each meeting’s records.</p>
-    <div class="hub-tiles">
+    <h2 class="hub-sec-h"><%= technical_admin ? "Meetings & Roster" : "Meeting work" %></h2>
+    <p class="hub-sec-n"><%= technical_admin ? "Keep the membership current and preserve each meeting’s records." : "Prepare agendas, preserve minutes, and check record-processing work." %></p>
+    <div class="hub-tiles <%= "hub-tiles--officer" unless technical_admin %>">
       <div class="tile">
         <div class="tile-ic" aria-hidden="true">⚙️</div>
         <p class="tile-t">Background Jobs</p>

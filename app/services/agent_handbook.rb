@@ -272,7 +272,7 @@ class AgentHandbook
     { name: "create_transcript", method: "POST", path: "/api/meetings/:meeting_id/transcript", capability: "manage_minutes", group: :common,
       summary: "Attach one officer-supplied transcript to the exact meeting with an explicit retention policy. The source is filtered from request logs.",
       example: "POST /api/meetings/:meeting_id/transcript\n{\"retention_policy\":\"delete_after_acceptance\",\"transcript_content\":\"...\"}" },
-    { name: "show_working_minutes", method: "GET", path: "/api/meetings/:meeting_id/minutes", any_capabilities: %w[manage_minutes view_internal_records], group: :common,
+    { name: "show_working_minutes", method: "GET", path: "/api/meetings/:meeting_id/minutes", any_capabilities: %w[manage_minutes approve_minutes attest_minutes view_internal_records], group: :common,
       summary: "Show complete structured working minutes: heading, source agenda wording, reviewed narrative, outcomes, attendance, and AI-review ledger.",
       example: "GET /api/meetings/:meeting_id/minutes" },
     { name: "create_working_minutes", method: "POST", path: "/api/meetings/:meeting_id/minutes", capability: "manage_minutes", group: :common,
@@ -281,7 +281,7 @@ class AgentHandbook
     { name: "update_minutes_heading", method: "PATCH", path: "/api/meetings/:meeting_id/minutes", capability: "manage_minutes", group: :common,
       summary: "Edit draft minutes title or saved place. Send lock_version from current minutes detail.",
       example: "PATCH /api/meetings/:meeting_id/minutes\n{\"title\":\"Regular Membership Meeting\",\"location_name\":\"Legion Hall\",\"lock_version\":0}" },
-    { name: "print_draft_minutes", method: "GET", path: "/api/meetings/:meeting_id/minutes/print", any_capabilities: %w[manage_minutes view_internal_records], group: :common,
+    { name: "print_draft_minutes", method: "GET", path: "/api/meetings/:meeting_id/minutes/print", any_capabilities: %w[manage_minutes approve_minutes attest_minutes view_internal_records], group: :common,
       summary: "Return the print-ready draft-minutes PDF. It remains a draft and does not constitute approval, attestation, or acceptance.",
       example: "GET /api/meetings/:meeting_id/minutes/print" },
     { name: "create_minutes_section", method: "POST", path: "/api/meetings/:meeting_id/minutes/sections", capability: "manage_minutes", group: :common,
@@ -646,7 +646,7 @@ class AgentHandbook
   end
 
   def minutes_fields
-    return [] unless @user.can_any?("manage_minutes", "view_internal_records")
+    return [] unless @user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
 
     MINUTES_FIELDS.map do |field|
       {

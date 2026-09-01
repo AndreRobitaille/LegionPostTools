@@ -201,6 +201,24 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_select "input[name='permission_grant[capabilities][]'][value=manage_agendas][checked]", count: 0
   end
 
+  test "permission panel separates current role duties from manual grants" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    user = User.create!(person:, email_address: "adjutant@example.com", email_verified_at: Time.current)
+    title = PositionTitle.create!(organization: Organization.first, name: "Adjutant", display_order: 1)
+    title.position_capability_grants.create!(capability: "manage_minutes")
+    PositionAssignment.create!(person:, position_title: title, starts_on: Date.current)
+
+    get person_path(person)
+
+    assert_response :success
+    assert_select ".role-permissions-title", text: "Automatic from current Post role"
+    assert_select ".role-permission", text: /Draft minutes.*Provided by Adjutant; ends with the role/m
+    assert_select "input[name='permission_grant[capabilities][]'][value=manage_minutes]", count: 0
+    assert_select ".manual-permissions-title", text: "Additional manual permissions"
+  end
+
   test "officer show loads position titles for the current organization" do
     prepare_setup_complete_state
     sign_in_officer

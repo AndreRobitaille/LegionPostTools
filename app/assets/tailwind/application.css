@@ -244,6 +244,13 @@
 .pk-card--sidebar .btnrow { align-items: stretch; flex-direction: column; gap: 9px; }
 .pk-card--sidebar .btnrow > * { width: 100%; box-sizing: border-box; margin: 0; text-align: center; }
 
+/* Scoped officer workspace: duty is visible without implying system administration. */
+.officer-workspace-context { box-sizing: border-box; max-width: var(--w-main); margin: 22px 0 30px; padding: 17px 20px; background: var(--color-paper); border: 1px solid #d9c99e; border-left: 5px solid var(--color-gold); border-radius: var(--radius-card); }
+.officer-workspace-context p { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; color: var(--color-gold-ink); font-size: 14px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.officer-workspace-context p span { padding-right: 12px; border-right: 1px solid #ccb879; }
+.officer-workspace-context strong { display: block; color: var(--color-navy); font-size: 18px; line-height: 1.4; }
+.officer-workspace-context small { display: block; margin-top: 4px; color: var(--color-muted); font-size: 15px; line-height: 1.5; }
+
 /* Your profile: self-service account controls ------------------------------ */
 .profile-lead { display: flex; align-items: center; gap: 16px; max-width: var(--w-form); }
 .profile-lead > div { min-width: 0; }
@@ -810,6 +817,13 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .permwrap { margin-top: 18px; border-top: 1px solid #e6dcbe; padding-top: 14px; }
 .permhead { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-navy); font-weight: 700; }
 .permsub { font-size: 14px; color: var(--color-muted); margin-top: 2px; margin-bottom: 6px; }
+.role-permissions { margin: 14px 0 18px; padding: 14px 16px; background: #f6efe0; border-left: 3px solid var(--color-gold); border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+.role-permissions-title,
+.manual-permissions-title { color: var(--color-bronze); font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.role-permission { display: flex; align-items: flex-start; gap: 10px; padding-top: 10px; color: var(--color-navy); font-size: 16px; }
+.role-permission-mark { display: grid; place-items: center; flex: 0 0 20px; width: 20px; height: 20px; color: #fff; background: var(--color-gold-ink); border-radius: 50%; font-size: 12px; font-weight: 900; }
+.role-permission small { display: block; margin-top: 2px; color: var(--color-muted); font-size: 14px; font-weight: 500; }
+.manual-permissions-title { margin-top: 12px; color: var(--color-navy); }
 .pg { margin-top: 12px; }
 /* Mockup used 12px for .gname; readability floor requires >= 13px for labels. */
 .pg .gname { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-gold-ink); font-weight: 700; margin: 0 0 2px; }
@@ -857,6 +871,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .hub-sec-h { font-size: 19px; font-weight: 800; color: var(--color-navy); margin: 0 0 2px; }
 .hub-sec-n { font-size: 14px; color: var(--color-muted); margin: 0 0 13px; }
 .hub-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 290px)); gap: 15px; }
+.hub-tiles--officer { grid-template-columns: repeat(2, minmax(250px, 1fr)); max-width: 780px; }
 .tile { display: flex; flex-direction: column; background: var(--color-paper); border: 1px solid #d3c391; border-radius: 11px; padding: 16px 17px 17px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
 .tile .tile-ic { font-size: 22px; margin-bottom: 9px; }
 .tile .tile-t { font-size: 18px; font-weight: 800; color: var(--color-navy); margin: 0 0 5px; }
@@ -1595,6 +1610,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .endeavor-form-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .member-dashboard-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .pk-card--sidebar { grid-row: 2; max-width: var(--w-form); margin-top: 28px; }
+  .officer-workspace-context p { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .officer-workspace-context p span { padding-right: 0; border-right: 0; }
   .page-lead-row { align-items: stretch; flex-direction: column; gap: 16px; }
   .page-lead-row > .btn-primary, .page-lead-row > a { align-self: flex-start; }
   .grid { grid-template-columns: minmax(0, 1fr); }
@@ -1618,6 +1635,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .app-menu-panel { min-width: 244px; max-width: calc(100vw - 28px); }
 
   .app-main { min-width: 0; padding: 20px 16px 48px; }
+  .hub-tiles--officer { grid-template-columns: minmax(0, 1fr); }
   .entry-hero { align-items: flex-start; padding: 24px 14px; }
   .entry-emb { width: 104px; height: 104px; }
   .entry-card { margin-top: 20px; padding: 22px 18px; }

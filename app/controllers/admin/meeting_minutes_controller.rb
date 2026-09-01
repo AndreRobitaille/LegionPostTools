@@ -42,7 +42,7 @@ module Admin
     private
 
     def require_minutes_access
-      require_any_capability("manage_minutes", "view_internal_records")
+      require_any_capability("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
     end
 
     def set_meeting

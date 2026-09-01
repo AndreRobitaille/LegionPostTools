@@ -26,6 +26,9 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
+    assert_select "h1", "Administration"
+    assert_select "a.nav-tab--admin", text: /Admin\z/
+    assert_select ".officer-workspace-context", count: 0
     assert_select ".hub-sec-h", text: "Meetings & Roster"
     assert_select ".hub-sec-h", text: "Officers & Elections"
     assert_select ".hub-sec-h", text: "Setup & Administration"
@@ -43,12 +46,18 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
 
   test "agenda-only manager reaches the hub and sees the agenda tiles" do
     prepare_setup_complete_state
-    sign_in_member(can_manage_settings: false, can_manage_agendas: true)
+    officer = sign_in_member(can_manage_settings: false)
+    adjutant = @org.position_titles.create!(name: "Adjutant", display_order: 1, active: true)
+    adjutant.position_capability_grants.create!(capability: "manage_agendas")
+    PositionAssignment.create!(person: officer.person, position_title: adjutant, starts_on: Date.current)
 
     get admin_root_path
 
     assert_response :success
-    assert_select ".hub-sec-h", text: "Meetings & Roster"
+    assert_select "h1", "Officer tools"
+    assert_select "a.nav-tab--admin", text: /Officer tools\z/
+    assert_select ".officer-workspace-context", text: /Scoped officer access.*Adjutant.*remain with application administrators/m
+    assert_select ".hub-sec-h", text: "Meeting work"
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
     assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
@@ -56,6 +65,17 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select ".hub-sec-h", text: "Setup & Administration", count: 0
     assert_select "a[href=?]", admin_position_titles_path, count: 0
     assert_select "a[href=?]", new_admin_roster_import_path, count: 0
+  end
+
+  test "scoped officer pages return to officer tools" do
+    prepare_setup_complete_state
+    sign_in_member(can_manage_settings: false, can_manage_agendas: true)
+
+    get admin_meeting_types_path
+    assert_select "a.back[href=?]", admin_root_path, text: /Officer tools/
+
+    get admin_agenda_item_catalog_entries_path
+    assert_select "a.back[href=?]", admin_root_path, text: /Officer tools/
   end
 
   test "minutes manager reaches the hub and sees meeting records and background jobs" do

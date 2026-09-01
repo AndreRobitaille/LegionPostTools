@@ -16,7 +16,15 @@ module NavigationHelper
   def admin_destination
     return nil unless current_user.can_any?(*User::ADMIN_AREA_CAPABILITIES)
 
-    { section: :admin, label: "Admin", path: admin_root_path }
+    { section: :admin, label: admin_navigation_label, path: admin_root_path }
+  end
+
+  def admin_area_name
+    current_user.can?("manage_settings") ? "Administration" : "Officer tools"
+  end
+
+  def admin_navigation_label
+    current_user.can?("manage_settings") ? "Admin" : "Officer tools"
   end
 
   def nav_section_for(path)

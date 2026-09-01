@@ -1,7 +1,7 @@
 module Admin
   class PositionTitlesController < BaseController
     def index
-      @position_titles = Organization.first.position_titles.order(:display_order, :name)
+      @position_titles = Organization.first.position_titles.includes(:position_capability_grants).order(:display_order, :name)
     end
 
     def create

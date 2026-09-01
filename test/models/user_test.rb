@@ -258,6 +258,48 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.can?("manage_people")
   end
 
+  test "capabilities follow a current configured position assignment" do
+    organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Current", last_name: "Adjutant")
+    user = User.create!(person:, email_address: "current-adjutant@example.com")
+    title = PositionTitle.create!(organization:, name: "Adjutant", display_order: 1)
+    title.position_capability_grants.create!(capability: "manage_minutes")
+    assignment = PositionAssignment.create!(person:, position_title: title, starts_on: Date.current - 1)
+
+    assert user.can?("manage_minutes")
+    assert_equal({ "manage_minutes" => [ "Adjutant" ] }, user.position_capability_sources)
+
+    assignment.update!(ends_on: Date.current)
+    assert user.can?("manage_minutes"), "the assignment remains active through its inclusive end date"
+
+    assignment.update!(ends_on: Date.current - 1)
+    assert_not user.can?("manage_minutes")
+  end
+
+  test "future and inactive positions do not grant capabilities" do
+    organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    person = Person.create!(first_name: "Future", last_name: "Adjutant")
+    user = User.create!(person:, email_address: "future-adjutant@example.com")
+    title = PositionTitle.create!(organization:, name: "Adjutant", display_order: 1)
+    title.position_capability_grants.create!(capability: "manage_minutes")
+    assignment = PositionAssignment.create!(person:, position_title: title, starts_on: Date.current + 1)
+
+    assert_not user.can?("manage_minutes")
+
+    assignment.update!(starts_on: Date.current)
+    title.update!(active: false)
+    assert_not user.can?("manage_minutes")
+  end
+
+  test "manual permissions remain independent of position assignments" do
+    person = Person.create!(first_name: "Former", last_name: "Officer")
+    user = User.create!(person:, email_address: "former-officer@example.com")
+    PermissionGrant.create!(user:, capability: "manage_minutes")
+
+    assert user.can?("manage_minutes")
+    assert_empty user.position_capability_sources
+  end
+
   test "full membership access follows a current configured position assignment" do
     organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     person = Person.create!(first_name: "Current", last_name: "Commander")

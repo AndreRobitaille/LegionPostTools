@@ -49,6 +49,7 @@ class User < ApplicationRecord
   def can?(capability)
     capability = capability.to_s
     return true if permission_grants.exists?(capability: capability)
+    return true if position_capability_sources.key?(capability)
     return false unless PermissionGrant::IMPLIED_BY_MANAGE_SETTINGS.include?(capability)
 
     permission_grants.exists?(capability: "manage_settings")
@@ -56,6 +57,20 @@ class User < ApplicationRecord
 
   def can_any?(*capabilities)
     capabilities.any? { |capability| can?(capability) }
+  end
+
+  def position_capability_sources(on: Date.current)
+    PositionCapabilityGrant
+      .joins(position_title: :position_assignments)
+      .where(position_assignments: { person_id: person_id })
+      .where(position_titles: { active: true })
+      .where("position_assignments.starts_on <= ?", on)
+      .where("position_assignments.ends_on IS NULL OR position_assignments.ends_on >= ?", on)
+      .order("position_titles.display_order", "position_titles.name")
+      .pluck(:capability, "position_titles.name")
+      .each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |(capability, title_name), sources|
+        sources[capability] << title_name
+      end
   end
 
   def full_membership_access?(on: Date.current)

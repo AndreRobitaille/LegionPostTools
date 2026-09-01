@@ -1,6 +1,7 @@
 class PositionTitle < ApplicationRecord
   belongs_to :organization
   has_many :position_assignments, dependent: :destroy
+  has_many :position_capability_grants, dependent: :destroy
   has_many :minutes_attendance_entries, dependent: :nullify
 
   validates :name, presence: true, uniqueness: { scope: :organization_id }

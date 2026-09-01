@@ -50,6 +50,24 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert minutes.persisted?
   end
 
+  test "current Commander and Adjutant duties can read but not edit minutes" do
+    MeetingMinutes.create_from_meeting!(meeting: @meeting)
+
+    { "Commander" => "approve_minutes", "Adjutant" => "attest_minutes" }.each_with_index do |(title_name, capability), index|
+      officer = create_user_with
+      title = @organization.position_titles.create!(name: title_name, display_order: index + 1)
+      title.position_capability_grants.create!(capability:)
+      title.position_assignments.create!(person: officer.person, starts_on: Date.current)
+      sign_in_as(officer)
+
+      get admin_meeting_minutes_path(@meeting)
+      assert_response :success
+
+      get edit_admin_meeting_minutes_path(@meeting)
+      assert_redirected_to root_path
+    end
+  end
+
   test "authorized officers can open the current draft as an inline PDF" do
     minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
     sign_in_as(@manager)

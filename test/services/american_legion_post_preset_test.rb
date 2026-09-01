@@ -28,6 +28,11 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       organization.position_titles.order(:display_order).pluck(:required_by_default)
     assert_equal [ true, true, false, true, false, false, false, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:grants_full_membership_access)
+    assert_equal %w[approve_minutes manage_agendas],
+      organization.position_titles.find_by!(name: "Commander").position_capability_grants.order(:capability).pluck(:capability)
+    assert_equal %w[attest_minutes manage_agendas manage_minutes],
+      organization.position_titles.find_by!(name: "Adjutant").position_capability_grants.order(:capability).pluck(:capability)
+    assert_empty organization.position_titles.find_by!(name: "1st Vice Commander").position_capability_grants
 
     assert_equal [ "membership", "pec" ], organization.meeting_bodies.order(:slug).pluck(:slug)
     assert_equal [ "Membership Meeting", "Post Executive Committee" ], organization.meeting_bodies.order(:slug).pluck(:name)
@@ -60,6 +65,8 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       display_order: 99, required_by_default: false, grants_full_membership_access: false
     )
     organization.position_titles.find_by!(name: "Assistant Chaplain").update!(display_order: 1, required_by_default: true)
+    organization.position_titles.find_by!(name: "Commander").position_capability_grants.destroy_all
+    organization.position_titles.find_by!(name: "1st Vice Commander").position_capability_grants.create!(capability: "manage_people")
     organization.meeting_bodies.find_by!(slug: "pec").update!(name: "Wrong Name", default_distribution: "sms")
 
     assert_no_difference -> { organization.position_titles.count + organization.meeting_bodies.count } do
@@ -84,6 +91,9 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       organization.position_titles.order(:display_order).pluck(:required_by_default)
     assert_equal [ true, true, false, true, false, false, false, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:grants_full_membership_access)
+    assert_equal %w[approve_minutes manage_agendas],
+      organization.position_titles.find_by!(name: "Commander").position_capability_grants.order(:capability).pluck(:capability)
+    assert_empty organization.position_titles.find_by!(name: "1st Vice Commander").position_capability_grants
 
     assert_equal "Post Executive Committee", organization.meeting_bodies.find_by!(slug: "pec").name
     assert_equal "print", organization.meeting_bodies.find_by!(slug: "pec").default_distribution

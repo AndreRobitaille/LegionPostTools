@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_030100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -730,6 +730,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_030100) do
     t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "position_assignments_date_order_check"
   end
 
+  create_table "position_capability_grants", force: :cascade do |t|
+    t.string "capability", null: false
+    t.datetime "created_at", null: false
+    t.bigint "position_title_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["position_title_id", "capability"], name: "index_position_capabilities_on_title_and_capability", unique: true
+    t.index ["position_title_id"], name: "index_position_capability_grants_on_position_title_id"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_acceptance_motions'::character varying, 'view_internal_records'::character varying]::text[])", name: "position_capability_grants_capability_check"
+  end
+
   create_table "position_titles", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -885,6 +895,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_030100) do
   add_foreign_key "permission_grants", "users"
   add_foreign_key "position_assignments", "people"
   add_foreign_key "position_assignments", "position_titles"
+  add_foreign_key "position_capability_grants", "position_titles", on_delete: :cascade
   add_foreign_key "position_titles", "organizations"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "people"

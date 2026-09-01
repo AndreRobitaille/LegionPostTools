@@ -3,6 +3,7 @@ module Admin
     def update
       @user = User.find(params[:user_id])
       submitted_capabilities = Array(params.dig(:permission_grant, :capabilities)).map(&:to_s) & PermissionGrant::CAPABILITIES
+      submitted_capabilities -= @user.position_capability_sources.keys
 
       if removing_last_manage_settings_grant?(submitted_capabilities)
         redirect_to person_path(@user.person), alert: "At least one enabled administrator account is required."

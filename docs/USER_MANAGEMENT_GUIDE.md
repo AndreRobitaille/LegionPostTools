@@ -173,6 +173,13 @@ access. Change this only as a deliberate Post policy decision. This access begin
 ends with the dated assignment, but it still requires the person to have an enabled login
 account before they can sign in and use it.
 
+The standard setup also gives the current Commander agenda preparation and minutes
+approval, and gives the current Adjutant agenda preparation, minutes drafting, and
+attestation. The person's permissions panel labels these as supplied by the current Post
+role. They end automatically with the dated assignment and are not copied into permanent
+manual permissions. Other standard positions receive no application capability merely
+for being an officer.
+
 ## Grant Application Permissions
 
 A Post role describes what the person does for the Post. Application permissions control
@@ -192,7 +199,13 @@ Important distinctions:
   administrator.
 - Meeting and records permissions should match the person's real duties.
 - Approval, attestation, and acceptance permissions are personal official-record powers.
-  Administrator status does not supply them automatically.
+  Administrator status does not supply them automatically. A configured current Commander
+  or Adjutant assignment may supply the corresponding personal act.
+- Permissions marked **Current Post role** are automatic. End or correct the dated role
+  assignment instead of adding or removing a duplicate manual permission. The app does
+  not retain a duplicate manual grant for a duty the person's current office already
+  supplies; add a manual exception after the office ends only if the separate duty
+  should continue.
 
 At least one enabled person must retain **Manage settings**. The application prevents an
 administrator from removing or disabling the last such account.

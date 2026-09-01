@@ -79,7 +79,7 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
     assert_link "Meetings"
     assert_link "Endeavors"
     assert_link "People"
-    assert_link "Admin"
+    assert_link "Officer tools"
     assert_link "Your profile"
   ensure
     page.driver.browser.manage.window.resize_to(1400, 1400)

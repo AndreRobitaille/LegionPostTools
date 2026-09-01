@@ -43,7 +43,7 @@ module Api
     def require_minutes_read_access
       require_authentication
       return if performed?
-      return if current_user.can_any?("manage_minutes", "view_internal_records")
+      return if current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
 
       render_error("You do not have permission to open that.", status: :forbidden)
     end

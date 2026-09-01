@@ -17,14 +17,16 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     prepare_setup_complete_state
     sign_in_admin
     PositionTitle.create!(organization: @org, name: "Commander", display_order: 1, active: true)
-    PositionTitle.create!(organization: @org, name: "Adjutant", display_order: 2, active: false)
+    adjutant = PositionTitle.create!(organization: @org, name: "Adjutant", display_order: 2, active: false)
+    adjutant.position_capability_grants.create!(capability: "manage_minutes")
 
     get admin_position_titles_path
 
     assert_response :success
     assert_select ".pos .pn", text: "Commander"
     assert_select ".pos .pn", text: "Adjutant"
-    assert_select ".position-access-note", text: /complete membership and renewal information/
+    assert_select ".position-access-note", text: /begins and ends with a dated assignment/
+    assert_select ".pos-access", text: /Draft minutes/
     assert_select "a[href=?]", admin_root_path, text: /Back to Administration/
   end
 

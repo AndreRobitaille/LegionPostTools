@@ -1,16 +1,16 @@
 class AmericanLegionPostPreset
   POSITION_TITLES = [
-    [ "Commander", true, true ],
-    [ "1st Vice Commander", true, true ],
-    [ "2nd Vice Commander", true, false ],
-    [ "Adjutant", true, true ],
-    [ "Finance Officer", true, false ],
-    [ "Chaplain", true, false ],
-    [ "Sergeant-at-Arms", true, false ],
-    [ "Historian", false, false ],
-    [ "Service Officer", false, false ],
-    [ "Judge Advocate", false, false ],
-    [ "Assistant Chaplain", false, false ]
+    { name: "Commander", required: true, membership_access: true, capabilities: %w[manage_agendas approve_minutes] },
+    { name: "1st Vice Commander", required: true, membership_access: true, capabilities: [] },
+    { name: "2nd Vice Commander", required: true, membership_access: false, capabilities: [] },
+    { name: "Adjutant", required: true, membership_access: true, capabilities: %w[manage_agendas manage_minutes attest_minutes] },
+    { name: "Finance Officer", required: true, membership_access: false, capabilities: [] },
+    { name: "Chaplain", required: true, membership_access: false, capabilities: [] },
+    { name: "Sergeant-at-Arms", required: true, membership_access: false, capabilities: [] },
+    { name: "Historian", required: false, membership_access: false, capabilities: [] },
+    { name: "Service Officer", required: false, membership_access: false, capabilities: [] },
+    { name: "Judge Advocate", required: false, membership_access: false, capabilities: [] },
+    { name: "Assistant Chaplain", required: false, membership_access: false, capabilities: [] }
   ].freeze
 
   MEETING_BODIES = [
@@ -38,12 +38,18 @@ class AmericanLegionPostPreset
   attr_reader :organization
 
   def create_position_titles
-    POSITION_TITLES.each_with_index do |(name, required_by_default, grants_full_membership_access), index|
-      position_title = organization.position_titles.find_or_initialize_by(name: name)
+    POSITION_TITLES.each_with_index do |policy, index|
+      position_title = organization.position_titles.find_or_initialize_by(name: policy.fetch(:name))
       position_title.display_order = index + 1
-      position_title.required_by_default = required_by_default
-      position_title.grants_full_membership_access = grants_full_membership_access
+      position_title.required_by_default = policy.fetch(:required)
+      position_title.grants_full_membership_access = policy.fetch(:membership_access)
       position_title.save!
+
+      capabilities = policy.fetch(:capabilities)
+      position_title.position_capability_grants.where.not(capability: capabilities).destroy_all
+      capabilities.each do |capability|
+        position_title.position_capability_grants.find_or_create_by!(capability: capability)
+      end
     end
   end
 

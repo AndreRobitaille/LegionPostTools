@@ -2,13 +2,13 @@
 
 <div class="page-lead">
   <h1 class="page-title">Post Positions</h1>
-  <p class="page-sub">The offices your post fills, their wording, order, and membership responsibility.</p>
+  <p class="page-sub">The offices your post fills, their wording, order, and automatic app duties.</p>
 </div>
 
 <%= render "shared/section_panel", label: "Post Positions" do %>
   <% if @position_titles.present? %>
     <p class="page-sub" id="reorder-hint">Drag a row by its handle to change the order. Changes save automatically.</p>
-    <p class="position-access-note">Anyone currently assigned to a position marked with the gold key can see complete membership and renewal information.</p>
+    <p class="position-access-note">Automatic access begins and ends with a dated assignment. The gold markers show what a current office supplies.</p>
     <div data-controller="reorder"
          data-reorder-url-value="<%= reorder_admin_position_titles_path %>">
       <div data-reorder-target="list">
@@ -27,6 +27,9 @@
               <span class="pn"><%= title.name %></span>
               <% if title.grants_full_membership_access? %>
                 <span class="pos-access"><span aria-hidden="true">&#9670;</span> Full membership access</span>
+              <% end %>
+              <% title.position_capability_grants.sort_by { |grant| PermissionGrant::CAPABILITIES.index(grant.capability) || 99 }.each do |grant| %>
+                <span class="pos-access"><span aria-hidden="true">&#9670;</span> <%= PermissionGrant::LABELS.fetch(grant.capability, grant.capability.humanize) %></span>
               <% end %>
             </div>
             <div class="pos-actions">

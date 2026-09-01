@@ -193,6 +193,28 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "approvers and attesters can read minutes without draft or transcript authority" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+
+    { "Commander" => "approve_minutes", "Adjutant" => "attest_minutes" }.each_with_index do |(title_name, capability), index|
+      officer = create_user(title_name)
+      title = @organization.position_titles.create!(name: title_name, display_order: index + 1)
+      title.position_capability_grants.create!(capability:)
+      title.position_assignments.create!(person: officer.person, starts_on: Date.current)
+      sign_in_as(officer)
+
+      get "/api/meetings/#{@meeting.id}/minutes", as: :json
+      assert_response :success
+      assert_equal minutes.id, response.parsed_body.dig("minutes", "id")
+
+      patch "/api/meetings/#{@meeting.id}/minutes", params: { title: "Changed" }, as: :json
+      assert_response :forbidden
+
+      get "/api/meetings/#{@meeting.id}/transcript", as: :json
+      assert_response :forbidden
+    end
+  end
+
   test "bearer tokens approve and attest with their human capabilities and provenance" do
     minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
     approver = create_user("Commander", "approve_minutes")

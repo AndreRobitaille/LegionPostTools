@@ -18,10 +18,22 @@ class PermissionGrant < ApplicationRecord
     [ "Records", %w[view_internal_records] ]
   ].freeze
 
+  LABELS = {
+    "manage_settings" => "Manage app settings",
+    "manage_people" => "Manage people and accounts",
+    "manage_meeting_bodies" => "Manage meeting types",
+    "manage_agendas" => "Prepare agendas",
+    "manage_minutes" => "Draft minutes",
+    "approve_minutes" => "Approve minutes as Commander",
+    "attest_minutes" => "Attest minutes as Adjutant",
+    "record_acceptance_motions" => "Record acceptance motions",
+    "view_internal_records" => "View internal meeting records"
+  }.freeze
+
   # Capabilities a manage_settings admin implicitly holds so they can act as the
-  # tool's tech support. Deliberately excludes the identity-bound attestation acts
-  # (approve_minutes, attest_minutes, record_acceptance_motions), which stay explicit
-  # personal grants to preserve official-record authenticity.
+  # tool's tech support. Deliberately excludes the identity-bound official acts
+  # (approve_minutes, attest_minutes, record_acceptance_motions). Those require
+  # either the configured current Post office or a deliberate personal grant.
   # See docs/superpowers/specs/2026-07-13-admin-hub-reorganization-design.md.
   IMPLIED_BY_MANAGE_SETTINGS = %w[
     manage_people

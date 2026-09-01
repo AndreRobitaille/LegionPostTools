@@ -28,6 +28,7 @@ class PeopleController < ApplicationController
 
     if @can_manage
       @position_titles = PositionTitle.where(organization: Organization.first, active: true).order(:display_order, :name)
+      @position_capability_sources = @user&.position_capability_sources || {}
     end
   end
 

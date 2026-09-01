@@ -93,7 +93,7 @@ module MeetingsHelper
   end
 
   def internal_minutes_access?
-    current_user.can_any?("manage_minutes", "view_internal_records")
+    current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
   end
 
   private

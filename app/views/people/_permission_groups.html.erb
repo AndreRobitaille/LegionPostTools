@@ -4,14 +4,30 @@
 <%= form_with url: admin_user_permission_grants_path(@user), method: :patch do |f| %>
   <div class="permwrap">
     <div class="permhead">Permissions</div>
-    <p class="permsub">What this member can do in the app.</p>
+    <p class="permsub">Current Post offices grant their duties automatically. Additional permissions remain until an administrator removes them.</p>
+    <% if @position_capability_sources.present? %>
+      <div class="role-permissions" aria-label="Automatic permissions from current Post roles">
+        <div class="role-permissions-title">Automatic from current Post role</div>
+        <% @position_capability_sources.each do |capability, titles| %>
+          <div class="role-permission">
+            <span class="role-permission-mark" aria-hidden="true">&#10003;</span>
+            <span>
+              <strong><%= PermissionGrant::LABELS.fetch(capability, capability.humanize) %></strong>
+              <small>Provided by <%= titles.to_sentence %>; ends with the role.</small>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="manual-permissions-title">Additional manual permissions</div>
     <% PermissionGrant::GROUPS.each do |label, caps| %>
       <div class="pg">
         <div class="gname"><%= label %></div>
         <% caps.each do |cap| %>
+          <% next if @position_capability_sources.key?(cap) %>
           <label class="perm">
             <%= check_box_tag "permission_grant[capabilities][]", cap, @user.permission_grants.exists?(capability: cap) %>
-            <%= cap.humanize %>
+            <%= PermissionGrant::LABELS.fetch(cap, cap.humanize) %>
           </label>
         <% end %>
       </div>

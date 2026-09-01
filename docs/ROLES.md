@@ -40,6 +40,11 @@ alone must not become a blanket definition of access. A technical helper may adm
 the application without holding Legion office. An officer or Past Post Commander may
 have social and institutional standing without needing broad membership data.
 
+Position-provided authority must be stored on the position as durable policy, not copied
+into permanent grants on each officeholder. Effective authority is resolved through the
+person's current dated assignment, so it starts and ends with the term. A separate manual
+grant remains appropriate only when the responsibility should survive that office.
+
 ## People and Membership Access
 
 ### Standard Post Member
@@ -90,6 +95,11 @@ The authority belongs to the person while they hold the applicable current assig
 It also belongs to any agent acting for that person. When the assignment ends, authority
 derived from that assignment should end without relying on someone to remember a second,
 unrelated cleanup step.
+
+In the standard Post policy, the 1st Vice Commander receives this membership access but
+no meeting-management or technical-administrator capability. A future roster export uses
+this same full-membership boundary; it does not require `manage_people` or
+`manage_settings`.
 
 ### Other Officers, Committees, and Subcommittees
 
