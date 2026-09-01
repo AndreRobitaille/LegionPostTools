@@ -37,6 +37,9 @@ administrators when they are not.
 - The interface identifies whether authority comes from a current office or a manual grant.
   It never infers authority from title wording; position capability records survive harmless
   renaming and remain configurable for other installations.
+- The private agenda copy containing Commander cues and the working officer roll call is
+  limited to current Commander and Adjutant assignments. Other officers use the same
+  member-safe agenda and published/attested minutes documents as standard members.
 - Full-roster CSV export is not currently implemented. If added, it will use the same full
   membership-access boundary, so a current 1st Vice Commander can export without receiving
   meeting or technical-administrator powers.

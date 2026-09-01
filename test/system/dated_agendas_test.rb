@@ -96,8 +96,10 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_no_button "Delete meeting"
   end
 
-  test "officer reviews document controls and the responsive Commander's working copy" do
+  test "Commander reviews document controls and the responsive private notes copy" do
     commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander_title.position_capability_grants.create!(capability: "manage_agendas")
+    commander_title.position_capability_grants.create!(capability: "approve_minutes")
     commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)
     item = @agenda.dated_agenda_items.find_by!(title: "Opening Ceremony")
     item.update!(
@@ -113,13 +115,13 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector "fieldset.agenda-document-fields legend", text: /Member agenda and minutes/i
     assert_selector "input[name='dated_agenda_item[show_wording_on_agenda]']"
     assert_selector "input[name='dated_agenda_item[show_wording_in_minutes]']"
-    assert_selector "fieldset.agenda-document-fields--commander", text: /For officers only/i
+    assert_selector "fieldset.agenda-document-fields--commander", text: /Commander & Adjutant only/i
     assert_selector "lexxy-editor[name='dated_agenda_item[commander_notes]']"
 
     visit edit_admin_dated_agenda_path(@agenda)
 
     assert_link "Open member agenda PDF", href: print_admin_dated_agenda_path(@agenda)
-    assert_link "Open officer-notes PDF", href: commander_admin_dated_agenda_path(@agenda)
+    assert_link "Cmdr Notes PDF", href: commander_admin_dated_agenda_path(@agenda)
     assert_selector ".agenda-item-flag", text: "Agenda wording hidden"
     assert_selector ".agenda-item-flag", text: "Minutes wording hidden"
     assert_selector ".agenda-item-flag--commander", text: "Commander script"
@@ -132,9 +134,9 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     result = fetch_pdf(commander_admin_dated_agenda_path(@agenda))
     assert_equal 200, result.fetch("status")
     assert_equal "application/pdf", result.fetch("contentType")
-    assert_match(/officer-notes\.pdf/, result.fetch("disposition"))
+    assert_match(/commander-adjutant-notes\.pdf/, result.fetch("disposition"))
     pdf_data = Base64.strict_decode64(result.fetch("data"))
-    assert pdf_data.start_with?("%PDF"), "officer-notes action should return a PDF document"
+    assert pdf_data.start_with?("%PDF"), "private notes action should return a PDF document"
     File.binwrite(ENV.fetch("OFFICER_AGENDA_PDF_CAPTURE"), pdf_data) if ENV["OFFICER_AGENDA_PDF_CAPTURE"].present?
   ensure
     page.current_window.resize_to(1400, 1400)
@@ -142,6 +144,8 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
 
   test "officer reconstructs a historical meeting's officer list without changing Post roles" do
     commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
+    commander_title.position_capability_grants.create!(capability: "manage_agendas")
+    commander_title.position_capability_grants.create!(capability: "approve_minutes")
     commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)
     historical_commander = Person.create!(first_name: "July", last_name: "Commander")
     item = @agenda.dated_agenda_items.find_by!(title: "Opening Ceremony")

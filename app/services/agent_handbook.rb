@@ -135,7 +135,7 @@ class AgentHandbook
     {
       name: "commander_notes",
       applies_to: "catalog, meeting-type item, dated item",
-      meaning: "Private script, stage directions, or reminders shown only in the Commander's working copy and private manage-agendas API. Never member-facing. API writes accept the same sanitized HTML fragments as body, while reads return plain text; omit commander_notes when changing unrelated fields."
+      meaning: "Private script, stage directions, or reminders shown in the Commander & Adjutant notes copy and private manage-agendas API. The combined notes PDF is available only to the current configured Commander or Adjutant. Never member-facing. API writes accept the same sanitized HTML fragments as body, while reads return plain text; omit commander_notes when changing unrelated fields."
     },
     {
       name: "endeavor_id",

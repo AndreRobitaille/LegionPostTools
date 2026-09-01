@@ -3,6 +3,7 @@ module Admin
     before_action -> { require_capability("manage_agendas") }
     before_action :set_organization
     before_action :set_dated_agenda, only: %i[edit destroy approve publish reopen print commander]
+    before_action :require_private_agenda_notes_access, only: :commander
 
     def index
       redirect_to admin_meetings_path
@@ -67,6 +68,13 @@ module Admin
     rescue DatedAgendaPdf::GenerationError => error
       Rails.logger.error("Agenda PDF generation failed: #{error.message}")
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), alert: "The PDF could not be created. Try again."
+    end
+
+    def require_private_agenda_notes_access
+      return if current_user.private_agenda_notes_access?
+
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda),
+        alert: "Only the current Commander or Adjutant can open the private notes PDF."
     end
 
     def agenda_sections_with_content

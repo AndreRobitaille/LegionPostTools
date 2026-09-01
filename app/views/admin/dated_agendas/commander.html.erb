@@ -1,7 +1,7 @@
-<% content_for :title, "Commander's copy — #{@dated_agenda.title}" %>
+<% content_for :title, "Commander & Adjutant notes — #{@dated_agenda.title}" %>
 <%= render "dated_agendas/agenda_document",
   dated_agenda: @dated_agenda,
   organization: @organization,
   commander_copy: true,
-  document_label: "Commander's working copy",
+  document_label: "Commander & Adjutant notes copy",
   show_summaries: false %>

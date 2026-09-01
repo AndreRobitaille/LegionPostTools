@@ -11,8 +11,8 @@ harder to use.
 This feature keeps one structured agenda while producing two deliberate copies:
 
 - the **member agenda**, containing only content intended for distribution; and
-- the **Commander's copy**, containing the member agenda plus private presiding cues and
-  a compact officer roll-call worksheet.
+- the **Commander & Adjutant notes copy**, containing the member agenda plus private
+  presiding cues and a compact officer roll-call worksheet.
 
 The page's single job is to let an officer decide, without ambiguity, what members will
 read and what the Commander will use to lead the meeting.
@@ -27,7 +27,8 @@ Every agenda item owns four independent document controls:
 - **Carry wording into draft minutes**: checked by default. It records the officer's
   intent for the later minutes-drafting workflow; accepted minutes remain human-approved
   records and will not be mechanically rewritten.
-- **Commander's script / cues**: private rich text rendered only in the Commander's copy.
+- **Commander's script / cues**: private rich text rendered only in the Commander &
+  Adjutant notes copy.
 
 Screen and print versions of a given copy have the same content. There are no independent
 digital-versus-print visibility switches.
@@ -45,7 +46,7 @@ digital-versus-print visibility switches.
 | **Document wording / `body`** | Rich member/minutes content. API writes accept a sanitized HTML fragment: use `<p>` for paragraphs and `<ul><li>...</li></ul>` for bullets. Plain newlines and literal `•` characters are not converted to HTML structure and may display inline. Reads return plain text as `wording`, so omit `body` when changing unrelated fields instead of round-tripping that plain text. |
 | **Show wording on agenda** | When clear, keeps the title but removes document wording from member and Commander screen/print agenda bodies. Commander cues remain separate. |
 | **Carry wording into draft minutes** | Controls whether the document wording seeds an independent `agenda_wording` snapshot when working minutes are created. It has no approval effect. |
-| **Commander's script / cues** | Private script, stage directions, and reminders for the Commander's working copy and private officer API only. `commander_notes` writes follow the same HTML-fragment rules as `body`; reads are plain text, so omit the field from unrelated updates. |
+| **Commander's script / cues** | Private script, stage directions, and reminders for the Commander & Adjutant notes copy and private agenda API only. The notes PDF is available only while the signed-in person holds the current configured Commander or Adjutant assignment. `commander_notes` writes follow the same HTML-fragment rules as `body`; reads are plain text, so omit the field from unrelated updates. |
 | **Endeavor link** | Connects an independent dated snapshot to coherent continuing Post work. Linking an existing row in place does not replace its historical title, summary, wording, section, or position. |
 | **Position** | Order inside the catalog category or actual agenda section. It is not a global agenda order. |
 | **Lock version** | Dated-item concurrency guard. API clients send the value returned by agenda detail when editing content to avoid overwriting another officer's save. |
@@ -95,14 +96,15 @@ history or become defaults for a later agenda. “Reload assigned officers” re
 as an explicit reset and warns that it discards agenda-local changes.
 
 The member agenda shows the `Roll Call and Quorum` item like any other item but never shows
-blank attendance controls. The Commander's copy renders a compact table with Present,
-Absent, and Excused boxes. These boxes are a paper worksheet in this milestone. Recorded
+blank attendance controls. The Commander & Adjutant notes copy renders a compact table
+with Present, Absent, and Excused boxes. These boxes are a paper worksheet in this milestone. Recorded
 attendance belongs to the later minutes lifecycle rather than mutating a published agenda.
 
 ## Access and Safety
 
 - Member agenda routes never render Commander's script or roll-call rows.
-- Commander's copy routes require `manage_agendas`, matching agenda editing authority.
+- The Commander & Adjutant notes route requires both `manage_agendas` and current
+  position-provided Commander approval or Adjutant attestation authority.
 - Private API detail exposes the script and document controls only under the existing
   `manage_agendas` gate; member-facing endpoints do not. It includes roll-call entry,
   position-title, and person ids so a delegated Bot can edit the meeting snapshot without
@@ -132,7 +134,7 @@ undifferentiated form:
 | [x] Show this wording on the agenda                            |
 | [x] Carry this wording into draft minutes                      |
 +----------------------------------------------------------------+
-| COMMANDER'S COPY                         FOR OFFICERS ONLY      |
+| COMMANDER & ADJUTANT NOTES      COMMANDER & ADJUTANT ONLY      |
 | [ rich-text presiding script and cues ]                        |
 | This never appears on the member agenda.                       |
 +----------------------------------------------------------------+
@@ -166,9 +168,9 @@ The page distinguishes `Vacant` from removal: vacant preserves the office on the
 while removal omits the row from this meeting. Existing people are chosen by name so the
 saved row continues to preserve both its reference and displayed snapshot name.
 
-The agenda lifecycle actions distinguish **Print member agenda** from **Commander's copy**.
-The latter is visually an internal working document and must never be described as the
-published agenda.
+The agenda lifecycle actions distinguish **Open member agenda PDF** from **Cmdr Notes PDF**.
+The latter is visually an internal working document and must never
+be described as the published agenda.
 
 ## Visual Direction
 
@@ -246,7 +248,7 @@ without sacrificing clarity.
   and API payloads.
 - System coverage confirms the editor vocabulary and both print actions.
 - Browser critique covers the dated-agenda editor, officer-list editor, member agenda, and
-  Commander's copy at desktop and 390px widths, including keyboard focus and horizontal
-  overflow.
+  Commander & Adjutant notes copy at desktop and 390px widths, including keyboard focus
+  and horizontal overflow.
 - Printed output is inspected for hidden member content, visible Commander cues, compact
   roll call, grayscale legibility, and reasonable page-break behavior.

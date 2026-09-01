@@ -73,7 +73,7 @@ class DatedAgendaPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     get dated_agenda_pdf_source_path(token: token_for("officer_notes"))
 
     assert_response :success
-    assert_select ".agenda-meeting-heading h1", text: "Membership Meeting — Commander's working copy"
+    assert_select ".agenda-meeting-heading h1", text: "Membership Meeting — Commander & Adjutant notes copy"
     assert_select ".commander-cue", text: /Call each officer/
     assert_select ".roll-call-table", text: /Commander.*Pat Commander/m
     assert_select "body", text: /Member wording withheld/, count: 0

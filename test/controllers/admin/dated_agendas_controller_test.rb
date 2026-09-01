@@ -34,6 +34,8 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_select ".agenda-meeting-snapshot", text: /Change meeting details/
     assert_select "a[href='#{edit_admin_meeting_path(@agenda.meeting)}']"
     assert_select "input[name='dated_agenda[starts_at]']", count: 0
+    assert_select "a[href='#{print_admin_dated_agenda_path(@agenda)}']", text: "Open member agenda PDF"
+    assert_select "a[href='#{commander_admin_dated_agenda_path(@agenda)}']", count: 0
   end
 
   test "approve publish and reopen preserve the human lifecycle" do
@@ -86,7 +88,7 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert DatedAgenda.exists?(other_agenda.id)
   end
 
-  test "manager receives both PDF variants" do
+  test "agenda manager receives the member PDF but not the private notes PDF" do
     sign_in_as(@manager)
     variants = []
     renderer = lambda do |dated_agenda:, variant:|
@@ -96,12 +98,41 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     with_stubbed_class_method(DatedAgendaPdf, :render, renderer) do
       get commander_admin_dated_agenda_path(@agenda)
-      assert_response :success
+      assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+      assert_equal "Only the current Commander or Adjutant can open the private notes PDF.", flash[:alert]
       get print_admin_dated_agenda_path(@agenda)
       assert_response :success
     end
 
-    assert_equal [ [ @agenda, "officer_notes" ], [ @agenda, "agenda" ] ], variants
+    assert_equal [ [ @agenda, "agenda" ] ], variants
+  end
+
+  test "current Commander and Adjutant receive the private notes PDF" do
+    variants = []
+    renderer = lambda do |dated_agenda:, variant:|
+      variants << [ dated_agenda, variant ]
+      "%PDF-1.7\n#{variant}"
+    end
+
+    with_stubbed_class_method(DatedAgendaPdf, :render, renderer) do
+      {
+        "Commander" => "approve_minutes",
+        "Adjutant" => "attest_minutes"
+      }.each do |role_name, official_capability|
+        user = create_user(role_name)
+        assign_position_capabilities(user, role_name, "manage_agendas", official_capability)
+        sign_in_as(user)
+
+        get edit_admin_dated_agenda_path(@agenda)
+        assert_response :success
+        assert_select "a[href='#{commander_admin_dated_agenda_path(@agenda)}']", text: "Cmdr Notes PDF"
+
+        get commander_admin_dated_agenda_path(@agenda)
+        assert_response :success
+      end
+    end
+
+    assert_equal [ [ @agenda, "officer_notes" ], [ @agenda, "officer_notes" ] ], variants
   end
 
   private
@@ -111,5 +142,11 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     user = User.create!(person: person, email_address: "#{label.downcase}-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
     capabilities.each { |capability| PermissionGrant.create!(user: user, capability: capability) }
     user
+  end
+
+  def assign_position_capabilities(user, role_name, *capabilities)
+    title = @organization.position_titles.create!(name: role_name, display_order: @organization.position_titles.count + 1)
+    capabilities.each { |capability| title.position_capability_grants.create!(capability:) }
+    title.position_assignments.create!(person: user.person, starts_on: Date.current)
   end
 end

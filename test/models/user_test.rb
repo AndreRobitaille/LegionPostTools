@@ -300,6 +300,33 @@ class UserTest < ActiveSupport::TestCase
     assert_empty user.position_capability_sources
   end
 
+  test "private agenda notes access follows current Commander and Adjutant authority" do
+    organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+
+    %w[approve_minutes attest_minutes].each_with_index do |capability, index|
+      person = Person.create!(first_name: "Private", last_name: index.zero? ? "Commander" : "Adjutant")
+      user = User.create!(person:, email_address: "private-notes-#{index}@example.com")
+      title = PositionTitle.create!(organization:, name: "Role #{index}", display_order: index + 1)
+      title.position_capability_grants.create!(capability:)
+      assignment = title.position_assignments.create!(person:, starts_on: Date.current - 2)
+
+      assert user.private_agenda_notes_access?
+
+      assignment.update!(ends_on: Date.current - 1)
+      assert_not user.private_agenda_notes_access?
+    end
+  end
+
+  test "manual permissions do not grant private agenda notes access" do
+    person = Person.create!(first_name: "Manual", last_name: "Agenda Manager")
+    user = User.create!(person:, email_address: "manual-agenda-manager@example.com")
+    %w[manage_settings manage_agendas approve_minutes attest_minutes].each do |capability|
+      user.permission_grants.create!(capability:)
+    end
+
+    assert_not user.private_agenda_notes_access?
+  end
+
   test "full membership access follows a current configured position assignment" do
     organization = Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     person = Person.create!(first_name: "Current", last_name: "Commander")

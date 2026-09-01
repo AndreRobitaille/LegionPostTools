@@ -8,6 +8,7 @@ class User < ApplicationRecord
     manage_minutes
     view_internal_records
   ].freeze
+  PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES = %w[approve_minutes attest_minutes].freeze
 
   belongs_to :person
   has_many :permission_grants, dependent: :destroy
@@ -71,6 +72,10 @@ class User < ApplicationRecord
       .each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |(capability, title_name), sources|
         sources[capability] << title_name
       end
+  end
+
+  def private_agenda_notes_access?(on: Date.current)
+    position_capability_sources(on:).keys.intersect?(PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES)
   end
 
   def full_membership_access?(on: Date.current)

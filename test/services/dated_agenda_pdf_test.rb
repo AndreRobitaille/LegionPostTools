@@ -16,7 +16,7 @@ class DatedAgendaPdfTest < ActiveSupport::TestCase
 
   test "builds descriptive filenames for both document variants" do
     assert_equal "membership-meeting-2026-07-07-agenda.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "agenda")
-    assert_equal "membership-meeting-2026-07-07-officer-notes.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "officer_notes")
+    assert_equal "membership-meeting-2026-07-07-commander-adjutant-notes.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "officer_notes")
   end
 
   test "signed source token fixes the organization agenda and variant" do

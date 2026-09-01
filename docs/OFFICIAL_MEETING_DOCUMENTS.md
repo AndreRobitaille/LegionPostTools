@@ -87,7 +87,8 @@ That hierarchy makes parliamentary order visible without recreating the supplied
 The shell identifies a document by type and status rather than changing its visual language:
 
 - **Agenda** — ordered business distributed before the meeting.
-- **Commander's working copy** — the same agenda plus private blue officer cues and roll call.
+- **Commander & Adjutant notes copy** — the same agenda plus private blue Commander cues
+  and roll call. Only the current Commander and Adjutant can open this document.
 - **Draft minutes** — the same meeting identity and section order, clearly marked draft.
 - **Accepted minutes** — the same shell, marked accepted with later acceptance and attestation
   information. Accepted minutes are immutable; corrections belong to later records.
