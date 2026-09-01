@@ -75,6 +75,21 @@ The Hetzner VPS throttles repeated SSH connections heavily. Before running Kamal
 
 Codex's restricted command sandbox can expose root-owned host files under `/etc` and `/usr` as `nobody:nobody`. OpenSSH 10.5 rejects that synthetic ownership with `Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf`. For Codex sessions, run SSH, Kamal, and `bin/sync_prod_db` with host access outside the restricted sandbox. Confirm ownership outside the sandbox before diagnosing a host permissions problem, and never `chown` system SSH files based only on their sandbox-visible ownership.
 
+For Post 165 releases, do not assemble the SSH/Kamal workaround ad hoc and do not run
+`bin/kamal deploy` directly from an agent session. Use the repository release entry point:
+
+- `bin/release check` verifies the host SSH control master, Kamal proxy transport, and
+  remote Docker builder without changing production.
+- `bin/release push` pushes the current branch and verifies GitHub's exact SHA.
+- `bin/release deploy` requires a clean worktree and an exact pushed HEAD, then deploys,
+  verifies the running revision and public health, and closes the control master.
+- `bin/release push-deploy` performs the last two operations together.
+
+When the user explicitly authorizes "push and deploy," stage only the intended files,
+commit them, and run `bin/release push-deploy`. Do not ask again merely because Git, SSH,
+Docker, or Kamal needs host access. Destructive production data work still requires its
+own explicit authorization.
+
 ## Documentation Map
 
 - `README.md` — overview for operators and repo visitors.

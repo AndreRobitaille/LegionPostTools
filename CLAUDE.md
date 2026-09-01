@@ -41,3 +41,9 @@ Andre works from a different machine than the one this app runs on. Any developm
 ## Production SSH Discipline
 
 The Hetzner production VPS throttles repeated SSH connections heavily. Before running Kamal or any SSH-heavy production operation against that server, set up a persistent SSH connection/tunnel/control master and route the work through it. Tear it down when production work is finished. Do not run repeated fresh SSH/Kamal commands directly against the production box.
+
+Use `bin/release check|push|deploy|push-deploy` for Post 165 release operations. Do not
+recreate the SSH tunnel, temporary Kamal proxy configuration, remote-builder selection,
+or live verification by hand. When the user explicitly authorizes "push and deploy,"
+stage only the intended files, commit them, and run `bin/release push-deploy` without an
+additional confirmation. Destructive production data work remains separately gated.

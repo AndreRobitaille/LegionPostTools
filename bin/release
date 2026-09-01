@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly APP_ROOT
+readonly PROD_HOST="178.156.250.235"
+readonly PROD_SERVICE="legion_post_165_wi_tools"
+readonly PROD_URL="https://members.wipost165.org"
+readonly COHOSTED_URL="https://tworiversmatters.com"
+readonly SSH_CONFIG="/home/andre/.ssh/config"
+
+release_temp_config=""
+
+cd "$APP_ROOT"
+
+usage() {
+  echo "Usage: bin/release check|push|deploy|push-deploy" >&2
+  exit 64
+}
+
+fail() {
+  echo "release: $*" >&2
+  exit 1
+}
+
+cleanup_release() {
+  ssh -F "$SSH_CONFIG" -O exit "$PROD_HOST" >/dev/null 2>&1 || true
+  [[ -z "$release_temp_config" ]] || rm -f "$release_temp_config"
+}
+
+current_branch() {
+  git symbolic-ref --quiet --short HEAD || fail "detached HEAD cannot be released"
+}
+
+remote_head() {
+  local branch="$1"
+  git ls-remote --heads origin "refs/heads/$branch" | awk 'NR == 1 { print $1 }'
+}
+
+assert_remote_matches_head() {
+  local branch head remote
+  branch="$(current_branch)"
+  head="$(git rev-parse HEAD)"
+  remote="$(remote_head "$branch")"
+
+  [[ -n "$remote" ]] || fail "origin has no branch named $branch; run bin/release push first"
+  [[ "$remote" == "$head" ]] || fail "origin/$branch is $remote, but local HEAD is $head; run bin/release push first"
+}
+
+assert_clean_worktree() {
+  git diff --quiet || fail "working tree has unstaged changes; deploy only a reviewed commit"
+  git diff --cached --quiet || fail "index has staged but uncommitted changes; deploy only a reviewed commit"
+  [[ -z "$(git ls-files --others --exclude-standard)" ]] || fail "working tree has untracked files; deploy only a reviewed commit"
+}
+
+push_head() {
+  local branch head remote
+  branch="$(current_branch)"
+  head="$(git rev-parse HEAD)"
+
+  echo "Pushing $head to origin/$branch..."
+  git push --set-upstream origin "HEAD:refs/heads/$branch"
+
+  remote="$(remote_head "$branch")"
+  [[ "$remote" == "$head" ]] || fail "GitHub did not resolve origin/$branch to $head after push"
+  echo "GitHub verified at $head."
+}
+
+effective_ssh_value() {
+  local key="$1"
+  ssh -F "$SSH_CONFIG" -G "$PROD_HOST" 2>/dev/null | awk -v key="$key" '$1 == key { $1 = ""; sub(/^ /, ""); print; exit }'
+}
+
+prepare_kamal_config() {
+  local output="$1" control_path="$2" identity_file="$3"
+
+  ruby -ryaml -e '
+    source, output, host, control_path, identity_file, ssh_config = ARGV
+    config = YAML.safe_load_file(source, aliases: true)
+    config["ssh"] = {
+      "user" => "root",
+      "keys" => [identity_file],
+      "keys_only" => true,
+      "config" => false,
+      "proxy_command" => "ssh -F #{ssh_config} -S #{control_path} -o BatchMode=yes -W 127.0.0.1:22 #{host}"
+    }
+    builder = config["builder"] ||= {}
+    builder["remote"] = "ssh://root@#{host}"
+    builder["local"] = false
+    File.write(output, YAML.dump(config))
+  ' config/deploy.yml "$output" "$PROD_HOST" "$control_path" "$identity_file" "$SSH_CONFIG"
+}
+
+assert_http_status() {
+  local url="$1" expected="$2" attempts="${3:-10}" status=""
+
+  for ((attempt = 1; attempt <= attempts; attempt++)); do
+    status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url" || true)"
+    if [[ "$status" == "$expected" ]]; then
+      echo "$url -> $status"
+      return 0
+    fi
+    sleep 2
+  done
+
+  fail "$url returned $status; expected $expected"
+}
+
+with_production_connection() {
+  local action="$1" control_path identity_file
+
+  [[ -r "$SSH_CONFIG" ]] || fail "missing readable SSH config at $SSH_CONFIG"
+
+  control_path="$(effective_ssh_value controlpath)"
+  identity_file="$(effective_ssh_value identityfile)"
+  [[ -n "$control_path" ]] || fail "SSH config does not define ControlPath for $PROD_HOST"
+  [[ -n "$identity_file" ]] || fail "SSH config does not define IdentityFile for $PROD_HOST"
+  identity_file="${identity_file/#\~/$HOME}"
+  [[ -r "$identity_file" ]] || fail "configured identity file is not readable: $identity_file"
+
+  mkdir -p "$(dirname "$control_path")"
+  chmod 700 "$(dirname "$control_path")"
+  release_temp_config="$(mktemp /tmp/legion-post-tools-kamal.XXXXXX.yml)"
+  trap cleanup_release EXIT
+
+  if ssh -F "$SSH_CONFIG" -O check "$PROD_HOST" >/dev/null 2>&1; then
+    echo "Reusing the Post 165 SSH control master."
+  else
+    [[ ! -e "$control_path" ]] || rm -f "$control_path"
+    echo "Starting the Post 165 SSH control master..."
+    ssh -F "$SSH_CONFIG" -MNf "$PROD_HOST"
+  fi
+
+  ssh -F "$SSH_CONFIG" -O check "$PROD_HOST"
+  ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" 'hostname; docker --version'
+  ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" 'hostname; docker --version'
+
+  prepare_kamal_config "$release_temp_config" "$control_path" "$identity_file"
+  bin/kamal config -c "$release_temp_config" >/dev/null
+  bin/kamal server exec 'hostname' -c "$release_temp_config"
+
+  if [[ "$action" == "check" ]]; then
+    echo "Release transport preflight passed; production was not changed."
+    return
+  fi
+
+  local head container_names
+  head="$(git rev-parse HEAD)"
+  echo "Deploying $head to Post 165 production..."
+  bin/kamal deploy -c "$release_temp_config"
+
+  container_names="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
+    "docker ps --filter label=service=$PROD_SERVICE --filter label=role=web --format '{{.Names}}'")"
+  grep -Fxq "$PROD_SERVICE-web-$head" <<< "$container_names" || \
+    fail "the running $PROD_SERVICE web container does not match $head"
+
+  assert_http_status "$PROD_URL/up" 200
+  assert_http_status "$PROD_URL/session/new" 200
+  assert_http_status "$COHOSTED_URL/" 200
+  echo "Production verified at $head; the SSH control master will now close."
+}
+
+command="${1:-}"
+[[ $# -eq 1 ]] || usage
+
+case "$command" in
+  check)
+    with_production_connection check
+    ;;
+  push)
+    push_head
+    ;;
+  deploy)
+    assert_clean_worktree
+    assert_remote_matches_head
+    with_production_connection deploy
+    ;;
+  push-deploy)
+    assert_clean_worktree
+    push_head
+    with_production_connection deploy
+    ;;
+  *)
+    usage
+    ;;
+esac

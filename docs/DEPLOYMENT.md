@@ -15,7 +15,12 @@ The app is not a SaaS or multi-tenant platform. Each installation gets its own K
 - Co-hosted app: `TwoRiversReporter`
 - First production setup: completed for Robert E. Burns Post 165 on July 12, 2026.
 
-Primary deployment flow is from the local repo with `bin/kamal deploy`. Use `bin/kamal setup` for the First install only, when provisioning a new deployment target. Do not use a server-side git clone or web UI as the primary flow.
+Primary repeat-deployment flow from the maintainer workstation is `bin/release
+push-deploy`. It verifies the pushed SHA, uses the required persistent SSH route and
+remote Docker builder, runs Kamal, verifies the live revision and public endpoints, and
+closes the SSH master. Use `bin/release check` for a non-mutating transport preflight.
+Use `bin/kamal setup` for the First install only, when provisioning a new deployment
+target. Do not use a server-side git clone or web UI as the primary flow.
 
 ## Naming convention
 
@@ -141,6 +146,11 @@ Use the shown `ControlPath` only for Post 165; repeat installs must use a unique
 Before any Kamal or SSH-heavy operation, establish a persistent SSH control master. Route the deployment work through that connection and tear it down afterward.
 
 Do not run repeated fresh SSH or Kamal commands directly against the Hetzner host without connection sharing.
+
+`bin/release deploy` automates this sequence for Post 165, including the temporary Kamal
+`proxy_command` configuration needed because Kamal's Net::SSH transport does not reuse
+the OpenSSH master by itself. Agent sessions should use that command instead of manually
+repeating the steps below.
 
 ## Postgres accessory
 
