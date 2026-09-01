@@ -34,8 +34,8 @@ module Api
         disposition: "inline"
       no_store
     rescue MeetingMinutesPdf::GenerationError => error
-      Rails.logger.error("API draft minutes PDF generation failed: #{error.message}")
-      render_error("The draft PDF could not be created. Try again.", status: :service_unavailable)
+      Rails.logger.error("API minutes PDF generation failed: #{error.message}")
+      render_error("The minutes PDF could not be created. Try again.", status: :service_unavailable)
     end
 
     private

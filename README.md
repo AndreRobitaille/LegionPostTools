@@ -15,9 +15,10 @@ The current application foundation includes:
 - American Legion Post setup preset.
 - People, users, historical position assignments, permissions, organizations, and meeting bodies.
 - Passwordless authentication (complete): magic-link email sign-in and passkey registration
-  and sign-in, with a first-login "add a passkey" prompt and a Profile page to
+  and sign-in, with an optional dashboard passkey invitation and a Profile page to
   name, rename, and remove passkeys.
-- Compact authenticated app shell and a minimal authenticated dashboard.
+- Compact authenticated app shell and a meeting-centered dashboard showing the next and
+  most recent Meeting, with account guidance kept visually secondary.
 - Structured agenda catalog, meeting templates, dated agendas, and reusable agenda sections.
 - Endeavors for continuing Post work, with dated continuity updates, meeting-priority suggestions, and
   independent agenda snapshots.
@@ -27,15 +28,16 @@ The current application foundation includes:
 - Restricted meeting-transcript paste, structured working minutes, and a durable
   OpenAI-assisted first pass with source-linked human review.
 - Roster-verified mover and seconder identity, deliberate motion results and officer
-  attendance, an administrative Jobs ledger, and print-ready draft-minutes PDFs.
+  attendance, an administrative Jobs ledger, and lifecycle-aware minutes PDFs.
 - Private session-or-bearer API parity for ordinary delegated officer/admin work across
-  meetings, agendas, accounts, transcripts, draft minutes, AI review, and Jobs.
+  meetings, agendas, accounts, transcripts, structured minutes, lifecycle actions, AI
+  review, and Jobs.
 - Exact immutable Commander-approved minutes revisions, different-person Adjutant
   attestation, member-visible minutes awaiting acceptance, and matching signed-in and
   bearer-token actions with audit provenance.
 
-The next core work is membership acceptance and immutable correction history, followed by
-finalized official document delivery and email distribution.
+The next core work is membership acceptance, immutable correction history, accepted and
+amended document delivery, and later email distribution.
 
 ## Who This Is For
 
@@ -54,6 +56,13 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
 - `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
+- `docs/STANDARD_MEMBER_EXPERIENCE.md` — the implemented member dashboard, Meeting actions,
+  Endeavor presentation, directory, and Profile treatment.
+- `docs/OFFICER_WORKSPACE_EXPERIENCE.md` — current officer-derived access and the scoped
+  officer workspace.
+- `docs/COMMANDER_AGENDA_AND_ROLL_CALL.md` — agenda wording, private notes-copy access,
+  and dated officer roll call.
+- `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for minutes.
 - `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — implemented Commander approval,
   Adjutant release, member presentation, and delegated API provenance.

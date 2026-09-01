@@ -335,6 +335,7 @@ module Api
         location_address: minutes.location_address,
         meeting_body: meeting_body_payload(minutes.meeting_body),
         meeting_type: meeting_type_payload(minutes.meeting_type),
+        pdf_path: "/api/meetings/#{minutes.meeting_id}/minutes/print",
         draft_pdf_path: "/api/meetings/#{minutes.meeting_id}/minutes/print",
         attendance: minutes.attendance_entries.map { |entry| minutes_attendance_payload(entry) },
         sections: minutes.sections.map { |section| minutes_section_payload(section) },
@@ -513,13 +514,9 @@ module Api
 
     def user_account_payload(person)
       user = person.user
-      {
-        person_id: person.id,
-        person_name: person.roster_display_name,
-        roster_managed: person.roster_backed?,
-        roster_status: person.roster_member_status,
-        roster_removed_at: person.roster_removed_at&.iso8601,
-        account: user ? {
+      account = if user
+        manual_capabilities = user.permission_grants.order(:capability).pluck(:capability)
+        {
           id: user.id,
           email_address: user.email_address,
           enabled: user.disabled_at.blank?,
@@ -527,8 +524,20 @@ module Api
           disabled_reason: user.disabled_reason,
           disabled_reason_detail: user.disabled_reason_detail,
           login_access_override: user.login_access_override,
-          capabilities: user.permission_grants.order(:capability).pluck(:capability)
-        } : nil
+          capabilities: manual_capabilities,
+          manual_capabilities: manual_capabilities,
+          position_capability_sources: user.position_capability_sources,
+          effective_capabilities: PermissionGrant::CAPABILITIES.select { |capability| user.can?(capability) }
+        }
+      end
+
+      {
+        person_id: person.id,
+        person_name: person.roster_display_name,
+        roster_managed: person.roster_backed?,
+        roster_status: person.roster_member_status,
+        roster_removed_at: person.roster_removed_at&.iso8601,
+        account:
       }
     end
 

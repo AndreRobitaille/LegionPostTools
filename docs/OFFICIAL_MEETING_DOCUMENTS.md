@@ -13,21 +13,21 @@ This design follows the installed `frontend-design` skill. It extends the establ
 
 ## Product Boundary
 
-This milestone:
+The original document-shell milestone:
 
-- creates one shared agenda document shell for member, administrative, and Commander's
+- creates one shared agenda document shell for member, administrative, and private-notes
   copies;
 - explicitly targets US Letter portrait (`8.5in × 11in`) with a white background;
 - respects the common non-printable boundary of `0.5in` at the top and `0.25in` on the other
   edges;
 - uses the existing official American Legion emblem and configurable organization identity;
-- establishes the visual shell future draft and accepted minutes will reuse; and
-- preserves the existing member/Commander content boundary and agenda lifecycle.
+- establishes the visual shell minutes documents reuse; and
+- preserves the member/private-notes content boundary and agenda lifecycle.
 
-This milestone does not create minutes, signatures, acceptance, or PDF storage. The shared
-shell is rendered to a real PDF by the delivery service described in
-`docs/PDF_DOCUMENT_DELIVERY.md`. Future minutes must reuse this shell while keeping accepted
-minutes immutable.
+The original milestone did not create minutes, signatures, acceptance, or PDF storage.
+Subsequent work now renders agendas plus draft, approved, and attested minutes through the
+shared shell and the delivery service described in `docs/PDF_DOCUMENT_DELIVERY.md`.
+Acceptance, amendments, and their later official document states remain future work.
 
 ## Visual Direction
 
@@ -90,7 +90,11 @@ The shell identifies a document by type and status rather than changing its visu
 - **Commander & Adjutant notes copy** — the same agenda plus private blue Commander cues
   and roll call. Only the current Commander and Adjutant can open this document.
 - **Draft minutes** — the same meeting identity and section order, clearly marked draft.
-- **Accepted minutes** — the same shell, marked accepted with later acceptance and attestation
+- **Approved minutes** — the immutable Commander-approved revision, marked as awaiting
+  Adjutant attestation and kept officer-only.
+- **Attested minutes** — that same immutable revision released to members and marked as
+  awaiting acceptance, never official.
+- **Accepted minutes** — the same shell, marked official with later acceptance and attestation
   information. Accepted minutes are immutable; corrections belong to later records.
 
 The detailed authority folio, revision, acceptance, and amendment behavior is defined in
@@ -139,9 +143,9 @@ to follow.
 ## Verification
 
 - Request coverage asserts the emblem, meeting-type/document title, date and time, and shared
-  member/admin/Commander shell.
-- Browser critique covers the member document at desktop and `390px`, plus the Commander's
-  copy where private fields differ.
+  member/admin/private-notes shell.
+- Browser critique covers the member document at desktop and `390px`, plus the
+  Commander/Adjutant notes copy where private fields differ.
 - Generated PDF inspection confirms US Letter page dimensions, white paper, repeating page
   numbers and organization footer, safe geometry, readable page breaks, and no private-content
   leakage.

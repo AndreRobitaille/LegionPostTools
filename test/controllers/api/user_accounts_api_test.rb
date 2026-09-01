@@ -59,6 +59,23 @@ class ApiUserAccountsApiTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "account detail distinguishes manual position and effective capabilities" do
+    user = create_user("Adjutant", "view_internal_records")
+    title = PositionTitle.create!(organization: Organization.first, name: "Adjutant", display_order: 1)
+    title.position_capability_grants.create!(capability: "manage_minutes")
+    title.position_assignments.create!(person: user.person, starts_on: Date.current)
+
+    get "/api/people/#{user.person_id}/account", as: :json
+
+    assert_response :success
+    account = response.parsed_body.dig("user_account", "account")
+    assert_equal [ "view_internal_records" ], account["capabilities"]
+    assert_equal [ "view_internal_records" ], account["manual_capabilities"]
+    assert_equal({ "manage_minutes" => [ "Adjutant" ] }, account["position_capability_sources"])
+    assert_includes account["effective_capabilities"], "manage_minutes"
+    assert_includes account["effective_capabilities"], "view_internal_records"
+  end
+
   private
 
   def create_user(label, capability = nil)

@@ -49,6 +49,10 @@ parity:
 - explicitly disable sign-in; and
 - return a roster-backed account to roster control.
 
+Account detail distinguishes `manual_capabilities`, current
+`position_capability_sources`, and `effective_capabilities`. The legacy `capabilities`
+field remains a compatibility alias for manual grants.
+
 These actions require `manage_settings`. Disabling sign-in and changing control mode are
 listed only under **Only when asked**, retain the last-enabled-administrator protection,
 and never alter imported roster fields.
@@ -76,8 +80,11 @@ There is no update or purge endpoint in this slice.
 - `POST /api/meetings/:meeting_id/minutes` uses the same idempotent Meeting-boundary seeding
   operation as HTML.
 - `PATCH /api/meetings/:meeting_id/minutes` edits only the draft heading and venue.
-- `GET /api/meetings/:meeting_id/minutes/print` renders the same officer-only draft PDF as
-  the browser workspace. Rendering never changes lifecycle state.
+- `GET /api/meetings/:meeting_id/minutes/print` renders the same lifecycle-aware PDF as the
+  browser workspace. Draft output uses mutable working rows; approved and attested output
+  uses the immutable approved revision. Rendering never changes lifecycle state.
+- Minutes detail exposes this endpoint as `pdf_path`. The legacy `draft_pdf_path` remains
+  as a compatibility alias while delegated clients migrate.
 
 ### Structured editing
 

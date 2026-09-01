@@ -17,16 +17,17 @@ approved typography, hierarchy, margins, or content boundaries.
 - **Cmdr Notes PDF** returns the same document shell with private
   Commander cues and roll call. It is available only when the signed-in person currently
   holds a configured Commander or Adjutant assignment; `manage_agendas` alone is not enough.
-- **Open draft PDF** on an editable minutes workspace returns a current officer-only
-  proof clearly marked **DRAFT - NOT APPROVED**. It is not a minutes publication action
-  and does not create an immutable revision.
+- The minutes workspace offers **Open draft PDF**, **Open approved PDF**, or **Open attested
+  PDF** according to lifecycle state. A draft is an officer-only proof from mutable working
+  rows. Approved and attested PDFs render the immutable approved revision; an attested PDF
+  is the member-visible record awaiting acceptance, not an official record.
 - The response uses `Content-Disposition: inline` and a descriptive `.pdf` filename. A
   desktop or mobile browser may display its native PDF viewer, from which the document can
   be printed, downloaded, or shared.
 - There is no responsive HTML page between the action and the PDF. The narrow HTML
   presentation remains useful only for reading a published agenda in the application.
-- A generation failure returns the user to the agenda with plain guidance to try again;
-  no partially generated file is sent.
+- A generation failure returns the user to the relevant agenda or minutes record with plain
+  guidance to try again; no partially generated file is sent.
 
 ## Rendering Architecture
 
@@ -54,13 +55,14 @@ temporary files.
 - The private notes action additionally requires current position-provided Commander
   approval or Adjutant attestation authority. This follows the dated assignment and does
   not infer authority from a position's display name.
-- The mutable minutes preview retains the minutes workspace's `manage_minutes` or
-  `view_internal_records` boundary and is never exposed through a member route.
+- The officer minutes route permits `manage_minutes`, `approve_minutes`, `attest_minutes`,
+  or `view_internal_records`. Member access remains limited to attested or later records
+  through the member route.
 - The HTML rendering source accepts only loopback requests and a valid expiring signature.
 - Rendering tokens are filtered from logs, expire after one minute, and cannot select a
   different organization, agenda, or document variant.
 - The member PDF never renders Commander cues or roll-call working fields.
-- The draft minutes PDF never renders transcript text, AI suggestions, confidence,
+- The minutes PDF never renders transcript text, AI suggestions, confidence,
   evidence ranges, job provenance, or application controls.
 - Responses use `Cache-Control: no-store` because private notes documents can contain
   meeting instructions.

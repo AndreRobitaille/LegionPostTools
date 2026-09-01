@@ -103,7 +103,12 @@ own explicit authorization.
 - `docs/ARCHITECTURE.md` — architecture and durable decisions.
 - `docs/ROADMAP.md` — planned development phases.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — implemented first-class Meeting and member archive boundary.
+- `docs/STANDARD_MEMBER_EXPERIENCE.md` — implemented member dashboard, Meeting actions, Endeavor presentation, directory, and Profile treatment.
+- `docs/OFFICER_WORKSPACE_EXPERIENCE.md` — current officer-derived access and scoped officer workspace.
+- `docs/COMMANDER_AGENDA_AND_ROLL_CALL.md` — agenda wording, Commander/Adjutant notes-copy boundary, and dated officer roll call.
+- `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for Minutes.
+- `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — implemented immutable approval, different-person attestation, member presentation, and delegated provenance.
 - `docs/DEPLOYMENT.md` — deployment/operator notes.
 - `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` — private JSON + handbook so Grok Bot can operate the app for the signed-in user with that user's current grants.
 - `docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md` — agent parity for dated-agenda items, historical business backfill, roll calls, catalog changes, and destructive boundaries.

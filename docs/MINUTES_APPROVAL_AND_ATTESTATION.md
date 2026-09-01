@@ -63,5 +63,6 @@ ledger so labels, names, and controls remain readable without horizontal scrolli
 - Revision, attestation, and lifecycle-event rows are append-only in Rails and PostgreSQL.
 - Member pages call the record **Attested minutes** and **Awaiting acceptance**. They do
   not say accepted, final, or official.
-- Existing draft PDFs remain visibly draft. Finalized PDFs and acceptance belong to the
-  later lifecycle slices.
+- Draft PDFs remain visibly draft. Approved PDFs render the immutable revision as awaiting
+  attestation; attested PDFs render that same revision as awaiting acceptance. Accepted and
+  amended PDFs belong to later lifecycle slices.

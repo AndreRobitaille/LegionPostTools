@@ -81,7 +81,7 @@ class AgentHandbook
         "Resolve movers and seconders from GET /api/people, or mark them unidentified. Set every motion result deliberately; adopted displays as Passed, lost as Did not pass, and not_recorded remains a reviewer warning rather than a final result.",
         "Review the complete attendance sheet. Do not infer attendance from who spoke, who edited, or who appears in a motion.",
         "Put out-of-order remarks under the agenda item where they belong. Place unrelated Post discussion under Good of the Legion, or link it to an existing Endeavor only after the human confirms that identity.",
-        "Fetch the complete minutes and draft PDF after edits. Report unresolved facts. Approve or attest only when the human explicitly requests that exact next act; never accept, amend, or claim an unaccepted revision is official."
+        "Fetch the complete minutes and current minutes PDF after edits. Report unresolved facts. Approve or attest only when the human explicitly requests that exact next act; never accept, amend, or claim an unaccepted revision is official."
       ]
     }
   ].freeze
@@ -258,7 +258,7 @@ class AgentHandbook
       summary: "Update meeting details. A draft agenda receives heading and place changes. Reopen a locked agenda before changing those fields; remove a draft agenda before changing body or type.",
       example: "PATCH /api/meetings/:id\n{\"starts_at\":\"2026-09-08T19:30:00-05:00\",\"location_name\":\"Legion Hall\",\"lock_version\":0}" },
     { name: "show_user_account", method: "GET", path: "/api/people/:person_id/account", capability: "manage_settings", group: :common,
-      summary: "Inspect one person's login-account state, roster-control state, and current grants without exposing credentials.",
+      summary: "Inspect one person's login-account state, roster-control state, manual grants, current position-provided capability sources, and effective capabilities without exposing credentials. The legacy capabilities field contains manual grants.",
       example: "GET /api/people/:person_id/account" },
     { name: "enable_user_account", method: "POST", path: "/api/people/:person_id/account", capability: "manage_settings", group: :common,
       summary: "Create or enable a login account for the exact person. email_address may be omitted when the roster has one. This does not grant a Post office or app capability.",
@@ -281,8 +281,8 @@ class AgentHandbook
     { name: "update_minutes_heading", method: "PATCH", path: "/api/meetings/:meeting_id/minutes", capability: "manage_minutes", group: :common,
       summary: "Edit draft minutes title or saved place. Send lock_version from current minutes detail.",
       example: "PATCH /api/meetings/:meeting_id/minutes\n{\"title\":\"Regular Membership Meeting\",\"location_name\":\"Legion Hall\",\"lock_version\":0}" },
-    { name: "print_draft_minutes", method: "GET", path: "/api/meetings/:meeting_id/minutes/print", any_capabilities: %w[manage_minutes approve_minutes attest_minutes view_internal_records], group: :common,
-      summary: "Return the print-ready draft-minutes PDF. It remains a draft and does not constitute approval, attestation, or acceptance.",
+    { name: "print_minutes_pdf", method: "GET", path: "/api/meetings/:meeting_id/minutes/print", any_capabilities: %w[manage_minutes approve_minutes attest_minutes view_internal_records], group: :common,
+      summary: "Return the lifecycle-aware minutes PDF. Draft PDFs remain proofs; approved and attested PDFs render the immutable approved revision with the record's current authority label. Acceptance is not implemented.",
       example: "GET /api/meetings/:meeting_id/minutes/print" },
     { name: "create_minutes_section", method: "POST", path: "/api/meetings/:meeting_id/minutes/sections", capability: "manage_minutes", group: :common,
       summary: "Append a section to draft minutes.",
@@ -473,7 +473,7 @@ class AgentHandbook
         name: @user.person.full_name,
         email: @user.email_address,
         roles: @user.person.active_role_labels,
-        capabilities: granted_capabilities,
+        capabilities: effective_capabilities,
         people_access: people_access
       },
       authentication: authentication_mode,
@@ -503,7 +503,7 @@ class AgentHandbook
     lines << "You are signed in as **#{@user.person.full_name}** (#{@user.email_address}) on **#{@organization.name}**#{locality_clause}."
     lines << "Current post role(s): #{current_roles.join(", ").presence || "member (no assigned office)"}."
     lines << "Timezone for dates and times: **#{@organization.timezone}**."
-    lines << "App grants on this account: #{granted_capabilities.join(", ").presence || "(none beyond signed-in member read)"}."
+    lines << "Effective app capabilities: #{effective_capabilities.join(", ").presence || "(none beyond signed-in member read)"}."
     lines << "People access: **#{people_access == "full_membership" ? "full membership and renewal information" : "Post member directory"}**."
     lines << ""
     lines << "## How to call this API"
@@ -519,7 +519,7 @@ class AgentHandbook
     lines << "- Datetimes: ISO 8601 in #{@organization.timezone}."
     lines << "- Rich text: agenda `body` and `commander_notes` writes accept sanitized HTML fragments. Use `<p>` for paragraphs and `<ul><li>...</li></ul>` for bullet lists. Plain newlines and literal `•` characters are not converted to HTML structure and may display inline. Reads return plain text in `wording` and `commander_notes`, so omit those write fields when changing unrelated attributes."
     lines << "- The people directory supports `q` for name filtering. Other lists do not provide fuzzy search; list, read titles, and pick an id."
-    lines << "- Agenda and minutes creates stay **draft**. Approve or publish an agenda only when the human explicitly asked. Official minutes actions are unavailable through this API."
+    lines << "- Agenda and minutes creates stay **draft**. Approve or publish an agenda, or approve or attest minutes, only when the human explicitly asked for that exact act. Minutes acceptance, amendments, and reopening are not implemented."
     lines << ""
     lines << "## Domain"
     DOMAIN.each do |entry|
@@ -590,7 +590,7 @@ class AgentHandbook
     @organization.locality.present? ? " (#{@organization.locality})" : ""
   end
 
-  def granted_capabilities
+  def effective_capabilities
     PermissionGrant::CAPABILITIES.select { |capability| @user.can?(capability) }
   end
 

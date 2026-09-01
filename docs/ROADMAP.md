@@ -11,11 +11,12 @@ This roadmap records current direction. It is expected to evolve as Post 165 use
 - People, users, positions, permissions, organizations, and meeting bodies.
 - Passwordless authentication (complete, end-to-end): magic-link email sign-in; passkey
   WebAuthn **registration and sign-in** wired in the browser (feature-detected, with graceful
-  fallback to the email link); a first-login "add a passkey" invitation card; and a
-  Profile page to name, rename, and remove passkeys. Dev email is viewable via
+  fallback to the email link); an optional dashboard passkey invitation kept secondary to
+  current Post business; and a Profile page to name, rename, and remove passkeys. Dev email is viewable via
   `letter_opener_web`; production email runs behind a replaceable delivery boundary (Loops.so).
   See `docs/superpowers/specs/2026-07-11-authentication-flow-design.md`.
-- Compact authenticated app shell (header) + minimal authenticated dashboard.
+- Compact authenticated app shell (header) + meeting-centered dashboard showing the next
+  and most recent Meeting.
 - Visual design system — "The 1919" Art Deco direction with palette, typography, component
   vocabulary, and a readability hard rule (`docs/superpowers/specs/2026-07-11-visual-design-system-design.md`).
 - Styled sign-in and magic-link confirmation screens on a dedicated entry layout, using the
@@ -102,11 +103,12 @@ Completed before beginning the minutes lifecycle:
 - Active-state, permission, keyboard, desktop, and phone-width verification.
 - See `docs/AGENDA_PRESENTATION.md`.
 
-## Completed: Commander Working Copy and Officer Roll Call
+## Completed: Commander and Adjutant Notes Copy and Officer Roll Call
 
 - Independent controls for wording shown on member agendas and carried into draft minutes.
 - Private rich-text Commander scripts copied through catalog, template, and dated snapshots.
-- Separate member and Commander print documents with no private-content leakage.
+- Separate member and Commander/Adjutant notes print documents with no private-content
+  leakage. Only a current configured Commander or Adjutant may open the notes copy.
 - Meeting-date officer roll-call snapshots with required-office vacancies and deliberate
   draft refresh.
 - Compact Present, Absent, and Excused worksheet treatment for desktop, phone, and print.
@@ -167,10 +169,11 @@ See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`,
 `docs/superpowers/plans/2026-08-22-officer-agent-operability.md`, and
 `docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md`.
 
-Draft minutes, their print-ready PDF, transcript review, AI runs, background-job status,
-and account controls are now in the generated handbook. Official minutes actions and
-distribution remain future work. MCP still waits until connector-style onboarding is
-worth another protocol surface.
+Structured minutes, lifecycle-aware PDFs, transcript review, AI runs, background-job
+status, account controls, exact approval, and exact attestation are now in the generated
+handbook. Member distribution begins at attestation. Acceptance, amendments, reopen, and
+their later official-document states remain future work. MCP still waits until
+connector-style onboarding is worth another protocol surface.
 
 ## Completed: Agent Sign-in and Access
 
@@ -221,8 +224,9 @@ honestly.
   Meeting Body/organization venue as editable defaults and snapshot the submitted values;
   do not introduce a reusable Places subsystem.
 - Rebuild member Meetings around occurrences: a prominent next meeting, other upcoming
-  meetings, and a reverse-chronological record of past meetings. Every row opens a Meeting
-  page, so “Agenda not published yet” remains useful rather than becoming a dead end.
+  meetings, and a reverse-chronological record of past meetings. Dashboard and index rows
+  open the best member-visible document directly, or present a plain noninteractive
+  availability message. The Meeting detail page remains available for context and deep links.
 - Show the best available record prominently: no published agenda, published agenda,
   attested minutes awaiting acceptance, or accepted official minutes. When minutes become
   primary, retain the published agenda as quieter historical evidence.
@@ -279,7 +283,8 @@ normal Adjutant experience.
 - Expose the proven workflow through the private API so a bot or agent can perform ordinary
   `manage_minutes` work on the officer's behalf: attach and explicitly read restricted
   transcripts, create and edit the structured draft, review AI suggestions and attendance,
-  resolve roster identities, inspect durable runs, and retrieve the draft PDF. Keep AI
+  resolve roster identities, inspect durable runs, and retrieve the current lifecycle-aware
+  minutes PDF. Keep AI
   transmission/retry and destructive/account-control changes under **Only when asked**.
 - Preserve the authority boundary: approval and attestation require their explicit
   capabilities and exact record digest. The API may execute them on the human's direct

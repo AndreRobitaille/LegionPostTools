@@ -65,6 +65,8 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     get "/api/meetings/#{@meeting.id}/minutes", as: :json
     assert_response :success
     assert_equal minutes.id, response.parsed_body.dig("minutes", "id")
+    assert_equal "/api/meetings/#{@meeting.id}/minutes/print", response.parsed_body.dig("minutes", "pdf_path")
+    assert_equal response.parsed_body.dig("minutes", "pdf_path"), response.parsed_body.dig("minutes", "draft_pdf_path")
 
     get "/api/meetings/#{@meeting.id}/transcript", params: { include_content: true }, as: :json
     assert_response :success

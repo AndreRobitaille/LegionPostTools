@@ -1,11 +1,12 @@
 # Structured Minutes Lifecycle
 
-**Implementation status (August 31, 2026):** Slices 2 and the approval/attestation portion
+**Implementation status (September 1, 2026):** Slices 2 and the approval/attestation portion
 of Slice 3 are complete. Restricted transcript drafting, human review, the Jobs ledger,
-the draft PDF, immutable approved revisions, different-person Adjutant attestation,
+draft/approved/attested PDFs, immutable approved revisions, different-person Adjutant
+attestation,
 member-visible minutes awaiting acceptance, signed-in confirmation, and direct delegated
-API/handbook parity are implemented. Reopen, acceptance, amendments, and finalized
-official PDFs remain design requirements, not shipped behavior.
+API/handbook parity are implemented. Reopen, acceptance, amendments, and their accepted or
+amended official PDFs remain design requirements, not shipped behavior.
 
 ## Purpose
 
@@ -111,7 +112,8 @@ does not infer acceptance merely because time passed or another Meeting occurred
 - approval, Adjutant attestation, reopen, acceptance, and amendment provenance;
 - immutable approved revisions and accepted official records;
 - member Meeting-page and document progression;
-- the shared print-first document shell, draft PDF, and later immutable official PDFs; and
+- the shared print-first document shell, lifecycle-aware minutes PDFs, and later accepted
+  and amended official PDFs; and
 - private API/handbook parity for ordinary delegated draft and administrative work.
 
 ### Deliberately excluded from the first AI-assisted slice
@@ -235,7 +237,7 @@ When seeded from an agenda item:
   Endeavor id;
 - copy rich-text wording into `agenda_body` only when `show_wording_in_minutes` is true;
 - leave `body` for facts recorded during or after the Meeting;
-- never copy Commander-only cues;
+- never copy private Commander cues;
 - never make later agenda or Endeavor edits rewrite the minutes item; and
 - never infer a missing Endeavor link from title, transcript similarity, catalog entry,
   behavior, section, or Meeting Body.
@@ -1019,8 +1021,8 @@ With `manage_minutes`, an officer's delegated agent can list/show working record
 minutes for an exact `meeting_id`; edit draft heading, sections, items, attendance, and
 outcomes; reorder exact child sets; review AI suggestions; and inspect durable runs and
 queue health. `view_internal_records` permits corresponding read-only minutes, transcript,
-and draft-PDF access. Preserve optimistic locking, organization scope, idempotency, and
-`AgentApiExecution` provenance.
+and lifecycle-aware PDF access. Preserve optimistic locking, organization scope,
+idempotency, and `AgentApiExecution` provenance.
 
 An authorized delegated agent may initiate an OpenAI first-pass run only on direct human
 instruction. That action and retry are separated under **Only when asked** because they
@@ -1180,15 +1182,16 @@ before each minutes slice is considered complete.
    draft-run provenance, and source-bound suggestion staging.
 6. **Complete:** Complete the historical Meeting + agenda + transcript AI-first drafting and correction
    case, including provider failure/manual fallback.
-7. Add immutable revisions, append-only lifecycle events, and the record/action/version-
+7. **Complete:** Add immutable revisions, append-only lifecycle events, and the record/action/version-
    bound confirmation boundary.
-8. Add Commander approval, distinct-person Adjutant attestation, member visibility, and
-   transparent reopen behavior.
+8. **Approval/attestation complete:** Add Commander approval, distinct-person Adjutant
+   attestation, and member visibility. Transparent reopen remains pending.
 9. Add later same-body acceptance, correction amendments, and database-layer immutability.
-10. **Partly complete:** Add shared print-shell integration and verified draft PDF. Member,
-    attested, accepted, and amended documents wait for the corresponding lifecycle states.
-11. **Draft portion complete:** Add draft API/handbook parity. Add official-action API
-    behavior only through confirmed pending actions with agent provenance.
+10. **Partly complete:** Add shared print-shell integration and verified draft, approved,
+    and attested PDFs. Accepted and amended documents wait for those lifecycle states.
+11. **Approval/attestation complete:** Add draft API/handbook parity plus approval and
+    attestation only through confirmed pending actions with agent provenance. Acceptance,
+    amendments, and reopen remain pending.
 
 ## Deferred Decisions That Do Not Block Slice 2
 

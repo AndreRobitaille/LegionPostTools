@@ -128,6 +128,8 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "backfill_historical_business"
     assert_includes response.body, "endeavor_id"
     assert_includes response.body, "people directory supports `q`"
+    assert_includes response.body, "approve or attest minutes"
+    assert_not_includes response.body, "Official minutes actions are unavailable"
     assert_not_includes response.body, "group chat"
     assert_not_includes response.body, "next Tuesday"
   end
@@ -170,7 +172,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     common = response.parsed_body.fetch("common_actions").index_by { |action| action["name"] }
     assert common.key?("list_meetings")
     assert common.key?("show_working_minutes")
-    assert common.key?("print_draft_minutes")
+    assert common.key?("print_minutes_pdf")
     assert common.key?("read_transcript_content")
     assert_not common.key?("create_working_minutes")
     assert_not common.key?("create_transcript")

@@ -29,13 +29,22 @@ Production uses a primary PostgreSQL database plus database-backed cache and que
 - `User` is login access for a person.
 - `PositionTitle` defines configurable offices or roles.
 - `PositionAssignment` records that a person held a position for a date range.
-- `PermissionGrant` controls application capabilities separately from official Legion office.
+- `PositionCapabilityGrant` lets a configured office supply narrow application capabilities
+  while a dated assignment is current.
+- `PermissionGrant` records manual per-user capabilities for duties that do not arise from
+  a current office.
 
 People can hold multiple positions at once. Position assignments must be historical so old records can show who held an office at that time.
 
 ## Roster-backed administration
 
-National American Legion roster CSV imports populate read-only roster fields on people, keyed by Member ID. Roster data is dated and refreshed by later imports rather than edited locally. Login accounts remain separate: a person may or may not have a user, roster email remains separate from login email, and app permissions are granted to users rather than imported roster rows. Post positions and committee-lead-style roles are assigned to people with effective dates so officer history is preserved.
+National American Legion roster CSV imports populate read-only roster fields on people,
+keyed by Member ID. Roster data is dated and refreshed by later imports rather than edited
+locally. Login accounts remain separate: a person may or may not have a user, and roster
+email remains separate from login email. Effective capabilities may come from explicit
+user grants or configured current position assignments, never from imported roster rows.
+Post positions and committee-lead-style roles are assigned to people with effective dates
+so officer history is preserved.
 
 Administrators can synchronize current Active and Grace roster members to the Post's Loops audience after reviewing exclusions for missing, invalid, or shared roster email addresses. The Loops upsert sends roster identity fields but never sends subscription state, user group, or mailing-list choices, preserving existing opt-outs and audience organization. See `docs/LOOPS_ROSTER_SYNC.md`.
 
@@ -84,8 +93,9 @@ Meeting records are the core product direction.
   Endeavor edits cannot silently rewrite an approved or published agenda.
 - `DatedAgendaItem#endeavor_id` is optional. A structured minutes item may copy that
   identity deliberately when seeded, while preserving its own independent wording.
-- Document-wording visibility and Commander-only cues follow the same catalog-to-template-to-dated
-  snapshot boundary. Member documents never render Commander cues.
+- Document-wording visibility and private Commander cues follow the same
+  catalog-to-template-to-dated snapshot boundary. Member documents never render those
+  cues; only a current configured Commander or Adjutant may open the combined notes PDF.
 - Officer roll call is structured dated-agenda data. It snapshots assignments active on the
   meeting date so later officer changes cannot rewrite a historical working document; recorded
   attendance belongs to the minutes lifecycle.
@@ -97,9 +107,11 @@ Meeting records are the core product direction.
 - `MinutesDraftRun` is the durable authority for each background OpenAI attempt. Suggestions
   are source-linked review records; using, editing, or discarding them never turns AI output
   into an official record. Retry creates a linked attempt and discard preserves history.
-- The working-minutes PDF is an officer-only print artifact generated from the same
-  structured draft. Agenda wording and Recorded minutes remain visually distinct, motions
-  remain structured, and direct Endeavor navigation metadata does not print.
+- The minutes PDF follows the record lifecycle. Draft output is an officer-only proof from
+  mutable working rows; approved and attested output renders the immutable approved
+  revision with a truthful authority label. Agenda wording and Recorded minutes remain
+  visually distinct, motions remain structured, and direct Endeavor navigation metadata
+  does not print.
 
 ## Official Records
 
@@ -133,7 +145,8 @@ The private API is the machine-friendly operating surface for a bot or agent act
 the authenticated person. It mirrors ordinary officer/admin work that exists in the app:
 account access controls; Meeting and agenda operations; Endeavor continuity; restricted
 transcript attachment/read; structured draft-minutes editing; roster-backed motion and
-attendance review; durable AI runs; Jobs status; and draft-PDF retrieval. It uses the same
+attendance review; durable AI runs; Jobs status; and lifecycle-aware minutes-PDF retrieval.
+It uses the same
 current capabilities as HTML, session CSRF or bearer idempotency, organization scoping,
 optimistic locks, and agent-execution provenance. It does not turn print presentation into
 JSON or let today's officer directory silently overwrite a historical snapshot.
