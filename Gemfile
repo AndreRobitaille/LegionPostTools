@@ -41,7 +41,7 @@ gem "image_processing", "~> 2.0"
 gem "ruby-vips", require: false
 
 # Modern Action Text rich-text editor (replaces the default Trix editor)
-gem "lexxy", "~> 0.9.30"
+gem "lexxy", "~> 0.9.31"
 gem "csv"
 gem "webauthn"
 
