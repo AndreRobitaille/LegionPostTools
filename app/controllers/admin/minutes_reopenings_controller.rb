@@ -46,7 +46,7 @@ module Admin
     end
 
     def require_reopening_capability
-      require_capability(@minutes.attested? ? "attest_minutes" : "approve_minutes")
+      require_capability("manage_minutes")
     end
 
     def ensure_reopenable

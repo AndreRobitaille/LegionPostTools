@@ -197,12 +197,11 @@ class MeetingMinutes < ApplicationRecord
       with_lock do
         reload
         prior_status = status
-        capability = prior_status == "attested" ? "attest_minutes" : "approve_minutes"
         require_transition!(
           confirmation:,
           action: "reopen",
           from: %w[approved attested],
-          capability:
+          capability: "manage_minutes"
         )
 
         reason = confirmation.action_payload.fetch("reason", "").strip

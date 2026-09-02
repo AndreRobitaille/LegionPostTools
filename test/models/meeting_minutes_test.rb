@@ -239,7 +239,7 @@ class MeetingMinutesTest < ActiveSupport::TestCase
       position: 1,
       body: "Twelve families received assistance."
     )
-    commander = create_officer!("Casey", "Commander", "approve_minutes", "record_minutes_approval")
+    commander = create_officer!("Casey", "Commander", "manage_minutes", "approve_minutes", "record_minutes_approval")
     adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
     commander_token, = AgentAccessToken.issue!(user: commander, name: "Commander agent", expires_in: 1.day)
     adjutant_token, = AgentAccessToken.issue!(user: adjutant, name: "Adjutant agent", expires_in: 1.day)
@@ -262,7 +262,7 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     minutes.reopen_with_confirmation!(
       confirmation: OfficialActionConfirmation.for_delegated_agent!(
         minutes:,
-        agent_access_token: adjutant_token,
+        agent_access_token: commander_token,
         action: "reopen",
         action_payload: { reason: "Incorporate the correction adopted during membership approval." }
       )

@@ -57,10 +57,10 @@
       <% if current_user.can?("record_minutes_approval") %>
         <%= link_to "Record membership approval", new_admin_meeting_minutes_membership_approval_path(@meeting), class: "btn-confirm" %>
       <% end %>
-      <% if current_user.can?("attest_minutes") %>
+      <% if current_user.can?("manage_minutes") %>
         <%= link_to "Reopen for correction", new_admin_meeting_minutes_reopening_path(@meeting), class: "btn-secondary" %>
       <% end %>
-    <% elsif @minutes.approved? && current_user.can?("approve_minutes") %>
+    <% elsif @minutes.approved? && current_user.can?("manage_minutes") %>
       <%= link_to "Reopen before attestation", new_admin_meeting_minutes_reopening_path(@meeting), class: "btn-secondary" %>
     <% end %>
   </div>

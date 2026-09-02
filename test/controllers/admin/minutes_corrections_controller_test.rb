@@ -23,7 +23,7 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
       title: "September Membership Meeting"
     )
     @minutes = MeetingMinutes.create_from_meeting!(meeting: @minutes_meeting)
-    @commander = create_user("Commander", "approve_minutes", "record_minutes_approval")
+    @commander = create_user("Commander", "manage_minutes", "approve_minutes", "record_minutes_approval")
     @adjutant = create_user("Adjutant", "manage_minutes", "attest_minutes", "record_minutes_approval")
     approve_and_attest!
   end
@@ -54,6 +54,17 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate @minutes.reload, :reopened?
     assert_equal session_record, confirmation.session
     assert_equal "reopened", @minutes.lifecycle_events.last.event_type
+  end
+
+  test "Commander can begin reopening attested minutes without attestation authority" do
+    sign_in_as(@commander)
+
+    get admin_meeting_minutes_path(@minutes_meeting)
+    assert_response :success
+    assert_select "a", text: "Reopen for correction"
+
+    get new_admin_meeting_minutes_reopening_path(@minutes_meeting)
+    assert_response :success
   end
 
   test "Commander can record membership approval of an attested exact revision" do
