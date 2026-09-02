@@ -1,18 +1,17 @@
 # Structured Minutes Lifecycle
 
-**Implementation status (September 1, 2026):** Slices 2 and the approval/attestation portion
-of Slice 3 are complete. Restricted transcript drafting, human review, the Jobs ledger,
-draft/approved/attested PDFs, immutable approved revisions, different-person Adjutant
-attestation,
-member-visible minutes awaiting acceptance, signed-in confirmation, and direct delegated
-API/handbook parity are implemented. Reopen, acceptance, amendments, and their accepted or
-amended official PDFs remain design requirements, not shipped behavior.
+**Implementation status (September 2, 2026):** Restricted transcript drafting, human
+review, the Jobs ledger, lifecycle-aware PDFs, immutable approved revisions,
+different-person Adjutant attestation, audited reopening, member-visible attested minutes,
+and exact membership-approval recording are implemented. Commander approval and Adjutant
+attestation remain website controls distinct from the membership's action. Later
+amendments remain a design requirement, not shipped behavior.
 
 ## Purpose
 
 Minutes are the Post's durable account of what happened at a Meeting. They are not an
 edited agenda, a transcript, an Endeavor update, or a single rich-text page. This design
-defines the structured drafting, human authority, member visibility, acceptance,
+defines the structured drafting, human authority, member visibility, membership approval,
 correction, and immutability rules governing both the implemented draft workflow and the
 remaining official-record lifecycle.
 
@@ -21,13 +20,13 @@ available transcript. The expected Adjutant workflow is AI-assisted: the app ass
 controlled prompt from the Meeting, agenda structure, and transcript; asks the OpenAI API
 for a structured first pass; then gives the Adjutant a source-aware interface for fixing,
 accepting, or discarding what the model attempted. The result still passes through human
-approval and Adjutant attestation, and either records later acceptance or remains honestly
-marked as awaiting acceptance.
+Commander approval and Adjutant attestation, and either records later membership approval
+or remains honestly marked as awaiting membership approval.
 
 This specification governs Slices 2 through 5 of `docs/ROADMAP.md`. The completed Slice 2
 implemented the structured editor and source model first, then the OpenAI-generated first
 pass, print-ready working PDF, Jobs ledger, and delegated draft API. Later slices add the
-official lifecycle, acceptance and amendments, finalized document delivery, and any
+official lifecycle, membership approval and amendments, finalized document delivery, and any
 human-confirmed official-action API.
 
 ## Source and Authority Boundary
@@ -39,19 +38,19 @@ minutes are read and then declare that the minutes stand approved as corrected. 
 national guidance, not proof that every Post uses one identical procedure.
 
 LegionPostTools therefore enforces the authenticity of the record, but it does not
-hard-code a motion as the only way minutes can be accepted. The applicable Post and
+hard-code a motion as the only way minutes can be approved. The applicable Post and
 Department governing documents and the act that actually occurred control the procedure.
-The application records one of these factual dispositions:
+The application records one of these factual membership dispositions:
 
-- accepted as presented;
-- accepted as corrected;
-- accepted by a recorded motion; or
+- approved as presented;
+- approved as corrected;
+- approved by a recorded motion; or
 - another explicitly described procedure.
 
-Every acceptance still belongs to a real later Meeting of the same Meeting Body. The
+Every membership approval still belongs to a real later Meeting of the same Meeting Body. The
 record names the later Meeting, the disposition, the person who recorded it, when it was
 recorded, and the source minutes item or other explanation when available. The software
-does not infer acceptance merely because time passed or another Meeting occurred.
+does not infer membership approval merely because time passed or another Meeting occurred.
 
 ## Product Decisions
 
@@ -79,16 +78,19 @@ does not infer acceptance merely because time passed or another Meeting occurred
   ranges or agenda sources. Missing facts remain missing.
 - Preserve exact approved versions in immutable `MinutesRevision` records. Member and
   official document routes render a revision, never mutable draft rows.
-- Keep the lifecycle `draft -> approved -> attested -> accepted`. “Review” is work within
+- Keep the lifecycle `draft -> approved -> attested -> membership_approved`. “Review” is work within
   draft, not another status.
 - Approval and attestation are separate human acts by different people. Explicit
   capabilities authorize the acts; position-title strings do not.
-- Attestation makes an approved revision member-visible as **Awaiting acceptance**.
-- Acceptance points to the already-attested revision. Content cannot change between
-  attestation and acceptance.
+- The Commander has the Adjutant's ordinary minutes-management capabilities and may
+  draft, edit, reopen, and record membership approval. The Commander does not inherit
+  `attest_minutes`; attestation remains a separate-person Adjutant act.
+- Attestation makes an approved revision member-visible as **Awaiting membership approval**.
+- Membership approval points to an exact attested revision. Content cannot change after
+  that revision is recorded as membership-approved.
 - Reopening an approved or attested record creates an append-only audit event and returns
   the working record to draft. It never deletes the superseded revision or attestation.
-- Accepted minutes never reopen. Corrections are immutable linked amendments adopted or
+- Membership-approved minutes never reopen. Corrections are immutable linked amendments adopted or
   recorded at later Meetings.
 - Signed-in official actions require a fresh, one-use confirmation bound to the exact
   record, action, revision or lock version, and content digest. Bearer tokens carry their
@@ -109,10 +111,10 @@ does not infer acceptance merely because time passed or another Meeting occurred
 - transcript paste and narrowly constrained plain-text upload;
 - an OpenAI-generated structured first pass with prompt/run provenance, source-bound
   suggestions, and explicit Adjutant review;
-- approval, Adjutant attestation, reopen, acceptance, and amendment provenance;
-- immutable approved revisions and accepted official records;
+- Commander approval, Adjutant attestation, reopen, membership-approval, and amendment provenance;
+- immutable approved revisions and membership-approved official records;
 - member Meeting-page and document progression;
-- the shared print-first document shell, lifecycle-aware minutes PDFs, and later accepted
+- the shared print-first document shell, lifecycle-aware minutes PDFs, and later membership-approved
   and amended official PDFs; and
 - private API/handbook parity for ordinary delegated draft and administrative work.
 
@@ -134,14 +136,14 @@ does not infer acceptance merely because time passed or another Meeting occurred
 - **Meeting** — the occurrence: when and where a Meeting Body assembled.
 - **Agenda** — the ordered plan distributed before the Meeting.
 - **Working minutes** — editable structured rows used by authorized officers.
-- **Approved revision** — an immutable snapshot approved for Adjutant review. It remains
-  officer-only until attested.
+- **Approved revision** — an immutable snapshot the Commander approved in the website for
+  Adjutant review. It remains officer-only until attested and is not membership approval.
 - **Attestation** — the Adjutant's fresh human confirmation that an exact approved revision
   is the minutes record being presented to members. It is signature-equivalent in the app,
   but is displayed as an attestation rather than a simulated handwritten signature.
-- **Acceptance** — the later same-body Meeting's factual act accepting the attested
-  revision, as presented or with explicit corrections.
-- **Amendment** — an immutable later correction linked to the accepted revision. It adds
+- **Membership approval** — the later same-body Meeting's factual act approving the
+  minutes, as presented or as corrected.
+- **Amendment** — an immutable later correction linked to the membership-approved revision. It adds
   authority; it never overwrites the original text.
 - **Transcript** — restricted drafting evidence, not the official record.
 - **Revision** — an immutable structured payload and digest created by human approval.
@@ -158,12 +160,12 @@ Meeting
     |       `-- many MinutesOutcomes
     |-- many MinutesAttendanceEntries
     |-- many immutable MinutesRevisions
-    |   `-- lifecycle events / current attestation / acceptance
-    `-- many immutable MinutesAmendments after acceptance
+    |   `-- lifecycle events / current attestation / membership approval
+    `-- many immutable MinutesAmendments after membership approval
 
 Endeavor <---- optional direct link ---- MinutesItem
 DatedAgendaItem <---- optional source ---- MinutesItem
-Later same-body Meeting <---- evidence ---- MinutesAcceptance / MinutesAmendment
+Later same-body Meeting <---- evidence ---- MinutesMembershipApproval / MinutesAmendment
 ```
 
 All relationships remain inside one `Organization`. A Meeting has at most one agenda, one
@@ -181,7 +183,7 @@ Required fields and relationships:
 - `organization_id` and unique `meeting_id`;
 - snapshot `meeting_body_id` and optional `meeting_type_id`;
 - snapshot `title`, `starts_at`, `location_name`, and `location_address`;
-- `status`, constrained to `draft`, `approved`, `attested`, or `accepted`;
+- `status`, constrained to `draft`, `approved`, `attested`, or `membership_approved`;
 - optional `current_revision_id`, pointing only to one of its own revisions;
 - optimistic `lock_version`; and
 - timestamps.
@@ -193,7 +195,7 @@ does not automatically follow later Meeting or agenda changes. Once a revision i
 approved, the revision owns the heading that readers will see.
 
 The `Meeting` cannot be deleted once minutes exist. Its historically significant heading,
-time, body, and venue become immutable when the minutes are accepted. Later corrections
+time, body, and venue become immutable when the minutes are membership-approved. Later corrections
 belong to an amendment or a later Meeting record.
 
 An accidentally created minutes draft may be deleted only while it has never produced a
@@ -352,7 +354,7 @@ transcript endpoint with `include_content=true`.
 
 At creation, the officer must choose a retention policy:
 
-- **Delete after acceptance** is the recommended default. Acceptance schedules content
+- **Delete after membership approval** is the recommended default. Membership approval schedules content
   deletion after a 30-day recovery window. The digest and non-content audit metadata
   remain.
 - **Retain as restricted source** keeps the source under the same restricted access until
@@ -360,7 +362,7 @@ At creation, the officer must choose a retention policy:
 
 An authorized officer may deliberately purge source content earlier with a destructive
 confirmation and audit event. Purging source never deletes or changes a minutes draft,
-revision, acceptance, amendment, or PDF. This is record-source retention, not an assertion
+revision, membership approval, amendment, or PDF. This is record-source retention, not an assertion
 about any external audio file from which the transcript came.
 
 Before the first OpenAI request, the screen plainly states that transcript content will be
@@ -430,7 +432,7 @@ transcript content nor Commander cues in the payload.
 Every state transition creates an append-only event with:
 
 - minutes and optional revision ids;
-- `event_type`: `approved`, `attested`, `reopened`, or `accepted`;
+- `event_type`: `approved`, `attested`, `reopened`, or `membership_approved`;
 - prior and resulting status;
 - actor user id plus person and office snapshots;
 - occurrence time;
@@ -447,11 +449,11 @@ the events and revision preserve history.
                        reopen + reason
                   +------------------------+
                   |                        |
-draft --approve--> approved --attest--> attested --accept--> accepted
+draft --approve--> approved --attest--> attested --membership approval--> membership_approved
   ^                    |                       |
   +------ reopen ------+---------- reopen ----+
 
-accepted has no outbound transition
+membership_approved has no outbound transition
 ```
 
 ### Draft
@@ -474,8 +476,9 @@ The transaction rechecks capability, record status, lock version, and content di
 creates the immutable revision and approval event; sets `status=approved`; and points
 `current_revision_id` to it. Working content becomes read-only.
 
-Approval is officer-only and is not publication, acceptance, or proof that the Meeting
-Body acted. UI copy says **Approved for attestation**, not merely “Approved.”
+Commander approval is officer-only and is not publication, membership approval, or proof
+that the Meeting Body acted. UI copy says **Commander-approved for attestation**, not
+merely “Approved.”
 
 ### Attestation
 
@@ -493,9 +496,9 @@ The member document now becomes available and shows:
 - **Attested minutes**;
 - the attester's snapshotted name and office label;
 - the attestation date and local time; and
-- **Awaiting acceptance at a later meeting**.
+- **Awaiting membership approval at a later meeting**.
 
-The interface must not call these accepted, final, or official minutes yet.
+The interface must not call these membership-approved or official minutes yet.
 
 ### Reopen
 
@@ -515,42 +518,47 @@ content. A quiet link to the superseded attested revision remains available so p
 published history is not erased. The next approval creates revision N+1 and the full
 approval/attestation sequence repeats.
 
-### Acceptance
+### Membership approval
 
-Rename the unused capability `record_acceptance_motions` to
-`record_minutes_acceptance`, migrating any existing literal grants. The action records
-acceptance; it does not assume a motion was the procedure.
+Rename the legacy capability `record_acceptance_motions` to `record_minutes_approval`,
+migrating any existing literal grants. The action records the
+membership's approval; it does not assume a motion was the procedure.
 
-Acceptance requires:
+Membership approval requires:
 
 - current `attested` status and exact attested revision;
 - a later Meeting in the same Organization and Meeting Body;
 - later means a strictly later `starts_at`, not merely a higher database id;
 - an explicit disposition;
-- `record_minutes_acceptance` and exact human confirmation;
+- `record_minutes_approval` and exact human confirmation;
 - optional source `MinutesItem` from the accepting Meeting's minutes; and
 - a required factual note when no source item exists, supporting historical backfill.
 
-Use a unique `MinutesAcceptance` record with the accepted minutes/revision, accepting
-Meeting, optional source item, disposition, factual note, recorder, actor snapshots,
-recorded time, and confirmation. The acceptance and lifecycle event are created in one
+Use a unique `MinutesMembershipApproval` record with the minutes/revision, approving
+Meeting, optional source item, disposition, factual note, recorder snapshots,
+recorded time, and confirmation. The membership approval and lifecycle event are created in one
 transaction and are append-only.
 
-For `accepted_as_corrected`, create one or more amendment records in the same confirmed
-transaction. Never edit the attested revision before accepting it. For
-`accepted_by_motion`, the optional source outcome can preserve the mover, seconder, and
-disposition that were actually recorded; the app does not manufacture those facts.
+For `approved_as_corrected`, the correction belongs directly in these minutes because it
+was adopted during their original approval. Reopen the pre-approval attested revision,
+apply the exact correction to the working record, and repeat the website's Commander
+approval and Adjutant attestation for the corrected revision. The membership approval may
+then be recorded against that corrected revision without implying a second membership
+vote. Do not create an amendment. For `approved_by_motion`, the optional source outcome
+can preserve the mover, seconder, and disposition that were actually recorded; the app
+does not manufacture those facts.
 
-Accepted member copy shows **Official minutes**, the accepting Meeting and disposition,
-the attestation, and every amendment. The original revision remains visually primary as
-the historical text; corrections appear immediately with it, not hidden in an audit page.
+Membership-approved copy shows **Official minutes**, the approving Meeting and
+disposition, and the attestation of the exact approved revision. Superseded pre-approval
+revisions remain available in the officer audit history but are not presented as the
+authoritative minutes.
 
-### Amendments after acceptance
+### Amendments after membership approval
 
-An amendment requires an already accepted revision, a later same-body Meeting,
-`record_minutes_acceptance`, and one-use human confirmation. `MinutesAmendment` stores:
+An amendment requires an already membership-approved revision, a later same-body Meeting,
+`record_minutes_approval`, and one-use human confirmation. `MinutesAmendment` stores:
 
-- accepted minutes and revision ids;
+- membership-approved minutes and revision ids;
 - a stable target `record_key` or whole-document target;
 - adopting/recording Meeting and optional source MinutesItem;
 - required concise title and exact correction text;
@@ -571,7 +579,7 @@ Each signed-in confirmation is bound to:
 
 - one user and current session;
 - one record type/id;
-- one action (`approve`, `attest`, `reopen`, `accept`, or `amend`);
+- one action (`approve`, `attest`, `reopen`, `record_membership_approval`, or later `amend`);
 - exact lock version and content/revision digest;
 - optional agent access token/execution request context;
 - creation and short expiry times;
@@ -585,7 +593,7 @@ official mutation. Capability, user status, session, record version, digest, and
 state are rechecked at consumption. A stale confirmation fails safely and changes nothing.
 
 No administrator implication grants `approve_minutes`, `attest_minutes`, or
-`record_minutes_acceptance`. A bearer token exercises only its human owner's explicit
+`record_minutes_approval`. A bearer token exercises only its human owner's explicit
 capability, records the token in the official-action confirmation, and relies on the API's
 persisted idempotency execution. Written confirmation received outside the app may be
 recorded only with both the named actor and the separate recorder preserved; it must not
@@ -594,7 +602,8 @@ masquerade as an in-app click.
 The lifecycle exposes approval and attestation through signed-in HTML and direct bearer
 API calls. API execution requires the matching human capability, an explicit request for
 the exact act, an `Idempotency-Key`, a current record digest, and `AgentApiExecution`
-provenance. Acceptance, amendments, and reopen remain unavailable.
+provenance. Reopening and membership-approval recording currently use the signed-in
+website; amendments remain unavailable.
 
 ## Officer Workflow
 
@@ -607,8 +616,8 @@ The existing Meeting workspace gains a Minutes document row:
 - past Meeting without transcript: **Add transcript** with secondary **Write manually**;
 - draft: **Continue draft** with last-edited context;
 - approved: **Awaiting Adjutant attestation**;
-- attested: **Visible to members · Awaiting acceptance**;
-- accepted: **Official minutes**; and
+- attested: **Visible to members · Awaiting membership approval**;
+- membership-approved: **Official minutes**; and
 - reopened after attestation: **Under revision** with preserved prior revision.
 
 Starting minutes uses the agenda automatically when one exists and starts from the Meeting
@@ -699,7 +708,7 @@ MINUTES · Membership Meeting · 07 JUL 2026
 | ...                                        |  | 1 Correct first pass     |
 | [Add business the model missed]            |  | 2 Commander approval     |
 +--------------------------------------------+  | 3 Adjutant attestation   |
-                                                | 4 Later acceptance       |
+                                                | 4 Membership approval   |
                                                 +--------------------------+
 ```
 
@@ -760,7 +769,7 @@ do not invent or require facts that may genuinely be unavailable:
 Only actual validation failures block approval. Warnings require deliberate acknowledgement
 on the approval confirmation page rather than forcing false data.
 
-Approval, attestation, reopen, acceptance, and amendment each use a dedicated consequence
+Commander approval, Adjutant attestation, reopen, membership approval, and amendment each use a dedicated consequence
 page. Do not place all lifecycle buttons beside one another or rely on a generic browser
 confirmation dialog.
 
@@ -771,13 +780,13 @@ The Meeting page continues to show the best available record:
 | State | Primary member action | Secondary context |
 | --- | --- | --- |
 | No attested minutes | Published agenda when available | Minutes not published yet |
-| Attested | Read attested minutes | Awaiting acceptance; view agenda |
+| Attested | Read attested minutes | Awaiting membership approval; view agenda |
 | Attested revision reopened | Minutes are being revised | Read prior attested revision; view agenda |
-| Accepted | Read official minutes | Acceptance details; view agenda |
-| Accepted with amendments | Read official minutes with corrections | View original text and agenda |
+| Membership-approved | Read official minutes | Membership-approval details; view agenda |
+| Membership-approved with amendments | Read official minutes with corrections | View original text and agenda |
 
 Draft and approved revisions remain officer-only. Direct URLs enforce the same boundary.
-An attested or accepted document is available to every signed-in member; no separate
+An attested or membership-approved document is available to every signed-in member; no separate
 minutes publication button exists.
 
 The member document renders revision content, not live draft rows. Its authority block
@@ -785,10 +794,10 @@ states exact facts:
 
 - **Approved for attestation by** name and date;
 - **Attested by** name, office snapshot, and date;
-- **Awaiting acceptance** or the accepting Meeting/disposition; and
+- **Awaiting membership approval** or the approving Meeting/disposition; and
 - amendments, when any, with their later Meeting evidence.
 
-Avoid the ambiguous standalone word **Final**. “Official” appears only after acceptance.
+Avoid the ambiguous standalone word **Final**. “Official” appears only after membership approval.
 
 ## Visual Direction: The 1919 Record of Proceedings
 
@@ -817,7 +826,7 @@ theater.
 
 The minutes family's one memorable element is the **attestation folio**: a restrained
 gold-ruled block at the end of the document that accumulates exact human acts. In draft it
-is a quiet preview of what remains. In attested and accepted revisions it names the people,
+is a quiet preview of what remains. In attested and membership-approved revisions it names the people,
 times, revision digest abbreviation, and later Meeting evidence.
 
 ```text
@@ -825,7 +834,7 @@ times, revision digest abbreviation, and later Meeting evidence.
 RECORD OF AUTHORITY
 Approved for attestation  Pat Example · 12 Jul 2026
 Attested                  Alex Example, Adjutant · 13 Jul 2026
-Acceptance                Awaiting a later Membership Meeting
+Membership approval       Awaiting a later Membership Meeting
 Revision                  2 · 7f4c91d2…
 ------------------------------------------------------------------
 ```
@@ -876,12 +885,12 @@ American Legion Meeting and preserves readability for older members.
 
 - Draft minutes never appear as settled Endeavor history.
 - Attested appearances may appear only in authorized continuity views and must say
-  **Awaiting acceptance**.
-- Accepted revision items and amendments are authoritative Meeting history.
+  **Awaiting membership approval**.
+- Membership-approved revision items and amendments are authoritative Meeting history.
 - Minutes seeding copies an existing direct `endeavor_id`; it never derives identity.
 - A human may add, remove, or correct an Endeavor link while draft.
-- The revision freezes the link. Reopening may create a new superseding revision; an
-  accepted link changes only through an amendment or later Meeting record.
+- The revision freezes the link. Reopening may create a new superseding revision; a
+  membership-approved link changes only through an amendment or later Meeting record.
 - Recording a motion, decision, or report never creates an `EndeavorUpdate` or changes the
   Endeavor's title, priority, lifecycle, usual body, or ownership.
 - More than one minutes item may concern the same Endeavor when the record contains
@@ -976,8 +985,8 @@ split, complete, reopen, rename, prioritize, or reassign an Endeavor.
 
 The model may propose attendance, mover, seconder, vote, and outcome values only when it
 also identifies direct supporting transcript evidence. Those proposals remain visibly
-unreviewed; unsupported values must be `not_recorded`. The model never proposes approval,
-attestation, acceptance, amendment, or confirmation.
+unreviewed; unsupported values must be `not_recorded`. The model never proposes Commander
+approval, Adjutant attestation, membership approval, amendment, or confirmation.
 
 The first pass uses medium text verbosity and an explicit absent-member usefulness test.
 It preserves directly supported material context, significant viewpoints or disagreement,
@@ -1036,7 +1045,7 @@ handbook responses. Transcript purge is not yet an API action.
 
 ### Official actions
 
-Do not expose approve, attest, reopen, accept, or amend as ordinary bearer mutations. A
+Do not expose approve, attest, reopen, membership approval, or amend as ordinary bearer mutations. A
 later agent flow may:
 
 1. prepare an exact action request and receive a human confirmation URL;
@@ -1051,26 +1060,26 @@ agent cannot confirm them.
 ## Database and Immutability Rules
 
 Use foreign keys, check constraints, and unique indexes for status enums, one-to-one
-Meeting cardinality, section/item positions, revision numbers, one acceptance per minutes
+Meeting cardinality, section/item positions, revision numbers, one membership approval per minutes
 record, and same-parent relationships where PostgreSQL can enforce them directly.
 
 Application validations enforce same-Organization and same-Meeting-Body boundaries, but
-accepted authority cannot depend only on controller paths:
+membership-approved authority cannot depend only on controller paths:
 
 - PostgreSQL rejects update/delete of `minutes_revisions`, lifecycle events,
-  acceptances, and amendments;
+  membership approvals, and amendments;
 - PostgreSQL rejects content update/delete of working minutes, sections, items,
   attendance, and outcomes whenever the parent status is not `draft`;
-- PostgreSQL rejects every transition away from `accepted` and deletion of a minutes
+- PostgreSQL rejects every transition away from `membership_approved` and deletion of a minutes
   record that has any revision or lifecycle event;
 - model validations and destroy callbacks provide clear user-facing errors for approved,
-  attested, and accepted states;
+  attested, and membership-approved states;
 - member/document rendering always uses the immutable revision payload; and
 - no `dependent: :destroy` path may erase official or superseded history.
 
 Action Text remains appropriate for draft item narrative. The revision payload freezes
-sanitized rich-text HTML at approval, so an accepted official document is not dependent on
-later mutable Action Text rows. Accepted-parent database guards still protect the working
+sanitized rich-text HTML at approval, so a membership-approved official document is not dependent on
+later mutable Action Text rows. Membership-approved-parent database guards still protect the working
 rows and direct Endeavor links.
 
 ## Migration and Rollout
@@ -1088,9 +1097,9 @@ Before production transcript use:
 - document backup implications: a deleted transcript may remain in older infrastructure
   backups according to the operator's backup retention, even after application purge.
 
-Seed no fake minutes, acceptance, or authority events. Existing capability names are
-already present; migrate `record_acceptance_motions` to `record_minutes_acceptance` before
-the first grant is used by this workflow.
+Seed no fake minutes, membership approval, or authority events. Migrate the legacy
+`record_acceptance_motions` capability to `record_minutes_approval` before the first grant
+is used by this workflow.
 
 ## Verification Contract
 
@@ -1103,8 +1112,8 @@ the first grant is used by this workflow.
 - explicit unknown attendance and outcome values;
 - no transcript or Commander content in revisions;
 - canonical revision digest stability;
-- append-only revision/event/acceptance/amendment database guards;
-- accepted working-row and Endeavor-link immutability;
+- append-only revision/event/membership-approval/amendment database guards;
+- membership-approved working-row and Endeavor-link immutability;
 - meeting deletion and historical-heading restrictions; and
 - concurrency failures leave status and official history unchanged.
 
@@ -1127,16 +1136,16 @@ the first grant is used by this workflow.
 - attestation exposes only that revision to members;
 - reopen preserves the superseded member-visible revision and creates revision N+1 only
   after another approval;
-- acceptance requires a later same-body Meeting and does not require a fictitious motion;
-- accepted-as-corrected atomically creates amendments;
-- accepted minutes never reopen or delete; and
+- membership approval requires a later same-body Meeting and does not require a fictitious motion;
+- approved-as-corrected points to a corrected, reapproved, and reattested revision without creating an amendment;
+- membership-approved minutes never reopen or delete; and
 - amendment chains render without changing original text.
 
 ### Transcript and AI safety
 
 - pasted and uploaded text limits, encoding, digest, and malware-safe content handling;
 - restricted reads and deliberate purge;
-- delete-after-acceptance scheduling and retained-source behavior;
+- delete-after-membership-approval scheduling and retained-source behavior;
 - member, print, PDF, API-default, logs, and search leakage tests;
 - transcript purge leaves official records intact;
 - the OpenAI request uses the exact versioned prompt and strict output schema, disables
@@ -1152,7 +1161,7 @@ the first grant is used by this workflow.
   working draft;
 - provider refusal, timeout, malformed output, and oversized-context failures leave the
   manual editor usable; and
-- AI runs cannot approve, attest, accept, amend, or mutate Endeavors.
+- AI runs cannot approve, attest, record membership approval, amend, or mutate Endeavors.
 
 ### Browser and document review
 
@@ -1161,9 +1170,9 @@ the first grant is used by this workflow.
   accept-all path;
 - keyboard-only editing, reordering, review, confirmation, and return focus;
 - no horizontal overflow, clipped focus, or unreadable status text;
-- draft/approved/attested/reopened/accepted/amended Meeting-page states;
+- draft/approved/attested/reopened/membership-approved/amended Meeting-page states;
 - approval and attestation by two distinct test users;
-- generated US Letter draft, attested, accepted, and amended PDFs;
+- generated US Letter draft, attested, membership-approved, and amended PDFs;
 - multi-page motion/outcome and amendment pagination; and
 - grayscale readability and absence of restricted source/private cues.
 
@@ -1184,14 +1193,15 @@ before each minutes slice is considered complete.
    case, including provider failure/manual fallback.
 7. **Complete:** Add immutable revisions, append-only lifecycle events, and the record/action/version-
    bound confirmation boundary.
-8. **Approval/attestation complete:** Add Commander approval, distinct-person Adjutant
-   attestation, and member visibility. Transparent reopen remains pending.
-9. Add later same-body acceptance, correction amendments, and database-layer immutability.
+8. **Complete:** Add Commander approval, distinct-person Adjutant attestation, member
+   visibility, and transparent audited reopening.
+9. **Membership approval complete; amendments pending:** Add later same-body membership
+   approval, post-approval correction amendments, and remaining database-layer immutability.
 10. **Partly complete:** Add shared print-shell integration and verified draft, approved,
-    and attested PDFs. Accepted and amended documents wait for those lifecycle states.
-11. **Approval/attestation complete:** Add draft API/handbook parity plus approval and
-    attestation only through confirmed pending actions with agent provenance. Acceptance,
-    amendments, and reopen remain pending.
+    attested, and membership-approved PDFs. Amended documents wait for that lifecycle state.
+11. **Partly complete:** Add draft API/handbook parity plus approval and attestation only
+    through confirmed pending actions with agent provenance. Reopening and membership
+    approval are available in the signed-in website; delegated parity and amendments remain pending.
 
 ## Deferred Decisions That Do Not Block Slice 2
 

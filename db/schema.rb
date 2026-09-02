@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_010200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -284,7 +284,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.index ["session_id"], name: "index_magic_links_on_session_id"
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
-    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying, 'official_minutes_action'::character varying]::text[])", name: "magic_links_purpose_check"
+    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying::text, 'create_agent_access_token'::character varying::text, 'official_minutes_action'::character varying::text])", name: "magic_links_purpose_check"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -321,7 +321,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.index ["meeting_type_id"], name: "index_meeting_minutes_on_meeting_type_id"
     t.index ["organization_id", "starts_at"], name: "index_meeting_minutes_on_organization_id_and_starts_at"
     t.index ["organization_id"], name: "index_meeting_minutes_on_organization_id"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'approved'::character varying::text, 'attested'::character varying::text, 'accepted'::character varying::text])", name: "meeting_minutes_status_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'approved'::character varying, 'attested'::character varying, 'membership_approved'::character varying]::text[])", name: "meeting_minutes_status_check"
   end
 
   create_table "meeting_transcripts", force: :cascade do |t|
@@ -489,7 +489,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.index ["meeting_minutes_id"], name: "index_minutes_draft_runs_on_meeting_minutes_id"
     t.index ["meeting_transcript_id"], name: "index_minutes_draft_runs_on_meeting_transcript_id"
     t.index ["requested_by_id"], name: "index_minutes_draft_runs_on_requested_by_id"
-    t.index ["retry_of_id"], name: "idx_one_active_minutes_draft_retry", unique: true, where: "((retry_of_id IS NOT NULL) AND ((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[])))"
+    t.index ["retry_of_id"], name: "idx_one_active_minutes_draft_retry", unique: true, where: "((retry_of_id IS NOT NULL) AND ((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('running'::character varying)::text])))"
     t.index ["retry_of_id"], name: "index_minutes_draft_runs_on_retry_of_id"
     t.index ["status", "discarded_at"], name: "index_minutes_draft_runs_on_status_and_discarded_at"
     t.check_constraint "source_line_count > 0", name: "minutes_draft_runs_source_line_count_check"
@@ -568,7 +568,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.index ["minutes_revision_id"], name: "index_minutes_lifecycle_events_on_minutes_revision_id"
     t.index ["official_action_confirmation_id"], name: "idx_on_official_action_confirmation_id_7ceb2b7c93", unique: true
     t.index ["recorded_by_id"], name: "index_minutes_lifecycle_events_on_recorded_by_id"
-    t.check_constraint "event_type::text = ANY (ARRAY['approved'::character varying, 'attested'::character varying]::text[])", name: "minutes_lifecycle_events_type_check"
+    t.check_constraint "event_type::text = ANY (ARRAY['approved'::character varying, 'attested'::character varying, 'reopened'::character varying, 'membership_approved'::character varying]::text[])", name: "minutes_lifecycle_events_type_check"
+  end
+
+  create_table "minutes_membership_approvals", force: :cascade do |t|
+    t.bigint "approving_meeting_id", null: false
+    t.datetime "created_at", null: false
+    t.string "disposition", null: false
+    t.text "factual_note"
+    t.bigint "meeting_minutes_id", null: false
+    t.bigint "minutes_revision_id", null: false
+    t.bigint "official_action_confirmation_id", null: false
+    t.datetime "recorded_at", null: false
+    t.bigint "recorded_by_id", null: false
+    t.string "recorder_name", null: false
+    t.string "recorder_office", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approving_meeting_id"], name: "index_minutes_membership_approvals_on_approving_meeting_id"
+    t.index ["meeting_minutes_id"], name: "index_minutes_membership_approvals_on_meeting_minutes_id", unique: true
+    t.index ["minutes_revision_id"], name: "index_minutes_membership_approvals_on_minutes_revision_id", unique: true
+    t.index ["official_action_confirmation_id"], name: "idx_on_official_action_confirmation_id_40172e0bce", unique: true
+    t.index ["recorded_by_id"], name: "index_minutes_membership_approvals_on_recorded_by_id"
+    t.check_constraint "disposition::text = ANY (ARRAY['approved_as_presented'::character varying, 'approved_as_corrected'::character varying, 'approved_by_motion'::character varying, 'other'::character varying]::text[])", name: "minutes_membership_approvals_disposition_check"
   end
 
   create_table "minutes_outcomes", force: :cascade do |t|
@@ -628,6 +649,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
 
   create_table "official_action_confirmations", force: :cascade do |t|
     t.string "action", null: false
+    t.jsonb "action_payload", default: {}, null: false
     t.bigint "agent_access_token_id"
     t.string "confirmation_method", default: "in_app", null: false
     t.datetime "confirmed_at"
@@ -645,8 +667,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.index ["meeting_minutes_id"], name: "index_official_action_confirmations_on_meeting_minutes_id"
     t.index ["session_id"], name: "index_official_action_confirmations_on_session_id"
     t.index ["user_id"], name: "index_official_action_confirmations_on_user_id"
-    t.check_constraint "action::text = ANY (ARRAY['approve'::character varying, 'attest'::character varying]::text[])", name: "official_action_confirmations_action_check"
-    t.check_constraint "confirmation_method::text = ANY (ARRAY['in_app'::character varying, 'delegated_agent'::character varying, 'external_written_confirmation'::character varying]::text[])", name: "official_action_confirmations_method_check"
+    t.check_constraint "action::text = ANY (ARRAY['approve'::character varying, 'attest'::character varying, 'reopen'::character varying, 'record_membership_approval'::character varying]::text[])", name: "official_action_confirmations_action_check"
+    t.check_constraint "confirmation_method::text = ANY (ARRAY['in_app'::character varying::text, 'delegated_agent'::character varying::text, 'external_written_confirmation'::character varying::text])", name: "official_action_confirmations_method_check"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -714,7 +736,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.bigint "user_id", null: false
     t.index ["user_id", "capability"], name: "index_permission_grants_on_user_id_and_capability", unique: true
     t.index ["user_id"], name: "index_permission_grants_on_user_id"
-    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying::text, 'manage_people'::character varying::text, 'manage_meeting_bodies'::character varying::text, 'manage_agendas'::character varying::text, 'manage_minutes'::character varying::text, 'approve_minutes'::character varying::text, 'attest_minutes'::character varying::text, 'record_acceptance_motions'::character varying::text, 'view_internal_records'::character varying::text])", name: "permission_grants_capability_check"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying]::text[])", name: "permission_grants_capability_check"
   end
 
   create_table "position_assignments", force: :cascade do |t|
@@ -737,7 +759,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
     t.datetime "updated_at", null: false
     t.index ["position_title_id", "capability"], name: "index_position_capabilities_on_title_and_capability", unique: true
     t.index ["position_title_id"], name: "index_position_capability_grants_on_position_title_id"
-    t.check_constraint "capability::text = ANY (ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_acceptance_motions'::character varying, 'view_internal_records'::character varying]::text[])", name: "position_capability_grants_capability_check"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying]::text[])", name: "position_capability_grants_capability_check"
   end
 
   create_table "position_titles", force: :cascade do |t|
@@ -880,6 +902,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_010000) do
   add_foreign_key "minutes_lifecycle_events", "official_action_confirmations"
   add_foreign_key "minutes_lifecycle_events", "users", column: "actor_id"
   add_foreign_key "minutes_lifecycle_events", "users", column: "recorded_by_id"
+  add_foreign_key "minutes_membership_approvals", "meeting_minutes", column: "meeting_minutes_id"
+  add_foreign_key "minutes_membership_approvals", "meetings", column: "approving_meeting_id"
+  add_foreign_key "minutes_membership_approvals", "minutes_revisions"
+  add_foreign_key "minutes_membership_approvals", "official_action_confirmations"
+  add_foreign_key "minutes_membership_approvals", "users", column: "recorded_by_id"
   add_foreign_key "minutes_outcomes", "minutes_items"
   add_foreign_key "minutes_outcomes", "people", column: "mover_person_id", on_delete: :nullify
   add_foreign_key "minutes_outcomes", "people", column: "seconder_person_id", on_delete: :nullify

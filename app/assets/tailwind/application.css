@@ -1554,7 +1554,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
    printed page footer. */
 .minutes-doc-status-label { display: inline-block; margin: 0 0 6px; padding: 4px 8px; color: var(--color-officer-blue); background: #edf3f7; border: 1px solid #9fb6c8; font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .minutes-doc-status-label--draft { color: var(--color-legionred); background: #faeeee; border-color: #d7a8ad; }
-.minutes-doc-status-label--attested, .minutes-doc-status-label--accepted { color: var(--color-green); background: #edf5e9; border-color: #a9c5a0; }
+.minutes-doc-status-label--attested, .minutes-doc-status-label--membership_approved { color: var(--color-green); background: #edf5e9; border-color: #a9c5a0; }
 .minutes-doc-attendance { margin: 0 0 20px; padding-bottom: 19px; border-bottom: 1px solid #aeb4bb; }
 .minutes-doc-attendance h2 { margin: 0 0 8px; color: var(--color-navy); font-family: var(--font-serif); font-size: 17px; }
 .minutes-doc-attendance table { width: 100%; border-collapse: collapse; color: #26313d; font-size: 12px; line-height: 1.3; }
@@ -1589,7 +1589,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .minutes-authority-folio dt { color: #5b6773; font-size: 10px; font-weight: 800; text-transform: uppercase; }
 .minutes-authority-folio dd { margin: 0; color: var(--color-ink); font-family: var(--font-serif); font-size: 12px; }
 .minutes-authority-folio--draft { background: #fcf8ee; }
-.minutes-authority-folio--attested, .minutes-authority-folio--accepted { background: #f3f7ef; }
+.minutes-authority-folio--attested, .minutes-authority-folio--membership_approved { background: #f3f7ef; }
 
 /* Responsive -----------------------------------------------------------------
    Two steps, used consistently everywhere: 900px drops side rails and multi-
@@ -1839,6 +1839,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .official-confirmation-summary { max-width: var(--w-form); margin: 22px 0; padding: 22px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-left: 5px solid var(--color-officer-blue); border-radius: var(--radius-card); }
 .official-confirmation-summary--approve { border-left-color: var(--color-gold-ink); }
 .official-confirmation-summary--attest { border-left-color: var(--color-green); }
+.official-confirmation-summary--reopen { border-left-color: var(--color-legionred); }
+.official-confirmation-summary--membership { border-left-color: var(--color-green); }
 .official-confirmation-summary h2 { margin: 0 0 10px; color: var(--color-navy); font-family: var(--font-serif); font-size: 24px; }
 .official-confirmation-summary > p { margin: 7px 0; color: #526171; font-size: 16px; line-height: 1.55; }
 .official-confirmation-summary dl { margin: 17px -24px -22px; }
@@ -1846,12 +1848,24 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .official-confirmation-summary dt { color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
 .official-confirmation-summary dd { margin: 0; color: var(--color-ink); font-size: 15px; }
 .official-confirmation-summary code, .member-minutes-digest code { color: var(--color-navy); font-size: .95em; }
+.official-action-form { max-width: var(--w-form); }
+.minutes-approval-choices { margin: 0; }
+.minutes-correction-ledger { max-width: var(--w-main); margin: 0 0 24px; padding: 18px 20px; background: #fbf8ef; border-top: 3px solid var(--color-gold); border-bottom: 1px solid var(--rule-strong); }
+.minutes-correction-ledger > p:first-child { margin: 0 0 5px; color: var(--color-gold-ink); font-size: 12px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.minutes-correction-ledger h2 { margin: 0; color: var(--color-navy); font-family: var(--font-serif); font-size: 22px; line-height: 1.3; }
+.minutes-correction-ledger dl { margin: 14px 0 0; }
+.minutes-correction-ledger dl > div { display: grid; grid-template-columns: 125px minmax(0, 1fr); gap: 15px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.minutes-correction-ledger dt { color: var(--color-gold-ink); font-size: 12px; font-weight: 850; text-transform: uppercase; }
+.minutes-correction-ledger dd { margin: 0; color: var(--color-ink); font-size: 15px; line-height: 1.45; }
+.minutes-correction-ledger code { color: var(--color-navy); }
+.minutes-correction-ledger .helper { margin: 13px 0 0; color: var(--color-muted); font-size: 14px; }
 
 .member-minutes-head { max-width: var(--w-main); margin: 12px 0 20px; }
 .member-minutes-status { display: flex; align-items: baseline; gap: 14px; max-width: var(--w-doc); margin-top: 18px; padding: 14px 16px; color: #2f5334; background: #edf4e8; border: 1px solid #b8cbaa; border-left: 5px solid var(--color-green); border-radius: var(--radius-control); }
 .member-minutes-status strong { flex: 0 0 auto; font-size: 16px; }
 .member-minutes-status span { font-size: 15px; line-height: 1.45; }
-.minutes-endorsements { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: var(--w-doc); margin-bottom: 20px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.minutes-endorsements { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); max-width: var(--w-doc); margin-bottom: 20px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
+.member-minutes-status--revision { color: #684243; background: #faf1ef; border-color: #d5b4af; border-left-color: var(--color-legionred); }
 .minutes-endorsements > div { padding: 16px 18px; border-left: 1px solid var(--rule); }
 .minutes-endorsements > div:first-child { border-left: 0; }
 .minutes-endorsements span, .minutes-endorsements strong, .minutes-endorsements small { display: block; }
@@ -1876,6 +1890,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .official-confirmation-summary { padding: 19px 17px; }
   .official-confirmation-summary dl { margin: 16px -17px -19px; }
   .official-confirmation-summary dl > div { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 12px 17px; }
+  .minutes-correction-ledger { padding: 16px; }
+  .minutes-correction-ledger dl > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
   .member-minutes-status { align-items: flex-start; flex-direction: column; gap: 5px; }
   .minutes-endorsements { grid-template-columns: minmax(0, 1fr); }
   .minutes-endorsements > div { border-top: 1px solid var(--rule); border-left: 0; }
@@ -1952,7 +1968,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .roll-call-table tr { break-inside: avoid; page-break-inside: avoid; }
   .minutes-doc-status-label { margin-bottom: 3pt; padding: 2.5pt 5pt; color: #234e70; background: #fff; border-color: #234e70; font-size: 6.5pt; }
   .minutes-doc-status-label--draft { color: #7b111b; border-color: #7b111b; }
-  .minutes-doc-status-label--attested, .minutes-doc-status-label--accepted { color: #315b31; border-color: #315b31; }
+  .minutes-doc-status-label--attested, .minutes-doc-status-label--membership_approved { color: #315b31; border-color: #315b31; }
   .minutes-doc-attendance { margin-bottom: 10pt; padding-bottom: 9pt; }
   .minutes-doc-attendance h2 { margin-bottom: 5pt; font-size: 10.25pt; }
   .minutes-doc-attendance table { font-size: 7.5pt; }

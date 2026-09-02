@@ -15,9 +15,15 @@
   <dl class="meeting-facts">
     <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
     <div><dt>Documents</dt><dd>
-      <% if @attested_minutes %>
-        <%= link_to "Read minutes awaiting acceptance", meeting_minutes_path(@meeting), class: "meeting-document-link" %>
-        <span class="meeting-document-note">Attested by <%= @attested_minutes.current_revision.attestation.attester_name %>. These have not yet been accepted by the membership.</span>
+      <% if @member_minutes %>
+        <%= link_to(@member_minutes.membership_approved? ? "Read official minutes" : "Read minutes awaiting membership approval", meeting_minutes_path(@meeting), class: "meeting-document-link") %>
+        <% if @member_minutes.membership_approved? %>
+          <span class="meeting-document-note"><%= @member_minutes.membership_approval.disposition_label %> at <%= @member_minutes.membership_approval.approving_meeting.title %>.</span>
+        <% elsif @member_minutes.reopened? || @member_minutes.approved? %>
+          <span class="meeting-document-note">A correction is being prepared. The last attested revision remains available.</span>
+        <% else %>
+          <span class="meeting-document-note">Attested by <%= @member_minutes.member_revision.attestation.attester_name %>. Membership approval has not yet been recorded.</span>
+        <% end %>
         <% if @published_agenda %><%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-secondary" %><% end %>
       <% elsif @published_agenda %>
         <%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-link" %>

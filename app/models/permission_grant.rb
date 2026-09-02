@@ -7,14 +7,14 @@ class PermissionGrant < ApplicationRecord
     manage_minutes
     approve_minutes
     attest_minutes
-    record_acceptance_motions
+    record_minutes_approval
     view_internal_records
   ].freeze
 
   GROUPS = [
     [ "Administration", %w[manage_settings manage_people] ],
     [ "Meetings", %w[manage_meeting_bodies manage_agendas manage_minutes] ],
-    [ "Approvals", %w[approve_minutes attest_minutes record_acceptance_motions] ],
+    [ "Approvals", %w[approve_minutes attest_minutes record_minutes_approval] ],
     [ "Records", %w[view_internal_records] ]
   ].freeze
 
@@ -26,13 +26,13 @@ class PermissionGrant < ApplicationRecord
     "manage_minutes" => "Draft minutes",
     "approve_minutes" => "Approve minutes as Commander",
     "attest_minutes" => "Attest minutes as Adjutant",
-    "record_acceptance_motions" => "Record acceptance motions",
+    "record_minutes_approval" => "Record membership approval of minutes",
     "view_internal_records" => "View internal meeting records"
   }.freeze
 
   # Capabilities a manage_settings admin implicitly holds so they can act as the
   # tool's tech support. Deliberately excludes the identity-bound official acts
-  # (approve_minutes, attest_minutes, record_acceptance_motions). Those require
+  # (approve_minutes, attest_minutes, record_minutes_approval). Those require
   # either the configured current Post office or a deliberate personal grant.
   # See docs/superpowers/specs/2026-07-13-admin-hub-reorganization-design.md.
   IMPLIED_BY_MANAGE_SETTINGS = %w[

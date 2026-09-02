@@ -7,7 +7,7 @@
 
 <section class="official-confirmation-summary" aria-labelledby="official-action-heading">
   <p class="meeting-workflow-kicker">Official minutes action</p>
-  <h2 id="official-action-heading"><%= @confirmation.action == "approve" ? "Approve for Adjutant attestation" : "Attest and release to members" %></h2>
+  <h2 id="official-action-heading"><%= confirmation_action_label(@confirmation) %></h2>
   <p><strong><%= @confirmation.meeting_minutes.title %></strong></p>
   <p>Digest <code><%= @confirmation.content_digest.first(12) %></code> · expires <%= legion_datetime(@confirmation.expires_at) %></p>
 </section>
@@ -38,7 +38,7 @@
     <% end %>
 
     <% if current_user.passkey_credentials.any? %>
-      <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= @confirmation.action == 'approve' ? new_admin_meeting_minutes_approval_path(@confirmation.meeting_minutes.meeting, confirmation_id: @confirmation.id) : new_admin_meeting_minutes_attestation_path(@confirmation.meeting_minutes.meeting, confirmation_id: @confirmation.id) %>">
+      <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= confirmation_return_path(@confirmation) %>">
         <div class="entry-orline">Or use a passkey</div>
         <button type="button" class="btn-secondary" data-action="passkey#authenticate" data-passkey-target="submit">Confirm with a passkey</button>
         <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>

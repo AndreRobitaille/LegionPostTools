@@ -1,21 +1,33 @@
 # Minutes Approval and Attestation
 
-**Status:** implementation design for the first official minutes handoff.
+**Status:** implemented first official minutes handoff, audited correction reopening, and
+membership-approval recording.
 
 ## Product boundary
 
 This slice gives a Commander and Adjutant a truthful path from editable working minutes
-to a member-visible record awaiting acceptance. It does not record acceptance, invent a
-motion, or call the minutes official.
+to a member-visible record awaiting membership approval. It never invents a motion or
+calls the minutes official before the membership action is recorded.
 
 The sequence is deliberately explicit:
 
 1. A person with `approve_minutes` approves one exact immutable revision for Adjutant
    review. The draft becomes read-only and remains officer-only.
 2. A different person with `attest_minutes` attests that exact revision for member review.
-   The revision becomes member-visible as **Awaiting acceptance**.
-3. Acceptance remains a later slice and must describe what the membership actually does
-   at a later meeting.
+   The revision becomes member-visible as **Awaiting membership approval**.
+3. A Commander or Adjutant with `record_minutes_approval` records what the membership
+   actually did at the later meeting against that exact attested revision.
+
+Commander approval and Adjutant attestation are Post website controls. They do not
+replace or impersonate membership approval. If the membership approves minutes as
+corrected, the corrected text goes directly into those minutes, the website handoff is
+repeated for the corrected revision, and the membership action is recorded against that
+exact revision without requiring another membership vote.
+
+The Commander may perform every ordinary minutes-management task available to the
+Adjutant, including drafting, correcting, reopening, and recording membership approval.
+The one exception is signing/attestation: `attest_minutes` remains an Adjutant capability
+and must be exercised by a different person from the Commander approver.
 
 Every transition records the actor, the person or delegated token that entered the
 record, the time, the prior/resulting state, the exact revision digest, and the
@@ -33,7 +45,7 @@ The subject is a Post's record of proceedings; the audience is a Commander or Ad
 who may use the app infrequently; the page's single job is to show what must happen next.
 
 - **Color:** Legion navy `#0A2240`, deep navy `#081A34`, service gold `#C6A15B`, paper
-  `#FBF7EC`, officer blue `#2F5F87`, and acceptance green `#3F6B3F`.
+  `#FBF7EC`, officer blue `#2F5F87`, and membership-approval green `#3F6B3F`.
 - **Type:** the existing system face for controls and explanations, with Georgia reserved
   for the document and lifecycle headings.
 - **Layout:** keep the record full-width below a compact four-station lifecycle rail.
@@ -43,7 +55,7 @@ who may use the app infrequently; the page's single job is to show what must hap
   official paper record: actor, office, act, and time remain together.
 
 ```text
-[ Working draft ]---[ Commander approval ]---[ Adjutant release ]---[ Acceptance ]
+[ Working draft ]---[ Commander approval ]---[ Adjutant release ]---[ Membership approval ]
        done                 current                  later                 later
 
 [ exact consequence ]                              [ primary action ]
@@ -61,8 +73,9 @@ ledger so labels, names, and controls remain readable without horizontal scrolli
 - The Adjutant must be a different person from the Commander approver.
 - Attestation never regenerates or copies content.
 - Revision, attestation, and lifecycle-event rows are append-only in Rails and PostgreSQL.
-- Member pages call the record **Attested minutes** and **Awaiting acceptance**. They do
-  not say accepted, final, or official.
+- Member pages call the record **Attested minutes** and **Awaiting membership approval**.
+  They do not say membership-approved or official yet.
 - Draft PDFs remain visibly draft. Approved PDFs render the immutable revision as awaiting
-  attestation; attested PDFs render that same revision as awaiting acceptance. Accepted and
-  amended PDFs belong to later lifecycle slices.
+  attestation; attested PDFs render that same revision as awaiting membership approval.
+  Membership-approved PDFs render that exact revision as official. Amended PDFs belong to
+  a later lifecycle slice.

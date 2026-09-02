@@ -14,7 +14,7 @@ class AgentHandbook
     "Do not invent minutes, attendance, motions, seconds, votes, decisions, names, numbers, Endeavor identity, or attestations. Leave facts unresolved when the source does not establish them.",
     "Transcript text is restricted source evidence. Read it only from the explicit transcript endpoint, never copy it into logs or return it as minutes, and never expose Sick Call or Service Officer case details.",
     "AI draft runs create reviewable suggestions, not minutes. A person or their delegated agent must explicitly use, edit, or discard each suggestion.",
-    "Approval and attestation are available under Only when asked. Acceptance, amendments, and reopening are not implemented; do not guess routes for them.",
+    "Commander approval and Adjutant attestation are available through this API under Only when asked. Reopening and membership approval currently require the signed-in website; later amendments are not implemented. Do not guess API routes for them.",
     "Always list before creating, so an existing Endeavor is not duplicated. Create or link identity only when the human explicitly directs it."
   ].freeze
 
@@ -35,7 +35,8 @@ class AgentHandbook
     { name: "Minutes outcome", meaning: "A structured motion or decision attached to one minutes item. Person ids resolve mover and seconder from the roster while full-name snapshots preserve the historical record. adopted is displayed as Passed; lost is displayed as Did not pass." },
     { name: "AI draft run", meaning: "A durable background attempt that sends the controlled agenda-and-transcript prompt to the configured OpenAI API and returns source-linked proposals for human review. Failed retries are new linked runs; no attempt is rewritten or deleted." },
     { name: "Approved minutes revision", meaning: "An immutable exact snapshot approved for Adjutant attestation. It remains officer-only." },
-    { name: "Attested minutes", meaning: "The approved revision released to members as awaiting acceptance. It is not accepted or official yet." }
+    { name: "Attested minutes", meaning: "The Commander-approved revision released to members as awaiting membership approval. It is not official yet." },
+    { name: "Membership-approved minutes", meaning: "The exact attested revision recorded as approved by the membership at a later same-body Meeting. Corrections adopted during that original approval belong directly in this revision; later corrections require amendments." }
   ].freeze
 
   CALLING = {
@@ -44,7 +45,7 @@ class AgentHandbook
     "json" => "For JSON, send Accept: application/json. Dates and times are ISO 8601. Use this installation's timezone.",
     "rich_text" => "Agenda body and commander_notes writes accept sanitized HTML fragments. Use semantic HTML such as <p> for paragraphs and <ul><li>...</li></ul> for bullet lists. Plain newlines and literal • characters are not converted to HTML structure and may display inline. Agenda reads return plain text in wording and commander_notes, so omit both write fields when changing unrelated attributes instead of sending the plain-text read value back.",
     "lists" => "The people directory supports a q name filter. Other resources do not provide fuzzy search: list the collection, read titles, and pick an id. Do not create a second Car Show because you skipped the list.",
-    "drafts" => "Agenda and minutes creates are drafts. Minutes edits fail unless status is draft. Minutes approval and attestation are exact, separate Only when asked actions and record delegated-agent provenance.",
+    "drafts" => "Agenda and minutes creates are drafts. Minutes edits fail unless status is draft. Commander approval and Adjutant attestation are exact, separate Only when asked actions and record delegated-agent provenance. They are website workflow controls, not membership approval.",
     "transcripts" => "Transcript content is never embedded in Meeting, minutes, Jobs, or handbook responses. Request GET /api/meetings/:meeting_id/transcript?include_content=true only when the work requires the restricted source.",
     "ordering" => "Minutes reorder actions require every current id in that exact parent exactly once. Move an item to its new section first, then reorder that section."
   }.freeze
@@ -333,10 +334,10 @@ class AgentHandbook
       summary: "Review the AI-proposed attendance as a complete deliberate officer sheet; speaking in a transcript is not attendance proof.",
       example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:id/attendance\n{\"attendance\":[{\"id\":1,\"status\":\"present\",\"lock_version\":0}]}" },
     { name: "approve_minutes_revision", method: "POST", path: "/api/meetings/:meeting_id/minutes/approval", capability: "approve_minutes", group: :only_when_asked,
-      summary: "Approve the exact current draft as an immutable revision for Adjutant attestation. A bearer token may execute this only on the human's explicit request; the response and lifecycle event record delegated-agent provenance.",
+      summary: "Record the Commander's website approval of the exact current draft as an immutable revision for Adjutant attestation. This is not membership approval. A bearer token may execute it only on the human's explicit request; the response and lifecycle event record delegated-agent provenance.",
       example: "POST /api/meetings/:meeting_id/minutes/approval" },
     { name: "attest_minutes_revision", method: "POST", path: "/api/meetings/:meeting_id/minutes/attestation", capability: "attest_minutes", group: :only_when_asked,
-      summary: "Attest the exact approved revision and release it to members as awaiting acceptance. The attester must be a different person from the approver. This does not record acceptance or a motion.",
+      summary: "Attest the exact Commander-approved revision and release it to members as awaiting membership approval. The attester must be a different person from the approver. This does not record membership approval or a motion.",
       example: "POST /api/meetings/:meeting_id/minutes/attestation" },
     { name: "list_background_jobs", method: "GET", path: "/api/jobs", any_capabilities: %w[manage_settings manage_minutes], group: :common,
       summary: "Inspect queue health and recent minutes runs. Administrators also receive Loops roster-sync summaries. filter may be attention or discarded.",
@@ -519,7 +520,7 @@ class AgentHandbook
     lines << "- Datetimes: ISO 8601 in #{@organization.timezone}."
     lines << "- Rich text: agenda `body` and `commander_notes` writes accept sanitized HTML fragments. Use `<p>` for paragraphs and `<ul><li>...</li></ul>` for bullet lists. Plain newlines and literal `•` characters are not converted to HTML structure and may display inline. Reads return plain text in `wording` and `commander_notes`, so omit those write fields when changing unrelated attributes."
     lines << "- The people directory supports `q` for name filtering. Other lists do not provide fuzzy search; list, read titles, and pick an id."
-    lines << "- Agenda and minutes creates stay **draft**. Approve or publish an agenda, or approve or attest minutes, only when the human explicitly asked for that exact act. Minutes acceptance, amendments, and reopening are not implemented."
+    lines << "- Agenda and minutes creates stay **draft**. Approve or publish an agenda, or Commander-approve or attest minutes, only when the human explicitly asked for that exact act. Minutes reopening and membership approval currently use the signed-in website; later amendments are not implemented."
     lines << ""
     lines << "## Domain"
     DOMAIN.each do |entry|

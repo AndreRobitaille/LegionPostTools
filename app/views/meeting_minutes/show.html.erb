@@ -1,19 +1,27 @@
-<% content_for :title, "Minutes awaiting acceptance - #{@meeting.title}" %>
+<% content_for :title, "#{@minutes.membership_approved? ? 'Official minutes' : 'Minutes awaiting membership approval'} - #{@meeting.title}" %>
 <%= link_to meeting_path(@meeting), class: "back" do %>&larr; Meeting record<% end %>
 
 <header class="member-minutes-head">
-  <p class="minutes-eyebrow">Attested minutes</p>
+  <p class="minutes-eyebrow"><%= @minutes.membership_approved? ? "Official minutes" : "Attested minutes" %></p>
   <h1 class="page-title"><%= @revision.payload.fetch("title") %></h1>
   <p class="page-sub"><%= @revision.payload.fetch("meeting_body_name") %> &middot; <%= legion_datetime(Time.zone.parse(@revision.payload.fetch("starts_at"))) %></p>
-  <div class="member-minutes-status">
-    <strong>Awaiting acceptance</strong>
-    <span>Presented to members for action at a later meeting. These minutes are not yet accepted or official.</span>
+  <div class="member-minutes-status<%= " member-minutes-status--revision" if @minutes.reopened? || @minutes.approved? %>">
+    <% if @minutes.membership_approved? %>
+      <strong><%= @membership_approval.disposition_label %></strong>
+      <span>Approved by the membership at <%= @membership_approval.approving_meeting.title %> on <%= legion_date(@membership_approval.approving_meeting.starts_at) %>.</span>
+    <% elsif @minutes.reopened? || @minutes.approved? %>
+      <strong>Correction in progress</strong>
+      <span>This is the last attested revision. Officers are preparing a corrected revision for the website.</span>
+    <% else %>
+      <strong>Awaiting membership approval</strong>
+      <span>Presented to members for action at a later meeting. These minutes are not yet membership-approved or official.</span>
+    <% end %>
   </div>
 </header>
 
 <section class="minutes-endorsements" aria-label="Minutes approval and attestation">
   <div>
-    <span>Commander approval</span>
+    <span>Commander approval for attestation</span>
     <strong><%= @revision.approver_name %></strong>
     <small><%= @revision.approver_office %> · <%= legion_datetime(@revision.approved_at) %></small>
   </div>
@@ -22,6 +30,13 @@
     <strong><%= @revision.attestation.attester_name %></strong>
     <small><%= @revision.attestation.attester_office %> · <%= legion_datetime(@revision.attestation.attested_at) %></small>
   </div>
+  <% if @membership_approval %>
+    <div>
+      <span>Membership approval</span>
+      <strong><%= @membership_approval.disposition_label %></strong>
+      <small><%= @membership_approval.approving_meeting.title %> · recorded by <%= @membership_approval.recorder_name %></small>
+    </div>
+  <% end %>
 </section>
 
 <%= render "revision", revision: @revision %>

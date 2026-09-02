@@ -231,6 +231,136 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     assert_nil confirmation.reload.consumed_at
   end
 
+  test "attested minutes can be corrected before membership approval without losing history" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    item = minutes.sections.first.items.create!(
+      title: "Service report",
+      behavior_type: "report_slot",
+      position: 1,
+      body: "Twelve families received assistance."
+    )
+    commander = create_officer!("Casey", "Commander", "approve_minutes", "record_minutes_approval")
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+    commander_token, = AgentAccessToken.issue!(user: commander, name: "Commander agent", expires_in: 1.day)
+    adjutant_token, = AgentAccessToken.issue!(user: adjutant, name: "Adjutant agent", expires_in: 1.day)
+
+    first_revision = minutes.approve_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: commander_token,
+        action: "approve"
+      )
+    )
+    minutes.attest_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: adjutant_token,
+        action: "attest"
+      )
+    )
+
+    minutes.reopen_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: adjutant_token,
+        action: "reopen",
+        action_payload: { reason: "Incorporate the correction adopted during membership approval." }
+      )
+    )
+
+    assert_predicate minutes.reload, :reopened?
+    assert_equal first_revision, minutes.current_revision
+    assert_equal first_revision, minutes.member_revision
+    assert_equal "reopened", minutes.lifecycle_events.last.event_type
+    assert_equal first_revision.id, minutes.lifecycle_events.last.metadata.fetch("superseded_revision_id")
+
+    item.update!(body: "Thirteen families received assistance.")
+    second_revision = minutes.approve_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: commander_token,
+        action: "approve"
+      )
+    )
+
+    assert_equal 2, second_revision.number
+    assert_equal first_revision, minutes.reload.member_revision,
+      "the prior attested revision remains member-visible until the correction is attested"
+
+    minutes.attest_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: adjutant_token,
+        action: "attest"
+      )
+    )
+    assert_equal second_revision, minutes.reload.member_revision
+
+    approving_meeting = create_meeting!(
+      organization: @organization,
+      meeting_body: @meeting_body,
+      meeting_type: @meeting_type,
+      starts_at: 1.hour.ago,
+      title: "September Membership Meeting"
+    )
+    approval = minutes.record_membership_approval_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: commander_token,
+        action: "record_membership_approval",
+        action_payload: {
+          approving_meeting_id: approving_meeting.id,
+          disposition: "approved_as_corrected"
+        }
+      )
+    )
+
+    assert_predicate minutes.reload, :membership_approved?
+    assert_equal second_revision, approval.minutes_revision
+    assert_equal approving_meeting, approval.approving_meeting
+    assert_equal "Approved as corrected", approval.disposition_label
+    assert_equal "membership_approved", minutes.lifecycle_events.last.event_type
+    assert_equal 2, minutes.revisions.count
+    assert_not approval.update(factual_note: "Changed later")
+    assert_not approval.destroy
+    assert_raises(ActiveRecord::RecordInvalid) do
+      minutes.update!(title: "Changed after membership approval")
+    end
+    assert_raises(ActiveRecord::DeleteRestrictionError) { minutes.destroy! }
+  end
+
+  test "membership approval requires a later occurred meeting of the same body" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    commander = create_officer!("Casey", "Commander", "approve_minutes", "record_minutes_approval")
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+    commander_token, = AgentAccessToken.issue!(user: commander, name: "Commander agent", expires_in: 1.day)
+    adjutant_token, = AgentAccessToken.issue!(user: adjutant, name: "Adjutant agent", expires_in: 1.day)
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: commander_token, action: "approve"))
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: adjutant_token, action: "attest"))
+    future_meeting = create_meeting!(
+      organization: @organization,
+      meeting_body: @meeting_body,
+      meeting_type: @meeting_type,
+      starts_at: 1.day.from_now
+    )
+    confirmation = OfficialActionConfirmation.for_delegated_agent!(
+      minutes:,
+      agent_access_token: commander_token,
+      action: "record_membership_approval",
+      action_payload: {
+        approving_meeting_id: future_meeting.id,
+        disposition: "approved_as_presented"
+      }
+    )
+
+    assert_raises(ActiveRecord::RecordInvalid) do
+      minutes.record_membership_approval_with_confirmation!(confirmation:)
+    end
+    assert_predicate minutes.reload, :attested?
+    assert_nil minutes.membership_approval
+    assert_nil confirmation.reload.consumed_at
+  end
+
   private
 
   def past_meeting

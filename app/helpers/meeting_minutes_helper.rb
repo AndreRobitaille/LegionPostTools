@@ -3,22 +3,22 @@ module MeetingMinutesHelper
     "draft" => {
       kind: "Draft minutes",
       status: "Draft - not approved",
-      authority: "Working draft - not approved, attested, or accepted"
+      authority: "Working draft - not Commander-approved, attested, or membership-approved"
     },
     "approved" => {
-      kind: "Approved minutes",
-      status: "Approved - awaiting attestation",
-      authority: "Approved for attestation - officer-only"
+      kind: "Commander-approved minutes",
+      status: "Commander-approved - awaiting attestation",
+      authority: "Commander-approved for attestation - officer-only"
     },
     "attested" => {
       kind: "Attested minutes",
-      status: "Attested - awaiting acceptance",
-      authority: "Attested minutes - awaiting acceptance"
+      status: "Attested - awaiting membership approval",
+      authority: "Attested minutes - awaiting membership approval"
     },
-    "accepted" => {
+    "membership_approved" => {
       kind: "Official minutes",
-      status: "Official minutes",
-      authority: "Accepted official minutes"
+      status: "Official - membership approved",
+      authority: "Official minutes approved by the membership"
     }
   }.freeze
 
@@ -35,7 +35,7 @@ module MeetingMinutesHelper
       "draft" => "Open draft PDF",
       "approved" => "Open approved PDF",
       "attested" => "Open attested PDF",
-      "accepted" => "Open official PDF"
+      "membership_approved" => "Open official PDF"
     }.fetch(minutes.status)
   end
 end

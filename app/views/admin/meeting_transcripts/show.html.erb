@@ -13,7 +13,7 @@
 <dl class="transcript-facts">
   <div><dt>Source</dt><dd><%= @transcript.pasted_text? ? "Pasted text" : @transcript.original_filename %></dd></div>
   <div><dt>Size</dt><dd><%= number_to_human_size(@transcript.byte_size) %></dd></div>
-  <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after acceptance and recovery window" : "Retain as restricted source" %></dd></div>
+  <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after membership approval and recovery window" : "Retain as restricted source" %></dd></div>
   <div><dt>Added</dt><dd><%= legion_datetime(@transcript.created_at) %></dd></div>
 </dl>
 

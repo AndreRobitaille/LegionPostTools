@@ -6,6 +6,8 @@ class OfficialActionReauthenticationsController < ApplicationController
   before_action :require_authentication
   before_action :set_confirmation
 
+  helper_method :confirmation_action_label, :confirmation_return_path
+
   rate_limit to: 5, within: 5.minutes, only: :create,
     name: :official_action_reauthentication_request,
     by: -> { "#{current_user.id}:#{request.remote_ip}" },
@@ -88,11 +90,22 @@ class OfficialActionReauthenticationsController < ApplicationController
   end
 
   def confirmation_return_path(confirmation)
-    if confirmation.action == "approve"
-      new_admin_meeting_minutes_approval_path(confirmation.meeting_minutes.meeting, confirmation_id: confirmation.id)
-    else
-      new_admin_meeting_minutes_attestation_path(confirmation.meeting_minutes.meeting, confirmation_id: confirmation.id)
-    end
+    meeting = confirmation.meeting_minutes.meeting
+    {
+      "approve" => new_admin_meeting_minutes_approval_path(meeting, confirmation_id: confirmation.id),
+      "attest" => new_admin_meeting_minutes_attestation_path(meeting, confirmation_id: confirmation.id),
+      "reopen" => new_admin_meeting_minutes_reopening_path(meeting, confirmation_id: confirmation.id),
+      "record_membership_approval" => new_admin_meeting_minutes_membership_approval_path(meeting, confirmation_id: confirmation.id)
+    }.fetch(confirmation.action)
+  end
+
+  def confirmation_action_label(confirmation)
+    {
+      "approve" => "Approve for Adjutant attestation",
+      "attest" => "Attest and release to members",
+      "reopen" => "Reopen for correction",
+      "record_membership_approval" => "Record membership approval"
+    }.fetch(confirmation.action)
   end
 
   def redirect_after_auth_throttle

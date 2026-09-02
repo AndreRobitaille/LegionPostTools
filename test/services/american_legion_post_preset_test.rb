@@ -28,9 +28,9 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       organization.position_titles.order(:display_order).pluck(:required_by_default)
     assert_equal [ true, true, false, true, false, false, false, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:grants_full_membership_access)
-    assert_equal %w[approve_minutes manage_agendas],
+    assert_equal %w[approve_minutes manage_agendas manage_minutes record_minutes_approval],
       organization.position_titles.find_by!(name: "Commander").position_capability_grants.order(:capability).pluck(:capability)
-    assert_equal %w[attest_minutes manage_agendas manage_minutes],
+    assert_equal %w[attest_minutes manage_agendas manage_minutes record_minutes_approval],
       organization.position_titles.find_by!(name: "Adjutant").position_capability_grants.order(:capability).pluck(:capability)
     assert_empty organization.position_titles.find_by!(name: "1st Vice Commander").position_capability_grants
 
@@ -91,7 +91,7 @@ class AmericanLegionPostPresetTest < ActiveSupport::TestCase
       organization.position_titles.order(:display_order).pluck(:required_by_default)
     assert_equal [ true, true, false, true, false, false, false, false, false, false, false ],
       organization.position_titles.order(:display_order).pluck(:grants_full_membership_access)
-    assert_equal %w[approve_minutes manage_agendas],
+    assert_equal %w[approve_minutes manage_agendas manage_minutes record_minutes_approval],
       organization.position_titles.find_by!(name: "Commander").position_capability_grants.order(:capability).pluck(:capability)
     assert_empty organization.position_titles.find_by!(name: "1st Vice Commander").position_capability_grants
 

@@ -102,6 +102,8 @@ Rails.application.routes.draw do
         get :print, on: :member
         resource :approval, only: %i[new create], controller: "minutes_approvals"
         resource :attestation, only: %i[new create], controller: "minutes_attestations"
+        resource :reopening, only: %i[new create], controller: "minutes_reopenings"
+        resource :membership_approval, only: %i[new create], controller: "minutes_membership_approvals"
         resources :draft_runs, only: %i[new create show], controller: "minutes_draft_runs" do
           get :status, on: :member
           resource :attendance_review, only: :update, controller: "minutes_draft_attendance_reviews"

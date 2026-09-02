@@ -34,7 +34,7 @@ module MinutesDrafting
       A motion or decision suggestion requires direct transcript support. Use not_recorded for an unknown disposition.
       Preserve a spoken mover or seconder name only as the transcript states it; never expand a first name, nickname, or uncertain
       spelling. Human reviewers will resolve identities from the Post roster in a later workflow.
-      Never suggest approval, attestation, acceptance, amendment, or any change to an Endeavor.
+      Never suggest Commander approval, Adjutant attestation, membership approval, amendment, or any change to an Endeavor.
 
       target_id means: MinutesItem id for item_summary/outcome, MinutesAttendanceEntry id for attendance,
       and MinutesSection id for additional_item. Use only ids present in the supplied outline.

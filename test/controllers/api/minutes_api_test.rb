@@ -247,7 +247,7 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_equal "attested", response.parsed_body.dig("minutes", "status")
     assert response.parsed_body.dig("minutes", "lifecycle", "member_visible")
     assert_equal "/meetings/#{@meeting.id}/minutes", response.parsed_body.dig("minutes", "lifecycle", "member_minutes_path")
-    assert_equal "await_membership_acceptance", response.parsed_body.dig("minutes", "lifecycle", "next_action")
+    assert_equal "record_membership_approval_or_reopen", response.parsed_body.dig("minutes", "lifecycle", "next_action")
     assert_equal attester.person.full_name, response.parsed_body.dig("attestation", "attested_by")
     assert_equal 2, minutes.lifecycle_events.count
   end

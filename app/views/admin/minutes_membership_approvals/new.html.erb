@@ -1,0 +1,68 @@
+<% content_for :title, "Record membership approval" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+
+<div class="page-lead">
+  <p class="minutes-eyebrow">Membership action</p>
+  <h1 class="page-title">Record the membership's approval</h1>
+  <p class="page-sub"><%= @minutes.title %> &middot; attested revision <%= @minutes.current_revision.number %></p>
+</div>
+
+<section class="official-confirmation-summary official-confirmation-summary--membership">
+  <h2>What this records</h2>
+  <p>This records what the membership already did at a later meeting. It does not conduct a vote or substitute an officer's approval for the membership's action.</p>
+  <dl>
+    <div><dt>Exact revision</dt><dd><%= @minutes.current_revision.number %> · <code><%= @minutes.current_revision.sha256.first(12) %></code></dd></div>
+    <div><dt>After recording</dt><dd>Official membership-approved minutes; no further editing</dd></div>
+  </dl>
+</section>
+
+<% if @confirmation&.confirmed_at? %>
+  <% approving_meeting = @eligible_meetings.find(@approval_attributes.fetch("approving_meeting_id")) %>
+  <% disposition = MinutesMembershipApproval.new(disposition: @approval_attributes.fetch("disposition")) %>
+  <section class="minutes-correction-ledger" aria-labelledby="membership-approval-heading">
+    <p>Membership approval to enter</p>
+    <h2 id="membership-approval-heading"><%= disposition.disposition_label %></h2>
+    <dl>
+      <div><dt>Approving meeting</dt><dd><%= approving_meeting.title %> · <%= legion_datetime(approving_meeting.starts_at) %></dd></div>
+      <% if @approval_attributes["factual_note"].present? %><div><dt>Procedure note</dt><dd><%= @approval_attributes["factual_note"] %></dd></div><% end %>
+    </dl>
+  </section>
+  <%= button_to "Record membership approval", admin_meeting_minutes_membership_approval_path(@meeting),
+        params: { confirmation_id: @confirmation.id }, class: "btn-confirm" %>
+<% else %>
+  <%= form_with url: admin_meeting_minutes_membership_approval_path(@meeting), scope: :minutes_membership_approval, class: "stacked-form official-action-form" do |form| %>
+    <div class="fl">
+      <%= form.label :approving_meeting_id, "Meeting where the membership approved these minutes" %>
+      <%= form.collection_select :approving_meeting_id, @eligible_meetings, :id, ->(meeting) { "#{meeting.meeting_body.name} — #{legion_date(meeting.starts_at)}" }, { prompt: "Choose a meeting" }, { class: "f", required: true } %>
+    </div>
+
+    <fieldset class="transcript-retention minutes-approval-choices">
+      <legend>How did the membership approve them?</legend>
+      <label class="transcript-choice">
+        <%= form.radio_button :disposition, "approved_as_presented", required: true %>
+        <span><strong>Approved as presented</strong><small>The attested text required no correction.</small></span>
+      </label>
+      <label class="transcript-choice">
+        <%= form.radio_button :disposition, "approved_as_corrected", required: true %>
+        <span><strong>Approved as corrected</strong><small>The adopted correction is already incorporated into this exact attested revision.</small></span>
+      </label>
+      <label class="transcript-choice">
+        <%= form.radio_button :disposition, "approved_by_motion", required: true %>
+        <span><strong>Approved by recorded motion</strong><small>Use only when a motion was actually the procedure.</small></span>
+      </label>
+      <label class="transcript-choice">
+        <%= form.radio_button :disposition, "other", required: true %>
+        <span><strong>Another recorded procedure</strong><small>Describe exactly what occurred below.</small></span>
+      </label>
+    </fieldset>
+
+    <div class="fl">
+      <%= form.label :factual_note, "Procedure note (required only for another procedure)" %>
+      <%= form.text_area :factual_note, rows: 3, class: "f" %>
+    </div>
+    <div class="btnrow">
+      <%= form.submit "Continue to identity confirmation", class: "btn-primary" %>
+      <%= link_to "Cancel", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+    </div>
+  <% end %>
+<% end %>

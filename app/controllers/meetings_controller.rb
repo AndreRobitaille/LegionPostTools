@@ -7,7 +7,7 @@ class MeetingsController < ApplicationController
       :meeting_body,
       :meeting_type,
       :dated_agenda,
-      minutes: { current_revision: :attestation }
+      minutes: [ :membership_approval, { current_revision: :attestation }, { revisions: :attestation } ]
     )
     @upcoming_meetings = meetings.upcoming.to_a
     @next_meeting = @upcoming_meetings.shift
@@ -17,9 +17,14 @@ class MeetingsController < ApplicationController
   end
 
   def show
-    @meeting = @organization.meetings.includes(:meeting_body, :meeting_type, :dated_agenda, minutes: { current_revision: :attestation }).find(params[:id])
+    @meeting = @organization.meetings.includes(
+      :meeting_body,
+      :meeting_type,
+      :dated_agenda,
+      minutes: [ :membership_approval, { current_revision: :attestation }, { revisions: :attestation } ]
+    ).find(params[:id])
     @published_agenda = @meeting.dated_agenda if @meeting.dated_agenda&.published?
-    @attested_minutes = @meeting.minutes if @meeting.minutes&.attested?
+    @member_minutes = @meeting.minutes if @meeting.minutes&.member_visible?
   end
 
   private

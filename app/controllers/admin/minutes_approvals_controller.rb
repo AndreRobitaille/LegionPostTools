@@ -15,7 +15,7 @@ module Admin
       if confirmation&.confirmed_at?
         @minutes.approve_with_confirmation!(confirmation:)
         clear_pending_confirmation
-        redirect_to admin_meeting_minutes_path(@meeting), notice: "Exact minutes revision approved for Adjutant attestation."
+        redirect_to admin_meeting_minutes_path(@meeting), notice: "Exact minutes revision Commander-approved for Adjutant attestation."
       else
         confirmation ||= OfficialActionConfirmation.prepare!(
           minutes: @minutes,

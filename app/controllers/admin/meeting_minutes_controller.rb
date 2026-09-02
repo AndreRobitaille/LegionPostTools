@@ -53,7 +53,9 @@ module Admin
         minutes: [
           :attendance_entries,
           :lifecycle_events,
+          :membership_approval,
           { current_revision: :attestation },
+          { revisions: :attestation },
           { sections: { items: %i[rich_text_agenda_body rich_text_body endeavor outcomes source_dated_agenda_item] } }
         ]
       ).find(params[:meeting_id])

@@ -1,5 +1,5 @@
 class MinutesLifecycleEvent < ApplicationRecord
-  EVENT_TYPES = %w[approved attested].freeze
+  EVENT_TYPES = %w[approved attested reopened membership_approved].freeze
 
   belongs_to :meeting_minutes, inverse_of: :lifecycle_events
   belongs_to :minutes_revision

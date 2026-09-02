@@ -118,12 +118,12 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
 
     get admin_meeting_minutes_path(@meeting)
     assert_response :success
-    assert_select "a[href='#{new_admin_meeting_minutes_approval_path(@meeting)}']", text: "Approve exact draft"
-    assert_select ".minutes-lifecycle-rail", text: /Commander approval.*Adjutant release.*Membership acceptance/m
+    assert_select "a[href='#{new_admin_meeting_minutes_approval_path(@meeting)}']", text: "Approve exact draft for Adjutant"
+    assert_select ".minutes-lifecycle-rail", text: /Commander approval for attestation.*Adjutant release.*Membership approval/m
 
     get new_admin_meeting_minutes_approval_path(@meeting)
     assert_response :success
-    assert_select "h1", text: "Approve this exact draft"
+    assert_select "h1", text: "Approve this exact draft for the Adjutant"
 
     assert_difference -> { OfficialActionConfirmation.count }, 1 do
       post admin_meeting_minutes_approval_path(@meeting)

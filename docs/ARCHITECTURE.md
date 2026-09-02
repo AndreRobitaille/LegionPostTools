@@ -115,22 +115,25 @@ Meeting records are the core product direction.
 
 ## Official Records
 
-Accepted official minutes must be immutable. No administrator override should silently edit accepted minutes.
+Membership-approved official minutes must be immutable. No administrator override should
+silently edit them.
 
-Corrections should appear as later amendments or later meeting records linked back to the original record.
+Corrections adopted during original membership approval belong directly in the corrected
+minutes revision. Corrections discovered after membership approval appear as later
+amendments or later meeting records linked back to the original record.
 
 Approved minutes revisions are immutable structured artifacts. Attestation exposes one
-exact revision to members while it awaits later same-body acceptance; reopening preserves
-that superseded revision rather than rewriting what members previously saw. Acceptance
-records the procedure that actually occurred and does not require every Post to use a
-motion. See `docs/MINUTES_LIFECYCLE.md`.
+exact revision to members while it awaits later same-body membership approval; reopening
+preserves that superseded revision rather than rewriting what members previously saw.
+Membership approval records the procedure that actually occurred and does not require
+every Post to use a motion. See `docs/MINUTES_LIFECYCLE.md`.
 
 ## AI Boundary
 
 AI may draft minutes, summarize transcripts, suggest possible Endeavors, and help place discussion under the right agenda item. Humans confirm Endeavor identity.
 
 AI output is never official. Humans remain responsible for review, approval, attestation,
-distribution, and acceptance. A delegated agent may execute an exact act the human
+distribution, and membership-approval recording. A delegated agent may execute an exact act the human
 explicitly requests within that person's current capability; the audit record identifies
 the agent-token execution.
 

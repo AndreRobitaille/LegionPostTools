@@ -1,5 +1,5 @@
 class MeetingMinutes < ApplicationRecord
-  STATUSES = %w[draft approved attested accepted].freeze
+  STATUSES = %w[draft approved attested membership_approved].freeze
 
   belongs_to :organization, inverse_of: :meeting_minutes
   belongs_to :meeting, inverse_of: :minutes
@@ -34,6 +34,10 @@ class MeetingMinutes < ApplicationRecord
     dependent: :restrict_with_exception,
     inverse_of: :meeting_minutes
   has_many :official_action_confirmations, dependent: :restrict_with_exception
+  has_one :membership_approval,
+    class_name: "MinutesMembershipApproval",
+    dependent: :restrict_with_exception,
+    inverse_of: :meeting_minutes
 
   normalizes :title, :location_name, with: ->(value) { value.to_s.strip }
 
@@ -41,6 +45,9 @@ class MeetingMinutes < ApplicationRecord
   validates :meeting_id, uniqueness: true
   validates :status, inclusion: { in: STATUSES }
   validate :associations_describe_same_meeting
+  validate :membership_approved_record_is_immutable, on: :update
+
+  before_destroy :prevent_membership_approved_mutation, if: :membership_approved?
 
   scope :draft, -> { where(status: "draft") }
 
@@ -79,19 +86,36 @@ class MeetingMinutes < ApplicationRecord
   def draft? = status == "draft"
   def approved? = status == "approved"
   def attested? = status == "attested"
-  def accepted? = status == "accepted"
+  def membership_approved? = status == "membership_approved"
+  def reopened? = draft? && current_revision.present?
+
+  def member_revision
+    return membership_approval.minutes_revision if membership_approved? && membership_approval
+    return current_revision if attested? && current_revision&.attestation
+
+    revisions.joins(:attestation).order(number: :desc).first
+  end
+
+  def member_visible?
+    member_revision.present?
+  end
 
   def approval_ready?
     attendance_entries.none? { |entry| entry.status == "not_recorded" } &&
       (!latest_successful_draft_run || latest_successful_draft_run.suggestions.unreviewed.none?)
   end
 
-  def digest_for(action)
+  def digest_for(action, payload: {})
     case action.to_s
     when "approve"
       Digest::SHA256.hexdigest(JSON.generate(revision_payload))
     when "attest"
       current_revision&.sha256 || "missing-revision"
+    when "reopen", "record_membership_approval"
+      Digest::SHA256.hexdigest(JSON.generate(
+        "revision_sha256" => current_revision&.sha256 || "missing-revision",
+        "action_payload" => payload.to_h.deep_stringify_keys.sort.to_h
+      ))
     else
       raise ArgumentError, "Unsupported official minutes action."
     end
@@ -166,6 +190,103 @@ class MeetingMinutes < ApplicationRecord
       end
     end
     current_revision.attestation
+  end
+
+  def reopen_with_confirmation!(confirmation:, recorded_by: confirmation.user)
+    confirmation.consume!(user: confirmation.user, session: confirmation.session) do
+      with_lock do
+        reload
+        prior_status = status
+        capability = prior_status == "attested" ? "attest_minutes" : "approve_minutes"
+        require_transition!(
+          confirmation:,
+          action: "reopen",
+          from: %w[approved attested],
+          capability:
+        )
+
+        reason = confirmation.action_payload.fetch("reason", "").strip
+        if reason.blank?
+          errors.add(:base, "Explain why these minutes are being reopened.")
+          raise ActiveRecord::RecordInvalid, self
+        end
+
+        now = Time.current
+        superseded_revision = current_revision
+        update!(status: "draft")
+        record_lifecycle_event!(
+          revision: superseded_revision,
+          confirmation:,
+          actor: confirmation.user,
+          recorded_by:,
+          event_type: "reopened",
+          from_status: prior_status,
+          to_status: "draft",
+          occurred_at: now,
+          metadata: {
+            "reason" => reason,
+            "superseded_revision_id" => superseded_revision.id
+          }
+        )
+      end
+    end
+    self
+  end
+
+  def record_membership_approval_with_confirmation!(confirmation:, recorded_by: confirmation.user)
+    confirmation.consume!(user: confirmation.user, session: confirmation.session) do
+      with_lock do
+        reload
+        require_transition!(
+          confirmation:,
+          action: "record_membership_approval",
+          from: "attested",
+          capability: "record_minutes_approval"
+        )
+
+        payload = confirmation.action_payload
+        approving_meeting = organization.meetings.find(payload.fetch("approving_meeting_id"))
+        disposition = payload.fetch("disposition")
+        factual_note = payload["factual_note"].to_s.strip.presence
+        now = Time.current
+
+        approval = create_membership_approval!(
+          minutes_revision: current_revision,
+          approving_meeting:,
+          recorded_by:,
+          official_action_confirmation: confirmation,
+          disposition:,
+          factual_note:,
+          recorder_name: recorded_by.person.full_name,
+          recorder_office: officer_label(recorded_by),
+          recorded_at: now
+        )
+        update!(status: "membership_approved")
+        record_lifecycle_event!(
+          revision: current_revision,
+          confirmation:,
+          actor: confirmation.user,
+          recorded_by:,
+          event_type: "membership_approved",
+          from_status: "attested",
+          to_status: "membership_approved",
+          occurred_at: now,
+          metadata: {
+            "approving_meeting_id" => approving_meeting.id,
+            "disposition" => disposition
+          }
+        )
+        approval
+      end
+    end
+    membership_approval
+  end
+
+  def eligible_membership_approval_meetings
+    organization.meetings
+      .where(meeting_body_id: meeting_body_id)
+      .where("starts_at > ? AND starts_at <= ?", starts_at, Time.current)
+      .order(:starts_at)
   end
 
   def revision_payload
@@ -260,8 +381,9 @@ class MeetingMinutes < ApplicationRecord
   end
 
   def require_transition!(confirmation:, action:, from:, capability:)
-    unless status == from && confirmation.meeting_minutes_id == id && confirmation.action == action &&
-        confirmation.record_lock_version == lock_version && confirmation.content_digest == digest_for(action) &&
+    unless status.in?(Array(from)) && confirmation.meeting_minutes_id == id && confirmation.action == action &&
+        confirmation.record_lock_version == lock_version &&
+        confirmation.content_digest == digest_for(action, payload: confirmation.action_payload) &&
         confirmation.user.can?(capability)
       errors.add(:base, "The minutes or authority changed. Start the confirmation again.")
       raise ActiveRecord::RecordInvalid, self
@@ -272,7 +394,7 @@ class MeetingMinutes < ApplicationRecord
     user.person.current_role_label.presence || "Authorized officer"
   end
 
-  def record_lifecycle_event!(revision:, confirmation:, actor:, recorded_by:, event_type:, from_status:, to_status:, occurred_at:)
+  def record_lifecycle_event!(revision:, confirmation:, actor:, recorded_by:, event_type:, from_status:, to_status:, occurred_at:, metadata: {})
     lifecycle_events.create!(
       minutes_revision: revision,
       actor:,
@@ -284,10 +406,10 @@ class MeetingMinutes < ApplicationRecord
       actor_name: actor.person.full_name,
       actor_office: officer_label(actor),
       occurred_at:,
-      metadata: {
+      metadata: metadata.merge(
         "confirmation_method" => confirmation.confirmation_method,
         "evidence_note" => confirmation.evidence_note
-      }.compact
+      ).compact
     )
   end
 
@@ -301,5 +423,18 @@ class MeetingMinutes < ApplicationRecord
     if meeting_type_id != meeting.meeting_type_id
       errors.add(:meeting_type, "must match the meeting")
     end
+  end
+
+  def membership_approved_in_database?
+    status_in_database == "membership_approved"
+  end
+
+  def prevent_membership_approved_mutation
+    errors.add(:base, "Membership-approved minutes are immutable.")
+    throw :abort
+  end
+
+  def membership_approved_record_is_immutable
+    errors.add(:base, "Membership-approved minutes are immutable.") if membership_approved_in_database?
   end
 end

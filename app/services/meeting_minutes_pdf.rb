@@ -19,7 +19,7 @@ class MeetingMinutesPdf
         "draft" => "draft-minutes",
         "approved" => "approved-minutes",
         "attested" => "attested-minutes",
-        "accepted" => "official-minutes"
+        "membership_approved" => "official-minutes"
       }.fetch(minutes.status)
 
       "#{meeting_name}-#{minutes.starts_at.to_date.iso8601}-#{document_suffix}.pdf"

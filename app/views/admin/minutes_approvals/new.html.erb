@@ -3,13 +3,13 @@
 
 <div class="page-lead">
   <p class="minutes-eyebrow">Commander approval</p>
-  <h1 class="page-title">Approve this exact draft</h1>
+  <h1 class="page-title">Approve this exact draft for the Adjutant</h1>
   <p class="page-sub"><%= @minutes.title %></p>
 </div>
 
 <section class="official-confirmation-summary official-confirmation-summary--approve">
   <h2>What this does</h2>
-  <p>Creates an immutable revision and locks the working record. It remains officer-only until a different person attests it for member review.</p>
+  <p>Records the Commander's website approval, creates an immutable revision, and sends that exact text to the Adjutant. This is not membership approval.</p>
   <dl>
     <div><dt>Revision digest</dt><dd><code><%= @minutes.digest_for("approve").first(12) %></code></dd></div>
     <div><dt>Attendance</dt><dd><%= @minutes.attendance_entries.none? { |entry| entry.status == "not_recorded" } ? "Reviewed" : "Still needs review" %></dd></div>
@@ -18,9 +18,9 @@
 </section>
 
 <% if @confirmation&.confirmed_at? %>
-  <%= button_to "Approve this exact revision", admin_meeting_minutes_approval_path(@meeting),
+  <%= button_to "Approve this revision for the Adjutant", admin_meeting_minutes_approval_path(@meeting),
         params: { confirmation_id: @confirmation.id }, class: "btn-confirm" %>
 <% else %>
-  <%= button_to "Confirm identity to approve", admin_meeting_minutes_approval_path(@meeting),
+  <%= button_to "Confirm identity to approve for the Adjutant", admin_meeting_minutes_approval_path(@meeting),
         params: ({ confirmation_id: @confirmation.id } if @confirmation), class: "btn-primary" %>
 <% end %>

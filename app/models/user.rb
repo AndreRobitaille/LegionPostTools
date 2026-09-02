@@ -7,6 +7,7 @@ class User < ApplicationRecord
     manage_agendas
     manage_minutes
     view_internal_records
+    record_minutes_approval
   ].freeze
   PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES = %w[approve_minutes attest_minutes].freeze
 

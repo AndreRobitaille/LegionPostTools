@@ -245,7 +245,7 @@ class UserTest < ActiveSupport::TestCase
 
     assert_not user.can?("attest_minutes")
     assert_not user.can?("approve_minutes")
-    assert_not user.can?("record_acceptance_motions")
+    assert_not user.can?("record_minutes_approval")
   end
 
   test "a manage_agendas grant alone grants only manage_agendas" do

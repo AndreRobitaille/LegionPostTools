@@ -349,8 +349,9 @@ module Api
         status: minutes.status,
         approval_ready: minutes.draft? ? minutes.approval_ready? : nil,
         revision: revision ? revision_payload(revision) : nil,
-        member_visible: minutes.attested? || minutes.accepted?,
-        member_minutes_path: ("/meetings/#{minutes.meeting_id}/minutes" if minutes.attested? || minutes.accepted?),
+        membership_approval: minutes.membership_approval ? membership_approval_payload(minutes.membership_approval) : nil,
+        member_visible: minutes.member_visible?,
+        member_minutes_path: ("/meetings/#{minutes.meeting_id}/minutes" if minutes.member_visible?),
         next_action: minutes_next_action(minutes)
       }
     end
@@ -359,7 +360,7 @@ module Api
       {
         "draft" => "approve",
         "approved" => "attest",
-        "attested" => "await_membership_acceptance"
+        "attested" => "record_membership_approval_or_reopen"
       }[minutes.status]
     end
 
@@ -383,6 +384,17 @@ module Api
         attested_at: attestation.attested_at.iso8601,
         recorded_by: directory_person_payload(attestation.recorded_by.person),
         confirmation_method: attestation.official_action_confirmation.confirmation_method
+      }
+    end
+
+    def membership_approval_payload(approval)
+      {
+        id: approval.id,
+        disposition: approval.disposition,
+        disposition_label: approval.disposition_label,
+        approving_meeting_id: approval.approving_meeting_id,
+        recorded_by: directory_person_payload(approval.recorded_by.person),
+        recorded_at: approval.recorded_at.iso8601
       }
     end
 

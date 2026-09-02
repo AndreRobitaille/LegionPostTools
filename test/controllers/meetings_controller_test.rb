@@ -81,7 +81,7 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".meeting-document-note", text: /Minutes have not been published yet/
   end
 
-  test "attested revision is member visible while still awaiting acceptance" do
+  test "attested revision is member visible while still awaiting membership approval" do
     meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.ago, title: "July Membership")
     minutes = MeetingMinutes.create_from_meeting!(meeting:)
     minutes.sections.first.items.create!(title: "Adjutant report", behavior_type: "report_slot", position: 1, body: "The minutes were read.")
@@ -95,19 +95,48 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
 
     get meeting_path(meeting)
     assert_response :success
-    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /minutes awaiting acceptance/i
+    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /minutes awaiting membership approval/i
 
     get meeting_minutes_path(meeting)
     assert_response :success
-    assert_select ".member-minutes-status", text: /Awaiting acceptance/
-    assert_select ".minutes-endorsements", text: /Commander approval.*Adjutant attestation/m
+    assert_select ".member-minutes-status", text: /Awaiting membership approval/
+    assert_select ".minutes-endorsements", text: /Commander approval for attestation.*Adjutant attestation/m
     assert_select ".minutes-item-title", text: "Adjutant report"
     assert_no_match(/official minutes/i, response.body)
 
     get meetings_path
     assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: "View minutes"
-    assert_select ".member-meeting-note", text: "Awaiting member acceptance"
+    assert_select ".member-meeting-note", text: "Awaiting membership approval"
     assert_select ".meeting-year .agenda-docket-meta", count: 0
+  end
+
+  test "membership-approved revision is presented as the official minutes" do
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.month.ago, title: "July Membership")
+    approving_meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.day.ago, title: "September Membership")
+    minutes = MeetingMinutes.create_from_meeting!(meeting:)
+    approver = lifecycle_user("Commander", "approve_minutes")
+    approver.permission_grants.create!(capability: "record_minutes_approval")
+    attester = lifecycle_user("Adjutant", "attest_minutes")
+    approval_token, = AgentAccessToken.issue!(user: approver, name: "Approval", expires_in: 1.day)
+    attestation_token, = AgentAccessToken.issue!(user: attester, name: "Attestation", expires_in: 1.day)
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: approval_token, action: "approve"))
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: attestation_token, action: "attest"))
+    minutes.record_membership_approval_with_confirmation!(
+      confirmation: OfficialActionConfirmation.for_delegated_agent!(
+        minutes:,
+        agent_access_token: approval_token,
+        action: "record_membership_approval",
+        action_payload: { approving_meeting_id: approving_meeting.id, disposition: "approved_as_corrected" }
+      )
+    )
+    sign_in_as(@user)
+
+    get meeting_minutes_path(meeting)
+
+    assert_response :success
+    assert_select ".minutes-eyebrow", text: "Official minutes"
+    assert_select ".member-minutes-status", text: /Approved as corrected.*September Membership/m
+    assert_select ".minutes-endorsements", text: /Membership approval.*Approved as corrected/m
   end
 
   private

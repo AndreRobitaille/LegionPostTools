@@ -228,7 +228,7 @@ honestly.
   open the best member-visible document directly, or present a plain noninteractive
   availability message. The Meeting detail page remains available for context and deep links.
 - Show the best available record prominently: no published agenda, published agenda,
-  attested minutes awaiting acceptance, or accepted official minutes. When minutes become
+  attested minutes awaiting membership approval, or membership-approved official minutes. When minutes become
   primary, retain the published agenda as quieter historical evidence.
 - Update the private Meeting/agenda API and generated handbook in the same slice so an
   authorized delegated agent cannot bypass the first-class Meeting boundary.
@@ -239,7 +239,7 @@ The detailed governing design is `docs/MINUTES_LIFECYCLE.md`. Build the next sli
 web app can use the historical Meeting, agenda, and transcript as distinct sources to
 prepare an OpenAI-generated structured first pass; let the Adjutant correct it without
 inventing missing facts; and carry one exact revision through human review, attestation,
-later acceptance, and immutable correction history.
+later membership approval, and immutable correction history.
 
 Do not attach minutes directly to a dated agenda or make the agenda stand in for the
 Meeting. Build the structured editor and AI generation in the same slice: the editor is
@@ -294,16 +294,19 @@ normal Adjutant experience.
 
 **Implemented:** exact immutable approval revisions, different-person Adjutant
 attestation, append-only lifecycle records, signed-in one-use confirmation, direct
-idempotent bearer execution, and member-visible attested minutes awaiting acceptance.
+idempotent bearer execution, member-visible attested minutes awaiting membership approval,
+audited reopening, and recording membership approval against an exact revision.
 
-- Keep the MVP state machine small: `draft` -> `approved` -> `attested` -> `accepted`.
+- Keep the MVP state machine small: `draft` -> `approved` -> `attested` -> `membership_approved`.
   Review is an activity within draft, not a separate persisted status unless officer use
   proves a handoff state is necessary.
 - `manage_minutes` controls drafting. Commander approval, Adjutant attestation, and later
-  acceptance recording use the existing explicit capabilities rather than inferred job
-  titles or administrator power. Rename the unused motion-specific acceptance capability
-  to `record_minutes_acceptance` before it is used by this workflow.
-- Attested minutes become the member-visible pre-acceptance record. An explicit reopen may
+  membership-approval recording use explicit capabilities rather than inferred job titles
+  or administrator power. The former motion-specific capability is
+  `record_minutes_approval` because the membership may approve without a motion.
+- The Commander receives the Adjutant's ordinary minutes-management authority but never
+  `attest_minutes`; signing/attestation remains the deliberately separate Adjutant act.
+- Attested minutes become the member-visible pre-approval record. An explicit reopen may
   return approved or attested minutes to draft, but it must preserve who reopened them and
   when, invalidate the superseded approval/attestation, and require the human workflow
   again.
@@ -312,28 +315,31 @@ idempotent bearer execution, and member-visible attested minutes awaiting accept
   tokens carry the same human capability, may execute the exact explicitly requested act,
   and must preserve idempotency plus agent-token provenance.
 
-### Slice 4: Acceptance, amendments, and immutability
+### Slice 4: Membership approval, corrections, amendments, and immutability
 
-- Record acceptance at a later Meeting of the same body, with the accepting Meeting,
+- Record membership approval at a later Meeting of the same body, with the approving Meeting,
   actor, time, factual disposition, and source minutes item or motion when available. Do
-  not require a fictitious motion when the body accepted the minutes as read or corrected.
-- Accepted minutes are immutable at the database and application layers. There is no
+  not require a fictitious motion when the body approved the minutes as presented or corrected.
+- Membership-approved minutes are immutable at the database and application layers. There is no
   administrator bypass and no transition back to draft.
-- Corrections adopted during acceptance or discovered later become linked amendment or
-  later-meeting records. They do not silently rewrite the attested or accepted text.
-- Render the accepted record together with its amendments so readers can see both the
-  original historical text and the authoritative correction.
-- Present accepted minutes as the primary historical document, attested minutes as
-  awaiting acceptance, and the published agenda as a retained secondary document.
+- Corrections adopted during original membership approval are incorporated directly into
+  the minutes, then approved for attestation and attested again as an exact corrected
+  revision. They are not amendments and do not require another membership vote.
+- Corrections discovered after membership approval become linked amendment or
+  later-meeting records. They never rewrite the membership-approved revision.
+- Present membership-approved minutes as the primary historical document, attested
+  minutes as awaiting membership approval, and the published agenda as a retained
+  secondary document.
 
 ### Slice 5: Official delivery and remaining delegated access
 
 - Promote the existing print-ready draft-minutes document into finalized attested and
   official PDFs from immutable revisions after the official lifecycle is correct.
 - Add email distribution and delivery records after final document generation is stable.
-- Draft-minutes, approval, and attestation API/handbook parity are complete. Add
-  acceptance and amendment surfaces with the same exact capability, idempotency, and
-  execution-audit rules.
+- Draft-minutes, approval, and attestation API/handbook parity are complete. Reopening and
+  membership-approval recording currently require the signed-in website. Add delegated
+  membership-approval and amendment surfaces only with the same exact capability,
+  idempotency, and execution-audit rules.
 
 The guided catalog-item creation improvement, Endeavor merge/split tools, Four Pillars,
 events, assignments, dashboards, reminders, general document archives, and broad AI

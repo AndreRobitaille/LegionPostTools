@@ -24,7 +24,7 @@
     <h2 id="ai-draft-source-heading">Transcript ready</h2>
     <dl>
       <div><dt>Size</dt><dd><%= number_to_human_size(@transcript.byte_size) %></dd></div>
-      <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after acceptance" : "Retain restricted" %></dd></div>
+      <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after membership approval" : "Retain restricted" %></dd></div>
       <div><dt>Model</dt><dd>GPT-5.6 Sol &middot; high reasoning</dd></div>
     </dl>
   </aside>

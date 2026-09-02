@@ -1,5 +1,5 @@
 class OfficialActionConfirmation < ApplicationRecord
-  ACTIONS = %w[approve attest].freeze
+  ACTIONS = %w[approve attest reopen record_membership_approval].freeze
   METHODS = %w[in_app delegated_agent external_written_confirmation].freeze
   TTL = 10.minutes
 
@@ -15,40 +15,46 @@ class OfficialActionConfirmation < ApplicationRecord
   validates :evidence_note, presence: true, if: :external_written_confirmation?
   validate :session_belongs_to_user
 
-  def self.prepare!(minutes:, user:, session:, action:)
+  def self.prepare!(minutes:, user:, session:, action:, action_payload: {})
+    action_payload = action_payload.to_h.deep_stringify_keys
     create!(
       user:,
       session:,
       meeting_minutes: minutes,
       action:,
       record_lock_version: minutes.lock_version,
-      content_digest: minutes.digest_for(action),
+      content_digest: minutes.digest_for(action, payload: action_payload),
+      action_payload:,
       confirmation_method: "in_app",
       expires_at: TTL.from_now
     )
   end
 
-  def self.for_delegated_agent!(minutes:, agent_access_token:, action:)
+  def self.for_delegated_agent!(minutes:, agent_access_token:, action:, action_payload: {})
+    action_payload = action_payload.to_h.deep_stringify_keys
     create!(
       user: agent_access_token.user,
       agent_access_token:,
       meeting_minutes: minutes,
       action:,
       record_lock_version: minutes.lock_version,
-      content_digest: minutes.digest_for(action),
+      content_digest: minutes.digest_for(action, payload: action_payload),
+      action_payload:,
       confirmation_method: "delegated_agent",
       expires_at: TTL.from_now,
       confirmed_at: Time.current
     )
   end
 
-  def self.record_external!(minutes:, user:, action:, evidence_note:)
+  def self.record_external!(minutes:, user:, action:, evidence_note:, action_payload: {})
+    action_payload = action_payload.to_h.deep_stringify_keys
     create!(
       user:,
       meeting_minutes: minutes,
       action:,
       record_lock_version: minutes.lock_version,
-      content_digest: minutes.digest_for(action),
+      content_digest: minutes.digest_for(action, payload: action_payload),
+      action_payload:,
       confirmation_method: "external_written_confirmation",
       evidence_note:,
       expires_at: TTL.from_now,

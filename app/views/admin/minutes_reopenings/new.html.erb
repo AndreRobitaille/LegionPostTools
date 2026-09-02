@@ -1,0 +1,40 @@
+<% content_for :title, "Reopen minutes for correction" %>
+<%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
+
+<div class="page-lead">
+  <p class="minutes-eyebrow">Correction from membership approval</p>
+  <h1 class="page-title">Reopen this exact revision</h1>
+  <p class="page-sub"><%= @minutes.title %></p>
+</div>
+
+<section class="official-confirmation-summary official-confirmation-summary--reopen">
+  <h2>What this does</h2>
+  <p>Returns the working record to draft so a correction can be entered. Revision <%= @minutes.current_revision.number %> and its approval history remain preserved.</p>
+  <dl>
+    <div><dt>Current state</dt><dd><%= @minutes.attested? ? "Attested and visible to members" : "Commander-approved for attestation" %></dd></div>
+    <div><dt>After reopening</dt><dd>Editable working record; Commander approval and Adjutant attestation must be repeated</dd></div>
+    <div><dt>Membership action</dt><dd>This does not record or repeat a membership vote</dd></div>
+  </dl>
+</section>
+
+<% if @confirmation&.confirmed_at? %>
+  <section class="minutes-correction-ledger" aria-labelledby="correction-reason-heading">
+    <p>Reason entered for the permanent history</p>
+    <h2 id="correction-reason-heading"><%= @reason %></h2>
+  </section>
+  <%= button_to "Reopen for this correction", admin_meeting_minutes_reopening_path(@meeting),
+        params: { confirmation_id: @confirmation.id }, class: "btn-confirm" %>
+<% else %>
+  <%= form_with url: admin_meeting_minutes_reopening_path(@meeting), scope: :minutes_reopening, class: "stacked-form official-action-form" do |form| %>
+    <div class="fl">
+      <%= form.label :reason, "Why are these minutes being reopened?" %>
+      <%= form.text_area :reason, rows: 4, class: "f", required: true,
+            placeholder: "For example: Incorporate the correction adopted when the membership approved these minutes." %>
+      <span class="fl-help">This reason becomes permanent audit history. Do not enter the replacement minutes text here; edit the proper minutes item after reopening.</span>
+    </div>
+    <div class="btnrow">
+      <%= form.submit "Continue to identity confirmation", class: "btn-primary" %>
+      <%= link_to "Cancel", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+    </div>
+  <% end %>
+<% end %>

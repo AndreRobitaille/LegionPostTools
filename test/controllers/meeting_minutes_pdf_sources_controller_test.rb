@@ -10,9 +10,9 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
       public_email: "post@example.com",
       timezone: "America/Chicago"
     )
-    body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    @body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     type = @organization.meeting_types.create!(name: "Membership Meeting", slug: "membership-meeting", position: 1, active: true)
-    meeting = create_meeting!(organization: @organization, meeting_body: body, meeting_type: type, starts_at: 1.day.ago)
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: type, starts_at: 1.day.ago)
     @minutes = MeetingMinutes.create_from_meeting!(meeting:)
     creator = User.create!(
       person: Person.create!(first_name: "Casey", last_name: "Adjutant"),
@@ -69,7 +69,7 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".minutes-doc-result", text: "Did not pass"
     assert_select "body", text: /Related continuing work/, count: 0
     assert_select "body", text: /Car & Bike Show 2026/, count: 0
-    assert_select ".minutes-authority-folio", text: /not approved, attested, or accepted/i
+    assert_select ".minutes-authority-folio", text: /not Commander-approved, attested, or membership-approved/i
     assert_select "nav", count: 0
   end
 
@@ -80,16 +80,50 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
 
     assert_response :success
-    assert_select ".minutes-doc-status-label--attested", text: "Attested - awaiting acceptance"
+    assert_select ".minutes-doc-status-label--attested", text: "Attested - awaiting membership approval"
     assert_select ".agenda-meeting-heading h1", text: "Membership Meeting - Attested minutes"
     assert_select ".minutes-doc-item", text: /Finance report/
     assert_select ".minutes-doc-item", text: /Changed working row after attestation/, count: 0
-    assert_select ".minutes-authority-folio", text: /Attested minutes - awaiting acceptance/
+    assert_select ".minutes-authority-folio", text: /Attested minutes - awaiting membership approval/
     assert_select ".minutes-authority-folio", text: /Approved for attestation.*Test Commander/m
     assert_select ".minutes-authority-folio", text: /Attested.*Test Adjutant/m
-    assert_select ".minutes-authority-folio", text: /Acceptance.*Awaiting action at a later Membership/m
-    assert_select ".agenda-doc-footer", text: /Attested - awaiting acceptance/
-    assert_includes response.body, "ATTESTED - AWAITING ACCEPTANCE"
+    assert_select ".minutes-authority-folio", text: /Membership approval.*Awaiting action at a later Membership/m
+    assert_select ".agenda-doc-footer", text: /Attested - awaiting membership approval/
+    assert_includes response.body, "ATTESTED - AWAITING MEMBERSHIP APPROVAL"
+  end
+
+  test "membership-approved source renders the exact revision as official" do
+    attest_minutes!
+    approver = @minutes.current_revision.approved_by
+    approver.permission_grants.create!(capability: "record_minutes_approval")
+    approving_meeting = create_meeting!(
+      organization: @organization,
+      meeting_body: @body,
+      starts_at: 1.hour.ago,
+      title: "Later Membership Meeting"
+    )
+    @minutes.record_membership_approval_with_confirmation!(
+      confirmation: OfficialActionConfirmation.record_external!(
+        minutes: @minutes,
+        user: approver,
+        action: "record_membership_approval",
+        action_payload: {
+          approving_meeting_id: approving_meeting.id,
+          disposition: "approved_as_corrected"
+        },
+        evidence_note: "Commander recorded the membership action."
+      )
+    )
+
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
+
+    assert_response :success
+    assert_select ".minutes-doc-status-label--membership_approved", text: "Official - membership approved"
+    assert_select ".agenda-meeting-heading h1", text: "Membership Meeting - Official minutes"
+    assert_select ".minutes-authority-folio", text: /Official minutes approved by the membership/
+    assert_select ".minutes-authority-folio", text: /Membership approval.*Approved as corrected.*Later Membership Meeting/m
+    assert_select ".minutes-authority-folio", text: /Revision.*1/m
+    assert_select ".agenda-doc-footer", text: /Official - membership approved/
   end
 
   test "source rejects invalid tokens" do

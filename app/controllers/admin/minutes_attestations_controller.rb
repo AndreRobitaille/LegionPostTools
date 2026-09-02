@@ -15,7 +15,7 @@ module Admin
       if confirmation&.confirmed_at?
         @minutes.attest_with_confirmation!(confirmation:)
         clear_pending_confirmation
-        redirect_to admin_meeting_minutes_path(@meeting), notice: "Minutes attested and released to members awaiting acceptance."
+        redirect_to admin_meeting_minutes_path(@meeting), notice: "Minutes attested and released to members awaiting membership approval."
       else
         confirmation ||= OfficialActionConfirmation.prepare!(
           minutes: @minutes,

@@ -1,9 +1,19 @@
 class AmericanLegionPostPreset
+  ADJUTANT_CAPABILITIES = %w[
+    manage_agendas
+    manage_minutes
+    attest_minutes
+    record_minutes_approval
+  ].freeze
+  COMMANDER_CAPABILITIES = (
+    ADJUTANT_CAPABILITIES - [ "attest_minutes" ] + [ "approve_minutes" ]
+  ).freeze
+
   POSITION_TITLES = [
-    { name: "Commander", required: true, membership_access: true, capabilities: %w[manage_agendas approve_minutes] },
+    { name: "Commander", required: true, membership_access: true, capabilities: COMMANDER_CAPABILITIES },
     { name: "1st Vice Commander", required: true, membership_access: true, capabilities: [] },
     { name: "2nd Vice Commander", required: true, membership_access: false, capabilities: [] },
-    { name: "Adjutant", required: true, membership_access: true, capabilities: %w[manage_agendas manage_minutes attest_minutes] },
+    { name: "Adjutant", required: true, membership_access: true, capabilities: ADJUTANT_CAPABILITIES },
     { name: "Finance Officer", required: true, membership_access: false, capabilities: [] },
     { name: "Chaplain", required: true, membership_access: false, capabilities: [] },
     { name: "Sergeant-at-Arms", required: true, membership_access: false, capabilities: [] },

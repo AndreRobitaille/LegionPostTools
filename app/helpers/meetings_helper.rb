@@ -10,11 +10,11 @@ module MeetingsHelper
   end
 
   def member_meeting_document_action(meeting)
-    if meeting.minutes&.attested?
+    if meeting.minutes&.member_visible?
       return {
         label: "View minutes",
         path: meeting_minutes_path(meeting),
-        note: "Awaiting member acceptance",
+        note: meeting.minutes.membership_approved? ? meeting.minutes.membership_approval.disposition_label : "Awaiting membership approval",
         state: "minutes"
       }
     end
@@ -38,7 +38,13 @@ module MeetingsHelper
   def meeting_record_state(meeting)
     if internal_minutes_access?
       if meeting.minutes
-        label = meeting.minutes.attested? ? "Minutes awaiting acceptance" : "#{meeting.minutes.status.humanize} minutes"
+        label = if meeting.minutes.membership_approved?
+          "Official minutes"
+        elsif meeting.minutes.member_visible?
+          "Minutes awaiting membership approval"
+        else
+          "#{meeting.minutes.status.humanize} minutes"
+        end
         return [ label, "meeting-state--minutes" ]
       end
       return [ "Transcript ready", "meeting-state--transcript" ] if meeting.transcript
@@ -55,8 +61,9 @@ module MeetingsHelper
   end
 
   def member_meeting_state(meeting)
-    if meeting.minutes&.attested?
-      return [ "Minutes awaiting acceptance", "meeting-state--minutes" ]
+    if meeting.minutes&.member_visible?
+      label = meeting.minutes.membership_approved? ? "Official minutes" : "Minutes awaiting membership approval"
+      return [ label, "meeting-state--minutes" ]
     end
 
     if meeting.dated_agenda&.published?
@@ -93,7 +100,7 @@ module MeetingsHelper
   end
 
   def internal_minutes_access?
-    current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
+    current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "record_minutes_approval", "view_internal_records")
   end
 
   private

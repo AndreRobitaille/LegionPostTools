@@ -14,6 +14,11 @@ class Meeting < ApplicationRecord
     class_name: "MeetingTranscript",
     dependent: :restrict_with_exception,
     inverse_of: :meeting
+  has_many :minutes_membership_approvals,
+    class_name: "MinutesMembershipApproval",
+    foreign_key: :approving_meeting_id,
+    dependent: :restrict_with_exception,
+    inverse_of: :approving_meeting
 
   before_validation :apply_default_title
   before_validation :apply_location_defaults, on: :create

@@ -9,9 +9,9 @@
 
 <section class="official-confirmation-summary official-confirmation-summary--attest">
   <h2>What this does</h2>
-  <p>Attests that revision <%= @minutes.current_revision.number %> is the minutes record being presented to members. It will appear as awaiting acceptance, not as accepted or official.</p>
+  <p>Attests that revision <%= @minutes.current_revision.number %> is the minutes record being presented to members. It will appear as awaiting membership approval, not as official.</p>
   <dl>
-    <div><dt>Approved by</dt><dd><%= @minutes.current_revision.approver_name %>, <%= @minutes.current_revision.approver_office %></dd></div>
+    <div><dt>Commander-approved by</dt><dd><%= @minutes.current_revision.approver_name %>, <%= @minutes.current_revision.approver_office %></dd></div>
     <div><dt>Revision digest</dt><dd><code><%= @minutes.current_revision.sha256.first(12) %></code></dd></div>
     <div><dt>Member visibility</dt><dd>Visible after attestation</dd></div>
   </dl>

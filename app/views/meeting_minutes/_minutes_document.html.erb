@@ -4,6 +4,7 @@
 <% payload = minutes_document_payload(minutes) %>
 <% revision = minutes.current_revision %>
 <% attestation = revision&.attestation %>
+<% membership_approval = minutes.membership_approval %>
 
 <% content_for :head do %>
   <%= content_tag :style,
@@ -136,7 +137,11 @@
       <% if attestation %>
         <div><dt>Attested</dt><dd><%= attestation.attester_name %>, <%= attestation.attester_office %> · <%= legion_datetime(attestation.attested_at) %></dd></div>
       <% end %>
-      <% if minutes.attested? %><div><dt>Acceptance</dt><dd>Awaiting action at a later <%= payload.fetch("meeting_body_name") %></dd></div><% end %>
+      <% if membership_approval %>
+        <div><dt>Membership approval</dt><dd><%= membership_approval.disposition_label %> · <%= membership_approval.approving_meeting.title %> · <%= legion_date(membership_approval.approving_meeting.starts_at) %></dd></div>
+      <% elsif minutes.attested? %>
+        <div><dt>Membership approval</dt><dd>Awaiting action at a later <%= payload.fetch("meeting_body_name") %></dd></div>
+      <% end %>
       <div><dt>Source</dt><dd><%= revision ? "Immutable approved revision #{revision.number}" : "Current editable minutes record" %></dd></div>
       <% if revision %><div><dt>Revision</dt><dd><%= revision.number %> · <%= revision.sha256.first(12) %></dd></div><% end %>
     </dl>

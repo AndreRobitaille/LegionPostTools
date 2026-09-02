@@ -1,4 +1,10 @@
-<% content_for :title, "#{@minutes.status.humanize} minutes - #{@minutes.title}" %>
+<% minutes_kind = {
+  "draft" => "Draft minutes",
+  "approved" => "Commander-approved minutes",
+  "attested" => "Attested minutes",
+  "membership_approved" => "Official minutes"
+}.fetch(@minutes.status) %>
+<% content_for :title, "#{minutes_kind} - #{@minutes.title}" %>
 <% editable = current_user.can?("manage_minutes") && @minutes.draft? %>
 <% organizing = editable && params[:organize] == "1" %>
 <% latest_run = @minutes.draft_runs.first %>
@@ -16,12 +22,21 @@
 
 <div class="da-lifecycle minutes-lifecycle">
   <div class="da-lifecycle-state">
-    <span class="minutes-draft-stamp<%= " minutes-draft-stamp--attested" if @minutes.attested? %>"><%= @minutes.attested? ? "Awaiting acceptance" : "#{@minutes.status.humanize} minutes" %></span>
+    <span class="minutes-draft-stamp<%= " minutes-draft-stamp--attested" if @minutes.attested? || @minutes.membership_approved? %>"><%= if @minutes.membership_approved?
+      "Membership approved"
+    elsif @minutes.attested?
+      "Awaiting membership approval"
+    elsif @minutes.reopened?
+      "Under correction"
+    else
+      "#{@minutes.status.humanize} minutes"
+    end %></span>
     <span class="helper">
-      <% if @minutes.draft? %>Editable working record. Not visible to members.
-      <% elsif @minutes.approved? %>Exact revision locked. Awaiting a different officer's Adjutant attestation.
-      <% elsif @minutes.attested? %>Visible to members. No acceptance or membership motion has been recorded.
-      <% else %>Accepted official record.<% end %>
+      <% if @minutes.reopened? %>Editable correction in progress. The prior attested revision remains visible to members.
+      <% elsif @minutes.draft? %>Editable working record. Not visible to members.
+      <% elsif @minutes.approved? %>Commander-approved exact revision. Awaiting a different officer's Adjutant attestation.
+      <% elsif @minutes.attested? %>Visible to members. Membership approval has not been recorded.
+      <% else %>Official record approved by the membership.<% end %>
     </span>
   </div>
   <div class="btnrow">
@@ -35,29 +50,60 @@
       <% end %>
     <% end %>
     <% if @minutes.draft? && current_user.can?("approve_minutes") && @minutes.approval_ready? %>
-      <%= link_to "Approve exact draft", new_admin_meeting_minutes_approval_path(@meeting), class: "btn-confirm" %>
+      <%= link_to(@minutes.reopened? ? "Approve corrected draft for Adjutant" : "Approve exact draft for Adjutant", new_admin_meeting_minutes_approval_path(@meeting), class: "btn-confirm") %>
     <% elsif @minutes.approved? && current_user.can?("attest_minutes") && @minutes.current_revision.approved_by.person_id != current_user.person_id %>
-      <%= link_to "Attest for member review", new_admin_meeting_minutes_attestation_path(@meeting), class: "btn-confirm" %>
+      <%= link_to "Attest and release to members", new_admin_meeting_minutes_attestation_path(@meeting), class: "btn-confirm" %>
+    <% elsif @minutes.attested? %>
+      <% if current_user.can?("record_minutes_approval") %>
+        <%= link_to "Record membership approval", new_admin_meeting_minutes_membership_approval_path(@meeting), class: "btn-confirm" %>
+      <% end %>
+      <% if current_user.can?("attest_minutes") %>
+        <%= link_to "Reopen for correction", new_admin_meeting_minutes_reopening_path(@meeting), class: "btn-secondary" %>
+      <% end %>
+    <% elsif @minutes.approved? && current_user.can?("approve_minutes") %>
+      <%= link_to "Reopen before attestation", new_admin_meeting_minutes_reopening_path(@meeting), class: "btn-secondary" %>
     <% end %>
   </div>
 </div>
 
 <section class="minutes-lifecycle-rail" aria-label="Minutes progression">
-  <% approval = @minutes.current_revision %>
+  <% approval = @minutes.reopened? ? nil : @minutes.current_revision %>
   <% attestation = approval&.attestation %>
   <div class="minutes-lifecycle-step is-complete">
     <span>1</span><div><strong>Working draft</strong><small>Human-reviewed record</small></div>
   </div>
-  <div class="minutes-lifecycle-step <%= approval ? "is-complete" : "is-current" %>">
-    <span>2</span><div><strong>Commander approval</strong><small><%= approval ? "#{approval.approver_name} · #{legion_datetime(approval.approved_at)}" : "Approve one exact revision" %></small></div>
+  <div class="minutes-lifecycle-step <%= approval ? "is-complete" : (@minutes.draft? ? "is-current" : "") %>">
+    <span>2</span><div><strong>Commander approval for attestation</strong><small><%= approval ? "#{approval.approver_name} · #{legion_datetime(approval.approved_at)}" : (@minutes.reopened? ? "Repeat after entering the correction" : "Approve one exact revision") %></small></div>
   </div>
   <div class="minutes-lifecycle-step <%= attestation ? "is-complete" : (@minutes.approved? ? "is-current" : "") %>">
     <span>3</span><div><strong>Adjutant release</strong><small><%= attestation ? "#{attestation.attester_name} · #{legion_datetime(attestation.attested_at)}" : "Makes the revision visible to members" %></small></div>
   </div>
-  <div class="minutes-lifecycle-step <%= "is-current" if @minutes.attested? %>">
-    <span>4</span><div><strong>Membership acceptance</strong><small><%= @minutes.attested? ? "Awaiting action at a later meeting" : "Not reached" %></small></div>
+  <div class="minutes-lifecycle-step <%= @minutes.membership_approved? ? "is-complete" : (@minutes.attested? ? "is-current" : "") %>">
+    <span>4</span><div><strong>Membership approval</strong><small><%= if @minutes.membership_approved?
+      "#{@minutes.membership_approval.disposition_label} · #{legion_date(@minutes.membership_approval.approving_meeting.starts_at)}"
+    elsif @minutes.attested?
+      "Awaiting action at a later meeting"
+    else
+      "Not reached"
+    end %></small></div>
   </div>
 </section>
+
+<% if @minutes.reopened? || @minutes.revisions.many? %>
+  <section class="minutes-correction-ledger" aria-labelledby="revision-history-heading">
+    <p>Preserved record history</p>
+    <h2 id="revision-history-heading"><%= @minutes.reopened? ? "A correction is being prepared" : "Revision history" %></h2>
+    <dl>
+      <% @minutes.revisions.reverse_each do |revision| %>
+        <div>
+          <dt>Revision <%= revision.number %></dt>
+          <dd>Commander-approved by <%= revision.approver_name %><% if revision.attestation %>; attested by <%= revision.attestation.attester_name %><% end %> · <code><%= revision.sha256.first(12) %></code></dd>
+        </div>
+      <% end %>
+    </dl>
+    <% if @minutes.reopened? %><p class="helper">The preserved revision remains available to members while the corrected working record is completed.</p><% end %>
+  </section>
+<% end %>
 
 <div class="agenda-meeting-snapshot minutes-meeting-snapshot">
   <span>Meeting details</span>

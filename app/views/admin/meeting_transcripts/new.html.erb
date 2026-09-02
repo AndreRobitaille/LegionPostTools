@@ -40,7 +40,7 @@
     <legend><span>Step 2</span> Choose how long this app keeps the source</legend>
     <label class="transcript-choice">
       <%= form.radio_button :retention_policy, "delete_after_acceptance", checked: params.dig(:meeting_transcript, :retention_policy).blank? || params.dig(:meeting_transcript, :retention_policy) == "delete_after_acceptance" %>
-      <span><strong>Delete after acceptance <em>Recommended</em></strong><small>Schedule source deletion after the members accept the minutes, with a 30-day recovery window.</small></span>
+      <span><strong>Delete after membership approval <em>Recommended</em></strong><small>Schedule source deletion after the membership approves the minutes, with a 30-day recovery window.</small></span>
     </label>
     <label class="transcript-choice">
       <%= form.radio_button :retention_policy, "retain_restricted", checked: params.dig(:meeting_transcript, :retention_policy) == "retain_restricted" %>
