@@ -46,7 +46,7 @@ gem "csv"
 gem "webauthn"
 
 # Official OpenAI SDK for the transcript-assisted minutes drafting boundary.
-gem "openai", "~> 0.83.0"
+gem "openai", "~> 0.84.0"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
