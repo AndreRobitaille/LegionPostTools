@@ -127,3 +127,19 @@ Detail-page validation: 15 controller tests / 161 assertions and 3 browser tests
 public event screenshots. No horizontal overflow at 390px; event type is above the title,
 timezone is absent for date-only events, and member pages have no edit action. Focused
 Ruby lint and diff whitespace checks pass.
+
+## Mobile schedule refinement — September 6, 2026
+
+Use the dashboard's event cues for the calendar schedule: paper cards, a category-colored
+edge, category icon/label, separate clock and location lines, and an explicit Details
+action. Retain existing category colors (#DBEDDF/#285E3A public, #DDE8F6/#173E69 planning,
+and the existing meeting/Honor Guard palette), navy headings and system sans type.
+Titles stay 18px on phones; metadata is 14px and actions 16px. Color is reinforced by
+category text and icons. Avoid full-card pastel fills and inline separator dots.
+
+On phones each date becomes a horizontal heading above its group, giving all events the
+full available width. Keep one date heading for multiple events that day. Desktop schedule
+retains its date column; the month grid, filters, category visibility, cancellation,
+public preview and management permissions keep their existing behavior. Reuse shared
+activity icons with the dashboard. Verify 390px and 320px, long titles/locations, multiple
+events on a day, filtering, details navigation, keyboard focus, desktop schedule and print.

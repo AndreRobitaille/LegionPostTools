@@ -11,15 +11,15 @@
   </time>
   <div class="dashboard-activity-copy">
     <div class="dashboard-activity-kind">
-      <%= render "activity_icon", kind: category %>
+      <%= render "shared/activity_icon", kind: category %>
       <span><%= label %></span>
     </div>
     <h2><%= calendar_entry_title(entry) %></h2>
     <% if event_time.present? %>
-      <p><%= render "activity_icon", kind: "time" %><span><%= event_time %></span></p>
+      <p><%= render "shared/activity_icon", kind: "time" %><span><%= event_time %></span></p>
     <% end %>
     <% if calendar_entry_location(entry).present? %>
-      <p><%= render "activity_icon", kind: "location" %><span><%= calendar_entry_location(entry) %></span></p>
+      <p><%= render "shared/activity_icon", kind: "location" %><span><%= calendar_entry_location(entry) %></span></p>
     <% end %>
   </div>
   <span class="dashboard-activity-action"><span class="dashboard-activity-arrow" aria-hidden="true">→</span>Details</span>

@@ -63,14 +63,21 @@
       <section class="calendar-schedule" aria-label="Schedule for <%= @month.date.strftime('%B') %>">
         <% @month.scheduled_days(filtered: false).each do |day, entries| %>
           <section class="calendar-date-group" aria-label="<%= legion_date(day) %>" data-calendar-target="day" <%= 'hidden' if entries.all? { |entry| calendar_entry_hidden?(entry) } %>>
-            <h3 class="calendar-date"><span><%= day.strftime("%a") %></span><strong><%= day.day %></strong></h3>
+            <h3 class="calendar-date"><span><%= day.strftime("%a") %></span><strong><%= day.day %></strong><span class="calendar-date-month"><%= day.strftime("%b") %></span></h3>
             <div class="calendar-date-events">
               <% entries.each do |entry| %>
                 <article class="calendar-row calendar-category--<%= CalendarCategories.for(entry) %>" data-calendar-target="entry" data-category="<%= CalendarCategories.for(entry) %>" <%= 'hidden' if calendar_entry_hidden?(entry) %>>
                   <%= link_to calendar_entry_path(entry), class: "calendar-schedule-event" do %>
-                    <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
-                    <h4><%= calendar_entry_title(entry) %></h4>
-                    <p><%= calendar_entry_time(entry) %><% if calendar_entry_location(entry).present? %><span class="calendar-event-place"> · <%= calendar_entry_location(entry) %></span><% end %></p>
+                    <div class="calendar-schedule-copy">
+                      <div class="calendar-schedule-kind"><%= render "shared/activity_icon", kind: CalendarCategories.for(entry) %><span><%= CalendarCategories::LABELS.fetch(CalendarCategories.for(entry)) %></span></div>
+                      <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
+                      <h4><%= calendar_entry_title(entry) %></h4>
+                      <% time = entry.is_a?(CalendarEvent) && entry.all_day? ? nil : calendar_entry_time(entry) %>
+                      <% location = calendar_entry_location(entry) %>
+                      <% if time.present? %><p><%= render "shared/activity_icon", kind: "time" %><span><%= time %></span></p><% end %>
+                      <% if location.present? %><p class="calendar-event-place"><%= render "shared/activity_icon", kind: "location" %><span><%= location %></span></p><% end %>
+                    </div>
+                    <span class="calendar-schedule-action">Details <span aria-hidden="true">→</span></span>
                   <% end %>
                 </article>
               <% end %>
