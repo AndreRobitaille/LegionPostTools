@@ -19,7 +19,10 @@ module EndeavorHistory
       { "data" => JSON.parse(response.output_text), "model" => response.model,
         "request_id" => response._request_id, "response_id" => response.id,
         "input_tokens" => response.usage&.input_tokens.to_i, "output_tokens" => response.usage&.output_tokens.to_i,
-        "total_tokens" => response.usage&.total_tokens.to_i }
+        "total_tokens" => response.usage&.total_tokens.to_i,
+        "cached_input_tokens" => response.usage&.input_tokens_details&.cached_tokens.to_i,
+        "cache_write_tokens" => response.usage&.input_tokens_details&.cache_write_tokens.to_i,
+        "reasoning_tokens" => response.usage&.output_tokens_details&.reasoning_tokens.to_i }
     rescue JSON::ParserError, OpenAI::Errors::ConversionError
       raise Error, "invalid_output"
     rescue OpenAI::Errors::APITimeoutError

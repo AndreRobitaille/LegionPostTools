@@ -1,6 +1,8 @@
 require "test_helper"
 
 class EndeavorHistoryTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   class FakeProvider
     attr_reader :calls
     attr_accessor :alter
@@ -261,6 +263,67 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert_equal data, EndeavorHistory::Validate.discovery!(data, document)
     data["items"].pop
     assert_raises(EndeavorHistory::Error) { EndeavorHistory::Validate.discovery!(data, document) }
+  end
+
+  test "only new or corrected attestation queues AI reconciliation" do
+    process
+    clear_enqueued_jobs
+    confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
+      action: "reopen", evidence_note: "Synthetic correction.", action_payload: { "reason" => "Correct wording." })
+    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob) do
+      @minutes.reopen_with_confirmation!(confirmation: confirmation)
+      @item.update!(body: "Corrected Car Show report.")
+      approval = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
+        action: "approve", evidence_note: "Synthetic corrected approval.")
+      @minutes.approve_with_confirmation!(confirmation: approval)
+    end
+    assert EndeavorHistory::Presenter.new(@endeavor).overview.any?
+    confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @adjutant,
+      action: "attest", evidence_note: "Synthetic corrected attestation.")
+    assert_enqueued_with(job: EndeavorHistoryReconcileJob, args: [ @organization.id ]) do
+      @minutes.attest_with_confirmation!(confirmation: confirmation)
+    end
+    assert_empty EndeavorHistory::Presenter.new(@endeavor).overview
+  end
+
+  test "new attested meeting queues history and missed callbacks are recovered without duplicate runs" do
+    process
+    clear_enqueued_jobs
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.day.ago, title: "Later meeting")
+    minutes = nil
+    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob) do
+      minutes = MeetingMinutes.create_from_meeting!(meeting: meeting)
+      minutes.sections.first.items.create!(title: "Car Show", behavior_type: "report_slot", position: 1, body: "Volunteers confirmed.")
+    end
+    assert_enqueued_with(job: EndeavorHistoryReconcileJob, args: [ @organization.id ]) { attest(minutes) }
+    clear_enqueued_jobs
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) do
+      EndeavorHistoryReconcileJob.perform_now(@organization.id)
+    end
+    assert_difference "EndeavorHistoryRun.count", 1 do
+      EndeavorHistoryRefreshJob.perform_now(@endeavor.id)
+    end
+    run = @endeavor.history_runs.recent.first
+    EndeavorHistory::Processing.new(run, provider: @provider).call
+    assert_equal "succeeded", run.reload.status
+    assert_no_difference "EndeavorHistoryRun.count" do
+      assert_no_enqueued_jobs(only: EndeavorHistoryJob) { EndeavorHistoryRefreshJob.perform_now(@endeavor.id) }
+    end
+  end
+
+  test "membership approval updates authority without regenerating unchanged minutes" do
+    process
+    clear_enqueued_jobs
+    manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.day.ago, title: "Approval meeting")
+    confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
+      action: "record_membership_approval", evidence_note: "Synthetic membership approval.",
+      action_payload: { "approving_meeting_id" => meeting.id, "disposition" => "approved_as_presented" })
+    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob) do
+      @minutes.record_membership_approval_with_confirmation!(confirmation: confirmation)
+    end
+    assert_equal manifest, EndeavorHistory::Sources.new(@endeavor).manifest
+    assert_equal "Official minutes", EndeavorHistory::Presenter.new(@endeavor).entries.first[:authority]
   end
 
   private

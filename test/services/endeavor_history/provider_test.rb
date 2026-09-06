@@ -5,7 +5,8 @@ class EndeavorHistoryProviderTest < ActiveSupport::TestCase
     captured = []
     response = Struct.new(:status, :output_text, :model, :_request_id, :id, :usage).new(
       :completed, '{"valid":true,"issues":[]}', "gpt-6-astra", "request-test", "response-test",
-      Struct.new(:input_tokens, :output_tokens, :total_tokens).new(10, 20, 30))
+      Struct.new(:input_tokens, :output_tokens, :total_tokens, :input_tokens_details, :output_tokens_details).new(10, 20, 30,
+        Struct.new(:cached_tokens, :cache_write_tokens).new(4, 2), Struct.new(:reasoning_tokens).new(15)))
     client = Object.new
     client.define_singleton_method(:responses) { self }
     client.define_singleton_method(:create) { |**args| captured << args; response }
@@ -21,6 +22,9 @@ class EndeavorHistoryProviderTest < ActiveSupport::TestCase
     assert_equal :none, request[:tool_choice]
     assert_empty request.keys & %i[temperature top_p logprobs top_logprobs]
     assert_equal 30, result["total_tokens"]
+    assert_equal 4, result["cached_input_tokens"]
+    assert_equal 2, result["cache_write_tokens"]
+    assert_equal 15, result["reasoning_tokens"]
     assert_equal "medium", EndeavorHistory::Config.reasoning("summary")
     assert_includes request[:instructions], "Do not ask questions or request approval"
   end

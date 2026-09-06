@@ -68,6 +68,15 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "UNPUBLISHED_CANARY"
     get api_endeavor_path(@endeavor), as: :json
     assert_includes response.parsed_body.dig("endeavor", "upcoming_agenda_ids"), draft.id
+    assert_no_difference "EndeavorHistoryRun.count" do
+      draft.reopen!(@manager)
+      get endeavor_path(@endeavor)
+      assert_not_includes response.body, "UNPUBLISHED_CANARY"
+      draft.approve!(@manager)
+      draft.publish!(@manager)
+      get endeavor_path(@endeavor)
+      assert_includes response.body, "UNPUBLISHED_CANARY"
+    end
   end
 
   test "other organizations history is not accessible" do
