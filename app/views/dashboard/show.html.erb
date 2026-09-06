@@ -34,6 +34,18 @@
     </section>
 
     <%= link_to "Browse all meetings", meetings_path, class: "member-dashboard-all-meetings" %>
+
+    <% if @upcoming_activities.any? %>
+      <section class="member-dashboard-section dashboard-activities" aria-label="Coming up at the Post">
+        <%= render "shared/section_header", label: "Coming up at the Post" %>
+        <ul class="dashboard-activity-list">
+          <% @upcoming_activities.each do |entry| %>
+            <li><%= render "activity", entry: entry %></li>
+          <% end %>
+        </ul>
+        <%= link_to "View full calendar", calendar_path, class: "member-dashboard-all-meetings" %>
+      </section>
+    <% end %>
   </main>
 
   <% if @show_passkey_invite %>

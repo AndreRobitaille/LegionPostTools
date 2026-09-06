@@ -58,6 +58,10 @@ clipped focus, or sub-16-pixel interactive text is acceptable.
 - Keep the passkey invitation optional, brief, and visually subordinate in a desktop
   sidebar. On phones it follows meeting information.
 - Keep login-email review prominent when it genuinely requires the member's attention.
+- Below the two member meeting cards, automatically list the next three eligible calendar
+  activities. Exclude Honor Guard, officer/PEC meetings, member meetings, and cancelled
+  events; no volunteer settings are required. See `DASHBOARD_ACTIVITIES.md` for selection
+  and visual behavior.
 
 ## Meeting document actions
 

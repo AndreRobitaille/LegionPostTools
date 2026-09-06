@@ -1,0 +1,26 @@
+<% date = entry.starts_at.in_time_zone(@organization.calendar_time_zone) %>
+<% event_time = calendar_entry_time(entry) unless entry.is_a?(CalendarEvent) && entry.all_day? %>
+<% category = CalendarCategories.for(entry) %>
+<% label = { "public_event" => "Public event", "planning_meeting" => "Planning meeting", "other" => "Post activity" }.fetch(category) %>
+<%= link_to calendar_entry_path(entry), class: "dashboard-activity calendar-category--#{category}" do %>
+  <time class="dashboard-activity-date" datetime="<%= date.to_date.iso8601 %>">
+    <span class="dashboard-activity-month"><%= date.strftime("%b") %></span>
+    <strong><%= date.day %></strong>
+    <span><%= date.strftime("%a") %></span>
+    <% if date.year != Date.current.year %><span><%= date.year %></span><% end %>
+  </time>
+  <div class="dashboard-activity-copy">
+    <div class="dashboard-activity-kind">
+      <%= render "activity_icon", kind: category %>
+      <span><%= label %></span>
+    </div>
+    <h2><%= calendar_entry_title(entry) %></h2>
+    <% if event_time.present? %>
+      <p><%= render "activity_icon", kind: "time" %><span><%= event_time %></span></p>
+    <% end %>
+    <% if calendar_entry_location(entry).present? %>
+      <p><%= render "activity_icon", kind: "location" %><span><%= calendar_entry_location(entry) %></span></p>
+    <% end %>
+  </div>
+  <span class="dashboard-activity-action"><span class="dashboard-activity-arrow" aria-hidden="true">→</span>Details</span>
+<% end %>
