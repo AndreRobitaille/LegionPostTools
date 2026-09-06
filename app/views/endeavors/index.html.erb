@@ -6,7 +6,7 @@
     <p class="page-sub">Continuing Post work, kept understandable across meetings and officer transitions.</p>
   </div>
   <% if current_user.can?("manage_agendas") %>
-    <%= link_to "New Endeavor", new_endeavor_path, class: "btn-primary" %>
+    <div class="btnrow"><%= link_to "Manage Endeavors", admin_endeavors_path, class: "btn-secondary" %><%= link_to "New Endeavor", new_endeavor_path, class: "btn-primary" %></div>
   <% end %>
 </div>
 

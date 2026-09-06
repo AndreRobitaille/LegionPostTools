@@ -138,6 +138,64 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "details.endeavor-update form"
   end
 
+  test "management overview is scoped and capability gated without starting processing" do
+    other = Organization.create!(name: "Other", unit_type: "american_legion_post", timezone: "America/Chicago")
+    other.endeavors.create!(title: "OTHER_ORG_CANARY", created_by: @manager)
+    sign_in_as(@member)
+    get endeavors_path
+    assert_select "a[href=?]", admin_endeavors_path, count: 0
+    get admin_endeavors_path
+    assert_redirected_to root_path
+    sign_in_as(@manager)
+    get admin_root_path
+    assert_select "a[href=?]", admin_endeavors_path
+    assert_no_difference "EndeavorHistoryRun.count" do
+      get admin_endeavors_path
+      assert_response :success
+      assert_select "h1", text: "Manage Endeavors"
+      assert_select ".endeavor-management-row", count: 1
+      assert_includes response.body, "No minutes yet"
+      assert_not_includes response.body, "OTHER_ORG_CANARY"
+      get admin_endeavors_path, params: { filter: "failed" }
+      assert_select ".endeavor-management-row", count: 0
+      assert_includes response.body, "No histories in this view"
+      get admin_endeavors_path, params: { filter: "unknown" }
+      assert_select ".endeavor-management-row", count: 1
+    end
+  end
+
+  test "overview detects changed inputs and preserves published date across failure and withdrawal" do
+    source_fixture
+    manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+    run = @endeavor.history_runs.create!(status: "succeeded", manifest: manifest, fingerprint: "fixture")
+    edition = @endeavor.history_editions.create!(endeavor_history_run: run, manifest: manifest, payload: { overview: [] }, sha256: "fixture")
+    state = -> { EndeavorHistory::Overview.new(@organization).rows.find { |row| row[:endeavor].id == @endeavor.id } }
+    assert_equal "current", state.call[:status]
+    changed_signature = EndeavorHistory::Config.signature.merge("prompt_version" => "future-version")
+    with_stubbed_class_method(EndeavorHistory::Config, :signature, -> { changed_signature }) do
+      assert_equal "outdated", state.call[:status]
+    end
+    @endeavor.update!(summary: "New identity clarification")
+    assert_equal "outdated", state.call[:status]
+    @endeavor.update!(summary: manifest.dig("endeavor", "summary"))
+    assert_equal "current", state.call[:status]
+    @endeavor.history_runs.create!(status: "failed", manifest: manifest, fingerprint: "failure")
+    assert_equal "failed", state.call[:status]
+    assert_equal edition.created_at, state.call[:published_at]
+    @endeavor.history_runs.create!(status: "pending", manifest: manifest, fingerprint: "pending")
+    assert_equal "processing", state.call[:status]
+    @endeavor.update!(history_withdrawn: true)
+    assert_equal "withdrawn", state.call[:status]
+    assert_empty EndeavorHistory::Overview.new(@organization).filtered("attention")
+  end
+
+  test "overview distinguishes not generated and newly available minutes" do
+    assert_equal "no_minutes", EndeavorHistory::Overview.new(@organization).rows.first[:status]
+    source_fixture
+    assert_equal "not_generated", EndeavorHistory::Overview.new(@organization).rows.first[:status]
+    assert_equal 1, EndeavorHistory::Overview.new(@organization).filtered("attention").size
+  end
+
   private
 
   def source_fixture

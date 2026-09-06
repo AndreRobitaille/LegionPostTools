@@ -1,4 +1,16 @@
 module EndeavorsHelper
+  def endeavor_history_status_description(status)
+    {
+      "withdrawn" => "Generated history is hidden and processing is paused.",
+      "processing" => "An update is queued or running.",
+      "failed" => "The latest attempt failed. Open history to inspect it.",
+      "no_minutes" => "History can begin when attested minutes are available.",
+      "not_generated" => "Minutes are available to build a first update.",
+      "outdated" => "Minutes or generation inputs have changed since publication.",
+      "current" => "Published history matches the current minutes and settings."
+    }.fetch(status)
+  end
+
   # Matches the house status treatment: a coloured word with a dot, never a
   # boxed pill (see .st in application.css).
   def endeavor_status_tag(endeavor)

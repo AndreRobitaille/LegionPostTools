@@ -81,3 +81,13 @@ current assignment also supplies `manage_agendas`, `manage_minutes`, and
 `attest_minutes`. Those capabilities end with the Adjutant assignment; her account does
 not retain duplicate manual grants and does not receive `manage_settings` or
 `manage_people`.
+
+## Manage Endeavors
+
+Users with `manage_agendas` can open **Manage Endeavors** from the officer/administration
+hub or the Endeavors list. The overview shows active and completed Endeavors, each
+history's processing state and last publication time, and attention/status filters.
+**Manage history** opens the existing per-Endeavor controls for refresh, guidance,
+withdrawal/resume, and run inspection. Ordinary members cannot see these links or open
+this overview. Viewing/filtering starts no AI calls. See
+[management overview design](ENDEAVOR_MANAGEMENT_OVERVIEW.md).

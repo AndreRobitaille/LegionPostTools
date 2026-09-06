@@ -1,0 +1,45 @@
+<% content_for :title, "Manage Endeavors" %>
+<%= link_to "← #{admin_area_name}", admin_root_path, class: "back" %>
+<div class="page-lead-row">
+  <div class="page-lead">
+    <h1 class="page-title">Manage Endeavors</h1>
+    <p class="page-sub">Keep members up to date on continuing Post work.</p>
+  </div>
+  <%= link_to "New Endeavor", new_endeavor_path, class: "btn-primary" %>
+</div>
+<% unless EndeavorHistory::Config.enabled? %>
+  <p class="endeavor-management-notice">AI processing is currently disabled. Existing history remains available; refreshes can start once processing is enabled.</p>
+<% end %>
+<nav class="endeavor-management-filters" aria-label="Filter Endeavor histories">
+  <% EndeavorHistory::Overview::FILTERS.each do |filter| %>
+    <%= link_to admin_endeavors_path(filter: filter), aria: { current: (@filter == filter ? "page" : nil) } do %>
+      <%= EndeavorHistory::Overview::LABELS.fetch(filter) %> <span><%= @overview.filtered(filter).size %></span>
+    <% end %>
+  <% end %>
+</nav>
+<p class="history-note">Statuses describe AI history, not the progress of the Endeavor. Open Manage history to refresh it or add clarifying guidance.</p>
+<div class="endeavor-management-list">
+  <% @rows.each do |row| %>
+    <% endeavor = row[:endeavor] %>
+    <article class="endeavor-management-row" aria-label="<%= endeavor.title %>">
+      <div>
+        <p class="endeavor-management-lifecycle"><%= endeavor.completed? ? "Completed Endeavor" : "Active Endeavor" %></p>
+        <h2><%= link_to endeavor.title, endeavor_path(endeavor) %></h2>
+        <p class="history-note"><%= row[:published_at] ? "Last published update: #{legion_datetime(row[:published_at])}" : "No published AI update yet." %></p>
+      </div>
+      <div class="endeavor-management-state">
+        <strong class="<%= 'endeavor-management-attention' if EndeavorHistory::Overview::ATTENTION.include?(row[:status]) %>"><%= EndeavorHistory::Overview::LABELS.fetch(row[:status]) %></strong>
+        <p><%= endeavor_history_status_description(row[:status]) %></p>
+      </div>
+      <div class="endeavor-management-actions">
+        <%= link_to "Manage history", admin_endeavor_history_path(endeavor), class: "btn-secondary", aria: { label: "Manage history for #{endeavor.title}" } %>
+        <%= link_to "View Endeavor", endeavor_path(endeavor) %>
+      </div>
+    </article>
+  <% end %>
+</div>
+<% if @rows.empty? %>
+  <div class="empty"><div><h2><%= @overview.rows.empty? ? "No Endeavors yet" : "No histories in this view" %></h2>
+    <p><%= @overview.rows.empty? ? "Create an Endeavor to follow continuing Post work across meetings." : "Choose another filter to see the other Endeavors." %></p>
+  </div></div>
+<% end %>

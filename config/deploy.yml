@@ -25,6 +25,7 @@ env:
     - LOOPS_MAGIC_LINK_TEMPLATE_ID
   clear:
     SOLID_QUEUE_IN_PUMA: true
+    ENDEAVOR_HISTORY_ENABLED: "1"
     DB_HOST: legion_post_165_wi_tools-db
     POSTGRES_DB: legion_post_165_wi_tools_production
     POSTGRES_CACHE_DB: legion_post_165_wi_tools_production_cache

@@ -121,6 +121,13 @@ only manage agendas. Manual requester capability and token validity are checked 
 before queued work and publication. Automatic runs record system actions under the
 installation's enabled processing policy.
 
+## Post 165 activation
+
+The Post 165 deployment profile enables `ENDEAVOR_HISTORY_ENABLED=1` with the default
+500,000-token daily organization budget. Deployment runs `db:prepare` before starting
+Rails; the initial authorized backfill uses the existing bounded task and normal worker.
+Other installations remain disabled unless explicitly configured.
+
 ## Activation and recovery
 
 Run relevant tests and evaluate explicitly authorized real-data samples before enabling

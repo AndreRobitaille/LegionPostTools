@@ -2166,3 +2166,19 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .source-reader-content { padding: 22px 20px; }
   .history-update-list > li.history-decision-card { padding: 16px; }
 }
+
+/* Officer Endeavor ledger: history state stays separate from project lifecycle. */
+.endeavor-management-notice { border-left: 3px solid #D6B46A; padding: 12px 18px; background: #FBF7EC; font-size: 16px; line-height: 1.6; }
+.endeavor-management-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 18px; }
+.endeavor-management-filters a { padding: 10px 14px; border: 1px solid #b98f46; border-radius: 4px; color: #0B2238; font-size: 16px; text-decoration: none; }
+.endeavor-management-filters a[aria-current="page"] { background: #0B2238; color: #FBF7EC; }
+.endeavor-management-filters span { margin-left: 6px; font-variant-numeric: tabular-nums; }
+.endeavor-management-list { margin-top: 24px; border-top: 2px solid #D6B46A; }
+.endeavor-management-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: 28px 20px; border-bottom: 1px solid #D6B46A; background: #FBF7EC; overflow-wrap: anywhere; }
+.endeavor-management-row h2 { font-size: 21px; line-height: 1.4; margin: 6px 0 10px; color: #0B2238; }
+.endeavor-management-lifecycle { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #536477; }
+.endeavor-management-state { font-size: 16px; line-height: 1.6; }
+.endeavor-management-state p { margin-top: 6px; font-size: 14px; color: #536477; }
+.endeavor-management-attention { color: #8C1622; }
+.endeavor-management-actions { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; font-size: 16px; }
+@media (max-width: 800px) { .endeavor-management-row { grid-template-columns: 1fr; gap: 16px; padding: 24px 16px; } .endeavor-management-actions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 20px; } }

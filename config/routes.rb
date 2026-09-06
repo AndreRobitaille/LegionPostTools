@@ -51,7 +51,7 @@ Rails.application.routes.draw do
     get :print, on: :member
   end
   namespace :admin do
-    resources :endeavors, only: [] do
+    resources :endeavors, only: :index do
       resource :history, only: %i[show create], controller: "endeavor_histories"
     end
     root "dashboard#show"

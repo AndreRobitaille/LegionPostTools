@@ -34,6 +34,14 @@
           <%= link_to "Open job history →", admin_jobs_path, class: "tile-act" %>
         </div>
       </div>
+      <% if show_agendas %>
+        <div class="tile">
+          <div class="tile-ic" aria-hidden="true">◆</div>
+          <p class="tile-t">Manage Endeavors</p>
+          <p class="tile-d">Check meeting-history updates and find Endeavors that need attention.</p>
+          <div class="tile-actions"><%= link_to "Manage Endeavors →", admin_endeavors_path, class: "tile-act" %></div>
+        </div>
+      <% end %>
       <% if show_roster %>
         <div class="tile<%= " tile--due" if @roster_stale %>">
           <div class="tile-ic" aria-hidden="true">📇</div>
