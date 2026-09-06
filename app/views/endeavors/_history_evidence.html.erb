@@ -1,0 +1,18 @@
+<div class="history-evidence-content">
+  <% entry[:items].each do |item| %>
+    <section class="history-source-item">
+      <h3><%= item["title"] %></h3>
+      <% item["units"].select { |unit| unit["kind"] == "body" }.each do |unit| %><p class="history-quotation"><%= unit["text"] %></p><% end %>
+      <% item["units"].select { |unit| unit["kind"] == "outcome" }.each do |unit| %>
+        <% outcome = unit.fetch("outcome") %>
+        <div class="history-decision">
+          <strong><%= outcome.fetch("kind").humanize %> · <%= revision_outcome_label(outcome.fetch("disposition")) %></strong>
+          <p><%= outcome.fetch("text") %></p>
+          <p class="history-note"><%= [("Moved by #{outcome['mover_name']}" if outcome["mover_name"]), ("Seconded by #{outcome['seconder_name']}" if outcome["seconder_name"]), outcome["vote_summary"]].compact.join(" · ") %></p>
+        </div>
+      <% end %>
+      <% if item["units"].empty? %><p>No discussion or outcome recorded for this item.</p><% end %>
+      <%= link_to "View this item in the full minutes", item["url"], class: "lnk" %>
+    </section>
+  <% end %>
+</div>

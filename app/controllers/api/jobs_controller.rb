@@ -12,6 +12,7 @@ module Api
         queue: queue_payload(queue),
         filter: filter,
         attention_count: attention_count,
+        endeavor_history_runs: history_runs(filter).map { |run| run.slice(:id, :endeavor_id, :status, :error_category, :created_at, :finished_at).merge(tokens: run.tokens) },
         minutes_draft_runs: runs.map { |run| minutes_draft_run_payload(run) },
         loops_roster_syncs: loops.map { |run| loops_run_payload(run) }
       }
@@ -22,12 +23,13 @@ module Api
     def require_jobs_access
       require_authentication
       return if performed?
-      return if current_user.can_any?("manage_settings", "manage_minutes")
+      return if current_user.can_any?("manage_settings", "manage_minutes", "manage_agendas")
 
       render_error("You do not have permission to open that.", status: :forbidden)
     end
 
     def minutes_runs(filter)
+      return [] unless current_user.can?("manage_minutes")
       scope = MinutesDraftRun.includes(meeting_minutes: :meeting, requested_by: :person).recent
       scope = case filter
       when "attention" then scope.failed.kept_for_attention
@@ -37,6 +39,13 @@ module Api
       scope.limit(50)
     end
 
+    def history_runs(filter)
+      return [] unless current_user.can?("manage_agendas") && filter != "discarded"
+      scope = EndeavorHistoryRun.joins(:endeavor).where(endeavors: { organization_id: organization.id })
+      scope = scope.where(status: "failed") if filter == "attention"
+      scope.recent.limit(50)
+    end
+
     def loops_runs(filter)
       scope = LoopsRosterSync.includes(:roster_import, requested_by: :person).recent
       scope = scope.where(status: "failed") if filter == "attention"
@@ -44,7 +53,8 @@ module Api
     end
 
     def attention_count
-      count = MinutesDraftRun.failed.kept_for_attention.count
+      count = current_user.can?("manage_minutes") ? MinutesDraftRun.failed.kept_for_attention.count : 0
+      count += history_runs("attention").size
       count += LoopsRosterSync.where(status: "failed").count if current_user.can?("manage_settings")
       count
     end

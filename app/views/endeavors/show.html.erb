@@ -1,65 +1,39 @@
 <% content_for :title, @endeavor.title %>
+<div data-controller="source-reader" data-action="turbo:before-cache@document->source-reader#beforeCache">
 <%= link_to "← Endeavors", endeavors_path, class: "back" %>
 
 <div class="endeavor-lead">
   <h1 class="page-title"><%= @endeavor.title %></h1>
   <div class="idmeta">
     <%= endeavor_status_tag(@endeavor) %>
-    <span class="office"><%= Endeavor::PRIORITY_BUCKETS.fetch(@endeavor.priority_bucket) %></span>
+    <% if @endeavor.active? && current_user.can?("manage_agendas") %><span class="office"><%= Endeavor::PRIORITY_BUCKETS.fetch(@endeavor.priority_bucket) %></span><% end %>
   </div>
-  <% if @endeavor.summary.present? %>
+  <% if @endeavor.summary.present? && @history.overview.empty? %>
     <p class="endeavor-summary"><%= @endeavor.summary %></p>
   <% end %>
 </div>
 
+<div class="endeavor-mobile-nav"><%= render "page_navigation" %></div>
 <div class="endeavor-grid">
-  <main class="endeavor-record">
-    <% if @endeavor.details.present? %>
-      <section class="endeavor-context">
-        <%= render "shared/section_header", label: "Background and context" %>
-        <div class="prose"><%= @endeavor.details %></div>
-      </section>
-    <% end %>
+  <div class="endeavor-record">
+    <%= render "history", history: @history %>
 
-    <section>
-      <%= render "shared/section_header", label: "Continuity", meta: (pluralize(@timeline_entries.size, "entry") if @timeline_entries.any?) %>
-      <% if @timeline_entries.any? %>
-        <ol class="continuity">
-          <% @timeline_entries.each do |time, kind, entry| %>
-            <li class="continuity-entry">
-              <span class="continuity-node" aria-hidden="true">&#9670;</span>
-              <div class="continuity-copy">
-                <time class="continuity-when" datetime="<%= time.iso8601 %>"><%= legion_date(time) %></time>
-                <% if kind == :update %>
-                  <strong>Update from <%= entry.author.person.full_name %></strong>
-                  <div class="prose"><%= entry.body %></div>
-                <% else %>
-                  <strong><%= entry.dated_agenda.title %></strong>
-                  <span class="continuity-meta">
-                    Carried to <%= entry.dated_agenda.meeting_body.name %> · <%= legion_time(entry.dated_agenda.starts_at) %>
-                  </span>
-                  <% if (document = endeavor_timeline_document(entry.dated_agenda)) %>
-                    <%= link_to document.first, document.last, class: "lnk" %>
-                  <% end %>
-                <% end %>
-              </div>
-            </li>
-          <% end %>
-        </ol>
-      <% else %>
-        <div class="empty">
-          <span class="empty-mark" aria-hidden="true">&#9670;</span>
-          <div>
-            <h2>No history yet</h2>
-            <p>Once this business is added to an agenda or someone records an update, the trail appears here — so the next officer can pick it up mid-stream.</p>
-          </div>
-        </div>
-      <% end %>
-    </section>
+    <details id="endeavor-background" class="endeavor-secondary">
+      <summary>Background and details</summary>
+      <div class="prose">
+        <% if @endeavor.summary.present? && @history.overview.any? %><p><%= @endeavor.summary %></p><% end %>
+        <%= @endeavor.details %>
+      </div>
+      <dl class="endeavor-background-facts">
+        <% if @endeavor.meeting_body %><div><dt>Usually discussed by</dt><dd><%= @endeavor.meeting_body.name %></dd></div><% end %>
+        <div><dt>Started by</dt><dd><%= @endeavor.created_by.person.full_name %> · <%= legion_date(@endeavor.created_at) %></dd></div>
+        <% if @endeavor.completed? %><div><dt>Completed</dt><dd><%= @endeavor.completed_by.person.full_name %> · <%= legion_date(@endeavor.completed_at) %></dd></div><% end %>
+      </dl>
+    </details>
 
     <% if current_user.can?("manage_agendas") %>
-      <section class="endeavor-update">
-        <%= render "shared/section_header", label: "Add an update" %>
+      <details class="endeavor-secondary endeavor-update">
+        <summary>Add an update</summary>
         <div class="panel">
           <p class="panel-lead">Record what changed, or what the next officer needs to know. Updates become part of the trail and cannot be rewritten later.</p>
           <%= form_with model: EndeavorUpdate.new, url: endeavor_updates_path(@endeavor), class: "stacked-form" do |form| %>
@@ -70,51 +44,30 @@
             <div class="btnrow"><%= form.submit "Add update", class: "btn-primary" %></div>
           <% end %>
         </div>
+      </details>
+    <% end %>
+  </div>
+
+  <aside class="endeavor-rail">
+    <%= render "page_navigation" %>
+    <% if current_user.can?("manage_agendas") %>
+      <section class="card endeavor-officer-tools" aria-label="Officer tools">
+        <div class="card-head"><span class="card-head-label">Officer tools</span></div>
+        <div class="card-body">
+          <% if @endeavor.active? %><p class="history-note"><%= endeavor_reason(@endeavor, with_date: true) %></p><% end %>
+          <div class="endeavor-fact-actions">
+            <%= link_to "AI history", admin_endeavor_history_path(@endeavor), class: "btn-secondary" %>
+            <%= link_to "Edit details", edit_endeavor_path(@endeavor), class: "btn-secondary" %>
+            <% if @endeavor.active? %>
+              <%= button_to "Mark complete", complete_endeavor_path(@endeavor), method: :patch, class: "btn-primary", data: { turbo_confirm: "Mark “#{@endeavor.title}” complete? Its history stays available." } %>
+            <% else %>
+              <%= button_to "Reopen", reopen_endeavor_path(@endeavor), method: :patch, class: "btn-secondary" %>
+            <% end %>
+          </div>
+        </div>
       </section>
     <% end %>
-  </main>
-
-  <aside class="card endeavor-facts" aria-label="Endeavor details">
-    <div class="card-head">
-      <span class="card-dia" aria-hidden="true">&#9670;</span>
-      <span class="card-head-label"><%= @endeavor.completed? ? "Completion record" : "Endeavor details" %></span>
-    </div>
-    <div class="card-body">
-      <dl>
-        <% if @endeavor.active? && current_user.can?("manage_agendas") %>
-          <div>
-            <dt>Why it is here</dt>
-            <dd><%= endeavor_reason(@endeavor, with_date: true) %></dd>
-          </div>
-        <% end %>
-        <% if @endeavor.meeting_body %>
-          <div>
-            <dt>Usually discussed by</dt>
-            <dd><%= @endeavor.meeting_body.name %></dd>
-          </div>
-        <% end %>
-        <div>
-          <dt>Started by</dt>
-          <dd><%= @endeavor.created_by.person.full_name %> · <%= legion_date(@endeavor.created_at) %></dd>
-        </div>
-        <% if @endeavor.completed? %>
-          <div>
-            <dt>Completed</dt>
-            <dd><%= @endeavor.completed_by.person.full_name %> · <%= legion_date(@endeavor.completed_at) %></dd>
-          </div>
-        <% end %>
-      </dl>
-      <% if current_user.can?("manage_agendas") %>
-        <div class="endeavor-fact-actions">
-          <%= link_to "Edit details", edit_endeavor_path(@endeavor), class: "btn-secondary" %>
-          <% if @endeavor.active? %>
-            <%= button_to "Mark complete", complete_endeavor_path(@endeavor), method: :patch, class: "btn-primary",
-                  data: { turbo_confirm: "Mark “#{@endeavor.title}” complete? Its history stays available." } %>
-          <% else %>
-            <%= button_to "Reopen", reopen_endeavor_path(@endeavor), method: :patch, class: "btn-secondary" %>
-          <% end %>
-        </div>
-      <% end %>
-    </div>
   </aside>
+</div>
+<%= render "source_reader" %>
 </div>

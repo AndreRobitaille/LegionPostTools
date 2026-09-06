@@ -1,0 +1,106 @@
+<% if history.overview.any? %>
+  <section id="endeavor-overview" class="endeavor-overview" aria-labelledby="history-overview-title">
+    <div class="history-overview-heading">
+      <h2 id="history-overview-title">At a glance</h2>
+      <span>As of <%= legion_date(history.coverage_date) %></span>
+    </div>
+    <div class="history-overview-copy">
+      <% history.overview.each do |claim| %>
+        <div class="history-overview-claim"><p><%= claim.fetch("text") %></p><%= render "endeavors/history_citations", history: history, claim: claim %></div>
+      <% end %>
+    </div>
+    <p class="history-note">AI summary · Based on published minutes</p>
+    <% if history.newer_minutes? %><p class="history-note">Newer minutes are available. This overview reflects the records through the date above.</p><% end %>
+  </section>
+<% end %>
+
+<% if history.upcoming.any? %>
+  <section id="endeavor-coming-up" class="endeavor-coming-up">
+    <%= render "shared/section_header", label: "Coming up" %>
+    <% history.upcoming.each do |agenda| %>
+      <div class="history-upcoming-row">
+        <div><strong><%= legion_date(agenda.starts_at) %></strong><p><%= agenda.meeting_body.name %> · <%= agenda.title %></p></div>
+        <%= link_to "View published agenda", dated_agenda_path(agenda), class: "lnk" %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<section id="endeavor-history" class="endeavor-history">
+  <%= render "shared/section_header", label: "History" %>
+  <% if history.page.any? %>
+    <p class="history-intro">Choose a meeting to read its updates and supporting minutes.</p>
+    <ol class="continuity history-meetings">
+      <% history.page.each do |entry| %>
+        <li class="history-entry">
+          <% if entry[:kind] == :meeting %>
+            <% outcome_count = entry[:items].sum { |item| item["units"].count { |unit| unit["kind"] == "outcome" } } %>
+            <details class="history-meeting">
+              <summary class="history-meeting-heading">
+                <time class="history-date" datetime="<%= entry[:time].iso8601 %>"><%= legion_date(entry[:time]) %></time>
+                <span class="history-meeting-label">
+                  <strong><%= entry[:headline].presence || entry[:title] %></strong>
+                  <span class="history-meeting-authority"><%= entry[:body] %> · <%= entry[:authority] %></span>
+                  <span class="history-meeting-count"><%= entry[:claims].any? ? pluralize(entry[:claims].size, "update") : pluralize(entry[:items].size, "minutes entry", plural: "minutes entries") %><% if outcome_count.positive? %> · <%= pluralize(outcome_count, "decision") %><% end %></span>
+                </span>
+                <span class="history-read"><span class="history-when-closed">Read <%= entry[:claims].any? ? "updates" : "minutes" %></span><span class="history-when-open">Close</span><span class="history-chevron" aria-hidden="true">⌄</span></span>
+              </summary>
+              <div class="history-meeting-body">
+                <% if entry[:claims].any? %>
+                  <% endeavor_history_claim_groups(history, entry).each do |title, claims| %>
+                    <section class="history-claim-group">
+                      <h3><%= title %></h3>
+                      <ul class="history-update-list <%= "history-decisions" if title == "Decisions" %>">
+                        <% claims.each do |claim| %>
+                          <li class="<%= "history-decision-card" if title == "Decisions" %>">
+                            <% if title == "Decisions" %>
+                              <% history.decision_context(entry, claim).each do |decision| %>
+                                <div class="history-decision-heading">
+                                  <span class="history-outcome history-outcome--<%= decision[:outcome]["disposition"] %>"><%= endeavor_outcome_symbol(decision[:outcome]["disposition"]) %> <%= revision_outcome_label(decision[:outcome]["disposition"]) %></span>
+                                  <h4><%= decision[:title] %></h4>
+                                </div>
+                              <% end %>
+                            <% end %>
+                            <p><%= claim.fetch("text") %></p>
+                            <%= render "endeavors/history_citations", history: history, claim: claim %>
+                          </li>
+                        <% end %>
+                      </ul>
+                    </section>
+                  <% end %>
+                  <p class="history-note">AI-generated meeting updates. The minutes are the source record.</p>
+                  <details class="history-evidence">
+                    <summary>Read the source passages<% if outcome_count.positive? %> and <%= pluralize(outcome_count, "decision") %><% end %></summary>
+                    <%= render "endeavors/history_evidence", entry: entry %>
+                  </details>
+                <% else %>
+                  <%= render "endeavors/history_evidence", entry: entry %>
+                <% end %>
+                <div class="history-meeting-footer"><%= link_to(entry[:revision].meeting_minutes.membership_approved? ? "Read the official minutes" : "Read the attested minutes", meeting_minutes_path(entry[:revision].meeting_minutes.meeting_id), class: "lnk") %></div>
+              </div>
+            </details>
+          <% elsif entry[:kind] == :update %>
+            <details class="history-meeting history-officer-record">
+              <summary class="history-meeting-heading">
+                <time class="history-date" datetime="<%= entry[:time].iso8601 %>"><%= legion_date(entry[:time]) %></time>
+                <span class="history-meeting-label"><strong>Update from <%= entry[:update].author.person.full_name %></strong><span class="history-meeting-authority">Post update</span></span>
+                <span class="history-read"><span class="history-when-closed">Read update</span><span class="history-when-open">Close</span><span class="history-chevron" aria-hidden="true">⌄</span></span>
+              </summary>
+              <div class="history-meeting-body"><div class="prose"><%= entry[:update].body %></div></div>
+            </details>
+          <% else %>
+            <div class="history-agenda-entry">
+              <time class="history-date" datetime="<%= entry[:time].iso8601 %>"><%= legion_date(entry[:time]) %></time>
+              <strong><%= entry[:agenda].title %></strong>
+              <p class="history-note"><%= entry[:revision] ? "No linked minutes entry available." : "Listed on the agenda · Minutes not available yet." %></p>
+              <% if (document = endeavor_timeline_document(entry[:agenda])) %><%= link_to document.first, document.last, class: "lnk" %><% end %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+    <% if history.next_cursor %><%= link_to "Earlier history", endeavor_path(history.endeavor, before: history.next_cursor), class: "btn-secondary" %><% end %>
+  <% else %>
+    <div class="empty"><span class="empty-mark" aria-hidden="true">&#9670;</span><div><h2>No history yet</h2><p>Published meeting records and Post updates will show the progress of this Endeavor here.</p></div></div>
+  <% end %>
+</section>

@@ -49,11 +49,41 @@ module EndeavorsHelper
   end
 
   def endeavor_timeline_document(agenda)
-    if agenda.meeting.minutes&.attested?
-      [ "Read the attested minutes", meeting_minutes_path(agenda.meeting) ]
+    if agenda.meeting.minutes&.member_visible?
+      label = agenda.meeting.minutes.membership_approved? ? "Read the official minutes" : "Read the attested minutes"
+      [ label, meeting_minutes_path(agenda.meeting) ]
     elsif agenda.published?
       [ "Read the published agenda", dated_agenda_path(agenda) ]
     end
+  end
+
+  def endeavor_outcome_symbol(disposition)
+    { "adopted" => "✓", "lost" => "×", "withdrawn" => "−", "postponed" => "↷", "referred" => "→" }.fetch(disposition, "·")
+  end
+
+  def endeavor_history_claim_groups(history, entry)
+    outcome_ids = entry[:items].flat_map { |item| item["units"].select { |unit| unit["kind"] == "outcome" }.pluck("id") }
+    evidence = history.edition.payload.fetch("evidence").find { |meeting| meeting["revision_id"] == entry[:revision].id }
+    decision_fact_ids = evidence.fetch("facts").select { |fact| (fact["source_ids"] & outcome_ids).any? }.pluck("id")
+    decisions, discussion = entry[:claims].partition { |claim| (claim["fact_ids"] & decision_fact_ids).any? }
+    [ [ "Decisions", decisions ], [ decisions.any? ? "Discussion and updates" : "Meeting updates", discussion ] ].reject { |_title, claims| claims.empty? }
+  end
+
+  def endeavor_history_error(category)
+    {
+      "disabled" => "Automatic history is not enabled for this installation yet.",
+      "no_sources" => "No member-visible minutes are available yet.",
+      "withdrawn" => "Automatic history is paused. Resume it before refreshing.",
+      "forbidden" => "The requester no longer has permission to manage this history.",
+      "source_changed" => "The sources or guidance changed. A fresh run will use the current record.",
+      "daily_budget" => "The daily AI token budget has been reached. Retry after the budget resets.",
+      "call_budget" => "This run reached its call limit. An administrator can adjust the processing budget.",
+      "input_limit" => "The complete source exceeds the configured input limit; no text was discarded.",
+      "verification_failed" => "The generated update did not pass its source check. Review the findings or rerun with guidance.",
+      "coverage" => "The generated update did not preserve all required source items or facts.",
+      "ambiguous" => "The Endeavor match was ambiguous. Clarifying guidance may help.",
+      "configuration" => "The AI provider configuration needs attention."
+    }.fetch(category.to_s, "The history run could not finish (#{category.to_s.humanize.downcase}). Its sources and prior record are preserved.")
   end
 
   private

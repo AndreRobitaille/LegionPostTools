@@ -28,6 +28,11 @@ class Endeavor < ApplicationRecord
   has_many :dated_agenda_items, dependent: :restrict_with_exception
   has_many :dated_agendas, through: :dated_agenda_items
   has_many :minutes_items, dependent: :restrict_with_exception
+  has_many :history_runs, class_name: "EndeavorHistoryRun", dependent: :restrict_with_exception
+  has_many :history_editions, class_name: "EndeavorHistoryEdition", dependent: :restrict_with_exception
+  has_many :history_guidances, class_name: "EndeavorHistoryGuidance", dependent: :restrict_with_exception
+  has_many :history_events, class_name: "EndeavorHistoryEvent", dependent: :restrict_with_exception
+  after_create_commit :schedule_history
   has_rich_text :details
 
   before_validation :normalize_optional_fields
@@ -85,6 +90,10 @@ class Endeavor < ApplicationRecord
   end
 
   private
+
+  def schedule_history
+    EndeavorHistoryRefreshJob.perform_later(id) if EndeavorHistory::Config.enabled?
+  end
 
   def normalize_optional_fields
     self.summary = summary.to_s.strip

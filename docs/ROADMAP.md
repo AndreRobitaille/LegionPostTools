@@ -92,6 +92,29 @@ Still pending:
 
 - Human-confirmed merging or splitting if AI suggestions are added later.
 
+### Implemented locally: automatic Endeavor history and AI summaries
+
+See the [design](ENDEAVOR_HISTORY_AI_DESIGN.md) and
+[implementation plan](ENDEAVOR_HISTORY_AI_IMPLEMENTATION_PLAN.md).
+The [earlier exploration](ENDEAVOR_MEMBER_HISTORY_EXPLORATION.md) records alternatives;
+implementation is available locally. The [initial live Astra evaluation](ENDEAVOR_HISTORY_AI_LIVE_EVALUATION.md)
+passed on three Endeavors; production activation remains pending.
+
+- Deliver automatic discovery across full member-visible minutes, focused per-meeting
+  summaries, and a cited cross-meeting overview in the first version. Preserve relevant
+  source passages, complete decisions, source identity, and authority labels, alongside
+  officer updates and upcoming published agendas.
+- Verify discovery coverage and summary fidelity before automatic publication, with
+  bounded repair and explicit failure handling. No routine human review queue. Provide
+  admin reruns and versioned clarifying guidance; guidance never substitutes for evidence.
+- Keep AI evidence associations separate from the human-defined Endeavor and immutable
+  minutes. Include correction handling, complete-history refresh, API parity, and measured
+  quality/cost evaluation in implementation.
+- Later, explore current next steps, responsible people, subcommittee membership, task
+  lists, and volunteer requests for active Endeavors. Consider an accessible Kanban view
+  only when a concrete workflow benefits from it. Keep coordination separate from the
+  immutable meeting record and preserve history after completion.
+
 ## Completed: Agenda Presentation and Navigation
 
 Completed before beginning the minutes lifecycle:

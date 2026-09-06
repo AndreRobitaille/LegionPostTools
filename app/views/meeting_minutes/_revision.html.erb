@@ -27,7 +27,7 @@
         <% if section.fetch("items").any? %>
           <ol class="minutes-item-list">
             <% section.fetch("items").each do |item| %>
-              <li class="minutes-item-card<%= " minutes-item-card--substantive" if item["body_html"].present? || item.fetch("outcomes").any? %>">
+              <li id="minutes-item-<%= item.fetch("record_key") %>" class="minutes-item-card<%= " minutes-item-card--substantive" if item["body_html"].present? || item.fetch("outcomes").any? %>">
                 <span class="minutes-item-title"><%= item.fetch("title") %></span>
                 <% if item["agenda_body_html"].present? %><div class="minutes-agenda-wording"><%= sanitize(item["agenda_body_html"]) %></div><% end %>
                 <% if item["body_html"].present? %>

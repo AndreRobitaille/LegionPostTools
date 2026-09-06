@@ -49,6 +49,8 @@ class MeetingMinutes < ApplicationRecord
 
   before_destroy :prevent_membership_approved_mutation, if: :membership_approved?
 
+  after_update_commit :schedule_endeavor_history, if: -> { saved_change_to_status? && attested? }
+
   scope :draft, -> { where(status: "draft") }
 
   def self.create_from_meeting!(meeting:)
@@ -310,6 +312,8 @@ class MeetingMinutes < ApplicationRecord
           "items" => section.items.map do |item|
             {
               "record_key" => item.record_key,
+              "endeavor_id" => item.endeavor_id,
+              "source_dated_agenda_item_id" => item.source_dated_agenda_item_id,
               "title" => item.title,
               "behavior_type" => item.behavior_type,
               "position" => item.position,
@@ -374,6 +378,10 @@ class MeetingMinutes < ApplicationRecord
   end
 
   private
+
+  def schedule_endeavor_history
+    EndeavorHistoryReconcileJob.perform_later(organization_id) if EndeavorHistory::Config.enabled?
+  end
 
   def latest_successful_draft_run
     draft_runs.detect(&:succeeded?)

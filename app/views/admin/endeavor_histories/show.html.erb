@@ -1,0 +1,66 @@
+<% content_for :title, "AI history — #{@endeavor.title}" %>
+<%= link_to "← #{@endeavor.title}", endeavor_path(@endeavor), class: "back" %>
+<h1 class="page-title">AI history</h1>
+<p class="page-sub"><%= @endeavor.title %> · Automatic updates from member-visible minutes</p>
+<div class="history-admin-grid">
+  <div class="history-admin-main">
+    <section class="card">
+      <div class="card-head"><span class="card-head-label">Refresh the record</span></div>
+      <div class="card-body">
+        <p>Scan all <%= pluralize(@sources.revisions.size, "available minutes record") %>, including meetings not already linked to this Endeavor. Matching passages, meeting updates, and the overview publish automatically after source checks.</p>
+        <% unless EndeavorHistory::Config.enabled? %><p class="history-note">AI processing is not enabled for this installation yet.</p><% end %>
+        <% if @endeavor.history_withdrawn? %>
+          <p>Generated history is withdrawn. Automatic processing is paused for this Endeavor.</p>
+          <%= button_to "Resume and refresh", admin_endeavor_history_path(@endeavor), params: { operation: "resume", lock_version: @endeavor.lock_version }, class: "btn-primary" %>
+        <% else %>
+          <%= form_with url: admin_endeavor_history_path(@endeavor), class: "stacked-form" do |form| %>
+            <%= hidden_field_tag :operation, "refresh" %>
+            <div class="fl"><%= label_tag :meeting_id, "Meeting to revisit (optional)" %><%= select_tag :meeting_id, options_for_select(@sources.revisions.map { |r| ["#{legion_date(Time.iso8601(r.payload['starts_at']))} · #{r.payload['meeting_body_name']}", r.meeting_minutes.meeting_id] }), include_blank: "All meeting records" %></div>
+            <p class="history-note">A meeting rerun also checks the complete history so the overview stays consistent. This starts new AI calls.</p>
+            <%= form.submit "Refresh this Endeavor", class: "btn-primary", disabled: !EndeavorHistory::Config.enabled? %>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+    <section class="history-admin-section">
+      <%= render "shared/section_header", label: "Run history" %>
+      <% if @runs.empty? %><p>No AI history runs yet.</p><% end %>
+      <% @runs.each do |run| %>
+        <details class="history-source">
+          <summary>Run <%= run.id %> · <%= run.status.humanize %> · <%= legion_datetime(run.created_at) %></summary>
+          <p><%= run.requested_by ? "Requested by #{run.requested_by.person.full_name}" : "Automatic processing" %> · <%= pluralize(run.steps.size, "AI call") %> · <%= number_with_delimiter(run.tokens) %> tokens used or reserved</p>
+          <% if run.error_category %><p><%= endeavor_history_error(run.error_category) %></p><% end %>
+          <% run.steps.each do |step| %>
+            <p><strong><%= step["stage"].humanize %></strong> · <%= step["model"] || run.manifest.dig("configuration", "model") %> · <%= step["reasoning"] %> reasoning</p>
+            <% if step.dig("data", "issues").present? %><ul><% step["data"]["issues"].each do |issue| %><li><%= issue["message"] %></li><% end %></ul><% end %>
+          <% end %>
+          <details class="history-source"><summary>Inspect source manifest and results</summary><pre class="history-json"><%= JSON.pretty_generate({ manifest: run.manifest, steps: run.steps }) %></pre></details>
+        </details>
+      <% end %>
+    </section>
+    <section class="history-admin-section">
+      <%= render "shared/section_header", label: "Published editions" %>
+      <% @editions.each do |edition| %>
+        <details class="history-source"><summary>Edition <%= edition.id %> · <%= legion_datetime(edition.created_at) %></summary>
+          <% edition.payload.fetch("overview").each do |claim| %><p><%= claim["text"] %></p><% end %>
+          <p class="history-note">Record <%= edition.sha256.first(12) %> · Original sources and all generated facts are preserved in the run.</p>
+        </details>
+      <% end %>
+    </section>
+  </div>
+  <aside class="card">
+    <div class="card-head"><span class="card-head-label">Clarifying guidance</span></div>
+    <div class="card-body">
+      <p>Explain alternate names or which event this Endeavor represents. Guidance helps interpret the minutes; it cannot add facts to them.</p>
+      <%= form_with url: admin_endeavor_history_path(@endeavor), class: "stacked-form" do |form| %>
+        <%= hidden_field_tag :operation, "guidance" %><%= hidden_field_tag :lock_version, @endeavor.lock_version %>
+        <div class="fl"><%= label_tag :guidance, "Guidance for future runs" %><%= text_area_tag :guidance, @guidance&.body, rows: 7, maxlength: 4000 %></div>
+        <p class="history-note">Save a blank field to reset guidance. Saving withdraws the old generated wording until you refresh; original minutes remain available.</p>
+        <%= form.submit "Save guidance", class: "btn-primary" %>
+      <% end %>
+      <% unless @endeavor.history_withdrawn? %>
+        <div class="history-admin-section"><%= button_to "Withdraw generated history", admin_endeavor_history_path(@endeavor), params: { operation: "withdraw", lock_version: @endeavor.lock_version }, class: "btn-secondary" %></div>
+      <% end %>
+    </div>
+  </aside>
+</div>

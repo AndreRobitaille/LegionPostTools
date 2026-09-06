@@ -1,0 +1,8 @@
+<% citations = history.citations(claim) %>
+<% if citations.any? %>
+  <ul class="history-citations" aria-label="Supporting sources">
+    <% citations.each do |citation| %>
+      <li><%= link_to citation[:label], citation[:reader_url], data: { action: "source-reader#open" }, aria: { label: "Read supporting #{citation[:label]}" } %></li>
+    <% end %>
+  </ul>
+<% end %>

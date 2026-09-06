@@ -53,9 +53,9 @@ class EndeavorsControllerTest < ActionDispatch::IntegrationTest
 
     get endeavor_path(@endeavor)
 
-    assert_select ".card-head-label", text: "Completion record"
-    assert_select ".endeavor-facts", text: /Completed/
-    assert_select ".endeavor-facts", text: /Overdue|Why it is here|Current direction/, count: 0
+    assert_select "#endeavor-background", text: /Completed/
+    assert_select ".endeavor-background-facts", text: /Completed/
+    assert_select ".endeavor-background-facts", text: /Overdue|Why it is here|Current direction/, count: 0
   end
 
   test "continuity promotes an attested meeting from agenda to minutes" do
@@ -75,7 +75,10 @@ class EndeavorsControllerTest < ActionDispatch::IntegrationTest
     agenda.approve!(@manager)
     agenda.publish!(@manager)
     minutes = MeetingMinutes.create_from_meeting!(meeting: agenda.meeting)
-    minutes.update!(status: "attested")
+    @manager.permission_grants.create!(capability: "approve_minutes")
+    adjutant = create_user("Adjutant", capabilities: [ "attest_minutes" ])
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(minutes: minutes, user: @manager, action: "approve", evidence_note: "Synthetic approval."))
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(minutes: minutes, user: adjutant, action: "attest", evidence_note: "Synthetic attestation."))
     sign_in_as(@member)
 
     get endeavor_path(@endeavor)

@@ -1,0 +1,4 @@
+<div class="history-upcoming-row">
+  <div><strong><%= run.endeavor.title %> · AI history</strong><p><%= run.status.humanize %> · <%= legion_datetime(run.created_at) %></p></div>
+  <%= link_to "View run history", admin_endeavor_history_path(run.endeavor), class: "lnk" %>
+</div>

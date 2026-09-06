@@ -1,0 +1,7 @@
+<% content_for :title, "Source minutes — #{@endeavor.title}" %>
+<%= link_to "← #{@endeavor.title}", endeavor_path(@endeavor), class: "back" %>
+<div class="endeavor-source-document">
+  <p class="source-reader-date"><%= legion_date(@source[:time]) %> · <%= @source[:body] %></p>
+  <p class="source-reader-authority"><%= @source[:authority] %></p>
+  <%= render "endeavors/history_evidence", entry: @source %>
+</div>

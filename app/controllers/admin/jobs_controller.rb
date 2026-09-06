@@ -1,12 +1,14 @@
 module Admin
   class JobsController < ApplicationController
-    before_action -> { require_any_capability("manage_settings", "manage_minutes") }
+    before_action -> { require_any_capability("manage_settings", "manage_minutes", "manage_agendas") }
+    before_action -> { require_any_capability("manage_settings", "manage_minutes") }, only: %i[retry discard restore]
     before_action :set_minutes_draft_run, only: %i[retry discard restore]
 
     def index
       @queue_health = AdminJobs::QueueHealth.capture
       @filter = params[:filter].presence_in(%w[attention discarded])
-      @attention_count = MinutesDraftRun.failed.kept_for_attention.count
+      @attention_count = current_user.can?("manage_minutes") ? MinutesDraftRun.failed.kept_for_attention.count : 0
+      @attention_count += history_scope.where(status: "failed").count if current_user.can?("manage_agendas")
       @attention_count += LoopsRosterSync.where(status: "failed").count if current_user.can?("manage_settings")
       @runs = filtered_runs
     end
@@ -81,13 +83,21 @@ module Admin
       else minutes_scope.kept_for_attention
       end
 
-      runs = minutes_scope.limit(50).to_a
+      runs = current_user.can?("manage_minutes") ? minutes_scope.limit(50).to_a : []
+      if current_user.can?("manage_agendas") && @filter != "discarded"
+        history = @filter == "attention" ? history_scope.where(status: "failed") : history_scope
+        runs.concat(history.recent.limit(25).to_a)
+      end
       if current_user.can?("manage_settings") && @filter != "discarded"
         loops_scope = LoopsRosterSync.includes(:roster_import, requested_by: :person).recent
         loops_scope = loops_scope.where(status: "failed") if @filter == "attention"
         runs.concat(loops_scope.limit(25).to_a)
       end
       runs.sort_by(&:created_at).reverse.first(50)
+    end
+
+    def history_scope
+      EndeavorHistoryRun.joins(:endeavor).where(endeavors: { organization_id: Organization.first!.id }).includes(:endeavor)
     end
 
     def mark_enqueue_failed!(run)

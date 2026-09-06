@@ -40,6 +40,7 @@ Rails.application.routes.draw do
     resource :minutes, only: :show, controller: "meeting_minutes"
   end
   resources :endeavors, except: %i[destroy] do
+    get :source, to: "endeavor_sources#show", on: :member
     member do
       patch :complete
       patch :reopen
@@ -50,6 +51,9 @@ Rails.application.routes.draw do
     get :print, on: :member
   end
   namespace :admin do
+    resources :endeavors, only: [] do
+      resource :history, only: %i[show create], controller: "endeavor_histories"
+    end
     root "dashboard#show"
     resources :jobs, only: :index do
       member do
@@ -212,6 +216,7 @@ Rails.application.routes.draw do
       resources :endeavors, only: :create, controller: "dated_agenda_endeavors"
     end
     resources :endeavors, only: %i[index show create] do
+      resource :history, only: %i[show create], controller: "endeavor_histories"
       member do
         patch :complete
         patch :reopen

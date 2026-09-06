@@ -45,8 +45,8 @@ Do not create an Endeavor for:
 - an event occurrence that merely executes an existing Endeavor; or
 - a document whose role is to evidence another record.
 
-AI may suggest a possible Endeavor, link, merge, or split. A human must confirm the
-identity decision; a delegated agent may then carry out that explicit instruction with the
+AI may suggest a possible Endeavor, primary meeting-item identity link, merge, or split.
+A human must confirm the identity decision; a delegated agent may then carry out that explicit instruction with the
 human's current grants. Lack of certainty is a reason to defer creation, not to manufacture
 continuity.
 
@@ -145,6 +145,21 @@ invariants apply:
   splitting, completion, reopening, approval, attestation, acceptance, and amendment. A
   delegated agent may execute an explicit authorized instruction with that user's grants;
   it may not autonomously make an identity or official-record decision.
+
+## Automatic meeting-history evidence
+
+The member-history workflow may automatically associate passages from immutable,
+member-visible minutes with an existing human-defined Endeavor, generate summaries,
+verify them, and publish a derived history edition. This narrow exception was explicitly
+selected for this feature. It does not change a minutes item's primary `endeavor_id`,
+create an Endeavor, merge/split work, infer completion, or modify official records.
+
+New approval payloads freeze primary Endeavor identity. Older payloads are unchanged;
+AI-derived associations are separately recorded with exact revision/item/unit references,
+run results, automated verification, and immutable published editions. Administrators
+with `manage_agendas` may provide versioned clarification, rerun processing, or withdraw
+an edition. Guidance is not a factual source. Ordinary successful runs require no manual
+review. See [Endeavor AI history](ENDEAVOR_HISTORY_AI.md) for behavior and operating limits.
 
 ## Explicit Non-Goals
 

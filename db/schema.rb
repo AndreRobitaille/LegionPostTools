@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_02_010200) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -205,6 +205,78 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_010200) do
     t.index ["reopened_by_id"], name: "index_dated_agendas_on_reopened_by_id"
   end
 
+  create_table "endeavor_history_editions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_history_run_id", null: false
+    t.bigint "endeavor_id", null: false
+    t.jsonb "manifest", null: false
+    t.jsonb "payload", null: false
+    t.string "sha256", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endeavor_history_run_id"], name: "index_endeavor_history_editions_on_endeavor_history_run_id", unique: true
+    t.index ["endeavor_id"], name: "index_endeavor_history_editions_on_endeavor_id"
+  end
+
+  create_table "endeavor_history_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id"
+    t.bigint "agent_access_token_id"
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_history_run_id"
+    t.bigint "endeavor_id", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_endeavor_history_events_on_actor_id"
+    t.index ["endeavor_history_run_id"], name: "index_endeavor_history_events_on_endeavor_history_run_id"
+    t.index ["endeavor_id"], name: "index_endeavor_history_events_on_endeavor_id"
+  end
+
+  create_table "endeavor_history_guidances", force: :cascade do |t|
+    t.bigint "agent_access_token_id"
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_endeavor_history_guidances_on_author_id"
+    t.index ["endeavor_id"], name: "index_endeavor_history_guidances_on_endeavor_id"
+  end
+
+  create_table "endeavor_history_runs", force: :cascade do |t|
+    t.bigint "agent_access_token_id"
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_id", null: false
+    t.string "error_category"
+    t.string "fingerprint", null: false
+    t.datetime "finished_at"
+    t.datetime "heartbeat_at"
+    t.jsonb "manifest", default: {}, null: false
+    t.bigint "requested_by_id"
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.jsonb "steps", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.index ["endeavor_id", "fingerprint"], name: "index_endeavor_history_runs_on_endeavor_id_and_fingerprint"
+    t.index ["endeavor_id"], name: "index_endeavor_history_runs_on_endeavor_id"
+    t.index ["endeavor_id"], name: "one_active_endeavor_history_run", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[]))"
+    t.index ["requested_by_id"], name: "index_endeavor_history_runs_on_requested_by_id"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying, 'superseded'::character varying]::text[])", name: "endeavor_history_run_status"
+  end
+
+  create_table "endeavor_source_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_history_edition_id", null: false
+    t.bigint "endeavor_id", null: false
+    t.bigint "minutes_revision_id", null: false
+    t.string "record_key", null: false
+    t.jsonb "source_ids", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endeavor_history_edition_id", "minutes_revision_id", "record_key"], name: "unique_endeavor_edition_source", unique: true
+    t.index ["endeavor_history_edition_id"], name: "index_endeavor_source_links_on_endeavor_history_edition_id"
+    t.index ["endeavor_id"], name: "index_endeavor_source_links_on_endeavor_id"
+    t.index ["minutes_revision_id"], name: "index_endeavor_source_links_on_minutes_revision_id"
+  end
+
   create_table "endeavor_updates", force: :cascade do |t|
     t.bigint "author_id", null: false
     t.datetime "created_at", null: false
@@ -219,6 +291,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_010200) do
     t.bigint "completed_by_id"
     t.datetime "created_at", null: false
     t.bigint "created_by_id", null: false
+    t.integer "history_generation", default: 0, null: false
+    t.boolean "history_withdrawn", default: false, null: false
     t.string "importance", default: "standard", null: false
     t.integer "lock_version", default: 0, null: false
     t.bigint "meeting_body_id"
@@ -847,6 +921,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_02_010200) do
   add_foreign_key "dated_agendas", "users", column: "approved_by_id"
   add_foreign_key "dated_agendas", "users", column: "published_by_id"
   add_foreign_key "dated_agendas", "users", column: "reopened_by_id"
+  add_foreign_key "endeavor_history_editions", "endeavor_history_runs"
+  add_foreign_key "endeavor_history_editions", "endeavors"
+  add_foreign_key "endeavor_history_events", "endeavor_history_runs"
+  add_foreign_key "endeavor_history_events", "endeavors"
+  add_foreign_key "endeavor_history_events", "users", column: "actor_id"
+  add_foreign_key "endeavor_history_guidances", "endeavors"
+  add_foreign_key "endeavor_history_guidances", "users", column: "author_id"
+  add_foreign_key "endeavor_history_runs", "endeavors"
+  add_foreign_key "endeavor_history_runs", "users", column: "requested_by_id"
+  add_foreign_key "endeavor_source_links", "endeavor_history_editions"
+  add_foreign_key "endeavor_source_links", "endeavors"
+  add_foreign_key "endeavor_source_links", "minutes_revisions"
   add_foreign_key "endeavor_updates", "endeavors"
   add_foreign_key "endeavor_updates", "users", column: "author_id"
   add_foreign_key "endeavors", "meeting_bodies"

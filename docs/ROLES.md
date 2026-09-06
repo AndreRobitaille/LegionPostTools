@@ -228,3 +228,12 @@ Likely subjects include:
 When adding those descriptions, distinguish established American Legion responsibilities,
 the practices of the particular Post, and application-specific authority. One must not be
 silently inferred from another.
+
+## Endeavor AI history administration
+
+`manage_agendas` includes inspecting Endeavor AI runs, saving clarifying guidance,
+requesting paid reruns, and withdrawing/resuming automatic history. These are explanatory
+history operations, not minutes approval or attestation. Automatic publication records a
+system actor and exact source provenance; it does not imply an officer reviewed the prose.
+The same capability and optimistic-lock/idempotency protections apply through the API.
+Access to Endeavor runs in Jobs does not grant access to transcript-drafting runs.

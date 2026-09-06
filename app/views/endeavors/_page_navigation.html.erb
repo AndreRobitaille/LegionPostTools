@@ -1,0 +1,7 @@
+<nav class="endeavor-page-nav" aria-label="On this page">
+      <h2>On this page</h2>
+      <% if @history.overview.any? %><%= link_to "At a glance", "#endeavor-overview" %><% end %>
+      <% if @history.upcoming.any? %><%= link_to "Coming up", "#endeavor-coming-up" %><% end %>
+      <%= link_to "Meeting history", "#endeavor-history" %>
+      <%= link_to "Background and details", "#endeavor-background", data: { action: "source-reader#openBackground" } %>
+    </nav>

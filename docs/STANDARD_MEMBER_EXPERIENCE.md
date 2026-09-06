@@ -95,8 +95,13 @@ minutes become official only after the separately recorded membership act.
   Agenda-planning language such as "Raise by," "Due in," and "Overdue" is restricted to
   users who manage agendas.
 - Completed Endeavors show their completion date and never retain overdue language.
-- A timeline appearance links to attested minutes once available; otherwise it links to
-  the published agenda.
+- History groups relevant member-visible minutes passages and complete decisions by
+  meeting, with automatic AI meeting summaries and a cross-meeting overview when available.
+  Source links retain exact revision/item references. Published upcoming agendas have a
+  separate area. Draft agenda metadata is not shown to members.
+- During corrections, the last attested revision remains visible until a corrected
+  revision is attested; affected stale generated text is then withheld automatically.
+- See `docs/ENDEAVOR_HISTORY_AI.md` for generation, provenance, and admin recovery.
 - Actions use **View details** rather than the ambiguous **Open**.
 
 ## Directory and profile

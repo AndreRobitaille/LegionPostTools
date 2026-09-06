@@ -14,7 +14,7 @@ module Api
     end
 
     def show
-      render json: { endeavor: endeavor_detail(@endeavor) }
+      render json: { endeavor: endeavor_detail(@endeavor).merge(history: EndeavorHistory::Serialization.member(@endeavor, before: params[:before])) }
     end
 
     def create
@@ -64,15 +64,18 @@ module Api
     end
 
     def upcoming_agenda_ids_for(item)
-      item.dated_agendas.joins(:meeting).merge(Meeting.upcoming).ids
+      scope = item.dated_agendas
+      scope = scope.where(status: "published") unless current_user.can?("manage_agendas")
+      scope.joins(:meeting).merge(Meeting.upcoming).ids
     end
 
     def upcoming_agenda_ids_by_endeavor_id(items)
       ids = items.map(&:id)
       return {} if ids.empty?
 
-      DatedAgendaItem.joins(dated_agenda: :meeting)
-        .where(endeavor_id: ids)
+      scope = DatedAgendaItem.joins(dated_agenda: :meeting).where(endeavor_id: ids)
+      scope = scope.where(dated_agendas: { status: "published" }) unless current_user.can?("manage_agendas")
+      scope
         .merge(Meeting.upcoming)
         .order("meetings.starts_at ASC", "meetings.title ASC")
         .pluck(:endeavor_id, :dated_agenda_id)

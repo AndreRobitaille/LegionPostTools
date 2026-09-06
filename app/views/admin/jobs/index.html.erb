@@ -77,7 +77,12 @@
   <% else %>
     <div class="jobs-run-list">
       <% @runs.each do |run| %>
-        <%= render run.is_a?(MinutesDraftRun) ? "minutes_draft_run" : "loops_roster_sync", run: run %>
+        <% partial = case run
+          when MinutesDraftRun then "minutes_draft_run"
+          when EndeavorHistoryRun then "endeavor_history_run"
+          else "loops_roster_sync"
+          end %>
+        <%= render partial, run: run %>
       <% end %>
     </div>
   <% end %>
