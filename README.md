@@ -21,7 +21,9 @@ The current application foundation includes:
   most recent Meeting, with account guidance kept visually secondary.
 - Structured agenda catalog, meeting templates, dated agendas, and reusable agenda sections.
 - Endeavors for continuing Post work, with dated continuity updates, meeting-priority suggestions, and
-  independent agenda snapshots.
+  independent agenda snapshots, optional overall deadlines, and completable next steps.
+- Member calendar with linked or standalone activities, date-only/timed events, optional
+  deadline display, and a public-events preview for later website synchronization.
 - First-class Meeting occurrences, an officer Meeting creator/workspace, and a member
   archive with prominent upcoming and reverse-chronological past Meetings.
 - Polished Meeting navigation and responsive/printable published agendas.
@@ -31,7 +33,7 @@ The current application foundation includes:
   attendance, an administrative Jobs ledger, and lifecycle-aware minutes PDFs.
 - Private session-or-bearer API parity for ordinary delegated officer/admin work across
   meetings, agendas, accounts, transcripts, structured minutes, lifecycle actions, AI
-  review, and Jobs.
+  review, Jobs, calendar events, and Endeavor tasks/deadline editing.
 - Exact immutable Commander-approved minutes revisions, different-person Adjutant
   attestation, member-visible minutes awaiting acceptance, and matching signed-in and
   bearer-token actions with audit provenance.
@@ -54,6 +56,9 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/USERS.md` — user and organization context.
 - `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, source authority, Four Pillars, and Legion Family boundaries.
 - `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
+- `docs/CALENDAR.md` — member calendar, visibility, and verified calendar release.
+- `docs/ENDEAVOR_ACTIVITIES.md` — next steps, deadlines, scheduled activities, and seed provenance.
+- `docs/CALENDAR_API.md` — private calendar/activity API fields, permissions, and operator examples.
 - `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
 - `docs/STANDARD_MEMBER_EXPERIENCE.md` — the implemented member dashboard, Meeting actions,

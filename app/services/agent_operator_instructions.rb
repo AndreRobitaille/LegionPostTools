@@ -12,7 +12,9 @@ class AgentOperatorInstructions
       - App: `#{@base_url}`
       - Browser sign-in: open `#{@base_url}/session/new`, enter #{@user.email_address}, and ask the user to take over this computer to finish signing in from the login email. The session stays in **this browser**; terminal tools do not inherit it.
       - Routine terminal API: use the named agent token from this computer's secure credential storage. Never paste the token into chat, URLs, command history, or logs. Other Bots on this computer may be able to use credentials stored there.
-      - At the start of every working session, read `#{@base_url}/api` in full before changing anything. Re-read it after signing in again because endpoints, grants, and instructions may change. A 401 means the user must sign in again or replace a revoked or expired token.
+      - At the start of every working session, read `#{@base_url}/api` in full before changing anything. Re-read it after deployment, role changes, or signing in again because endpoints, grants, and instructions may change. A 401 means the user must sign in again or replace a revoked or expired token.
+
+      Calendar events, Endeavor deadlines, and next steps are separate records. List before creating; retain past activities, avoid invented times, and use only the public-preview projection for future public consumers. Read the current handbook for fields, pagination, locks, and calendar-management permissions.
 
       Neither a browser session nor an agent token proves fresh human intent for an official-record act.
       Further reading is `/api`, not this note.

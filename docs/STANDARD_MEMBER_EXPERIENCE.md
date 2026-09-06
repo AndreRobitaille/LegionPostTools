@@ -92,8 +92,9 @@ minutes become official only after the separately recorded membership act.
 ## Endeavors
 
 - Standard members see an Endeavor's title, public summary, completion state, and history.
-  Agenda-planning language such as "Raise by," "Due in," and "Overdue" is restricted to
-  users who manage agendas.
+  Detail pages also show the optional overall due date, next steps, and scheduled activities.
+  Completed steps and past events remain accessible. Agenda-priority suggestions in the
+  overview stay restricted to agenda managers; “Raise by” is no longer used.
 - Completed Endeavors show their completion date and never retain overdue language.
 - History groups relevant member-visible minutes passages and complete decisions by
   meeting, with automatic AI meeting summaries and a cross-meeting overview when available.
@@ -126,3 +127,17 @@ minutes become official only after the separately recorded membership act.
   authority folio.
 - Browser-check the member Dashboard, Meetings, Endeavors, People, and Profile pages at
   desktop and 390px, including keyboard focus and horizontal overflow.
+
+
+## Calendar and activity access
+
+Calendar is a top-level member destination. Its default view combines Meeting occurrences
+and standalone/Endeavor-linked CalendarEvents. Members may include open task and active
+project deadlines, or inspect a public-only preview. Past months remain accessible. Date
+only entries represent all-day activities or an unrecorded time; descriptions explain the
+latter. Public preview excludes private events, project links, and deadlines. It remains
+inside the signed-in member site; no public website synchronization is active.
+
+Members read the same schedules and tasks through the private API. Calendar Meeting
+projections contain schedule fields only, not working minutes or draft agenda metadata.
+See `CALENDAR_API.md` for the follow-up API contract and release boundary.

@@ -31,7 +31,8 @@ meeting record, or public event automatically.
   public-details-only event view. Never show parent title, private links, tasks, official
   meetings, or internal metadata in that preview. A public projection provides the same
   allowlisted fields for later synchronization, scoped by organization and bounded month.
-  No unauthenticated API, website sync, or caching is activated in this change.
+  No unauthenticated API, website sync, or caching is activated in this change. The follow-up
+  private API parity contract is in `CALENDAR_API.md`.
 
 ## Visual direction
 
@@ -58,13 +59,14 @@ Brakeman (zero warnings), and dependency audit passed. Synthetic browser checks 
 desktop/390px layouts, task creation/completion/reopening, visible keyboard focus,
 calendar deadlines, and public-preview isolation without horizontal overflow. The system
 suite was rerun alone after an overlapping test run caused a database lock conflict.
-The additive migration is applied locally; production and public synchronization are unchanged.
+At initial local verification, the additive migration was applied locally. The subsequent
+`f22eec3` release applied it to production; public synchronization remains inactive.
 
 ## Calendar population for the September 6 release
 
 The production inventory contains three existing Meeting records, two sets of minutes,
 with six Endeavors and no standalone CalendarEvents. An additive, transaction-checked
-seed prepares 18 calendar entries, including historical events: six explicitly public
+seed added 18 calendar entries, including historical events: six explicitly public
 community events and twelve member logistics/other entries. Five entries link to the
 existing Car & Bike Show, Ethnic Fest, and SnowFest Endeavors. Existing Meeting entries
 are not duplicated. Creator/editor attribution uses the authorized calendar manager.
@@ -85,6 +87,7 @@ arrival/shift details remain member-only. No new tasks or official records are i
 
 The seed validates current source text, refuses to overwrite differing existing events,
 and compares counts plus complete-row SHA-256 fingerprints for thirteen protected
-meeting, minutes, agenda, Endeavor, and rich-text tables before/after. A dry run inserts all
-18 valid events and rolls back. Repeating the apply accepts identical existing events
-without duplication. The private seed manifest and detailed evidence stay outside Git.
+meeting, minutes, agenda, Endeavor, and rich-text tables before/after. A dry run inserted all
+18 valid events and rolled back. Production application then added eighteen entries; the
+repeat accepted identical existing events without duplication. All 606 protected rows
+remained unchanged. The private seed manifest and detailed evidence stay outside Git.

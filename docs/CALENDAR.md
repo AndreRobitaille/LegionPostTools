@@ -1,6 +1,7 @@
 # Calendar design
 
-Status: calendar foundation released 6 September 2026; Endeavor activity refinements are local.
+Status: calendar and Endeavor activity UI released 6 September 2026 at `f22eec3`.
+The follow-up private API release is documented in `CALENDAR_API.md`.
 
 ## Purpose and first release
 
@@ -90,7 +91,8 @@ Organization.timezone is not a separate per-record scheduling zone.
 
 Migration: `20260906020000_create_calendar_events`. It has been applied to local development, test,
 and an isolated QA database. The development migration added only the new calendar table;
-existing records were not modified. No production changes were made.
+existing records were not modified during that initial local validation. Both calendar
+and task migrations are now applied in production.
 
 Validation on 6 September 2026: full suite 893 tests / 5,703 assertions, no failures;
 final focused suite after refinements 30 tests / 198 assertions, no failures.
@@ -110,3 +112,27 @@ adds due dates on request; its default remains meetings and events. Due dates ar
 as deadlines rather than scheduled attendance events. Public events preview excludes all
 project/task deadlines and internal context, even when a public event belongs to a private
 project. No public API or caching was activated by this refinement.
+
+
+## Verified production population
+
+The `f22eec3` release seeded 18 source-supported CalendarEvents: ten past and eight
+upcoming as of September 6; six public and twelve members-only, with five linked to
+existing Endeavors. Three existing Meeting entries were retained without duplication.
+The September 8 planning meeting uses the recorded 17:30 start and no invented end.
+Unrecorded times use Date only. The later September minutes establish September 5 for
+the Car & Bike Show, superseding the July agenda's inconsistent date label.
+
+Seed application and repeat validation preserved all 606 rows in thirteen protected
+meeting/minutes/agenda/Endeavor/rich-text tables, verified by complete-row fingerprints.
+The repeat found eighteen existing events and created no duplicates. The private manifest
+was removed from production after verification. Source decisions are in
+`ENDEAVOR_ACTIVITIES.md`. No public website sync is active.
+
+## Private API
+
+See `CALENDAR_API.md`. The calendar, complete event history, tasks, and project deadlines
+have member-readable private endpoints and permission-matched writes. `/api` generates
+both JSON and Markdown documentation from the same permission-filtered catalog. Its
+activity fields document timezone handling, date-only values, locking, and public-safe
+serialization. No public endpoint, integration credential, or cache is introduced.

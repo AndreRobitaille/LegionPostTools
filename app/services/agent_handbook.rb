@@ -15,6 +15,8 @@ class AgentHandbook
     "Transcript text is restricted source evidence. Read it only from the explicit transcript endpoint, never copy it into logs or return it as minutes, and never expose Sick Call or Service Officer case details.",
     "AI draft runs create reviewable suggestions, not minutes. A person or their delegated agent must explicitly use, edit, or discard each suggestion.",
     "Commander approval and Adjutant attestation are available through this API under Only when asked. Reopening and membership approval currently require the signed-in website; later amendments are not implemented. Do not guess API routes for them.",
+    "Calendar events are scheduled activities; Endeavor due_on and next-step due_on are deadlines, not event dates. Never invent times or turn a deadline into an event. Keep home meetings and volunteer logistics members-only unless explicitly authorized otherwise.",
+    "Use the public calendar preview projection for later public synchronization, never the full private event or Endeavor response. The API remains authenticated and no website synchronization is active.",
     "Always list before creating, so an existing Endeavor is not duplicated. Create or link identity only when the human explicitly directs it."
   ].freeze
 
@@ -26,6 +28,8 @@ class AgentHandbook
     { name: "Dated agenda", meaning: "The agenda for one actual meeting date. Status is draft (editable), approved, or published (member-visible). Writes to the order of business require draft. Reopen before editing a locked agenda." },
     { name: "Agenda section", meaning: "A first-level part of a dated agenda, such as Unfinished Business or New Business. Sections may be empty. Add or move each specific business item beneath the section by its id." },
     { name: "Endeavor", meaning: "The durable identity for one coherent body of Post work, such as a Car Show or Buddy Checks effort. It can appear on many agendas. Adding it copies an independent snapshot; later Endeavor edits do not rewrite meeting wording." },
+    { name: "Calendar event", meaning: "A scheduled occurrence, optionally linked to an Endeavor, with its own dates/times and members/public visibility. Multiple events may belong to one project; past and cancelled events remain available. Date only means all-day or a time not yet established." },
+    { name: "Next step", meaning: "An Endeavor task with a title, optional due_on, and open/completed state. Completing a project does not automatically complete its tasks or cancel its events. Meeting appearances remain independent historical records." },
     { name: "Dated roll call", meaning: "The officer-list snapshot for one meeting date. It may intentionally differ from today's assignments, include a vacancy, or omit an office. Editing it never changes Post-role history." },
     { name: "Person", meaning: "A human connected to the Post. Every signed-in member may use the Post directory. Directory contact data is distinct from login-account data." },
     { name: "Post role", meaning: "A dated office or responsibility held by a person. Current configured membership leadership roles may supply full membership access; historical roles do not." },
@@ -381,6 +385,36 @@ class AgentHandbook
     { name: "replace_dated_roll_call", method: "PATCH", path: "/api/dated_agendas/:dated_agenda_id/items/:item_id/roll_call", capability: "manage_agendas", group: :common,
       summary: "Replace the complete officer-list snapshot on a draft roll-call item. Use position-title and person ids from live lists; null person_id means Vacant.",
       example: "PATCH /api/dated_agendas/:dated_agenda_id/items/:item_id/roll_call\n{\"entries\":[{\"position_title_id\":1,\"person_id\":10},{\"position_title_id\":2,\"person_id\":null}]}" },
+    { name: "read_calendar", method: "GET", path: "/api/calendar", capability: nil, group: :common,
+      summary: "Read a month grid of scheduled events and Meetings; optional start_date YYYY-MM-DD and view events (default), deadlines, or public. Includes leading/trailing week days. limit/offset pagination applies. Public view returns only safe event fields; no tasks or private links.",
+      example: "GET /api/calendar?start_date=2026-09-01&view=public" },
+    { name: "list_calendar_events", method: "GET", path: "/api/calendar_events", capability: nil, group: :common,
+      summary: "List past, upcoming, and cancelled events with pagination (limit 1–500, offset). Filter by endeavor_id or visibility. preview=public returns only the public projection and cannot combine with endeavor_id or visibility=members.",
+      example: "GET /api/calendar_events?endeavor_id=1&limit=100" },
+    { name: "show_calendar_event", method: "GET", path: "/api/calendar_events/:id", capability: nil, group: :common,
+      summary: "Read event details and lock_version. preview=public returns safe public fields only and 404 for a member-only event.",
+      example: "GET /api/calendar_events/1" },
+    { name: "create_calendar_event", method: "POST", path: "/api/calendar_events", capability: nil, calendar_management: true, group: :common,
+      summary: "Create a standalone or Endeavor-linked event. Fields: title, description, location, endeavor_id, visibility (members default), all_day, starts_at, ends_at, cancelled. Uses the website calendar-manager policy, not manual manage_agendas alone. Dates/times follow activity_fields.",
+      example: "POST /api/calendar_events\n{\"title\":\"Volunteer planning\",\"endeavor_id\":1,\"starts_at\":\"2026-09-08T17:30:00-05:00\",\"visibility\":\"members\"}" },
+    { name: "update_calendar_event", method: "PATCH", path: "/api/calendar_events/:id", capability: nil, calendar_management: true, group: :common,
+      summary: "Edit event fields with required last-read lock_version. cancelled true cancels; false restores. Null clears end or Endeavor link. Changing all_day requires starts_at and ends_at (null allowed). No delete endpoint.",
+      example: "PATCH /api/calendar_events/1\n{\"lock_version\":0,\"cancelled\":true}" },
+    { name: "list_endeavor_tasks", method: "GET", path: "/api/endeavors/:endeavor_id/tasks", capability: nil, group: :common,
+      summary: "List paginated next steps including completed history; optional status=open|completed. Task completion and due dates are separate from event attendance.",
+      example: "GET /api/endeavors/1/tasks?status=open" },
+    { name: "show_endeavor_task", method: "GET", path: "/api/endeavors/:endeavor_id/tasks/:id", capability: nil, group: :common,
+      summary: "Read a scoped next step, lock_version, and completion actor/time.",
+      example: "GET /api/endeavors/1/tasks/2" },
+    { name: "create_endeavor_task", method: "POST", path: "/api/endeavors/:endeavor_id/tasks", capability: "manage_agendas", group: :common,
+      summary: "Add a next step with title and optional due_on (YYYY-MM-DD). Omit or null the deadline when none is established. Does not create an event or agenda item.",
+      example: "POST /api/endeavors/1/tasks\n{\"title\":\"Confirm electrical service\",\"due_on\":null}" },
+    { name: "update_endeavor_task", method: "PATCH", path: "/api/endeavors/:endeavor_id/tasks/:id", capability: "manage_agendas", group: :common,
+      summary: "Edit title, due_on, or completed with required lock_version. completed true completes and false reopens. Null clears due_on. Repeated completion preserves its original actor/time. No delete endpoint.",
+      example: "PATCH /api/endeavors/1/tasks/2\n{\"lock_version\":0,\"completed\":true}" },
+    { name: "update_endeavor", method: "PATCH", path: "/api/endeavors/:id", capability: "manage_agendas", group: :common,
+      summary: "Edit title, summary, details (rich-text HTML), importance, meeting_body_id, and optional due_on with required lock_version. due_on wins over legacy raise_by_on; null clears the deadline. Omit details when not changing rich text. Does not rewrite meeting snapshots.",
+      example: "PATCH /api/endeavors/1\n{\"lock_version\":0,\"due_on\":\"2026-09-19\"}" },
     { name: "list_endeavors", method: "GET", path: "/api/endeavors", capability: nil, group: :common,
       summary: "List Endeavors. Match recognizable names like Car Show from this list. There is no search.",
       example: "GET /api/endeavors" },
@@ -394,7 +428,7 @@ class AgentHandbook
       summary: "operation refresh starts paid AI processing across all current member-visible minutes, including previously unmatched meetings. Optional meeting_id identifies a meeting to revisit; the whole Endeavor history is regenerated for consistency. guidance saves a versioned guidance string (blank resets); withdraw pauses and hides generated history; resume resumes and queues regeneration. guidance/withdraw/resume require current lock_version. Guidance is not evidence. Successful runs publish automatically; there is no manual approval step. Response contains run id/status for refresh, or lock_version/withdrawn/run for changes. Existing API idempotency rules apply.",
       example: "POST /api/endeavors/1/history\n{\"operation\":\"refresh\"}" },
     { name: "create_endeavor", method: "POST", path: "/api/endeavors", capability: "manage_agendas", group: :common,
-      summary: "Create a human-confirmed Endeavor after listing and not finding it. Optional due_on is its overall deadline in YYYY-MM-DD format, not an event date. The legacy raise_by_on field remains an alias; due_on takes precedence. Tasks and scheduled activities are managed in the signed-in Endeavor page.",
+      summary: "Create a human-confirmed Endeavor after listing and not finding it. Optional due_on is its overall deadline in YYYY-MM-DD format, not an event date. The legacy raise_by_on field remains an alias; due_on takes precedence. Read tasks_path and calendar_events_path from Endeavor detail; use the task and calendar event endpoints to manage them.",
       example: "POST /api/endeavors\n{\"title\":\"Car Show\",\"summary\":\"Confirm permits\",\"importance\":\"important\"}" },
     { name: "add_endeavor_update", method: "POST", path: "/api/endeavors/:id/updates", capability: "manage_agendas", group: :common,
       summary: "Append a dated officer update. Updates are not edited later.",
@@ -481,6 +515,7 @@ class AgentHandbook
         email: @user.email_address,
         roles: @user.person.active_role_labels,
         capabilities: effective_capabilities,
+        calendar_management: @user.can_manage_calendar?,
         people_access: people_access
       },
       authentication: authentication_mode,
@@ -491,6 +526,7 @@ class AgentHandbook
       rules: RULES,
       agenda_item_fields: agenda_item_fields,
       minutes_fields: minutes_fields,
+      activity_fields: activity_fields,
       guided_workflows: guided_workflows,
       common_actions: actions_for(:common),
       only_when_asked: actions_for(:only_when_asked)
@@ -555,6 +591,9 @@ class AgentHandbook
       guided_workflows.each { |workflow| append_workflow(lines, workflow) }
       lines << ""
     end
+    lines << "## Calendar and Endeavor activity fields"
+    activity_fields.each { |field| lines << "- **#{field["name"]}** — #{field["meaning"]}" }
+    lines << ""
     lines << "## Common actions"
     actions_for(:common).each { |action| append_action(lines, action) }
     lines << ""
@@ -617,6 +656,7 @@ class AgentHandbook
 
   def visible_catalog
     CATALOG.select do |action|
+      next @user.can_manage_calendar? if action[:calendar_management]
       next false if action[:membership_access] == :full && !full_membership_access?
       next @user.can_any?(*action[:any_capabilities]) if action[:any_capabilities]
 
@@ -638,6 +678,17 @@ class AgentHandbook
         "steps" => workflow[:steps]
       }
     end
+  end
+
+  def activity_fields
+    [
+      { "name" => "dates", "meaning" => "due_on and date-only event starts_at/ends_at use strict YYYY-MM-DD. due_on is preferred; legacy raise_by_on remains the same stored project deadline. due_on wins when both are sent." },
+      { "name" => "times", "meaning" => "Timed starts_at/ends_at require ISO 8601 with explicit offset or Z. all_day true uses date-only input and inclusive local end-of-day. Use the response timezone. Explain unknown times; do not guess an end time." },
+      { "name" => "patches", "meaning" => "Top-level JSON fields; omit unchanged fields, use null to clear optional dates/links. Send actual JSON booleans. New activity/Endeavor PATCH endpoints require a nonnegative integer lock_version from the latest read; 409 means fetch and reconsider, 422 means invalid/missing input." },
+      { "name" => "public_preview", "meaning" => "Authenticated public view includes only id, title, description, location, starts_at, ends_at, all_day, cancelled, updated_at (plus type in monthly entries). No internal links, actors, tasks, meeting records, or locks. Public sync is not yet activated." },
+      { "name" => "collections", "meaning" => "limit defaults to 500 (maximum 500); offset defaults to 0. Read pagination metadata and follow remaining pages. Endeavor detail includes tasks_path and calendar_events_path. GET /api/calendar includes week padding around the requested month." },
+      { "name" => "authority", "meaning" => "Event writes require current calendar-management authority (admin or current Commander/Adjutant-derived authority); manual manage_agendas alone does not qualify. Task and project writes require manage_agendas. Bearer writes require Idempotency-Key; session writes require X-CSRF-Token." }
+    ]
   end
 
   def agenda_item_fields
@@ -671,6 +722,7 @@ class AgentHandbook
       "path" => action[:path],
       "capability" => action[:capability],
       "any_capabilities" => action[:any_capabilities],
+      "permission" => ("calendar_management" if action[:calendar_management]),
       "people_access" => action[:membership_access]&.to_s,
       "summary" => action[:summary],
       "example" => action[:example]

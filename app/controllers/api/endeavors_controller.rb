@@ -1,7 +1,9 @@
 module Api
   class EndeavorsController < BaseController
-    before_action -> { require_capability("manage_agendas") }, only: %i[create complete reopen]
-    before_action :set_endeavor, only: %i[show complete reopen]
+    include Concerns::ActivityContract
+
+    before_action -> { require_capability("manage_agendas") }, only: %i[create update complete reopen]
+    before_action :set_endeavor, only: %i[show update complete reopen]
 
     def index
       items = organization.endeavors.includes(:meeting_body).order(:status, :title).to_a
@@ -26,13 +28,12 @@ module Api
       else
         render_error(endeavor.errors.full_messages.to_sentence, status: :unprocessable_entity, details: endeavor.errors.full_messages)
       end
-    rescue Date::Error
-      message = "#{params.key?(:due_on) ? 'due_on' : 'raise_by_on'} must be an ISO 8601 date in YYYY-MM-DD form."
-      render_error(
-        message,
-        status: :unprocessable_entity,
-        details: [ message ]
-      )
+    end
+
+    def update
+      @endeavor.lock_version = activity_lock_version!(@endeavor)
+      @endeavor.update!(endeavor_params)
+      render json: { endeavor: endeavor_detail(@endeavor) }
     end
 
     def complete
@@ -59,8 +60,9 @@ module Api
       permitted = params.permit(:title, :summary, :details, :importance, :due_on, :raise_by_on, :meeting_body_id)
       date_key = permitted.key?(:due_on) ? :due_on : :raise_by_on
       permitted.delete(:raise_by_on) if date_key == :due_on
-      if permitted[date_key].present?
-        permitted[date_key] = Date.iso8601(permitted[date_key].to_s)
+      permitted[date_key] = activity_date(permitted[date_key], field: date_key) if permitted.key?(date_key)
+      if permitted[:meeting_body_id].present?
+        organization.meeting_bodies.find(permitted[:meeting_body_id])
       end
       permitted
     end
@@ -91,6 +93,7 @@ module Api
         title: item.title,
         summary: item.summary,
         status: item.status,
+        lock_version: item.lock_version,
         importance: item.importance,
         due_on: item.due_on&.iso8601,
         raise_by_on: item.due_on&.iso8601,
@@ -100,7 +103,11 @@ module Api
     end
 
     def endeavor_detail(item)
-      endeavor_summary(item).merge(details: item.details.to_plain_text.presence || item.details.to_s)
+      endeavor_summary(item).merge(
+        details: item.details.to_plain_text.presence || item.details.to_s,
+        tasks_path: "/api/endeavors/#{item.id}/tasks",
+        calendar_events_path: "/api/calendar_events?endeavor_id=#{item.id}"
+      )
     end
   end
 end

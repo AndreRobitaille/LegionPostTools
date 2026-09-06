@@ -237,3 +237,19 @@ history operations, not minutes approval or attestation. Automatic publication r
 system actor and exact source provenance; it does not imply an officer reviewed the prose.
 The same capability and optimistic-lock/idempotency protections apply through the API.
 Access to Endeavor runs in Jobs does not grant access to transcript-drafting runs.
+
+
+## Calendar and Endeavor activities
+
+All enabled signed-in members can read calendar entries and Endeavor next steps. Both
+HTML and API event mutations call `User#can_manage_calendar?`: manage_settings access or
+current position-derived approve_minutes/attest_minutes authority. Personal grants of
+manage_agendas or approve_minutes alone do not confer calendar management. The handbook
+reports caller.calendar_management and filters event writes with this same predicate;
+calendar_management is a policy indicator, not a new PermissionGrant capability.
+
+Endeavor and task edits require manage_agendas. Tasks record their creator, last editor,
+and completion actor/time. API bearer writes also retain the existing AgentApiExecution
+provenance and idempotency controls. Calendar publication flags do not grant access to
+private project context or official documents. Public preview is authenticated and uses
+an explicit allowlist. See `CALENDAR_API.md` for the endpoint contract.

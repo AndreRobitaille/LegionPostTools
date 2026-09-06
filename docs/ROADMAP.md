@@ -76,7 +76,7 @@ Still pending:
 
 ## Completed: Endeavors Foundation
 
-- Long-lived post business with rich context, importance, raise-by dates, usual meeting
+- Long-lived post business with rich context, importance, optional overall due dates, usual meeting
   bodies, and active/completed lifecycle.
 - Append-only dated updates and a continuity record that includes agenda appearances.
 - Plain-language old-business priority suggestions from active Endeavors.
@@ -110,10 +110,23 @@ passed on three Endeavors; production activation remains pending.
 - Keep AI evidence associations separate from the human-defined Endeavor and immutable
   minutes. Include correction handling, complete-history refresh, API parity, and measured
   quality/cost evaluation in implementation.
-- Later, explore current next steps, responsible people, subcommittee membership, task
-  lists, and volunteer requests for active Endeavors. Consider an accessible Kanban view
+- Simple next steps and optional task deadlines are now implemented. Later, explore
+  responsible people, subcommittee membership, and volunteer requests for active Endeavors. Consider an accessible Kanban view
   only when a concrete workflow benefits from it. Keep coordination separate from the
   immutable meeting record and preserve history after completion.
+
+## Completed: Member calendar and Endeavor activities
+
+Released September 6 at `f22eec3`: top-level member calendar, central event management,
+multiple activities per Endeavor, optional project/task due dates, task completion and
+reopening, and public-only preview. Source-supported production seeding added eighteen
+past/upcoming events while preserving official records. Public website synchronization
+remains future work. See `docs/CALENDAR.md` and `docs/ENDEAVOR_ACTIVITIES.md`.
+
+The follow-up private API parity extension provides: calendar reads, safe
+public projection, paginated event/task history, event management, task lifecycle, and
+project deadline edits. The permission-filtered
+handbook and local operator/developer documentation cover it in `docs/CALENDAR_API.md`.
 
 ## Completed: Agenda Presentation and Navigation
 
@@ -388,7 +401,7 @@ automation do not block these minutes slices.
   migrates stored timestamps without silently moving their intended local date or clock time.
 - Document archive.
 - Committee tracking.
-- Calendar/events.
+- Public calendar synchronization and cache invalidation (member calendar/events are implemented).
 - Lightweight finance records.
 - Officer/member directory.
 - Public read-only API for selected approved records (distinct from the private

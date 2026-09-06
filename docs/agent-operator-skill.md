@@ -28,6 +28,18 @@ Within the user's current grants, the private API is intended for officer/admin 
 not merely read-only reporting. A bearer token may perform an official minutes act its
 human can perform only when that human explicitly requests the exact act; the API records
 idempotent agent-token provenance. The live handbook covers meetings, agendas, accounts,
-transcripts, structured minutes, approval, attestation, AI review, and Jobs as those
-capabilities permit.
-Further reading is `/api`, not this note.
+transcripts, structured minutes, approval, attestation, AI review, Jobs, calendar events, Endeavor deadlines, and next steps
+as those permissions permit.
+For calendar work, read the current handbook and list existing events before creating.
+An Endeavor is the project; its tasks/deadlines and scheduled activities are separate.
+Use the returned task/event collection paths, follow pagination, and retain past events.
+Do not turn a deadline into an event or invent a start/end time. Date-only entries use
+all_day and must explain unknown times. Keep private logistics members-only. Use only the
+public-preview projection for future public consumers; no public sync is active.
+Fetch lock_version before editing and reconsider stale conflicts. Exact bearer retries
+reuse Idempotency-Key. Calendar-management permission differs from manage_agendas;
+never infer one from the other. Re-read `/api` after a deployment or role change.
+
+Local maintainers: `docs/CALENDAR_API.md` documents the endpoint/field contract and
+release boundary. Operational agents must use the current `/api`, not a cached local
+endpoint list.

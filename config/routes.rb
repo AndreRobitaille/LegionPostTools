@@ -220,7 +220,10 @@ Rails.application.routes.draw do
       post "sections/:section_id/items/reorder", to: "dated_agenda_items#reorder"
       resources :endeavors, only: :create, controller: "dated_agenda_endeavors"
     end
-    resources :endeavors, only: %i[index show create] do
+    get "calendar", to: "calendar#show"
+    resources :calendar_events, only: %i[index show create update]
+    resources :endeavors, only: %i[index show create update] do
+      resources :tasks, only: %i[index show create update], controller: "endeavor_tasks"
       resource :history, only: %i[show create], controller: "endeavor_histories"
       member do
         patch :complete

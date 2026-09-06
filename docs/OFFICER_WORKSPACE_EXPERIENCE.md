@@ -91,3 +91,17 @@ history's processing state and last publication time, and attention/status filte
 withdrawal/resume, and run inspection. Ordinary members cannot see these links or open
 this overview. Viewing/filtering starts no AI calls. See
 [management overview design](ENDEAVOR_MANAGEMENT_OVERVIEW.md).
+
+
+## Calendar and next-step management
+
+Calendar managers use the central Manage calendar page or add/edit events from an
+Endeavor. The policy is administrative settings access or current Commander/Adjutant
+position-derived authority; a manual manage_agendas grant alone does not qualify. Events
+can be members-only or public and can be cancelled/restored, including past events.
+Existing Meeting edits retain their own agenda and official-record safeguards.
+
+Endeavor editors with manage_agendas can add/edit next steps, set optional due dates,
+complete/reopen steps, and edit the optional overall project deadline. These actions do
+not complete/cancel other records or rewrite meeting history. The matching private API
+uses the same policies and optimistic lock protection; see `CALENDAR_API.md`.

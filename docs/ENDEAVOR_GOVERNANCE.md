@@ -142,8 +142,8 @@ invariants apply:
 - Structured minutes items preserve an optional direct identity link when they
   concern an Endeavor, including when seeded from a linked `DatedAgendaItem`. Minutes text
   remains an independent meeting snapshot.
-- Status, importance, raise-by date, usual meeting body, Pillar classification, and future
-  event relationships describe an Endeavor; none of them defines its identity.
+- Status, importance, optional overall due date, usual meeting body, Pillar classification,
+  and event relationships describe an Endeavor; none of them defines its identity.
 - AI can draft or suggest. Humans remain the authority for creation, linking, merging,
   splitting, completion, reopening, approval, attestation, acceptance, and amendment. A
   delegated agent may execute an explicit authorized instruction with that user's grants;
@@ -180,3 +180,13 @@ This governance decision does not now add or design:
 
 Those capabilities require their own product decisions and should be added only when a
 real Post workflow needs them.
+
+## Calendar and next-step API
+
+The private activity API preserves these same project boundaries. `due_on` edits an
+optional overall deadline; the legacy `raise_by_on` name remains a compatible alias.
+Tasks and CalendarEvents have separate endpoints, state, dates, and permission checks.
+Event cancellation and task completion do not change the Endeavor's official meeting
+history, and project completion does not cascade into tasks or events. Public calendar
+projection never includes the parent project or its private work. See `CALENDAR_API.md`
+for fields, pagination, lock versions, and the API extension's release status.

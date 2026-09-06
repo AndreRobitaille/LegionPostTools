@@ -146,7 +146,8 @@ this app only stores post business.
 
 The private API is the machine-friendly operating surface for a bot or agent acting for
 the authenticated person. It mirrors ordinary officer/admin work that exists in the app:
-account access controls; Meeting and agenda operations; Endeavor continuity; restricted
+account access controls; Meeting and agenda operations; Endeavor continuity, deadline edits,
+next steps, and linked/standalone calendar events; restricted
 transcript attachment/read; structured draft-minutes editing; roster-backed motion and
 attendance review; durable AI runs; Jobs status; and lifecycle-aware minutes-PDF retrieval.
 It uses the same
@@ -159,6 +160,15 @@ approval/publication, minutes approval/attestation, and reopen are explicit **On
 asked** actions in the live handbook. Minutes approval and attestation use the same human
 capabilities in HTML and bearer-token API calls. Bearer writes remain idempotent and record
 delegated-agent provenance. Acceptance, amendments, and minutes reopen remain unimplemented.
+
+Calendar API reads share `CalendarMonth` with the website, including the optional member
+deadline view and safe public preview. Calendar Meeting entries expose schedule fields
+only. Event writes use `User#can_manage_calendar?`; task/project writes use manage_agendas.
+Current permission predicates also filter the handbook. New activity PATCH endpoints
+require optimistic lock versions, and bearer writes retain existing idempotent execution
+provenance. Paginated event history includes cancelled/past events. The public projection
+is still authenticated and does not activate public caching or synchronization. See
+`docs/CALENDAR_API.md` for the exact contract and release boundary.
 
 Provider-specific AI integration should stay behind replaceable service boundaries. OpenAI is expected first, but the domain should not depend directly on one provider.
 
