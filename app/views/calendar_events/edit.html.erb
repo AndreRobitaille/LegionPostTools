@@ -2,3 +2,26 @@
 <%= link_to "← Event details", calendar_event_path(@event), class: "back" %>
 <div class="page-lead"><h1 class="page-title">Edit calendar event</h1><p class="page-sub">Update the details members use to plan their visit.</p></div>
 <%= render "form" %>
+
+<% if @event.calendar_deletable? %>
+<section class="panel" data-controller="confirm-dialog">
+  <h2 class="section-title">Remove this event</h2>
+  <p>Delete a mistaken or duplicate entry. If plans changed, mark the event cancelled to keep a notice on the calendar.</p>
+  <div class="btnrow"><button type="button" class="btn-danger" data-action="confirm-dialog#open">Delete event</button></div>
+  <%= render "shared/delete_confirmation_dialog",
+        dialog_id: "delete-calendar-event",
+        kicker: "Permanent action",
+        title: "Delete this calendar event?",
+        description: "This event will be permanently removed from the calendar. This cannot be undone.",
+        record_label: "Event to delete",
+        record_title: @event.title,
+        record_meta: legion_datetime(@event.starts_at),
+        note: "The related Endeavor and any meeting, agenda, or minutes records will remain.",
+        delete_label: "Delete event",
+        delete_path: calendar_event_path(@event),
+        delete_params: { lock_version: @event.lock_version } %>
+</section>
+
+<% else %>
+  <p class="form-help">Member and officer meeting entries cannot be deleted from the calendar.</p>
+<% end %>

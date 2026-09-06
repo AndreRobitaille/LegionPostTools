@@ -11,8 +11,8 @@ current-user permissions. Members read events and tasks. Event mutations require
 `User#can_manage_calendar?` policy as the UI (administrative settings access or the current
 Commander/Adjutant position-derived authority). Task and Endeavor mutations require
 `manage_agendas`. Handbook visibility must use these same predicates. All records and
-optional Endeavor links are organization-scoped. There are no delete routes; events can
-be cancelled and tasks completed/reopened. None of these writes changes official records.
+optional Endeavor links are organization-scoped. CalendarEvents may be deleted explicitly with a lock version, or cancelled to retain
+a notice. Tasks can be completed/reopened and have no delete route. None of these writes changes official records.
 
 ## Endpoints
 
@@ -27,6 +27,10 @@ be cancelled and tasks completed/reopened. None of these writes changes official
   with `endeavor_id` or members visibility. Normal reads include Endeavor links and locks.
 - `GET /api/calendar_events/:id`: event detail; `preview=public` hides private links,
   actor IDs, and lock metadata, and returns 404 for private events.
+- `DELETE /api/calendar_events/:id`: permanently delete the named CalendarEvent with
+  required last-read lock_version; returns 204. Calendar-management permission is required.
+  Member/PEC/officer meeting entries return 422 and cannot be deleted here.
+  Linked Endeavors and official records remain. Listed under Only when asked in `/api`.
 - `POST /api/calendar_events`, `PATCH /api/calendar_events/:id`: title, description,
   location, optional `endeavor_id`, visibility (`members` default), `all_day`, `cancelled`,
   `starts_at`, optional `ends_at`. PATCH requires the last-read `lock_version`.
@@ -80,7 +84,7 @@ Dates normalize in the Post's saved timezone, which responses identify. Do not
 invent times, infer event dates from project deadlines, or publish private logistics.
 When switching all_day mode, send both starts_at and ends_at (null is allowed for end).
 Omitted PATCH fields remain unchanged; null clears optional dates/links. Booleans must be
-JSON true/false. Completion/cancellation are reversible; no deletion is inferred.
+JSON true/false. Completion/cancellation are reversible; deletion requires an explicit request for the named event.
 
 `due_on` is preferred; `raise_by_on` remains the same stored date and backward-compatible
 API alias. When both are supplied, due_on wins. Task dates never create calendar events;
@@ -136,3 +140,5 @@ Public events are classified from public visibility after specific meeting/Honor
 `public_event` is a derived category, not an editable override. Legacy `volunteers`
 overrides remain readable but use current title/visibility classification. Volunteering
 is participation, not an event type; Honor Guard does not imply open recruitment.
+
+Event deletion design and verification: `CALENDAR_EVENT_DELETION.md`.

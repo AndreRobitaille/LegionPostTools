@@ -38,7 +38,7 @@ Rails.application.routes.draw do
   resources :people, only: %i[index show]
   get "calendar", to: "calendar#show", as: :calendar
   get "calendar/manage", to: "calendar#manage", as: :manage_calendar
-  resources :calendar_events, only: %i[show new create edit update]
+  resources :calendar_events, only: %i[show new create edit update destroy]
 
   resources :meetings, only: %i[index show] do
     resource :minutes, only: :show, controller: "meeting_minutes"
@@ -221,7 +221,7 @@ Rails.application.routes.draw do
       resources :endeavors, only: :create, controller: "dated_agenda_endeavors"
     end
     get "calendar", to: "calendar#show"
-    resources :calendar_events, only: %i[index show create update]
+    resources :calendar_events, only: %i[index show create update destroy]
     resources :endeavors, only: %i[index show create update] do
       resources :tasks, only: %i[index show create update], controller: "endeavor_tasks"
       resource :history, only: %i[show create], controller: "endeavor_histories"

@@ -31,7 +31,7 @@
               class="btn-secondary"
               data-confirm-dialog-target="cancel"
               data-action="confirm-dialog#close">Cancel</button>
-      <%= button_to delete_label, delete_path, method: :delete, class: "btn-danger" %>
+      <%= button_to delete_label, delete_path, method: :delete, params: local_assigns.fetch(:delete_params, {}), class: "btn-danger" %>
     </div>
   </div>
 </dialog>

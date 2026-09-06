@@ -21,6 +21,12 @@ class CalendarEvent < ApplicationRecord
   scope :overlapping, ->(from, to) { where("starts_at < ? AND COALESCE(ends_at, starts_at) >= ?", to, from) }
   scope :publicly_visible, -> { where(visibility: "public") }
 
+  before_destroy :protect_meeting_entry
+
+  def calendar_deletable?
+    !%w[member_meeting officer_meeting].include?(CalendarCategories.for(self))
+  end
+
   def public? = visibility == "public"
 
   # A future public feed must use this allowlist, never serialize the parent record.
@@ -31,6 +37,13 @@ class CalendarEvent < ApplicationRecord
   end
 
   private
+
+  def protect_meeting_entry
+    return if calendar_deletable?
+
+    errors.add(:base, "Member and officer meeting entries cannot be deleted from the calendar.")
+    throw :abort
+  end
 
   def end_follows_start
     errors.add(:ends_at, "must be on or after the start") if ends_at && starts_at && ends_at < starts_at

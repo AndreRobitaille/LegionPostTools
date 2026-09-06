@@ -150,3 +150,10 @@ The revised presentation uses colored event blocks and visible, instant type fil
 Desktop readers choose Month or Schedule; phone readers get a readable schedule. Officer
 planning/public-preview utilities are separate from the ordinary attendance calendar.
 See `CALENDAR_REFINEMENTS.md` for the persona walkthrough and final visual design.
+
+Calendar managers can also delete a mistaken or duplicate CalendarEvent from its edit
+page after a record-specific confirmation. Cancellation remains available when members
+should see that plans changed. Deletion requires the current lock version and removes
+only the calendar entry; linked Endeavors and official meeting documents remain intact.
+The matching API DELETE action is listed under Only when asked. See
+`CALENDAR_EVENT_DELETION.md` for scope and validation.

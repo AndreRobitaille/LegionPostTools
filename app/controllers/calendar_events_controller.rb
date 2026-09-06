@@ -3,7 +3,7 @@ class CalendarEventsController < ApplicationController
   before_action :require_authentication
   before_action :require_calendar_management, except: :show
   before_action :set_organization
-  before_action :set_event, only: %i[show edit update]
+  before_action :set_event, only: %i[show edit update destroy]
   before_action :set_endeavors, only: %i[new create edit update]
 
   def show
@@ -31,6 +31,22 @@ class CalendarEventsController < ApplicationController
     save_event(:edit, "Calendar event saved.")
   rescue ActiveRecord::StaleObjectError
     redirect_to edit_calendar_event_path(@event), alert: "This event changed elsewhere. Review the latest details before saving again."
+  end
+
+  def destroy
+    version = params[:lock_version].to_s
+    unless version.match?(/\A\d+\z/)
+      return redirect_to edit_calendar_event_path(@event), alert: "Reload the event before deleting it."
+    end
+    raise ActiveRecord::StaleObjectError.new(@event, "destroy") if version.to_i != @event.lock_version
+
+    date = @event.starts_at.to_date
+    @event.destroy!
+    redirect_to manage_calendar_path(start_date: date), notice: "Calendar event deleted.", status: :see_other
+  rescue ActiveRecord::RecordNotDestroyed
+    redirect_to edit_calendar_event_path(@event), alert: @event.errors.full_messages.to_sentence
+  rescue ActiveRecord::StaleObjectError
+    redirect_to edit_calendar_event_path(@event), alert: "This event changed elsewhere. Review it before deleting."
   end
 
   private

@@ -2,8 +2,8 @@ module Api
   class CalendarEventsController < BaseController
     include CalendarTimeZone
     include Concerns::ActivityContract
-    before_action :require_calendar_management, only: %i[create update]
-    before_action :set_event, only: %i[show update]
+    before_action :require_calendar_management, only: %i[create update destroy]
+    before_action :set_event, only: %i[show update destroy]
 
     def index
       preview = activity_preview?
@@ -43,6 +43,14 @@ module Api
       @event.updated_by = current_user
       @event.save!
       render json: { calendar_event: calendar_event_payload(@event), timezone: Time.zone.name }
+    end
+
+    def destroy
+      @event.lock_version = activity_lock_version!(@event)
+      @event.destroy!
+      head :no_content
+    rescue ActiveRecord::RecordNotDestroyed
+      render_validation_error(@event, fallback: "This meeting entry cannot be deleted from the calendar.")
     end
 
     private
