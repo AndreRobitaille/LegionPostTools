@@ -28,7 +28,7 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
     assert_response :success
     entries = response.parsed_body.dig("calendar", "entries")
     assert_equal 3, entries.size
-    assert_equal %w[id location_address location_name starts_at title type], entries.find { |e| e["type"] == "meeting" }.keys.sort
+    assert_equal %w[calendar_category category display_title id location_address location_name starts_at title type], entries.find { |e| e["type"] == "meeting" }.keys.sort
     assert_equal meeting.id, entries.find { |e| e["type"] == "meeting" }["id"]
     get "/api/calendar", params: { start_date: "2026-09-01", view: "deadlines" }, as: :json
     assert_equal 2, response.parsed_body.dig("calendar", "entries").count { |e| e["type"] == "deadline" }
@@ -120,8 +120,8 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
       assert_response :created
       event = CalendarEvent.find(response.parsed_body.dig("calendar_event", "id"))
       assert_equal Time.zone.local(2026, 10, 31), event.starts_at
-      assert_equal Date.new(2026, 11, 1), event.ends_at.to_date
-      assert_equal 23, event.ends_at.hour
+      assert_equal Date.new(2026, 11, 1), event.ends_at.in_time_zone(@organization.calendar_time_zone).to_date
+      assert_equal 23, event.ends_at.in_time_zone(@organization.calendar_time_zone).hour
       assert_equal(-6.hours, event.ends_at.utc_offset)
     end
   end
@@ -141,9 +141,9 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
     patch "/api/calendar_events/#{event.id}", params: { lock_version: event.lock_version, cancelled: false, all_day: true, starts_at: "2026-09-08", ends_at: "2026-09-09", endeavor_id: nil }, as: :json
     assert_response :success
     assert_nil event.reload.endeavor_id
-    assert_equal Date.new(2026, 9, 9), event.ends_at.to_date
-    assert_equal 23, event.ends_at.hour
-    assert_equal 0, event.starts_at.hour
+    assert_equal Date.new(2026, 9, 9), event.ends_at.in_time_zone(@organization.calendar_time_zone).to_date
+    assert_equal 23, event.ends_at.in_time_zone(@organization.calendar_time_zone).hour
+    assert_equal 0, event.starts_at.in_time_zone(@organization.calendar_time_zone).hour
     assert_not event.cancelled?
     patch "/api/calendar_events/#{event.id}", params: { title: "No lock" }, as: :json
     assert_response :unprocessable_entity
@@ -276,6 +276,40 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
     assert_response :created
   ensure
     Api::BaseController.allow_forgery_protection = previous
+  end
+
+  test "calendar filters categories and exposes Sunday bounds with safe public categories" do
+    @public_event.update!(calendar_category: "honor_guard", starts_at: @organization.calendar_time_zone.local(2026, 8, 30))
+    @private_event.update!(calendar_category: "planning_meeting")
+    sign_in_as(@member)
+    get "/api/calendar", params: { start_date: "2026-09-01", categories: %w[honor_guard planning_meeting] }, as: :json
+    assert_response :success
+    assert_equal "sunday", response.parsed_body.dig("calendar", "week_starts_on")
+    assert_equal "America/Chicago", response.parsed_body.dig("calendar", "timezone")
+    assert_equal 2, response.parsed_body.dig("calendar", "entries").size
+    get "/api/calendar", params: { start_date: "2026-09-01", view: "public", categories: %w[honor_guard planning_meeting] }, as: :json
+    entries = response.parsed_body.dig("calendar", "entries")
+    assert_equal [ @public_event.id ], entries.map { |entry| entry["id"] }
+    assert_equal "honor_guard", entries.first["category"]
+    assert_not entries.first.key?("calendar_category")
+    get "/api/calendar", params: { categories: [ "invalid" ] }, as: :json
+    assert_response :unprocessable_entity
+  end
+
+  test "event category writes validate values and preserve omitted overrides" do
+    sign_in_as(@manager)
+    post "/api/calendar_events", params: event_input.merge(calendar_category: "planning_meeting"), as: :json
+    assert_response :created
+    event = CalendarEvent.order(:id).last
+    assert_equal "planning_meeting", response.parsed_body.dig("calendar_event", "category")
+    patch "/api/calendar_events/#{event.id}", params: { lock_version: event.lock_version, title: "Setup" }, as: :json
+    assert_response :success
+    assert_equal "planning_meeting", event.reload.calendar_category
+    patch "/api/calendar_events/#{event.id}", params: { lock_version: event.lock_version, calendar_category: "secret" }, as: :json
+    assert_response :unprocessable_entity
+    patch "/api/calendar_events/#{event.id}", params: { lock_version: event.lock_version, calendar_category: nil }, as: :json
+    assert_response :success
+    assert_equal "other", response.parsed_body.dig("calendar_event", "category")
   end
 
   private

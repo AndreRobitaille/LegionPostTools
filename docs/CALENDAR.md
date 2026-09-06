@@ -86,8 +86,9 @@ changes and use only the test database for automated checks.
 Routes: `/calendar`, `/calendar/manage`, and `/calendar_events` (new/create/show/edit/update).
 The Endeavor detail page lists upcoming linked events and offers Add calendar event to
 calendar managers. Meeting editing retains the existing manage_agendas check and record
-locks. Calendar events use the installation's APP_TIME_ZONE, consistent with Meetings;
-Organization.timezone is not a separate per-record scheduling zone.
+locks. Calendar display, month boundaries, and event time entry use the Post's saved
+Organization.timezone, with APP_TIME_ZONE as the fallback for legacy invalid settings.
+Stored timestamps are unchanged; daylight-saving offsets follow the Post's zone.
 
 Migration: `20260906020000_create_calendar_events`. It has been applied to local development, test,
 and an isolated QA database. The development migration added only the new calendar table;
@@ -107,8 +108,7 @@ Automated checks used synthetic data; paid AI generation was not used.
 
 The Endeavor page provides Next steps and Scheduled activities before its meeting history.
 Tasks have optional due dates and can be marked done or reopened by Endeavor editors.
-Past activities and completed steps remain accessible. The member calendar's Show selector
-adds due dates on request; its default remains meetings and events. Due dates are labeled
+Past activities and completed steps remain accessible. The planning calendar adds due dates on request; its default remains meetings and events. Due dates are labeled
 as deadlines rather than scheduled attendance events. Public events preview excludes all
 project/task deadlines and internal context, even when a public event belongs to a private
 project. No public API or caching was activated by this refinement.
@@ -136,3 +136,17 @@ have member-readable private endpoints and permission-matched writes. `/api` gen
 both JSON and Markdown documentation from the same permission-filtered catalog. Its
 activity fields document timezone handling, date-only values, locking, and public-safe
 serialization. No public endpoint, integration credential, or cache is introduced.
+
+## Readability and event types
+
+See `CALENDAR_REFINEMENTS.md` for Sunday-start weeks, colored event types and multi-select
+filters, date-free default meeting names, and forgiving time entry. Categories can be set
+in event/meeting forms; existing names provide automatic defaults until overridden. Calendar
+filters are shareable URL parameters and apply to the grid and schedule together. API
+parity is covered in `CALENDAR_API.md`.
+
+
+The revised presentation uses colored event blocks and visible, instant type filters.
+Desktop readers choose Month or Schedule; phone readers get a readable schedule. Officer
+planning/public-preview utilities are separate from the ordinary attendance calendar.
+See `CALENDAR_REFINEMENTS.md` for the persona walkthrough and final visual design.

@@ -12,7 +12,7 @@ class CalendarEventTest < ActiveSupport::TestCase
     assert_nil event.public_calendar_attributes
     event.visibility = "public"
     event.save!
-    assert_equal %w[all_day cancelled description ends_at id location starts_at title updated_at], event.public_calendar_attributes.keys.sort
+    assert_equal %w[all_day cancelled category description ends_at id location starts_at title updated_at], event.public_calendar_attributes.keys.sort
     assert_not_includes event.public_calendar_attributes.to_json, "Private planning"
     event.update!(visibility: "members")
     assert_not_includes CalendarEvent.publicly_visible, event
@@ -52,6 +52,43 @@ class CalendarEventTest < ActiveSupport::TestCase
     project.complete!(@user)
     month = CalendarMonth.new(organization: @organization, date: Date.new(2026, 9, 1), view: "deadlines")
     assert_empty month.entries
+  end
+
+  test "automatic categories recognize Post meeting and service names with explicit overrides" do
+    { "PEC Meeting" => "officer_meeting", "Membership Meeting" => "member_meeting",
+      "Honor Guard practice" => "honor_guard", "Volunteer setup" => "other", "Festival planning meeting" => "planning_meeting",
+      "Community breakfast" => "other" }.each do |title, expected|
+      event = build_event(title: title)
+      assert_equal expected, CalendarCategories.for(event)
+      event.calendar_category = "other"
+      assert_equal "other", CalendarCategories.for(event)
+    end
+  end
+
+  test "public events and planning are distinct from volunteering and Honor Guard" do
+    event = build_event(title: "Festival volunteer shift", visibility: "public", calendar_category: "volunteers")
+    assert event.valid?
+    assert_equal "public_event", CalendarCategories.for(event)
+    event.title = "Festival planning meeting"
+    assert_equal "planning_meeting", CalendarCategories.for(event)
+    event.title = "Honor Guard colors"
+    assert_equal "honor_guard", CalendarCategories.for(event)
+    event.visibility = "members"
+    assert_equal "honor_guard", CalendarCategories.for(event)
+  end
+
+  test "Post local dates control midnight events and deadlines outside a calendar request" do
+    Time.use_zone("UTC") do
+      evening = build_event(starts_at: Time.utc(2026, 9, 2, 0, 30)).tap(&:save!)
+      before_grid = build_event(starts_at: Time.utc(2026, 8, 30, 4, 59)).tap(&:save!)
+      project = @organization.endeavors.create!(title: "Newsletter", due_on: Date.new(2026, 9, 20), created_by: @user)
+      month = CalendarMonth.new(organization: @organization, date: Date.new(2026, 9, 1), view: "deadlines")
+      assert_includes month.entries_on(Date.new(2026, 9, 1)), evening
+      assert_not_includes month.entries_on(Date.new(2026, 9, 2)), evening
+      assert_not_includes month.entries, before_grid
+      assert month.entries_on(project.due_on).any? { |entry| entry.is_a?(CalendarDeadline) }
+      assert_not month.entries_on(project.due_on - 1).any? { |entry| entry.is_a?(CalendarDeadline) }
+    end
   end
 
   private

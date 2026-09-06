@@ -53,6 +53,17 @@ class LegionFormatHelperTest < ActionView::TestCase
     end
   end
 
+  test "time entry accepts common shorthand and explicit AM PM" do
+    { "8" => [ 8, 0 ], "8:00" => [ 8, 0 ], "800" => [ 8, 0 ], "0800" => [ 8, 0 ],
+      "1930" => [ 19, 30 ], "7pm" => [ 19, 0 ], "12 AM" => [ 0, 0 ], "12pm" => [ 12, 0 ],
+      " 8:05 am " => [ 8, 5 ] }.each do |text, parts|
+      assert_equal Time.zone.local(2026, 6, 24, *parts), combine_legion_datetime("24 JUN 2026", text), text
+    end
+    %w[2400 2560 8:5 0pm 13am -8 8.30 12345].each do |text|
+      assert_nil combine_legion_datetime("24 JUN 2026", text), text
+    end
+  end
+
   test "combine_legion_datetime rejects missing malformed and out-of-range times" do
     assert_nil combine_legion_datetime("24 JUN 2026", nil)
     assert_nil combine_legion_datetime("24 JUN 2026", "evening")

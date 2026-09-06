@@ -16,7 +16,7 @@ class MeetingTest < ActiveSupport::TestCase
   test "defaults title and snapshots the body's effective place" do
     meeting = @organization.meetings.create!(meeting_body: @body, meeting_type: @type, starts_at: Time.zone.local(2026, 9, 8, 19))
 
-    assert_equal "Membership Meeting — 08 SEP 2026", meeting.title
+    assert_equal "Membership Meeting", meeting.title
     assert_equal "Legion Hall", meeting.location_name
     assert_equal "123 Main Street", meeting.location_address
 
@@ -39,7 +39,7 @@ class MeetingTest < ActiveSupport::TestCase
 
     meeting.update!(title: "", starts_at: Time.zone.local(2026, 10, 6, 19))
 
-    assert_equal "Membership Meeting — 06 OCT 2026", meeting.title
+    assert_equal "Membership Meeting", meeting.title
   end
 
   test "ordinary meeting updates synchronize draft agenda snapshots" do

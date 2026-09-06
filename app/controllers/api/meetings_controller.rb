@@ -74,7 +74,7 @@ module Api
 
     def meeting_attributes
       permitted = params.permit(
-        :meeting_body_id,
+        :calendar_category, :meeting_body_id,
         :meeting_type_id,
         :starts_at,
         :title,

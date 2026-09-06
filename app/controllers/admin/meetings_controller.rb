@@ -96,7 +96,7 @@ module Admin
 
     def meeting_params
       permitted = params.require(:meeting).permit(
-        :meeting_body_id,
+        :calendar_category, :meeting_body_id,
         :meeting_type_id,
         :starts_at,
         :starts_at_date,

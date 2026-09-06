@@ -1,17 +1,35 @@
 <% content_for :title, @event.title %>
-<%= link_to "← Calendar", calendar_path(start_date: @event.starts_at.to_date, view: @public_preview ? "public" : nil), class: "back" %>
-<div class="page-lead">
-  <p class="calendar-event-label"><%= calendar_entry_label(@event) %></p>
-  <h1 class="page-title"><%= @event.title %></h1>
+<% category = CalendarCategories.for(@event) %>
+<div class="calendar-event-page calendar-category--<%= category %>">
+  <%= link_to "‹ Calendar", calendar_path(start_date: @event.starts_at.to_date, view: @public_preview ? "public" : nil), class: "calendar-event-back" %>
+  <article class="calendar-event-card">
+    <header class="calendar-event-heading">
+      <div class="calendar-event-meta">
+        <span class="calendar-event-type"><%= CalendarCategories::LABELS.fetch(category) %></span>
+        <% unless category == "public_event" %><span class="calendar-event-visibility"><%= CalendarEvent::VISIBILITIES.fetch(@event.visibility) %></span><% end %>
+      </div>
+      <h1 class="page-title"><%= @event.title %></h1>
+      <% if @event.cancelled? %><p class="calendar-cancelled" role="status">This event is cancelled.</p><% end %>
+    </header>
+    <section class="calendar-event-details" aria-label="Event details">
+      <dl class="calendar-event-facts">
+        <div>
+          <dt>When</dt>
+          <dd>
+            <p class="calendar-event-date"><%= @event.starts_at.strftime("%A") %>, <%= legion_date(@event.starts_at) %><% if @event.ends_at && @event.ends_at.to_date != @event.starts_at.to_date %> – <%= @event.ends_at.strftime("%A") %>, <%= legion_date(@event.ends_at) %><% end %></p>
+            <p class="calendar-event-time"><%= calendar_entry_time(@event) %></p>
+            <% unless @event.all_day? %><p class="calendar-event-timezone">Times in <%= Time.zone.name %></p><% end %>
+          </dd>
+        </div>
+        <% if @event.location.present? %><div><dt>Where</dt><dd><%= @event.location %></dd></div><% end %>
+      </dl>
+      <% if @event.description.present? %><div class="calendar-event-description"><%= simple_format(@event.description) %></div><% end %>
+      <% if !@public_preview && @event.endeavor %>
+        <dl class="calendar-event-related"><div><dt>Related Endeavor</dt><dd><%= link_to @event.endeavor.title, endeavor_path(@event.endeavor) %></dd></div></dl>
+      <% end %>
+      <% if !@public_preview && current_user.can_manage_calendar? %>
+        <footer class="calendar-event-actions"><%= link_to "Edit event", edit_calendar_event_path(@event), class: "calendar-create" %></footer>
+      <% end %>
+    </section>
+  </article>
 </div>
-<section class="panel calendar-event-details">
-  <% if @event.cancelled? %><p class="calendar-cancelled" role="status">This event is cancelled.</p><% end %>
-  <dl>
-    <div><dt>When</dt><dd><%= legion_date(@event.starts_at) %><% if @event.ends_at && @event.ends_at.to_date != @event.starts_at.to_date %> through <%= legion_date(@event.ends_at) %><% end %> · <%= calendar_entry_time(@event) %></dd></div>
-    <div><dt>Time zone</dt><dd><%= Time.zone.name %></dd></div>
-    <% if @event.location.present? %><div><dt>Where</dt><dd><%= @event.location %></dd></div><% end %>
-    <% if !@public_preview && @event.endeavor %><div><dt>Related Endeavor</dt><dd><%= link_to @event.endeavor.title, endeavor_path(@event.endeavor) %></dd></div><% end %>
-  </dl>
-  <div class="prose"><%= simple_format(@event.description) %></div>
-  <% if !@public_preview && current_user.can_manage_calendar? %><div class="btnrow"><%= link_to "Edit event", edit_calendar_event_path(@event), class: "btn-primary" %><%= link_to "Manage calendar", manage_calendar_path(start_date: @event.starts_at.to_date, view: @public_preview ? "public" : nil), class: "btn-secondary" %></div><% end %>
-</section>

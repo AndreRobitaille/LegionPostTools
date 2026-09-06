@@ -75,8 +75,8 @@ and completed_by_id. Public previews expose only the documented safe field allow
 JSON fields are top-level, consistent with the private API. Dates are strict YYYY-MM-DD.
 Timed events use ISO 8601 datetimes with an explicit offset or Z. Date-only events use
 `all_day: true` and YYYY-MM-DD starts_at/ends_at; local midnight and inclusive end-of-day
-storage match the UI. They display “Date only”; explain unknown times in the description.
-Dates normalize in the configured application timezone, which responses identify. Do not
+storage match the UI. The schedule and details display “Date only”; month blocks omit it. Explain unknown times in the description.
+Dates normalize in the Post's saved timezone, which responses identify. Do not
 invent times, infer event dates from project deadlines, or publish private logistics.
 When switching all_day mode, send both starts_at and ends_at (null is allowed for end).
 Omitted PATCH fields remain unchanged; null clears optional dates/links. Booleans must be
@@ -107,3 +107,32 @@ passed. Tests used synthetic records in the test database, including DST boundar
 member/office-derived access, both authentication modes, CSRF, and idempotent writes.
 No production data changes, migration, or paid AI generation were needed for this API
 extension. Release verification also checks the running revision and site health.
+
+## Calendar readability refinements
+
+Calendar month bounds now use Sunday–Saturday, including spillover days. Responses include
+`week_starts_on: "sunday"` and selected `categories`. Optional `categories[]` accepts multiple
+values: `officer_meeting`, `honor_guard`, `planning_meeting`, `member_meeting`, `public_event`, `other`, `deadline`.
+Omitting the filter selects all; an empty array selects none. Unknown values return 422.
+Deadlines still require `view=deadlines`; public preview never includes meetings/deadlines.
+
+CalendarEvents and Meetings accept nullable `calendar_category` on their existing create
+and update endpoints, under unchanged permissions and locking. Values are the above list
+except `deadline` and `public_event`. Null/blank restores automatic classification by
+name, then public visibility.
+Event reads expose the stored override and effective `category`; public projection includes
+only the effective category. Monthly Meeting entries include both fields plus `display_title`
+without a trailing matching house-format date; original `title` remains unchanged.
+New default meeting/agenda titles omit dates. Existing official headings are not rewritten.
+The forgiving time entry is a website feature; API datetime writes still require their
+existing format, including explicit offsets for timed CalendarEvents.
+
+The redesigned attendance UI labels `other` as Other activities and filters immediately
+in the browser, with selections retained in the URL. The API still filters its response
+server-side. The former website Show dropdown is replaced by secondary officer links to
+planning/public previews; existing API `view` values and permissions remain supported.
+
+Public events are classified from public visibility after specific meeting/Honor Guard types.
+`public_event` is a derived category, not an editable override. Legacy `volunteers`
+overrides remain readable but use current title/visibility classification. Volunteering
+is participation, not an event type; Honor Guard does not imply open recruitment.

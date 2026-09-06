@@ -1,5 +1,6 @@
 module Api
   class CalendarController < BaseController
+    include CalendarTimeZone
     include Concerns::ActivityContract
 
     def show
@@ -8,13 +9,13 @@ module Api
       view = params.fetch(:view, "events")
       raise ArgumentError, "view must be events, deadlines, or public." unless CalendarMonth::VIEWS.key?(view)
 
-      month = CalendarMonth.new(organization: organization, date: date, view: view)
+      month = CalendarMonth.new(organization: organization, date: date, view: view, categories: calendar_filter_categories)
       page = collection_page(month.entries)
       return unless page
 
       render json: {
         calendar: {
-          date: month.date, view: month.view, timezone: Time.zone.name,
+          date: month.date, view: month.view, timezone: Time.zone.name, week_starts_on: "sunday", categories: month.categories,
           entries: page[:records].map { |entry| entry_payload(entry, public_preview: month.public_preview?) }
         },
         pagination: page[:metadata]
@@ -28,9 +29,9 @@ module Api
       when CalendarEvent
         calendar_event_payload(entry, public_preview:).merge("type" => "event")
       when Meeting
-        entry.attributes.slice("id", "title", "starts_at", "location_name", "location_address").merge("type" => "meeting")
+        entry.attributes.slice("id", "title", "starts_at", "location_name", "location_address").merge("type" => "meeting", "calendar_category" => entry.calendar_category, "category" => CalendarCategories.for(entry), "display_title" => helpers.member_meeting_title(entry))
       when CalendarDeadline
-        { type: "deadline", title: entry.title, due_on: entry.record.due_on, endeavor_id: entry.endeavor.id,
+        { type: "deadline", category: "deadline", title: entry.title, due_on: entry.record.due_on, endeavor_id: entry.endeavor.id,
           task_id: (entry.id if entry.record.is_a?(EndeavorTask)) }
       end
     end

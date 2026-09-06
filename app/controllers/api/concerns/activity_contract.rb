@@ -17,6 +17,16 @@ module Api
 
       private
 
+      def calendar_filter_categories
+        return nil unless params.key?(:categories)
+
+        values = params[:categories]
+        unless values.is_a?(Array) && (values - CalendarCategories::LABELS.keys - [ "" ]).empty?
+          raise ArgumentError, "categories must be an array of calendar category values."
+        end
+        values.reject(&:blank?)
+      end
+
       def activity_date(value, field:)
         return nil if value.nil? || value == ""
         raise ArgumentError, "#{field} must be a YYYY-MM-DD date." unless value.is_a?(String) && value.match?(/\A\d{4}-\d{2}-\d{2}\z/)
@@ -52,7 +62,7 @@ module Api
       def calendar_event_payload(event, public_preview: false)
         return event.public_calendar_attributes if public_preview
 
-        event.attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "visibility", "endeavor_id", "lock_version", "created_by_id", "updated_by_id", "created_at", "updated_at")
+        event.attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "visibility", "endeavor_id", "lock_version", "created_by_id", "updated_by_id", "created_at", "updated_at", "calendar_category").merge("category" => CalendarCategories.for(event))
       end
 
       def endeavor_task_payload(task)

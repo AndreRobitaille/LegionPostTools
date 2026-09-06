@@ -33,14 +33,26 @@ module LegionFormatHelper
     nil
   end
 
+  def parse_legion_time(value)
+    match = /\A(\d{1,2})(?::([0-5]\d))?\s*(am|pm)?\z/i.match(value.to_s.strip)
+    match ||= /\A(\d{1,2})([0-5]\d)\s*(am|pm)?\z/i.match(value.to_s.strip)
+    return nil unless match
+
+    hour, minute, period = match[1].to_i, match[2].to_i, match[3]&.downcase
+    return nil unless period ? (1..12).cover?(hour) : (0..23).cover?(hour)
+
+    hour = hour % 12 + (period == "pm" ? 12 : 0) if period
+    [ hour, minute ]
+  end
+
   # Recombines the two halves of shared/_datetime_field back into one Time.
   # Returns nil when the date is missing or unparseable, so the model's own
   # presence validation reports the problem rather than a silent default.
   def combine_legion_datetime(date_string, time_string)
     date = parse_legion_date(date_string)
-    time = /\A(?<hour>[01]\d|2[0-3]):(?<minute>[0-5]\d)\z/.match(time_string.to_s.strip)
+    time = parse_legion_time(time_string)
     return nil if date.nil? || time.nil?
 
-    Time.zone.local(date.year, date.month, date.day, time[:hour].to_i, time[:minute].to_i)
+    Time.zone.local(date.year, date.month, date.day, time[0], time[1])
   end
 end

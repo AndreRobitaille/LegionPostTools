@@ -1,11 +1,17 @@
 <div class="calendar-month">
   <div class="calendar-month-heading">
-    <h2><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></h2>
-    <nav class="btnrow" aria-label="Calendar month">
-      <%= link_to "← Previous month", calendar.url_for_previous_view, class: "btn-secondary" %>
-      <%= link_to "Today", calendar.url_for_today_view, class: "btn-secondary" %>
-      <%= link_to "Next month →", calendar.url_for_next_view, class: "btn-secondary" %>
-    </nav>
+    <div class="calendar-month-identity">
+      <h2><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></h2>
+      <nav class="calendar-month-navigation" aria-label="Calendar month">
+        <%= link_to "‹", calendar.url_for_previous_view, class: "calendar-arrow", aria: { label: "Previous month" }, data: { calendar_target: "navigation" } %>
+        <%= link_to "›", calendar.url_for_next_view, class: "calendar-arrow", aria: { label: "Next month" }, data: { calendar_target: "navigation" } %>
+        <%= link_to "Today", calendar.url_for_today_view, class: "calendar-today", data: { calendar_target: "navigation" } %>
+      </nav>
+    </div>
+    <div class="calendar-display-switch" aria-label="Calendar layout" data-calendar-target="enhancement" hidden>
+      <button type="button" data-action="calendar#showMonth" data-calendar-target="monthButton" aria-pressed="true">Month</button>
+      <button type="button" data-action="calendar#showSchedule" data-calendar-target="scheduleButton" aria-pressed="false">Schedule</button>
+    </div>
   </div>
   <table class="calendar-grid" aria-label="<%= start_date.strftime('%B %Y') %> calendar">
     <thead><tr><% date_range.first(7).each do |day| %><th scope="col"><%= day.strftime("%a") %></th><% end %></tr></thead>

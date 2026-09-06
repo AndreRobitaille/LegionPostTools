@@ -1,69 +1,87 @@
-<% content_for :title, @managing ? "Manage calendar" : "Calendar" %>
-<div class="page-lead calendar-lead">
-  <div>
-    <h1 class="page-title"><%= @managing ? "Manage calendar" : "Calendar" %></h1>
-    <p class="page-sub"><%= @managing ? "Keep Post meetings and events up to date in one place." : "Meetings, events, and opportunities to take part." %></p>
-  </div>
-  <div class="btnrow">
-    <% if @managing %>
-      <%= link_to "Add event", new_calendar_event_path, class: "btn-primary" %>
-      <% if current_user.can?("manage_agendas") %><%= link_to "Schedule meeting", new_admin_meeting_path, class: "btn-secondary" %><% end %>
-      <%= link_to "Member view", calendar_path(start_date: @month.date), class: "btn-secondary" %>
-    <% elsif current_user.can_manage_calendar? %>
-      <%= link_to "Manage calendar", manage_calendar_path(start_date: @month.date), class: "btn-secondary" %>
-    <% end %>
+<% content_for :title, "Calendar" %>
+<div class="calendar-workspace" data-controller="calendar" data-calendar-display-value="<%= params[:display] == 'schedule' ? 'schedule' : 'month' %>">
+  <% if @managing || current_user.can_manage_calendar? %>
+    <header class="calendar-page-header">
+      <% if @managing %>
+        <div class="calendar-create-actions">
+          <%= link_to "+ Add event", new_calendar_event_path, class: "calendar-create" %>
+          <% if current_user.can?("manage_agendas") %><%= link_to "Schedule meeting", new_admin_meeting_path, class: "calendar-text-action" %><% end %>
+        </div>
+      <% elsif current_user.can_manage_calendar? %>
+        <%= link_to "Manage calendar", manage_calendar_path(start_date: @month.date, categories: @month.categories.presence || [ "" ]), class: "calendar-text-action", data: { calendar_target: "navigation" } %>
+      <% end %>
+    </header>
+  <% end %>
+  <% if @month.public_preview? %>
+    <p class="calendar-context-note">Public event preview · Only event details marked public appear here. <%= link_to "Back to calendar", @managing ? manage_calendar_path : calendar_path %></p>
+  <% elsif @month.view == "deadlines" %>
+    <p class="calendar-context-note">Planning calendar · Includes project due dates. <%= link_to "Back to calendar", @managing ? manage_calendar_path : calendar_path %></p>
+  <% end %>
+  <div class="calendar-layout">
+    <aside class="calendar-sidebar" aria-label="Calendar filters">
+      <%= form_with url: @managing ? manage_calendar_path : calendar_path, method: :get, class: "calendar-filters" do |form| %>
+        <%= hidden_field_tag :start_date, @month.date.iso8601 %>
+        <%= hidden_field_tag :view, @month.view %>
+        <%= hidden_field_tag :display, params[:display] == "schedule" ? "schedule" : "month", data: { calendar_target: "displayField" } %>
+        <%= hidden_field_tag "categories[]", "" %>
+        <fieldset>
+          <legend>Event types</legend>
+          <p class="calendar-filter-hint">Choose what to show</p>
+          <div class="calendar-category-options">
+            <% calendar_filter_labels.each do |value, label| %>
+              <label class="calendar-category-choice calendar-category--<%= value %>">
+                <%= check_box_tag "categories[]", value, @month.categories.include?(value), id: "category_#{value}", data: { calendar_target: "category", action: "change->calendar#filter" } %>
+                <span><%= label %></span>
+              </label>
+            <% end %>
+          </div>
+        </fieldset>
+        <div class="calendar-filter-shortcuts" data-calendar-target="enhancement" hidden>
+          <button type="button" data-action="calendar#selectAll">All types</button><span aria-hidden="true">·</span><button type="button" data-action="calendar#selectNone">Clear</button>
+        </div>
+        <noscript><%= form.submit "Apply filters", class: "btn-secondary" %></noscript>
+      <% end %>
+      <% if @managing %>
+        <nav class="calendar-officer-tools" aria-label="Officer calendar tools">
+          <%= link_to "Member view", calendar_path(start_date: @month.date, categories: @month.categories.presence || [ "" ]), data: { calendar_target: "navigation" } %>
+          <%= link_to "Planning due dates", manage_calendar_path(start_date: @month.date, view: "deadlines") %>
+          <%= link_to "Public event preview", manage_calendar_path(start_date: @month.date, view: "public") %>
+        </nav>
+      <% end %>
+    </aside>
+    <div class="calendar-main">
+      <%= render SundayMonthCalendar.new(self, start_date: @month.date, partial: "calendar/month") do |day| %>
+        <span class="calendar-day-number"><%= day.day %></span>
+        <% @month.entries_on(day, filtered: false).each do |entry| %>
+          <%= link_to calendar_entry_path(entry), class: "calendar-grid-event calendar-category--#{CalendarCategories.for(entry)}", hidden: calendar_entry_hidden?(entry), title: [calendar_entry_title(entry), calendar_entry_time(entry, block: true)].compact.join(" · "), data: { calendar_target: "entry", category: CalendarCategories.for(entry) }, aria: { label: [calendar_entry_title(entry), CalendarCategories::LABELS.fetch(CalendarCategories.for(entry)), calendar_entry_time(entry, block: true)].compact.join(", ") } do %>
+            <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
+            <span class="calendar-block-title"><%= calendar_entry_title(entry) %></span>
+            <% if (time = calendar_entry_time(entry, block: true)).present? %><span class="calendar-block-time"><%= time %></span><% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <section class="calendar-schedule" aria-label="Schedule for <%= @month.date.strftime('%B') %>">
+        <% @month.scheduled_days(filtered: false).each do |day, entries| %>
+          <section class="calendar-date-group" aria-label="<%= legion_date(day) %>" data-calendar-target="day" <%= 'hidden' if entries.all? { |entry| calendar_entry_hidden?(entry) } %>>
+            <h3 class="calendar-date"><span><%= day.strftime("%a") %></span><strong><%= day.day %></strong></h3>
+            <div class="calendar-date-events">
+              <% entries.each do |entry| %>
+                <article class="calendar-row calendar-category--<%= CalendarCategories.for(entry) %>" data-calendar-target="entry" data-category="<%= CalendarCategories.for(entry) %>" <%= 'hidden' if calendar_entry_hidden?(entry) %>>
+                  <%= link_to calendar_entry_path(entry), class: "calendar-schedule-event" do %>
+                    <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
+                    <h4><%= calendar_entry_title(entry) %></h4>
+                    <p><%= calendar_entry_time(entry) %><% if calendar_entry_location(entry).present? %><span class="calendar-event-place"> · <%= calendar_entry_location(entry) %></span><% end %></p>
+                  <% end %>
+                </article>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </section>
+      <div class="calendar-empty" data-calendar-target="empty" <%= 'hidden' if @month.scheduled_days.any? %>>
+        <h3>No events to show</h3><p>Choose more event types or try another month.</p>
+      </div>
+      <p class="calendar-footer"><span data-calendar-target="count" role="status" aria-live="polite"><%= pluralize(@month.scheduled_days.sum { |_, entries| entries.size }, "event") %> this month</span><span>Times in <%= Time.zone.name %></span></p>
+    </div>
   </div>
 </div>
-<% if @managing %><p class="calendar-note">Meetings open in their meeting editor. Events can stand alone or be linked to an Endeavor.</p><% end %>
-<%= form_with url: @managing ? manage_calendar_path : calendar_path, method: :get, class: "calendar-filters" do |form| %>
-  <%= hidden_field_tag :start_date, @month.date.iso8601 %>
-  <div class="fl"><%= label_tag :view, "Show" %><%= select_tag :view, options_for_select(CalendarMonth::VIEWS.map { |value, label| [label, value] }, @month.view), class: "f" %></div>
-  <%= form.submit "Update calendar", class: "btn-secondary" %>
-<% end %>
-<% if @month.public_preview? %><p class="calendar-note">Public events only. These event details are ready for the future public website. Meetings, next steps, and Endeavor history stay private.</p><% end %>
-<%= month_calendar start_date: @month.date, partial: "calendar/month" do |day| %>
-  <span class="calendar-day-number"><%= day.day %></span>
-  <% @month.entries_on(day).each do |entry| %>
-    <%= link_to calendar_entry_path(entry), class: "calendar-grid-event" do %>
-      <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
-      <span><%= entry.title %></span>
-    <% end %>
-  <% end %>
-<% end %>
-<section class="calendar-schedule" aria-labelledby="calendar-schedule-heading">
-  <h2 id="calendar-schedule-heading">Schedule for <%= @month.date.strftime("%B") %></h2>
-  <p class="calendar-note">Times shown in <%= Time.zone.name %>.</p>
-  <% if @month.scheduled_days.empty? %>
-    <div class="panel calendar-empty">
-      <h3>Nothing scheduled this month</h3>
-      <p>Try the next month to see what is coming up.</p>
-      <% if @managing %><%= link_to "Add an event", new_calendar_event_path, class: "btn-primary" %><% end %>
-    </div>
-  <% end %>
-  <% @month.scheduled_days.each do |day, entries| %>
-    <section class="calendar-date-group" aria-label="<%= legion_date(day) %>">
-      <h3 class="calendar-date"><span><%= day.strftime("%a") %></span><strong><%= day.day %></strong><span><%= day.strftime("%b") %></span></h3>
-      <div class="calendar-date-events">
-        <% entries.each do |entry| %>
-          <article class="calendar-row">
-            <div class="calendar-row-main">
-              <p class="calendar-event-label"><%= calendar_entry_label(entry) %></p>
-              <h4><%= link_to entry.title, calendar_entry_path(entry) %></h4>
-              <p><%= calendar_entry_time(entry) %><% if calendar_entry_location(entry).present? %> · <%= calendar_entry_location(entry) %><% end %></p>
-              <% if !@month.public_preview? && entry.is_a?(CalendarEvent) && entry.endeavor %><p class="calendar-parent">Part of <%= link_to entry.endeavor.title, endeavor_path(entry.endeavor) %></p><% end %>
-            </div>
-            <% if @managing && !@month.public_preview? %>
-              <% if entry.is_a?(Meeting) %>
-                <% if current_user.can?("manage_agendas") %><%= link_to "Edit meeting", edit_admin_meeting_path(entry), class: "btn-secondary" %><% end %>
-              <% elsif entry.is_a?(CalendarDeadline) %>
-                <% if current_user.can?("manage_agendas") %><%= link_to "Open Endeavor", endeavor_path(entry.endeavor, anchor: "endeavor-next-steps"), class: "btn-secondary" %><% end %>
-              <% else %>
-                <%= link_to "Edit event", edit_calendar_event_path(entry), class: "btn-secondary" %>
-              <% end %>
-            <% end %>
-          </article>
-        <% end %>
-      </div>
-    </section>
-  <% end %>
-</section>

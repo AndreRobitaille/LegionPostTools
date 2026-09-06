@@ -23,6 +23,10 @@ class Organization < ApplicationRecord
     mailing_address.to_s.lines.map(&:strip).reject(&:blank?)
   end
 
+  def calendar_time_zone
+    ActiveSupport::TimeZone[timezone.to_s] || Time.zone
+  end
+
   private
 
   def mailing_address_fits_print_footer

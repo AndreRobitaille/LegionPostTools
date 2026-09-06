@@ -30,9 +30,14 @@
   <div class="fl">
     <%= form.label :title, "Meeting title (optional)" %>
     <%= form.text_field :title, class: "f" %>
-    <span class="fl-help">Leave blank to use the meeting type or body and date.</span>
+    <span class="fl-help">Leave blank to use the meeting type or body. The date is shown separately.</span>
   </div>
 
+    <div class="fl">
+      <%= form.label :calendar_category, "Calendar event type" %>
+      <%= form.select :calendar_category, CalendarCategories::EDITABLE.map { |value, label| [label, value] }, { include_blank: "Automatic from name" }, class: "f" %>
+      <span class="form-help">Sets the color and event-type filter on the calendar.</span>
+    </div>
   <fieldset class="meeting-place-fields">
     <legend>Place</legend>
     <p>These details are saved with this meeting, so its historical record will not change later.</p>

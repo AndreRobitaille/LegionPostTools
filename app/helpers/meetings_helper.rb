@@ -1,12 +1,7 @@
 module MeetingsHelper
   def member_meeting_title(meeting)
-    default_title = Meeting.default_title(
-      meeting_body: meeting.meeting_body,
-      meeting_type: meeting.meeting_type,
-      starts_at: meeting.starts_at
-    )
-
-    meeting.title == default_title ? (meeting.meeting_type&.name.presence || meeting.meeting_body.name) : meeting.title
+    suffix = " — #{legion_date(meeting.starts_at)}"
+    meeting.title.delete_suffix(suffix)
   end
 
   def member_meeting_document_action(meeting)

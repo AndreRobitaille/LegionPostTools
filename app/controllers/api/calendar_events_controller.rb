@@ -1,5 +1,6 @@
 module Api
   class CalendarEventsController < BaseController
+    include CalendarTimeZone
     include Concerns::ActivityContract
     before_action :require_calendar_management, only: %i[create update]
     before_action :set_event, only: %i[show update]
@@ -55,7 +56,7 @@ module Api
     end
 
     def assign_event_attributes
-      @event.assign_attributes(params.permit(:title, :description, :location, :visibility))
+      @event.assign_attributes(params.permit(:calendar_category, :title, :description, :location, :visibility))
       if params.key?(:endeavor_id)
         @event.endeavor = params[:endeavor_id].present? ? organization.endeavors.find(params[:endeavor_id]) : nil
       end

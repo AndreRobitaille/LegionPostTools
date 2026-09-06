@@ -1,6 +1,9 @@
 class Meeting < ApplicationRecord
   HEADING_FIELDS = %w[starts_at title location_name location_address].freeze
 
+  normalizes :calendar_category, with: ->(value) { value.presence }
+  validates :calendar_category, inclusion: { in: CalendarCategories::EDITABLE.keys + CalendarCategories::LEGACY_VALUES }, allow_nil: true
+
   belongs_to :organization
   belongs_to :meeting_body
   belongs_to :meeting_type, optional: true
@@ -34,9 +37,7 @@ class Meeting < ApplicationRecord
 
   def self.default_title(meeting_body:, meeting_type:, starts_at:)
     name = meeting_type&.name.presence || meeting_body&.name.presence || "Meeting"
-    return name if starts_at.blank?
-
-    "#{name} — #{starts_at.in_time_zone.strftime('%d %b %Y').upcase}"
+    name
   end
 
   def update_with_agenda_sync(attributes)

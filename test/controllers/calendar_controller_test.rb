@@ -31,6 +31,12 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     get calendar_event_path(@event)
     assert_response :success
     assert_select "h1", text: "Community breakfast"
+    assert_select ".calendar-event-heading .calendar-event-type", text: "Other activities"
+    assert_select ".calendar-event-timezone", text: "Times in America/Chicago"
+    assert_select "dt", text: "Time zone", count: 0
+    @event.update!(all_day: true)
+    get calendar_event_path(@event)
+    assert_select ".calendar-event-timezone", count: 0
     assert_select "a[href=?]", edit_calendar_event_path(@event), count: 0
   end
 
@@ -95,9 +101,9 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     post calendar_events_path, params: { calendar_event: event_params.merge(all_day: "1", starts_at_time: "", ends_at_date: "14 SEP 2026", ends_at_time: "") }
     event = CalendarEvent.order(:id).last
     assert_redirected_to calendar_event_path(event)
-    assert_equal Time.zone.local(2026, 9, 12), event.starts_at
-    assert_equal Date.new(2026, 9, 14), event.ends_at.to_date
-    assert_equal 23, event.ends_at.hour
+    assert_equal @organization.calendar_time_zone.local(2026, 9, 12), event.starts_at
+    assert_equal Date.new(2026, 9, 14), event.ends_at.in_time_zone(@organization.calendar_time_zone).to_date
+    assert_equal 23, event.ends_at.in_time_zone(@organization.calendar_time_zone).hour
     get edit_calendar_event_path(event)
     assert_response :success
   end
@@ -167,6 +173,60 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     @event.update!(visibility: "members")
     get calendar_event_path(@event, preview: "public")
     assert_response :not_found
+  end
+
+  test "Sunday weeks and multi-category filters retain selection in navigation" do
+    @event.update!(calendar_category: "honor_guard", starts_at: Time.zone.local(2026, 8, 30, 8))
+    volunteer = @organization.calendar_events.create!(title: "Volunteer setup", starts_at: Time.zone.local(2026, 9, 9, 8), created_by: @manager, updated_by: @manager)
+    body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    meeting = create_meeting!(organization: @organization, meeting_body: body, starts_at: Time.zone.local(2026, 9, 1, 19), title: "Membership Meeting — 01 SEP 2026")
+    sign_in_as(@member)
+    get calendar_path, params: { start_date: "2026-09-01", categories: %w[honor_guard planning_meeting] }
+    assert_response :success
+    assert_select ".calendar-grid th:first-child", text: "Sun"
+    assert_select ".calendar-grid th:last-child", text: "Sat"
+    assert_select "a[href=?]", calendar_event_path(@event), minimum: 1
+    assert_select "a[href=?]", calendar_event_path(volunteer), minimum: 1
+    assert_select ".calendar-grid-event[href=?]:not([hidden])", meeting_path(meeting), count: 0
+    assert_select ".calendar-month-heading a[href*='honor_guard']", count: 3
+    get calendar_path, params: { start_date: "2026-09-01", categories: [ "" ] }
+    assert_select ".calendar-grid-event:not([hidden])", count: 0
+    get calendar_path(start_date: "2026-09-01")
+    assert_select ".calendar-grid-event", text: /Membership Meeting/, minimum: 1
+    assert_select ".calendar-grid-event", text: /01 SEP 2026/, count: 0
+    assert_equal "Membership Meeting — 01 SEP 2026", meeting.reload.title
+  end
+
+  test "event form accepts shorthand times and explicit categories" do
+    sign_in_as(@manager)
+    post calendar_events_path, params: { calendar_event: event_params.merge(starts_at_time: "800", calendar_category: "planning_meeting") }
+    event = CalendarEvent.order(:id).last
+    assert_redirected_to calendar_event_path(event)
+    assert_equal 8, event.starts_at.in_time_zone(@organization.calendar_time_zone).hour
+    assert_equal "planning_meeting", event.calendar_category
+    get edit_calendar_event_path(event)
+    assert_select "option[selected][value=planning_meeting]"
+    assert_select "input[data-controller=time-field][pattern]", count: 0
+  end
+
+  test "calendar uses the Post zone even when the application zone is UTC" do
+    sign_in_as(@manager)
+    Time.use_zone("UTC") do
+      @event.update!(starts_at: Time.utc(2026, 9, 2, 0, 30))
+      get calendar_path(start_date: "2026-09-01")
+      assert_select ".calendar-grid-event .calendar-block-time", text: "19:30"
+      assert_select "h1", text: "Calendar", count: 0
+      assert_equal "UTC", Time.zone.name
+      [ [ "12 SEP 2026", 13 ], [ "12 DEC 2026", 14 ] ].each do |date, utc_hour|
+        post calendar_events_path, params: { calendar_event: event_params.merge(starts_at_date: date, starts_at_time: "8:00") }
+        assert_response :redirect
+        assert_equal utc_hour, CalendarEvent.order(:id).last.starts_at.utc.hour
+      end
+      @event.update!(all_day: true)
+      get calendar_path(start_date: "2026-09-01")
+      assert_select ".calendar-grid-event", text: /Date only/, count: 0
+      assert_select ".calendar-grid-event[title*='Date only']", count: 0
+    end
   end
 
   private

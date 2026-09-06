@@ -8,6 +8,11 @@
     <% end %>
     <%= form.hidden_field :lock_version if @event.persisted? %>
     <div class="fl"><%= form.label :title, "Event name" %><%= form.text_field :title, class: "f", required: true, maxlength: 200 %></div>
+    <div class="fl">
+      <%= form.label :calendar_category, "Calendar event type" %>
+      <%= form.select :calendar_category, CalendarCategories::EDITABLE.map { |value, label| [label, value] }, { include_blank: "Automatic" }, class: "f" %>
+      <span class="form-help">Sets the color and filter. Automatic uses the name, then Public visibility.</span>
+    </div>
     <div class="fl"><%= form.label :description, "Event description" %><%= form.text_area :description, class: "f", rows: 4, maxlength: 10000 %><span class="form-help">Include what attendees need to know. Internal planning belongs in the Endeavor.</span></div>
     <div class="fl"><%= form.label :location, "Place or address" %><%= form.text_field :location, class: "f", maxlength: 500 %></div>
     <label class="calendar-checkbox"><%= form.check_box :all_day %> Date only (all day or time not yet known)</label>
@@ -18,13 +23,13 @@
         <div class="calendar-date-inputs">
           <%= render "date_field", attribute: attribute %>
           <div class="fl">
-            <%= label_tag "calendar_event_#{attribute}_time", "Time (24-hour)" %>
-            <%= text_field_tag "calendar_event[#{attribute}_time]", calendar_schedule_value(@event, attribute, :time), id: "calendar_event_#{attribute}_time", class: "f", placeholder: "19:00", inputmode: "numeric", pattern: "(?:[01][0-9]|2[0-3]):[0-5][0-9]" %>
+            <%= label_tag "calendar_event_#{attribute}_time", "Time" %>
+            <%= text_field_tag "calendar_event[#{attribute}_time]", calendar_schedule_value(@event, attribute, :time), id: "calendar_event_#{attribute}_time", class: "f", placeholder: "19:00", autocomplete: "off", data: { controller: "time-field", action: "blur->time-field#normalize" } %>
           </div>
         </div>
       </fieldset>
     <% end %>
-    <p class="form-help">Times are in <%= Time.zone.name %>.</p>
+    <p class="form-help">Examples: 8:00, 800, 19:00, or 7pm. Without AM/PM, use a 24-hour clock. Times are in <%= Time.zone.name %>.</p>
     <div class="fl">
       <%= form.label :visibility, "Who can see this event?" %>
       <%= form.select :visibility, CalendarEvent::VISIBILITIES.map { |value, label| [ label, value ] }, {}, class: "f" %>

@@ -1,6 +1,9 @@
 class CalendarEvent < ApplicationRecord
   VISIBILITIES = { "members" => "Members only", "public" => "Public" }.freeze
 
+  normalizes :calendar_category, with: ->(value) { value.presence }
+  validates :calendar_category, inclusion: { in: CalendarCategories::EDITABLE.keys + CalendarCategories::LEGACY_VALUES }, allow_nil: true
+
   belongs_to :organization
   belongs_to :endeavor, optional: true
   belongs_to :created_by, class_name: "User"
@@ -24,7 +27,7 @@ class CalendarEvent < ApplicationRecord
   def public_calendar_attributes
     return nil unless public?
 
-    attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "updated_at")
+    attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "updated_at").merge("category" => CalendarCategories.for(self))
   end
 
   private

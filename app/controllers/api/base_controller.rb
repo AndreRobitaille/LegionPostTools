@@ -285,6 +285,7 @@ module Api
       {
         id: meeting.id,
         title: meeting.title,
+        calendar_category: meeting.calendar_category,
         starts_at: meeting.starts_at.iso8601,
         location_name: meeting.location_name,
         location_address: meeting.location_address,
