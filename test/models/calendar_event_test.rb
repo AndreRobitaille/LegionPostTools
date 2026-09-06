@@ -44,6 +44,16 @@ class CalendarEventTest < ActiveSupport::TestCase
     assert event.errors[:visibility].any?
   end
 
+  test "completed steps and projects do not appear as calendar deadlines" do
+    project = @organization.endeavors.create!(title: "Newsletter", due_on: Date.new(2026, 9, 20), created_by: @user)
+    task = project.tasks.create!(title: "Print", due_on: Date.new(2026, 9, 19), created_by: @user, updated_by: @user)
+    task.set_completion(true, user: @user)
+    task.save!
+    project.complete!(@user)
+    month = CalendarMonth.new(organization: @organization, date: Date.new(2026, 9, 1), view: "deadlines")
+    assert_empty month.entries
+  end
+
   private
 
   def build_event(**attributes)

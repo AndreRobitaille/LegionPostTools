@@ -13,19 +13,13 @@
   <% end %>
 </div>
 
+<% if @endeavor.due_on %><p class="endeavor-deadline">Overall due date: <strong><%= legion_date(@endeavor.due_on) %></strong></p><% end %>
+
 <div class="endeavor-mobile-nav"><%= render "page_navigation" %></div>
 <div class="endeavor-grid">
   <div class="endeavor-record">
+    <%= render "activities" %>
     <%= render "history", history: @history %>
-
-    <section class="endeavor-secondary" aria-label="Calendar events">
-      <h2>Calendar events</h2>
-      <% if @calendar_events.empty? %><p>No upcoming events are scheduled for this Endeavor.</p><% end %>
-      <% @calendar_events.each do |event| %>
-        <p><%= link_to event.title, calendar_event_path(event) %> · <%= legion_date(event.starts_at) %> · <%= calendar_entry_label(event) %></p>
-      <% end %>
-      <% if current_user.can_manage_calendar? %><%= link_to "Add calendar event", new_calendar_event_path(endeavor_id: @endeavor.id), class: "btn-secondary" %><% end %>
-    </section>
 
     <details id="endeavor-background" class="endeavor-secondary">
       <summary>Background and details</summary>

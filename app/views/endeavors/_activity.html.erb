@@ -1,0 +1,9 @@
+<article class="activity-row">
+  <div class="activity-info">
+    <p class="calendar-event-label"><%= calendar_entry_label(event) %></p>
+    <h3><%= link_to event.title, calendar_event_path(event) %></h3>
+    <p><%= legion_date(event.starts_at) %><% if event.all_day? && event.ends_at && event.ends_at.to_date != event.starts_at.to_date %> through <%= legion_date(event.ends_at) %><% end %> · <%= calendar_entry_time(event) %></p>
+    <% if event.location.present? %><p><%= event.location %></p><% end %>
+  </div>
+  <% if current_user.can_manage_calendar? %><%= link_to "Edit event", edit_calendar_event_path(event), class: "btn-secondary" %><% end %>
+</article>

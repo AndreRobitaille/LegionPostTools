@@ -15,7 +15,7 @@
   </span>
   <span class="mrow-status">
     <% if due_label %>
-      <span class="mrow-kv"><span class="k"><%= due_label %></span> <%= legion_date(endeavor.raise_by_on) %></span>
+      <span class="mrow-kv"><span class="k"><%= due_label %></span> <%= legion_date(endeavor.due_on) %></span>
     <% elsif endeavor.completed? %>
       <span class="mrow-kv"><span class="k">Completed</span> <%= legion_date(endeavor.completed_at) %></span>
     <% end %>

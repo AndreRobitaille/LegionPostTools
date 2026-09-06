@@ -14,9 +14,9 @@
       <span class="form-help">Use the wording officers will recognize at a meeting.</span>
     </div>
     <div class="fl">
-      <%= form.label :summary, "What should happen next?" %>
+      <%= form.label :summary, "Summary" %>
       <%= form.text_area :summary, class: "f", rows: 3 %>
-      <span class="form-help">Keep this short enough to scan while preparing an agenda.</span>
+      <span class="form-help">Briefly describe the work. Add individual next steps on the Endeavor page.</span>
     </div>
     <div class="endeavor-form-grid">
       <div class="fl">
@@ -29,9 +29,9 @@
       </div>
     </div>
     <div class="fl">
-      <%= form.label :raise_by_on, "Raise by" %>
-      <%= render "shared/date_field", name: "endeavor[raise_by_on]", value: endeavor.raise_by_on %>
-      <span class="form-help">Leave blank if no date forces it. Anything due within 30 days is treated as time-sensitive.</span>
+      <%= form.label :due_on, "Overall due date (optional)" %>
+      <%= render "shared/editable_date_field", name: "endeavor[due_on]", id: "endeavor_due_on", value: params.dig(:endeavor, :due_on) || endeavor.due_on %>
+      <span class="form-help">When should this project be finished? Leave blank for continuing work. Add event dates separately.</span>
     </div>
     <div class="fl">
       <%= form.label :details, "Background and context" %>

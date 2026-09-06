@@ -5,7 +5,10 @@ class CalendarEventsController < ApplicationController
   before_action :set_event, only: %i[show edit update]
   before_action :set_endeavors, only: %i[new create edit update]
 
-  def show; end
+  def show
+    @public_preview = params[:preview] == "public"
+    raise ActiveRecord::RecordNotFound if @public_preview && !@event.public?
+  end
 
   def new
     @event = @organization.calendar_events.new

@@ -1,0 +1,6 @@
+<% text = value.respond_to?(:strftime) ? legion_date(value) : value.to_s %>
+<span class="datefield activity-datefield" data-controller="date-field">
+  <%= text_field_tag name, text, id: id, placeholder: "DD MMM YYYY", autocomplete: "off", class: "datefield-input", data: { date_field_target: "text" } %>
+  <input type="date" class="datefield-native" tabindex="-1" aria-hidden="true" value="<%= parse_legion_date(text)&.iso8601 %>" data-date-field-target="native" data-action="change->date-field#pick">
+  <button type="button" class="datefield-cal" data-action="date-field#open" aria-label="Choose due date">&#128197;</button>
+</span>

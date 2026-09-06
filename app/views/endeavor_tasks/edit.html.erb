@@ -1,0 +1,4 @@
+<% content_for :title, "Edit next step" %>
+<%= link_to "← #{@endeavor.title}", endeavor_path(@endeavor), class: "back" %>
+<div class="page-lead"><h1 class="page-title">Edit next step</h1><p class="page-sub"><%= @endeavor.title %></p></div>
+<%= render "form" %>

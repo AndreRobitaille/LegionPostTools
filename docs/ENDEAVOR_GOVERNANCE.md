@@ -98,8 +98,11 @@ one scheduled occurrence belongs to the continuing work it advances. When produc
 event is itself the coherent body of work—with its own planning, decisions, evidence, and
 conclusion—the event may be the subject of the Endeavor.
 
-This distinction is conceptual for now. It does not require an event, activity, recurrence,
-task, or scheduling model in the MVP.
+The implementation keeps this distinction: `CalendarEvent` holds a scheduled occurrence
+with dates, times, and its own member/public visibility; `EndeavorTask` holds a next step
+with an optional due date. The Endeavor may also have an optional overall deadline.
+Neither deadlines nor task completion automatically add agenda items, create events,
+or change official meeting history. See `ENDEAVOR_ACTIVITIES.md`.
 
 ### Documents and other artifacts
 

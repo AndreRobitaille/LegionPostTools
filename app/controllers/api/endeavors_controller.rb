@@ -27,7 +27,7 @@ module Api
         render_error(endeavor.errors.full_messages.to_sentence, status: :unprocessable_entity, details: endeavor.errors.full_messages)
       end
     rescue Date::Error
-      message = "raise_by_on must be an ISO 8601 date in YYYY-MM-DD form."
+      message = "#{params.key?(:due_on) ? 'due_on' : 'raise_by_on'} must be an ISO 8601 date in YYYY-MM-DD form."
       render_error(
         message,
         status: :unprocessable_entity,
@@ -56,9 +56,11 @@ module Api
     end
 
     def endeavor_params
-      permitted = params.permit(:title, :summary, :details, :importance, :raise_by_on, :meeting_body_id)
-      if permitted[:raise_by_on].present?
-        permitted[:raise_by_on] = Date.iso8601(permitted[:raise_by_on].to_s)
+      permitted = params.permit(:title, :summary, :details, :importance, :due_on, :raise_by_on, :meeting_body_id)
+      date_key = permitted.key?(:due_on) ? :due_on : :raise_by_on
+      permitted.delete(:raise_by_on) if date_key == :due_on
+      if permitted[date_key].present?
+        permitted[date_key] = Date.iso8601(permitted[date_key].to_s)
       end
       permitted
     end
@@ -90,7 +92,8 @@ module Api
         summary: item.summary,
         status: item.status,
         importance: item.importance,
-        raise_by_on: item.raise_by_on&.iso8601,
+        due_on: item.due_on&.iso8601,
+        raise_by_on: item.due_on&.iso8601,
         meeting_body: meeting_body_payload(item.meeting_body),
         upcoming_agenda_ids: upcoming_agenda_ids
       }

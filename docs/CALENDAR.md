@@ -1,13 +1,15 @@
 # Calendar design
 
-Status: implemented locally, 6 September 2026. Not deployed.
+Status: calendar foundation released 6 September 2026; Endeavor activity refinements are local.
 
 ## Purpose and first release
 
 Members need one top-level Calendar destination to find upcoming Post meetings and
 activities. The calendar combines existing Meetings with new CalendarEvents. A CalendarEvent
-can stand alone or belong to an Endeavor. An Endeavor can have several events; its Raise by
-date remains an officer planning deadline and is not an event date.
+can stand alone or belong to an Endeavor. An Endeavor can have several events and next
+steps. Its optional overall due date is a project deadline, not an event date. The old
+`raise_by_on` storage/API name is retained as an alias for `due_on`. See
+`ENDEAVOR_ACTIVITIES.md` for the current task, deadline, and activity design.
 
 Meetings retain their existing source of truth and editing safeguards. Calendar management
 links to the existing meeting editor, so rescheduling cannot bypass published-agenda locks
@@ -16,7 +18,7 @@ be added from an Endeavor page. Completing an Endeavor does not cancel its event
 
 Each event has a title, plain-text description, start, optional end, all-day flag, location,
 visibility (Members only by default, or Public), optional Endeavor, creator, last editor,
-optimistic lock, and cancellation flag. All-day dates use local midnight boundaries;
+optimistic lock, and cancellation flag. Date-only entries (all day or time not yet known) use the all-day flag and local midnight boundaries;
 end date is inclusive in the editor. Timed events use the application time zone. Cancellation
 keeps the record and displays a clear cancellation label. No recurring-series editor,
 RSVPs, notifications, external calendar synchronization, or drag-and-drop in this release.
@@ -29,7 +31,9 @@ minutes public. The visibility choice lives on each event, including events crea
 an Endeavor. The form explains that event details are intended for public display.
 
 The eventual public website can consume a separate, read-only projection of public events.
-This first release prepares that projection in the model; activating an unauthenticated
+The signed-in Public events preview shows only public event details, including a separate
+public-details-only event view. Private project links and deadlines are excluded.
+The model prepares a field-allowlisted projection for later sync; activating an unauthenticated
 endpoint and building the public website are deferred. Existing authenticated agent APIs
 remain unchanged. Do not share member-calendar HTML or cache it for anonymous use.
 A later API should use bounded date ranges, a field allowlist, conditional requests, and
@@ -95,3 +99,14 @@ vulnerabilities. Tailwind built successfully. Browser inspection used synthetic 
 an isolated test database at desktop and 390px widths, including creating, editing,
 and cancelling an event, visible keyboard focus, no horizontal overflow, and print layout.
 Automated checks used synthetic data; paid AI generation was not used.
+
+
+## Endeavor activity refinements
+
+The Endeavor page provides Next steps and Scheduled activities before its meeting history.
+Tasks have optional due dates and can be marked done or reopened by Endeavor editors.
+Past activities and completed steps remain accessible. The member calendar's Show selector
+adds due dates on request; its default remains meetings and events. Due dates are labeled
+as deadlines rather than scheduled attendance events. Public events preview excludes all
+project/task deadlines and internal context, even when a public event belongs to a private
+project. No public API or caching was activated by this refinement.

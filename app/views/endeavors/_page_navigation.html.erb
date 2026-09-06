@@ -1,5 +1,7 @@
 <nav class="endeavor-page-nav" aria-label="On this page">
       <h2>On this page</h2>
+      <%= link_to "Next steps", "#endeavor-next-steps" %>
+      <%= link_to "Scheduled activities", "#endeavor-activities" %>
       <% if @history.overview.any? %><%= link_to "At a glance", "#endeavor-overview" %><% end %>
       <% if @history.upcoming.any? %><%= link_to "Coming up", "#endeavor-coming-up" %><% end %>
       <%= link_to "Meeting history", "#endeavor-history" %>

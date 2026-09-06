@@ -25,6 +25,9 @@ class Endeavor < ApplicationRecord
     class_name: "EndeavorUpdate",
     dependent: :restrict_with_exception,
     inverse_of: :endeavor
+  has_many :tasks, class_name: "EndeavorTask", dependent: :restrict_with_exception
+  alias_attribute :due_on, :raise_by_on
+
   has_many :calendar_events, dependent: :restrict_with_exception
   has_many :dated_agenda_items, dependent: :restrict_with_exception
   has_many :dated_agendas, through: :dated_agenda_items
@@ -43,6 +46,7 @@ class Endeavor < ApplicationRecord
   validates :status, inclusion: { in: STATUSES.keys }
   validate :meeting_body_belongs_to_organization
   validate :completed_provenance_matches_status
+  validate :due_date_is_valid
 
   scope :active, -> { where(status: "active") }
   scope :completed, -> { where(status: "completed") }
@@ -53,7 +57,7 @@ class Endeavor < ApplicationRecord
   def important? = importance == "important"
 
   def urgent?(on: Date.current)
-    raise_by_on.present? && raise_by_on <= on + URGENT_WITHIN
+    due_on.present? && due_on <= on + URGENT_WITHIN
   end
 
   def priority_bucket(on: Date.current)
@@ -65,7 +69,7 @@ class Endeavor < ApplicationRecord
   end
 
   def priority_sort_key
-    [ raise_by_on || Date.new(9999, 12, 31), title.downcase ]
+    [ due_on || Date.new(9999, 12, 31), title.downcase ]
   end
 
   def complete!(user)
@@ -91,6 +95,10 @@ class Endeavor < ApplicationRecord
   end
 
   private
+
+  def due_date_is_valid
+    errors.add(:due_on, "must be a valid date") if raise_by_on_before_type_cast.present? && due_on.nil?
+  end
 
   def schedule_history
     EndeavorHistoryRefreshJob.perform_later(id) if EndeavorHistory::Config.enabled?

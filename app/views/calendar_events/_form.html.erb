@@ -10,8 +10,8 @@
     <div class="fl"><%= form.label :title, "Event name" %><%= form.text_field :title, class: "f", required: true, maxlength: 200 %></div>
     <div class="fl"><%= form.label :description, "Event description" %><%= form.text_area :description, class: "f", rows: 4, maxlength: 10000 %><span class="form-help">Include what attendees need to know. Internal planning belongs in the Endeavor.</span></div>
     <div class="fl"><%= form.label :location, "Place or address" %><%= form.text_field :location, class: "f", maxlength: 500 %></div>
-    <label class="calendar-checkbox"><%= form.check_box :all_day %> All-day event</label>
-    <p class="form-help">For all-day events, leave the times blank. The last date is included.</p>
+    <label class="calendar-checkbox"><%= form.check_box :all_day %> Date only (all day or time not yet known)</label>
+    <p class="form-help">Leave the times blank. If the time is not known, say so in the description. The last date is included.</p>
     <% { starts_at: "Starts", ends_at: "Ends (optional)" }.each do |attribute, label| %>
       <fieldset class="calendar-date-fields">
         <legend><%= label %></legend>

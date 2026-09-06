@@ -394,7 +394,7 @@ class AgentHandbook
       summary: "operation refresh starts paid AI processing across all current member-visible minutes, including previously unmatched meetings. Optional meeting_id identifies a meeting to revisit; the whole Endeavor history is regenerated for consistency. guidance saves a versioned guidance string (blank resets); withdraw pauses and hides generated history; resume resumes and queues regeneration. guidance/withdraw/resume require current lock_version. Guidance is not evidence. Successful runs publish automatically; there is no manual approval step. Response contains run id/status for refresh, or lock_version/withdrawn/run for changes. Existing API idempotency rules apply.",
       example: "POST /api/endeavors/1/history\n{\"operation\":\"refresh\"}" },
     { name: "create_endeavor", method: "POST", path: "/api/endeavors", capability: "manage_agendas", group: :common,
-      summary: "Create a human-confirmed Endeavor after listing and not finding it.",
+      summary: "Create a human-confirmed Endeavor after listing and not finding it. Optional due_on is its overall deadline in YYYY-MM-DD format, not an event date. The legacy raise_by_on field remains an alias; due_on takes precedence. Tasks and scheduled activities are managed in the signed-in Endeavor page.",
       example: "POST /api/endeavors\n{\"title\":\"Car Show\",\"summary\":\"Confirm permits\",\"importance\":\"important\"}" },
     { name: "add_endeavor_update", method: "POST", path: "/api/endeavors/:id/updates", capability: "manage_agendas", group: :common,
       summary: "Append a dated officer update. Updates are not edited later.",

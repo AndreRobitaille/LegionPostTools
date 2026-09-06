@@ -268,6 +268,14 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_includes created.updates.first.body.to_s, "Five calls completed."
   end
 
+  test "overall due date uses new API name and takes precedence over legacy field" do
+    sign_in_as(@commander)
+    post "/api/endeavors", params: { title: "Newsletter", due_on: "2026-09-20", raise_by_on: "2026-09-10" }, as: :json
+    assert_response :created
+    assert_equal "2026-09-20", response.parsed_body.dig("endeavor", "due_on")
+    assert_equal "2026-09-20", response.parsed_body.dig("endeavor", "raise_by_on")
+  end
+
   test "malformed Endeavor date is 422 JSON and creates nothing" do
     sign_in_as(@commander)
 

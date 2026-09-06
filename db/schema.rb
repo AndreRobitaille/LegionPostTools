@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -300,6 +300,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
     t.index ["endeavor_history_edition_id"], name: "index_endeavor_source_links_on_endeavor_history_edition_id"
     t.index ["endeavor_id"], name: "index_endeavor_source_links_on_endeavor_id"
     t.index ["minutes_revision_id"], name: "index_endeavor_source_links_on_minutes_revision_id"
+  end
+
+  create_table "endeavor_tasks", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.bigint "completed_by_id"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.date "due_on"
+    t.bigint "endeavor_id", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "updated_by_id", null: false
+    t.index ["completed_by_id"], name: "index_endeavor_tasks_on_completed_by_id"
+    t.index ["created_by_id"], name: "index_endeavor_tasks_on_created_by_id"
+    t.index ["endeavor_id", "due_on"], name: "index_endeavor_tasks_on_endeavor_id_and_due_on"
+    t.index ["endeavor_id"], name: "index_endeavor_tasks_on_endeavor_id"
+    t.index ["updated_by_id"], name: "index_endeavor_tasks_on_updated_by_id"
+    t.check_constraint "(completed_at IS NULL) = (completed_by_id IS NULL)", name: "endeavor_tasks_completion_provenance"
   end
 
   create_table "endeavor_updates", force: :cascade do |t|
@@ -962,6 +981,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
   add_foreign_key "endeavor_source_links", "endeavor_history_editions"
   add_foreign_key "endeavor_source_links", "endeavors"
   add_foreign_key "endeavor_source_links", "minutes_revisions"
+  add_foreign_key "endeavor_tasks", "endeavors"
+  add_foreign_key "endeavor_tasks", "users", column: "completed_by_id"
+  add_foreign_key "endeavor_tasks", "users", column: "created_by_id"
+  add_foreign_key "endeavor_tasks", "users", column: "updated_by_id"
   add_foreign_key "endeavor_updates", "endeavors"
   add_foreign_key "endeavor_updates", "users", column: "author_id"
   add_foreign_key "endeavors", "meeting_bodies"

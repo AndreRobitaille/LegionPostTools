@@ -15,6 +15,12 @@
   </div>
 </div>
 <% if @managing %><p class="calendar-note">Meetings open in their meeting editor. Events can stand alone or be linked to an Endeavor.</p><% end %>
+<%= form_with url: @managing ? manage_calendar_path : calendar_path, method: :get, class: "calendar-filters" do |form| %>
+  <%= hidden_field_tag :start_date, @month.date.iso8601 %>
+  <div class="fl"><%= label_tag :view, "Show" %><%= select_tag :view, options_for_select(CalendarMonth::VIEWS.map { |value, label| [label, value] }, @month.view), class: "f" %></div>
+  <%= form.submit "Update calendar", class: "btn-secondary" %>
+<% end %>
+<% if @month.public_preview? %><p class="calendar-note">Public events only. These event details are ready for the future public website. Meetings, next steps, and Endeavor history stay private.</p><% end %>
 <%= month_calendar start_date: @month.date, partial: "calendar/month" do |day| %>
   <span class="calendar-day-number"><%= day.day %></span>
   <% @month.entries_on(day).each do |entry| %>
@@ -44,11 +50,13 @@
               <p class="calendar-event-label"><%= calendar_entry_label(entry) %></p>
               <h4><%= link_to entry.title, calendar_entry_path(entry) %></h4>
               <p><%= calendar_entry_time(entry) %><% if calendar_entry_location(entry).present? %> · <%= calendar_entry_location(entry) %><% end %></p>
-              <% if entry.is_a?(CalendarEvent) && entry.endeavor %><p class="calendar-parent">Part of <%= link_to entry.endeavor.title, endeavor_path(entry.endeavor) %></p><% end %>
+              <% if !@month.public_preview? && entry.is_a?(CalendarEvent) && entry.endeavor %><p class="calendar-parent">Part of <%= link_to entry.endeavor.title, endeavor_path(entry.endeavor) %></p><% end %>
             </div>
-            <% if @managing %>
+            <% if @managing && !@month.public_preview? %>
               <% if entry.is_a?(Meeting) %>
                 <% if current_user.can?("manage_agendas") %><%= link_to "Edit meeting", edit_admin_meeting_path(entry), class: "btn-secondary" %><% end %>
+              <% elsif entry.is_a?(CalendarDeadline) %>
+                <% if current_user.can?("manage_agendas") %><%= link_to "Open Endeavor", endeavor_path(entry.endeavor, anchor: "endeavor-next-steps"), class: "btn-secondary" %><% end %>
               <% else %>
                 <%= link_to "Edit event", edit_calendar_event_path(entry), class: "btn-secondary" %>
               <% end %>

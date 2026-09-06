@@ -144,6 +144,31 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to calendar_path
   end
 
+  test "due dates are optional on member calendar and absent from public preview" do
+    project = @organization.endeavors.create!(title: "Internal newsletter", due_on: Date.new(2026, 9, 20), created_by: @manager)
+    project.tasks.create!(title: "Collect confidential articles", due_on: Date.new(2026, 9, 18), created_by: @manager, updated_by: @manager)
+    project.tasks.create!(title: "Undated step", created_by: @manager, updated_by: @manager)
+    @event.update!(visibility: "public", endeavor: project, description: "Public breakfast description")
+    sign_in_as(@member)
+    get calendar_path(start_date: "2026-09-01")
+    assert_select "h4", text: /Due:/, count: 0
+    get calendar_path(start_date: "2026-09-01", view: "deadlines")
+    assert_select "h4", text: "Due: Internal newsletter"
+    assert_select "h4", text: "Due: Collect confidential articles"
+    assert_select "h4", text: /Undated step/, count: 0
+    get calendar_path(start_date: "2026-09-01", view: "public")
+    assert_response :success
+    assert_select "main", text: /Internal newsletter|Collect confidential articles|Undated step/, count: 0
+    assert_select "a[href=?]", calendar_event_path(@event, preview: "public"), minimum: 1
+    get calendar_event_path(@event, preview: "public")
+    assert_response :success
+    assert_select "main", text: /Public breakfast description/
+    assert_select "main", text: /Internal newsletter/, count: 0
+    @event.update!(visibility: "members")
+    get calendar_event_path(@event, preview: "public")
+    assert_response :not_found
+  end
+
   private
 
   def event_params

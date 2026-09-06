@@ -1,0 +1,14 @@
+<div class="panel form-panel">
+  <%= form_with model: [@endeavor, @task], url: @task.persisted? ? endeavor_task_path(@endeavor, @task) : endeavor_tasks_path(@endeavor), class: "stacked-form" do |form| %>
+    <% if @task.errors.any? %><div class="error-summary" role="alert"><h2>Check this next step</h2><ul><% @task.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div><% end %>
+    <%= form.hidden_field :lock_version if @task.persisted? %>
+    <div class="fl"><%= form.label :title, "What needs to happen?" %><%= form.text_field :title, required: true, maxlength: 200, class: "f" %></div>
+    <div class="fl">
+      <%= form.label :due_on, "Due date (optional)" %>
+      <%= render "shared/editable_date_field", name: "endeavor_task[due_on]", id: "endeavor_task_due_on", value: params.dig(:endeavor_task, :due_on) || @task.due_on %>
+      <span class="form-help">Leave blank if there is no deadline. This is a next step, not an event to attend.</span>
+    </div>
+    <% if @task.persisted? %><label class="calendar-checkbox"><%= hidden_field_tag "endeavor_task[completed]", "0" %><%= check_box_tag "endeavor_task[completed]", "1", @task.completed? %> Completed</label><% end %>
+    <div class="btnrow"><%= form.submit "Save next step", class: "btn-primary" %><%= link_to "Cancel", endeavor_path(@endeavor, anchor: "endeavor-next-steps"), class: "btn-secondary" %></div>
+  <% end %>
+</div>

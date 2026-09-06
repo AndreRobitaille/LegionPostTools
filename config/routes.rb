@@ -49,6 +49,7 @@ Rails.application.routes.draw do
       patch :complete
       patch :reopen
     end
+    resources :tasks, only: %i[new create edit update], controller: "endeavor_tasks"
     resources :updates, only: :create, controller: "endeavor_updates"
   end
   resources :dated_agendas, only: %i[index show] do

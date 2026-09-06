@@ -1,0 +1,14 @@
+<article class="activity-row">
+  <div class="activity-info">
+    <h3><%= task.title %></h3>
+    <% if task.completed? %><p>Completed <%= legion_date(task.completed_at) %></p>
+    <% elsif task.due_on %><p><%= task.due_on < Date.current ? "Overdue — due" : "Due" %> <%= legion_date(task.due_on) %></p>
+    <% else %><p>No due date</p><% end %>
+  </div>
+  <% if current_user.can?("manage_agendas") %>
+    <div class="activity-actions">
+      <%= button_to task.completed? ? "Reopen" : "Mark done", endeavor_task_path(@endeavor, task), method: :patch, params: { endeavor_task: { completed: task.completed? ? "0" : "1", lock_version: task.lock_version } }, class: "btn-secondary", aria: { label: "#{task.completed? ? 'Reopen' : 'Mark done'}: #{task.title}" } %>
+      <%= link_to "Edit", edit_endeavor_task_path(@endeavor, task), class: "btn-secondary", aria: { label: "Edit next step: #{task.title}" } %>
+    </div>
+  <% end %>
+</article>

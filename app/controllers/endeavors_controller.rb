@@ -14,7 +14,10 @@ class EndeavorsController < ApplicationController
 
   def show
     @history = EndeavorHistory::Presenter.new(@endeavor, before: params[:before])
+    @open_tasks = @endeavor.tasks.open.ordered
+    @completed_tasks = @endeavor.tasks.completed.order(completed_at: :desc)
     @calendar_events = @endeavor.calendar_events.where("COALESCE(ends_at, starts_at) >= ?", Time.current.beginning_of_day).order(:starts_at)
+    @past_events = @endeavor.calendar_events.where("COALESCE(ends_at, starts_at) < ?", Time.current.beginning_of_day).order(starts_at: :desc)
   end
 
   def new
@@ -78,12 +81,12 @@ class EndeavorsController < ApplicationController
   end
 
   def endeavor_params
-    permitted = params.require(:endeavor).permit(:title, :summary, :details, :importance, :raise_by_on, :meeting_body_id, :lock_version)
-    # The shared date field submits DD MMM YYYY text, matching how dates read
-    # everywhere else in the app.
-    if permitted.key?(:raise_by_on)
-      raw = permitted[:raise_by_on]
-      permitted[:raise_by_on] = raw.blank? ? nil : (helpers.parse_legion_date(raw) || raw)
+    permitted = params.require(:endeavor).permit(:title, :summary, :details, :importance, :due_on, :raise_by_on, :meeting_body_id, :lock_version)
+    date_key = permitted.key?(:due_on) ? :due_on : :raise_by_on
+    permitted.delete(:raise_by_on) if date_key == :due_on
+    if permitted.key?(date_key)
+      raw = permitted[date_key]
+      permitted[date_key] = raw.blank? ? nil : (helpers.parse_legion_date(raw) || raw)
     end
     permitted
   end

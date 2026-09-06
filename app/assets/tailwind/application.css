@@ -2241,3 +2241,27 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .calendar-grid { display: none; }
   .calendar-date-group { break-inside: avoid; }
 }
+
+/* Endeavor activities share a project, but keep deadlines and attendance distinct. */
+.endeavor-activities { margin: 0 0 32px; scroll-margin-top: 24px; }
+.activity-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 3px solid var(--color-gold); }
+.activity-heading h2 { font-size: 23px; font-weight: 750; color: var(--color-navy); }
+.activity-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.activity-info { min-width: 0; overflow-wrap: anywhere; }
+.activity-info h3 { font-size: 18px; font-weight: 700; color: var(--color-navy); }
+.activity-info h3 a { text-decoration: underline; text-underline-offset: 3px; }
+.activity-info p { font-size: 16px; margin-top: 6px; }
+.activity-actions { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.activity-help, .activity-empty { font-size: 16px; margin: 16px 0; }
+.activity-past { margin-top: 20px; }
+.activity-past > summary { font-size: 16px; font-weight: 650; cursor: pointer; }
+.endeavor-deadline { font-size: 18px; margin: 0 0 24px; }
+.activity-datefield .datefield-input { width: 210px; max-width: 100%; }
+.calendar-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 24px 0; }
+.calendar-filters .fl { margin: 0; }
+@media (max-width: 700px) {
+  .activity-row { flex-direction: column; align-items: start; }
+}
+@media print {
+  .activity-actions, .activity-heading .btn-secondary, .activity-row > .btn-secondary, .calendar-filters { display: none; }
+}

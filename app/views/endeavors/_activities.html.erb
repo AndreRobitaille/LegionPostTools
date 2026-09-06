@@ -1,0 +1,13 @@
+<section id="endeavor-next-steps" class="endeavor-activities" aria-labelledby="next-steps-heading">
+  <div class="activity-heading"><h2 id="next-steps-heading">Next steps</h2><% if current_user.can?("manage_agendas") %><%= link_to "Add next step", new_endeavor_task_path(@endeavor), class: "btn-secondary" %><% end %></div>
+  <% if @open_tasks.empty? %><p class="activity-empty">No open next steps.</p><% end %>
+  <%= render partial: "task", collection: @open_tasks, as: :task %>
+  <% if @completed_tasks.any? %><details class="activity-past"><summary>Completed steps (<%= @completed_tasks.size %>)</summary><%= render partial: "task", collection: @completed_tasks, as: :task %></details><% end %>
+</section>
+<section id="endeavor-activities" class="endeavor-activities" aria-labelledby="activities-heading">
+  <div class="activity-heading"><h2 id="activities-heading">Scheduled activities</h2><% if current_user.can_manage_calendar? %><%= link_to "Add calendar event", new_calendar_event_path(endeavor_id: @endeavor.id), class: "btn-secondary" %><% end %></div>
+  <p class="activity-help">Planning meetings, volunteer activities, and events for this Endeavor.</p>
+  <% if @calendar_events.empty? %><p class="activity-empty">No upcoming activities are scheduled.</p><% end %>
+  <%= render partial: "activity", collection: @calendar_events, as: :event %>
+  <% if @past_events.any? %><details class="activity-past"><summary>Past activities (<%= @past_events.size %>)</summary><%= render partial: "activity", collection: @past_events, as: :event %></details><% end %>
+</section>
