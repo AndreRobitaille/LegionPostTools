@@ -25,6 +25,7 @@ class Endeavor < ApplicationRecord
     class_name: "EndeavorUpdate",
     dependent: :restrict_with_exception,
     inverse_of: :endeavor
+  has_many :calendar_events, dependent: :restrict_with_exception
   has_many :dated_agenda_items, dependent: :restrict_with_exception
   has_many :dated_agendas, through: :dated_agenda_items
   has_many :minutes_items, dependent: :restrict_with_exception

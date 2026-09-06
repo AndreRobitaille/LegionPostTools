@@ -1,0 +1,17 @@
+<% content_for :title, @event.title %>
+<%= link_to "← Calendar", calendar_path(start_date: @event.starts_at.to_date), class: "back" %>
+<div class="page-lead">
+  <p class="calendar-event-label"><%= calendar_entry_label(@event) %></p>
+  <h1 class="page-title"><%= @event.title %></h1>
+</div>
+<section class="panel calendar-event-details">
+  <% if @event.cancelled? %><p class="calendar-cancelled" role="status">This event is cancelled.</p><% end %>
+  <dl>
+    <div><dt>When</dt><dd><%= legion_date(@event.starts_at) %><% if @event.ends_at && @event.ends_at.to_date != @event.starts_at.to_date %> through <%= legion_date(@event.ends_at) %><% end %> · <%= calendar_entry_time(@event) %></dd></div>
+    <div><dt>Time zone</dt><dd><%= Time.zone.name %></dd></div>
+    <% if @event.location.present? %><div><dt>Where</dt><dd><%= @event.location %></dd></div><% end %>
+    <% if @event.endeavor %><div><dt>Related Endeavor</dt><dd><%= link_to @event.endeavor.title, endeavor_path(@event.endeavor) %></dd></div><% end %>
+  </dl>
+  <div class="prose"><%= simple_format(@event.description) %></div>
+  <% if current_user.can_manage_calendar? %><div class="btnrow"><%= link_to "Edit event", edit_calendar_event_path(@event), class: "btn-primary" %><%= link_to "Manage calendar", manage_calendar_path(start_date: @event.starts_at.to_date), class: "btn-secondary" %></div><% end %>
+</section>

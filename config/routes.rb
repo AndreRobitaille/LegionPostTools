@@ -36,6 +36,10 @@ Rails.application.routes.draw do
     get :revoke, on: :member
   end
   resources :people, only: %i[index show]
+  get "calendar", to: "calendar#show", as: :calendar
+  get "calendar/manage", to: "calendar#manage", as: :manage_calendar
+  resources :calendar_events, only: %i[show new create edit update]
+
   resources :meetings, only: %i[index show] do
     resource :minutes, only: :show, controller: "meeting_minutes"
   end

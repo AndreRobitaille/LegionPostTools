@@ -1,0 +1,22 @@
+<div class="calendar-month">
+  <div class="calendar-month-heading">
+    <h2><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></h2>
+    <nav class="btnrow" aria-label="Calendar month">
+      <%= link_to "← Previous month", calendar.url_for_previous_view, class: "btn-secondary" %>
+      <%= link_to "Today", calendar.url_for_today_view, class: "btn-secondary" %>
+      <%= link_to "Next month →", calendar.url_for_next_view, class: "btn-secondary" %>
+    </nav>
+  </div>
+  <table class="calendar-grid" aria-label="<%= start_date.strftime('%B %Y') %> calendar">
+    <thead><tr><% date_range.first(7).each do |day| %><th scope="col"><%= day.strftime("%a") %></th><% end %></tr></thead>
+    <tbody>
+      <% date_range.each_slice(7) do |week| %>
+        <tr><% week.each do |day| %>
+          <%= content_tag :td, class: calendar.td_classes_for(day), aria: (day == Date.current ? { current: "date" } : {}) do %>
+            <% instance_exec(day, &passed_block) %>
+          <% end %>
+        <% end %></tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

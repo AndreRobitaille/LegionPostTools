@@ -1,0 +1,9 @@
+<% value = calendar_schedule_value(@event, attribute, :date) %>
+<div class="fl">
+  <%= label_tag "calendar_event_#{attribute}_date", "Date" %>
+  <span class="datefield" data-controller="date-field">
+    <%= text_field_tag "calendar_event[#{attribute}_date]", value, id: "calendar_event_#{attribute}_date", placeholder: "DD MMM YYYY", autocomplete: "off", class: "datefield-input", data: { date_field_target: "text" } %>
+    <input type="date" class="datefield-native" tabindex="-1" aria-hidden="true" value="<%= parse_legion_date(value)&.iso8601 %>" data-date-field-target="native" data-action="change->date-field#pick">
+    <button type="button" class="datefield-cal" data-action="date-field#open" aria-label="Choose <%= attribute == :starts_at ? 'start' : 'end' %> date">&#128197;</button>
+  </span>
+</div>

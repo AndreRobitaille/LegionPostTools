@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,6 +112,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_010000) do
     t.index ["state", "created_at"], name: "index_agent_api_executions_on_state_and_created_at"
     t.index ["user_id"], name: "index_agent_api_executions_on_user_id"
     t.check_constraint "state::text = ANY (ARRAY['processing'::character varying::text, 'completed'::character varying::text])", name: "agent_api_executions_state_check"
+  end
+
+  create_table "calendar_events", force: :cascade do |t|
+    t.boolean "all_day", default: false, null: false
+    t.boolean "cancelled", default: false, null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.text "description", default: "", null: false
+    t.bigint "endeavor_id"
+    t.datetime "ends_at"
+    t.string "location", default: "", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "organization_id", null: false
+    t.datetime "starts_at", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "updated_by_id", null: false
+    t.string "visibility", default: "members", null: false
+    t.index ["created_by_id"], name: "index_calendar_events_on_created_by_id"
+    t.index ["endeavor_id"], name: "index_calendar_events_on_endeavor_id"
+    t.index ["organization_id", "starts_at"], name: "index_calendar_events_on_organization_id_and_starts_at"
+    t.index ["organization_id"], name: "index_calendar_events_on_organization_id"
+    t.index ["updated_by_id"], name: "index_calendar_events_on_updated_by_id"
+    t.check_constraint "ends_at IS NULL OR ends_at >= starts_at", name: "calendar_events_date_order"
+    t.check_constraint "visibility::text = ANY (ARRAY['members'::character varying, 'public'::character varying]::text[])", name: "calendar_events_visibility"
   end
 
   create_table "dated_agenda_items", force: :cascade do |t|
@@ -904,6 +929,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_010000) do
   add_foreign_key "agent_access_tokens", "users", column: "revoked_by_id"
   add_foreign_key "agent_api_executions", "agent_access_tokens"
   add_foreign_key "agent_api_executions", "users"
+  add_foreign_key "calendar_events", "endeavors"
+  add_foreign_key "calendar_events", "organizations"
+  add_foreign_key "calendar_events", "users", column: "created_by_id"
+  add_foreign_key "calendar_events", "users", column: "updated_by_id"
   add_foreign_key "dated_agenda_items", "agenda_item_catalog_entries"
   add_foreign_key "dated_agenda_items", "dated_agenda_sections"
   add_foreign_key "dated_agenda_items", "dated_agendas"

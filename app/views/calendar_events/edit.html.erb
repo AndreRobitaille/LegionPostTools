@@ -1,0 +1,4 @@
+<% content_for :title, "Edit calendar event" %>
+<%= link_to "← Event details", calendar_event_path(@event), class: "back" %>
+<div class="page-lead"><h1 class="page-title">Edit calendar event</h1><p class="page-sub">Update the details members use to plan their visit.</p></div>
+<%= render "form" %>

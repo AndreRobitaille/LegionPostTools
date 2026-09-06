@@ -14,6 +14,7 @@ class EndeavorsController < ApplicationController
 
   def show
     @history = EndeavorHistory::Presenter.new(@endeavor, before: params[:before])
+    @calendar_events = @endeavor.calendar_events.where("COALESCE(ends_at, starts_at) >= ?", Time.current.beginning_of_day).order(:starts_at)
   end
 
   def new

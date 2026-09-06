@@ -1,0 +1,40 @@
+<div class="panel form-panel calendar-event-form">
+  <%= form_with model: @event, class: "stacked-form" do |form| %>
+    <% if @event.errors.any? %>
+      <div class="error-summary" role="alert">
+        <h2>Check these event details</h2>
+        <ul><% @event.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+      </div>
+    <% end %>
+    <%= form.hidden_field :lock_version if @event.persisted? %>
+    <div class="fl"><%= form.label :title, "Event name" %><%= form.text_field :title, class: "f", required: true, maxlength: 200 %></div>
+    <div class="fl"><%= form.label :description, "Event description" %><%= form.text_area :description, class: "f", rows: 4, maxlength: 10000 %><span class="form-help">Include what attendees need to know. Internal planning belongs in the Endeavor.</span></div>
+    <div class="fl"><%= form.label :location, "Place or address" %><%= form.text_field :location, class: "f", maxlength: 500 %></div>
+    <label class="calendar-checkbox"><%= form.check_box :all_day %> All-day event</label>
+    <p class="form-help">For all-day events, leave the times blank. The last date is included.</p>
+    <% { starts_at: "Starts", ends_at: "Ends (optional)" }.each do |attribute, label| %>
+      <fieldset class="calendar-date-fields">
+        <legend><%= label %></legend>
+        <div class="calendar-date-inputs">
+          <%= render "date_field", attribute: attribute %>
+          <div class="fl">
+            <%= label_tag "calendar_event_#{attribute}_time", "Time (24-hour)" %>
+            <%= text_field_tag "calendar_event[#{attribute}_time]", calendar_schedule_value(@event, attribute, :time), id: "calendar_event_#{attribute}_time", class: "f", placeholder: "19:00", inputmode: "numeric", pattern: "(?:[01][0-9]|2[0-3]):[0-5][0-9]" %>
+          </div>
+        </div>
+      </fieldset>
+    <% end %>
+    <p class="form-help">Times are in <%= Time.zone.name %>.</p>
+    <div class="fl">
+      <%= form.label :visibility, "Who can see this event?" %>
+      <%= form.select :visibility, CalendarEvent::VISIBILITIES.map { |value, label| [ label, value ] }, {}, class: "f" %>
+      <span class="form-help">Public events are marked for the future public website. Only this event's details will be shared; Endeavor history stays private.</span>
+    </div>
+    <div class="fl">
+      <%= form.label :endeavor_id, "Related Endeavor (optional)" %>
+      <%= form.collection_select :endeavor_id, @endeavors, :id, :title, { include_blank: "No Endeavor — standalone event" }, class: "f" %>
+    </div>
+    <% if @event.persisted? %><label class="calendar-checkbox"><%= form.check_box :cancelled %> This event is cancelled</label><p class="form-help">Keep the event visible with a cancellation notice so members know plans changed.</p><% end %>
+    <div class="btnrow"><%= form.submit @event.persisted? ? "Save event" : "Add event", class: "btn-primary" %><%= link_to "Cancel", manage_calendar_path, class: "btn-secondary" %></div>
+  <% end %>
+</div>

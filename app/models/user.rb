@@ -75,6 +75,10 @@ class User < ApplicationRecord
       end
   end
 
+  def can_manage_calendar?(on: Date.current)
+    can?("manage_settings") || private_agenda_notes_access?(on:)
+  end
+
   def private_agenda_notes_access?(on: Date.current)
     position_capability_sources(on:).keys.intersect?(PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES)
   end
