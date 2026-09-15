@@ -1,6 +1,10 @@
 class PasskeysController < ApplicationController
+  include PasskeyEnrollment
+
   skip_before_action :redirect_to_setup_if_needed
   before_action :require_authentication, except: %i[authentication_options authentication]
+
+  before_action :require_recent_enrollment_authentication, only: %i[registration_options registration]
 
   rate_limit to: 20,
     within: 5.minutes,
@@ -41,13 +45,25 @@ class PasskeysController < ApplicationController
       exclude: current_user.passkey_credentials.pluck(:external_id)
     )
 
-    session[:webauthn_registration_challenge] = options.challenge
+    session[:webauthn_registration_challenge] = {
+      challenge: options.challenge,
+      session_id: Current.session.id,
+      authenticated_at: Current.session.authenticated_at.iso8601(6)
+    }
     render json: options
   end
 
   def registration
+    enrollment = session.delete(:webauthn_registration_challenge)
+    unless enrollment.is_a?(Hash) &&
+        enrollment["session_id"] == Current.session.id &&
+        enrollment["authenticated_at"] == Current.session.authenticated_at.iso8601(6) &&
+        enrollment["challenge"].present?
+      return render json: { error: "invalid passkey registration" }, status: :unprocessable_entity
+    end
+
     credential = WebAuthn::Credential.from_create(public_key_credential_params)
-    credential.verify(session.delete(:webauthn_registration_challenge), user_verification: true)
+    credential.verify(enrollment["challenge"], user_verification: true)
 
     current_user.passkey_credentials.create!(
       external_id: credential.id,
@@ -56,6 +72,7 @@ class PasskeysController < ApplicationController
       nickname: params[:nickname].presence
     )
 
+    session.delete(:pending_passkey_enrollment)
     render json: { status: "created" }, status: :created
   rescue WebAuthn::Error
     render json: { error: "invalid passkey registration" }, status: :unprocessable_entity
@@ -111,10 +128,27 @@ class PasskeysController < ApplicationController
 
   private
 
+  def require_recent_enrollment_authentication
+    return if Current.session&.recently_authenticated?
+
+    session.delete(:webauthn_registration_challenge)
+    nickname = params[:nickname].to_s.strip.presence
+    if nickname && nickname.length > 200
+      return render json: { error: "Use a passkey name of 200 characters or fewer." }, status: :unprocessable_entity
+    end
+    session[:pending_passkey_enrollment] = {
+      session_id: Current.session.id,
+      nickname: nickname,
+      expires_at: 30.minutes.from_now.to_i
+    }
+    render json: { error: "recent authentication required", confirmation_url: new_passkey_enrollment_reauthentication_path }, status: :forbidden
+  end
+
   def reauthenticating?
     authenticated? && session[:reauthentication_purpose].in?([
       AgentAccessReauthenticationsController::PURPOSE,
-      OfficialActionReauthenticationsController::PURPOSE
+      OfficialActionReauthenticationsController::PURPOSE,
+      PasskeyEnrollmentReauthenticationsController::PURPOSE
     ])
   end
 

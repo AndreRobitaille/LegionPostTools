@@ -20,10 +20,10 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     assert_nothing_raised { Base64.urlsafe_decode64(handle) }
   end
 
-  test "authenticated user can request registration options" do
+  test "recently authenticated user can request registration options" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)
-    session = Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current)
+    session = Session.create!(user: user, ip_address: "127.0.0.1", user_agent: "test", last_seen_at: Time.current, authenticated_at: Time.current)
     existing_credential = PasskeyCredential.create!(
       user: user,
       external_id: "existing-credential-id",

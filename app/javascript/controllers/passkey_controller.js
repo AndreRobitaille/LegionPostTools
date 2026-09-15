@@ -23,12 +23,16 @@ export default class extends Controller {
     if (!supported()) return
     this.#busy("Waiting for your device…")
     try {
-      const options = await this.#postJSON("/passkeys/registration_options")
+      const options = await this.#postJSON("/passkeys/registration_options", { nickname: this.#nickname() })
       const credential = await create({ publicKey: options })
       const nickname = this.#nickname()
       const res = await this.#postJSON("/passkeys/registration", { publicKeyCredential: credential, nickname })
       if (res) window.location.assign(this.redirectValue)
     } catch (error) {
+      if (error.confirmationUrl) {
+        window.location.assign(error.confirmationUrl)
+        return
+      }
       this.#fail("We couldn't add that passkey. You can try again, or keep using the email link.")
     }
   }
@@ -62,7 +66,14 @@ export default class extends Controller {
       },
       body: body ? JSON.stringify(body) : "{}"
     })
-    if (!response.ok) throw new Error(`Request to ${url} failed: ${response.status}`)
+    if (!response.ok) {
+      const error = new Error(`Request to ${url} failed: ${response.status}`)
+      if (response.status === 403) {
+        const payload = await response.json()
+        error.confirmationUrl = payload.confirmation_url
+      }
+      throw error
+    }
     return response.json()
   }
 

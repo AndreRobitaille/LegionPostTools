@@ -49,16 +49,18 @@
       <p class="pk-empty">You have no passkeys yet. Add one below to sign in faster next time.</p>
     <% end %>
 
-    <div class="pk-add-block" data-controller="passkey" data-passkey-redirect-value="<%= profile_path %>">
+    <div id="add-passkey" class="pk-add-block" data-controller="passkey" data-passkey-redirect-value="<%= profile_path %>">
       <div class="panel-head panel-head--add">&#9670; Add a passkey</div>
       <p class="panel-lead pk-add-lead">
+        <% if @pending_passkey_enrollment %>Continue when you’re ready.<% end %>
         Register the device you're using right now — you'll be asked for your fingerprint, face, or device PIN.
       </p>
       <label class="pk-add-label" for="new-passkey-nickname">Name for this passkey (optional)</label>
       <input class="pk-add-input" id="new-passkey-nickname" type="text" data-passkey-nickname
-             placeholder="e.g. My iPhone or Office laptop" autocomplete="off">
+             placeholder="e.g. My iPhone or Office laptop" autocomplete="off" maxlength="200"
+             value="<%= @pending_passkey_enrollment&.fetch("nickname") %>">
       <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
-        Add a passkey
+        <%= @pending_passkey_enrollment ? "Continue adding your passkey" : "Add a passkey" %>
       </button>
       <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
     </div>
