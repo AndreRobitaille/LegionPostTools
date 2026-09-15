@@ -1,0 +1,22 @@
+<% content_for :title, "Confirm your identity" %>
+
+<div class="page-lead max-w-[var(--w-form)]">
+  <h1 class="page-title">Confirm your identity</h1>
+  <p class="panel-lead">Confirm it’s you, then return to finish adding your passkey.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Email link received" %>
+  <div class="panel">
+    <p class="panel-lead">Use the button below to confirm in this browser. The link works once and expires after 15 minutes.</p>
+    <%= form_with url: magic_link_passkey_enrollment_reauthentication_path, method: :post, data: { turbo: false } do |form| %>
+      <%= hidden_field_tag :token, params[:token] %>
+      <%= form.button "Confirm identity", class: "btn-primary" %>
+    <% end %>
+  </div>
+</section>
+
+<div class="mt-6">
+  <%= button_to "Cancel and return to Profile", passkey_enrollment_reauthentication_path,
+        method: :delete, class: "btn-secondary" %>
+</div>

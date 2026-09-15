@@ -1,0 +1,48 @@
+<% content_for :title, "Confirm your identity" %>
+
+<div class="page-lead max-w-[var(--w-form)]">
+  <h1 class="page-title">Confirm your identity</h1>
+  <p class="panel-lead">Before adding a new passkey, confirm it’s you with email or a passkey you already use. After confirming, you’ll return to finish adding your passkey.</p>
+</div>
+
+<section class="profile-section">
+  <%= render "shared/section_header", label: "Choose how to confirm" %>
+  <div class="panel">
+    <% if cookies.encrypted[PasskeyEnrollmentReauthenticationsController::PENDING_COOKIE].present? %>
+      <div class="agent-reauth-code">
+        <h2>Enter the emailed code</h2>
+        <p class="panel-lead">Find the code in your email and enter it in this browser. You may use the secure link from that same email instead.</p>
+        <%= form_with url: verify_passkey_enrollment_reauthentication_path, method: :post, data: { turbo: false }, class: "stacked-form" do |form| %>
+          <div class="fl">
+            <%= form.label :code, "8-digit confirmation code" %>
+            <%= form.text_field :code, class: "f agent-code-input", inputmode: "numeric",
+                  autocomplete: "one-time-code", placeholder: "1234 5678", maxlength: 9,
+                  required: true, autofocus: true %>
+          </div>
+          <%= form.button "Confirm identity", class: "btn-primary" %>
+        <% end %>
+        <%= button_to "Send a new code and link", passkey_enrollment_reauthentication_path,
+              method: :post, class: "lnk agent-reauth-resend" %>
+      </div>
+    <% else %>
+      <p class="panel-lead">Send a one-time code and secure link to <strong><%= current_user.email_address %></strong>. Keep this page open while you check your email.</p>
+      <%= button_to "Email me a code and link", passkey_enrollment_reauthentication_path,
+            method: :post, class: "btn-primary" %>
+    <% end %>
+
+    <% if current_user.passkey_credentials.any? %>
+      <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= profile_path(anchor: "add-passkey") %>">
+        <div class="entry-orline">Or use a passkey</div>
+        <button type="button" class="btn-secondary" data-action="passkey#authenticate" data-passkey-target="submit">
+          Confirm with an existing passkey
+        </button>
+        <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<div class="mt-6">
+  <%= button_to "Cancel and return to Profile", passkey_enrollment_reauthentication_path,
+        method: :delete, class: "btn-secondary" %>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -403,7 +403,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_050000) do
     t.index ["session_id"], name: "index_magic_links_on_session_id"
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
-    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying::text, 'create_agent_access_token'::character varying::text, 'official_minutes_action'::character varying::text])", name: "magic_links_purpose_check"
+    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying, 'official_minutes_action'::character varying, 'enroll_passkey'::character varying]::text[])", name: "magic_links_purpose_check"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
