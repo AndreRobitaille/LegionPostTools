@@ -6,10 +6,10 @@ class PasskeyEnrollmentSecuritySystemTest < ApplicationSystemTestCase
   setup do
     @original_forgery_protection = ActionController::Base.allow_forgery_protection
     ActionController::Base.allow_forgery_protection = true
-    @original_capybara_settings = [ Capybara.server_host, Capybara.server_port, Capybara.app_host ]
+    @original_capybara_settings = [ Capybara.server_host, Capybara.app_host ]
     Capybara.server_host = "0.0.0.0"
-    Capybara.server_port = 39871
-    Capybara.app_host = "http://localhost:39871"
+    # Other system tests may already have started the shared application server.
+    Capybara.app_host = "http://localhost:#{Capybara.current_session.server.port}"
     @original_origins = WebAuthn.configuration.allowed_origins
     WebAuthn.configuration.allowed_origins = [ Capybara.app_host ]
     Organization.create!(name: "Enrollment Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
@@ -21,7 +21,7 @@ class PasskeyEnrollmentSecuritySystemTest < ApplicationSystemTestCase
   teardown do
     ActionController::Base.allow_forgery_protection = @original_forgery_protection
     WebAuthn.configuration.allowed_origins = @original_origins
-    Capybara.server_host, Capybara.server_port, Capybara.app_host = @original_capybara_settings
+    Capybara.server_host, Capybara.app_host = @original_capybara_settings
   end
 
   test "confirmation preserves the name and completes enrollment at desktop and narrow widths" do
