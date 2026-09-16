@@ -59,18 +59,25 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Community breakfast", @event.reload.title
   end
 
-  test "current commander and adjutant office assignments grant management and expiry removes it" do
-    %w[approve_minutes attest_minutes].each do |capability|
-      office = @organization.position_titles.create!(name: capability, display_order: 1)
-      office.position_capability_grants.create!(capability: capability)
-      assignment = office.position_assignments.create!(person: @member.person, starts_on: Date.current - 2.days)
-      sign_in_as(@member)
-      get manage_calendar_path(start_date: "2026-09-01")
-      assert_response :success
-      assert_select "a[href=?]", new_calendar_event_path
-      assignment.update!(ends_on: Date.yesterday)
-      get manage_calendar_path
-      assert_redirected_to root_path
+  test "current office assignments expire in the Post zone across UTC midnight" do
+    Time.use_zone("UTC") do
+      travel_to(Time.utc(2026, 9, 16, 0, 30)) do
+        post_today = Time.current.in_time_zone(@organization.calendar_time_zone).to_date
+        assert_equal Date.current.yesterday, post_today
+
+        %w[approve_minutes attest_minutes].each do |capability|
+          office = @organization.position_titles.create!(name: capability, display_order: 1)
+          office.position_capability_grants.create!(capability: capability)
+          assignment = office.position_assignments.create!(person: @member.person, starts_on: post_today - 2.days, ends_on: post_today)
+          sign_in_as(@member)
+          get manage_calendar_path(start_date: "2026-09-01")
+          assert_response :success
+          assert_select "a[href=?]", new_calendar_event_path
+          assignment.update!(ends_on: post_today.yesterday)
+          get manage_calendar_path
+          assert_redirected_to root_path
+        end
+      end
     end
   end
 

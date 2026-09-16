@@ -1,4 +1,6 @@
 class MeetingMinutesPdfSourcesController < ApplicationController
+  include PdfResourcePolicy
+
   skip_before_action :redirect_to_setup_if_needed
   skip_before_action :resume_session
 

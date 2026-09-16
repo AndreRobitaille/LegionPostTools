@@ -96,3 +96,25 @@ Queue and stored attachments without changing the document templates or controll
 - PDF inspection confirms `%PDF`, US Letter dimensions, repeating address/email/page-number
   footers, and absence of officer-only content from the member PDF.
 - The container build confirms Chromium is present in the production runtime.
+
+## Resource policy for generated PDFs
+
+The signed HTML sources share a deny-by-default Content Security Policy. Only the
+fingerprinted application emblem and the five print stylesheet assets may load; arbitrary
+same-origin URLs, remote URLs, scripts, frames, connections, fonts and media are blocked.
+The existing footer style element receives a fresh nonce. Sanitized inline text formatting
+remains allowed; any CSS image requests still obey the image allowlist. Allowed assets are
+static, nonredirecting files. No broad host or asset-directory source is permitted.
+The allowlist uses the renderer's HTTP loopback host and port, including when production
+`assume_ssl` makes Rails treat the source request as HTTPS behind its public proxy.
+
+This policy is enforced by Chromium before loading document subresources. Print presentation
+also replaces embedded images/media with an explicit text marker, retaining an image's alt
+text when available. Source records and immutable revision payloads are never changed.
+The normal member reading view remains unchanged.
+
+Visual direction: retain The 1919 official-document shell, navy/gold letterhead, emblem,
+Georgia narrative, system-sans labels, Letter pagination and authority folio. An omitted
+image is indicated inline as “Image omitted from PDF: description” (or “Image omitted from
+PDF” without alt text), using readable secondary text, not a broken-image icon or a large
+warning panel. Verify desktop and 390px source layouts and real generated Letter PDFs.
