@@ -79,6 +79,36 @@ class DatedAgendaPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /Member wording withheld/, count: 0
   end
 
+  test "source restricts resource requests and marks embedded images without editing their source" do
+    html = '<p style="text-align: center">Retained wording</p><img src="http://127.0.0.1:9999/private" alt="Finance chart">'
+    @item.update!(body: html, show_wording_on_agenda: true, commander_notes: html)
+    original = @item.body.body.to_html
+
+    %w[agenda officer_notes].each do |variant|
+      get dated_agenda_pdf_source_path(token: token_for(variant)), headers: { "HTTPS" => "on", "X-Forwarded-Proto" => "https" }
+      assert_response :success
+      policy = response.headers.fetch("Content-Security-Policy")
+      assert_includes policy, "default-src 'none'"
+      assert_includes policy, "base-uri 'none'"
+      assert_includes policy, "form-action 'none'"
+      assert_includes policy, "style-src-attr 'unsafe-inline'"
+      assert_not_includes policy, "'self'"
+      assert_not_includes policy, "9999"
+      assert_includes policy, "http://www.example.com/assets/"
+      assert_not_includes policy, "https://"
+      assert_select "head style[nonce]" do |styles|
+        assert_includes policy, "'nonce-#{styles.first['nonce']}'"
+      end
+      assert_select ".agenda-item-body img, .commander-cue img", count: 0
+      assert_select ".pdf-omitted-media", text: "Image omitted from PDF: Finance chart", count: variant == "agenda" ? 1 : 2
+      assert_select ".agenda-item-body p", text: "Retained wording" do |paragraphs|
+        assert_match(/text-align:\s*center/, paragraphs.first["style"].to_s)
+      end
+      assert_select "img.agenda-emblem"
+    end
+    assert_equal original, @item.reload.body.body.to_html
+  end
+
   test "source rejects invalid tokens" do
     get dated_agenda_pdf_source_path(token: "invalid")
 

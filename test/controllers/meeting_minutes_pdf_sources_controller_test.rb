@@ -73,6 +73,24 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_select "nav", count: 0
   end
 
+  test "immutable minutes use the same resource policy and preserve the stored revision" do
+    @item.update!(body: '<p>Approved narrative.</p><img src="//127.0.0.1:9999/private" alt="Report chart"><video src="http://127.0.0.1:9999/movie"></video>')
+    attest_minutes!
+    revision = @minutes.current_revision
+    original_payload = revision.payload.deep_dup
+    original_digest = revision.sha256
+
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
+
+    assert_response :success
+    assert_includes response.headers.fetch("Content-Security-Policy"), "default-src 'none'"
+    assert_select ".pdf-omitted-media", text: "Image omitted from PDF: Report chart"
+    assert_select ".minutes-doc-narrative img, .minutes-doc-narrative video", count: 0
+    assert_select ".minutes-doc-narrative", text: /Approved narrative/
+    assert_equal original_payload, revision.reload.payload
+    assert_equal original_digest, revision.sha256
+  end
+
   test "attested source renders the immutable revision with truthful authority on every page" do
     attest_minutes!
     @item.update_column(:title, "Changed working row after attestation")
