@@ -2401,3 +2401,5 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 @media print { .calendar-event-back, .calendar-event-actions { display: none; } .calendar-event-card { box-shadow: none; } }
 
 @media print { .calendar-schedule-action { display: none; } }
+
+.pdf-omitted-media { font-family: var(--font-sans); font-size: 14px; font-style: italic; overflow-wrap: anywhere; }

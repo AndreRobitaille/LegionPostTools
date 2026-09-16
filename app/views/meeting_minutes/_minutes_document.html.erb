@@ -85,14 +85,14 @@
               <li class="agenda-item minutes-doc-item">
                 <h3 class="agenda-item-title"><%= item.fetch("title") %></h3>
                 <% if item["agenda_body_html"].present? %>
-                  <div class="agenda-item-body minutes-doc-agenda-wording"><%= sanitize(item["agenda_body_html"]) %></div>
+                  <div class="agenda-item-body minutes-doc-agenda-wording"><%= document_rich_text(item["agenda_body_html"]) %></div>
                 <% end %>
                 <% if item["body_html"].present? || item.fetch("outcomes").any? %>
                   <div class="minutes-doc-recorded">
                     <p class="minutes-doc-narrative-label">Recorded minutes</p>
                     <% if item["body_html"].present? %>
                       <div class="minutes-doc-narrative">
-                        <div class="agenda-item-body"><%= sanitize(item["body_html"]) %></div>
+                        <div class="agenda-item-body"><%= document_rich_text(item["body_html"]) %></div>
                       </div>
                     <% end %>
                     <% item.fetch("outcomes").each do |outcome| %>
