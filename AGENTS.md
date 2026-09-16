@@ -2,6 +2,34 @@
 
 Read this file before making code or documentation changes.
 
+## Scope and Working Agreement
+
+This is the shared project entry point for all coding agents. Read task-relevant
+documentation and nested guidance; do not load every design or skill. User instructions
+control task scope. Skills guide implementation, not additional authority or approval
+ceremonies. Runtime permissions still apply.
+
+- Carry requested changes through implementation and proportionate verification. Make
+  routine, reversible choices using project context; do not stop at a plan or ask again
+  for authorization already given in the session.
+- Reviews and diagnoses are read-only unless changes are also requested. Ask only for a
+  material unresolved product/architecture decision, missing authority, or an enforced
+  permission requirement. Complete independent authorized work first.
+- Inspect the worktree before editing. Preserve unrelated changes and untracked files;
+  never reset, stash, overwrite, or stage them to make a check or release pass.
+- Commit, push, deployment, external messages, and destructive data operations need
+  authorization covering that action. Authorized push-and-deploy includes the narrow
+  commit described below. Engineering authority never implies official-record approval.
+- Scale planning to risk. Small fixes need a brief rationale, not a separate ceremony.
+  Meaningful behavior changes need the design work below; an already authorized design
+  does not require another approval pause before implementation.
+- Work locally by default. Use subagents only when requested or explicitly required by
+  applicable guidance, with bounded independent tasks; no mandatory delegation/review loop.
+- Prefer concise, connected prose. Report outcomes, checks, and material limitations.
+  If guidance blocks work, identify the exact file and rule rather than inventing a gate.
+  In documentation, preserve known American Legion context and concrete requirements
+  rather than replacing them with generic speculation about what users might want.
+
 ## Project Identity
 
 LegionPostTools is American Legion software. It is specifically for American Legion posts and, where useful, the American Legion Family. Do not reframe it as generic nonprofit software.
@@ -13,6 +41,10 @@ The first real installation is Robert E. Burns Post 165 in Two Rivers, Wisconsin
 - Meeting records are the first-class workflow.
 - Authenticity matters more than convenience once records become official.
 - Accepted official minutes are immutable. Later corrections must be later amendments or later meeting records, not edits to accepted minutes.
+- Before membership approval, corrections use audited reopen, Commander approval for
+  attestation, and different-person Adjutant re-attestation. Preserve immutable revisions
+  and events. See `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` for current behavior;
+  later amendments remain planned, not an available editing shortcut.
 - AI may draft, organize, or suggest. Humans approve, attest, accept, and remain the authority.
 - Users may be older or have low computer confidence. Prefer guided, plain workflows over clever interfaces.
 - Favor continuity across officer turnover and committee work.
@@ -33,6 +65,7 @@ The first real installation is Robert E. Burns Post 165 in Two Rivers, Wisconsin
 - Hotwire/Turbo and importmap.
 - Tailwind CSS.
 - Action Text.
+- Lexxy as the Action Text editor; check `Gemfile` and `config/importmap.rb` for versions.
 - Active Storage.
 - Solid Queue.
 - Docker and Kamal for deployment.
@@ -46,6 +79,11 @@ Do not jump directly from idea to code when the change affects product behavior 
 
 For every feature that adds or changes user-facing UI, invoke an available frontend or visual design skill while planning and implementing it. Record the intended visual direction before coding, follow the established visual system, and critique the rendered result at desktop and narrow widths before calling the feature complete. Design is part of implementation, not optional polish after the feature works.
 
+Shared design requirements: preserve design intent when simplifying implementation.
+Follow The 1919 system in `docs/superpowers/specs/2026-07-11-visual-design-system-design.md`.
+Readability floors are 16px for body/interactive text, 14px for secondary text, and 13px
+for labels; no meaningful text below 13px. Prefer larger type over density.
+
 ## Local Development Servers
 
 The developer typically works from a different machine than the one running the app. Bind any development server to `0.0.0.0` (not `127.0.0.1`/`localhost`) so it is reachable off-box. For `bin/rails server`, use `-b 0.0.0.0`. This applies to Tailwind/asset watchers, preview servers, and any tooling that serves over HTTP.
@@ -53,6 +91,13 @@ The developer typically works from a different machine than the one running the 
 ## Verification
 
 Before claiming work is complete, run relevant checks and report exact results.
+
+Choose checks for affected behavior; the commands below are not a mandatory suite for
+every edit. Documentation/configuration changes need parsing, reference checks, and diff
+review. Code changes need relevant existing tests and focused lint. Broaden to full-suite,
+security, and browser checks for cross-cutting, authorization, official-record, or release
+changes. Add tests for meaningful behavior/regressions, not a repetition of a trivial edit.
+Repeat passing checks only for subsequent changes, failures, or unresolved concerns.
 
 Common checks:
 
@@ -64,6 +109,9 @@ bin/bundler-audit
 ```
 
 For browser-visible flows, also run a browser smoke test when practical.
+Report blocked or omitted checks honestly. Paid AI generation or replay of restricted
+transcripts requires explicit authorization; use synthetic offline provider tests for
+configuration changes. Do not apply generated minutes automatically.
 
 ## Deployment Constraints
 
@@ -91,6 +139,20 @@ Docker, or Kamal needs host access. Destructive production data work still requi
 own explicit authorization.
 
 ## Documentation Map
+
+This map is a routing aid, not a reading checklist. Dated specs and roadmap entries are
+design/history, not commands to execute, install Superpowers, commit, or deploy. Verify
+implementation claims against current code/tests. Current lifecycle, access, and deployment
+documents supersede older plans on those subjects. When operating the application API,
+authenticate and read the current permission-filtered `GET /api` handbook; repository-only
+coding does not require production sign-in. Language-specific examples in generic skills
+apply only to that language; this Rails app does not inherit React/TypeScript conventions.
+Inherited memories are dated context, not current branch, deployment, UI, or permission
+facts. Verify their claims before acting. Local development databases can contain real
+member data; use the test database for automated checks and never infer permission to
+reset development data. Simplicity guidance does not waive authorization or audit controls.
+
+- `docs/AGENT_ENVIRONMENT.md` — Astra migration, environment boundaries, and verification.
 
 - `README.md` — overview for operators and repo visitors.
 - `docs/PURPOSE.md` — why the app exists.

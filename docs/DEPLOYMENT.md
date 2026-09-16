@@ -80,11 +80,16 @@ when development and production intentionally share that credentials file and ma
 An installation may instead supply `OPENAI_ACCESS_TOKEN` or `OPENAI_API_KEY` as a Kamal
 secret, but use only one deliberate source.
 
-Optional clear tuning values are `OPENAI_MINUTES_MODEL` (default `gpt-5.6-sol`),
+Optional clear tuning values are `OPENAI_MINUTES_MODEL` (default `gpt-6-astra`),
 `OPENAI_MINUTES_REASONING_EFFORT` (default `high`),
 `OPENAI_MINUTES_TEXT_VERBOSITY` (default `medium`), and
 `OPENAI_MINUTES_TIMEOUT_SECONDS` (default `360`). Do not lower the model merely to reduce
 cost without evaluating representative Post transcripts.
+
+For Astra, use supported reasoning (`low` or higher), not `none` or `minimal`.
+The provider uses Responses with no tools, strict JSON output, and `store: false`;
+do not add sampling/logprob parameters. Existing model overrides remain intentional
+installation choices. See `docs/AGENT_ENVIRONMENT.md` for migration verification limits.
 
 AI drafting runs through Solid Queue and may take several minutes. Production must keep a
 Solid Queue worker active (`SOLID_QUEUE_IN_PUMA=true` in the current single-host profile,

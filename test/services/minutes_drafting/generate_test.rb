@@ -50,7 +50,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     end
 
     assert_predicate @run, :succeeded?
-    assert_equal "gpt-5.6-sol", @run.model
+    assert_equal "gpt-6-astra", @run.model
     assert_equal "high", @run.reasoning_effort
     assert_equal "medium", @run.text_verbosity
     assert_equal MinutesDrafting::Prompt.sha256, @run.prompt_sha256
@@ -260,7 +260,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
       data: { "suggestions" => suggestions },
       provider_response_id: "resp_test",
       provider_request_id: "req_test",
-      model: "gpt-5.6-sol",
+      model: "gpt-6-astra",
       input_tokens: 1_000,
       output_tokens: 200,
       reasoning_tokens: 80,

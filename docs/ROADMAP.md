@@ -371,7 +371,25 @@ audited reopening, and recording membership approval against an exact revision.
 
 - Promote the existing print-ready draft-minutes document into finalized attested and
   official PDFs from immutable revisions after the official lifecycle is correct.
-- Add email distribution and delivery records after final document generation is stable.
+- Add officer action notifications for minutes handoffs, separate from member-facing
+  document distribution:
+  - Commander approval notifies the currently assigned Adjutant that an exact revision is
+    ready to review, reopen for changes, or attest.
+  - Reopening for changes notifies the other responsible officer; subsequent Commander
+    approval sends a fresh Adjutant notification for the new exact revision.
+  - Attestation notifies officers who can record the later membership approval, with an
+    optional configurable reminder after the relevant same-body Meeting has occurred.
+  - Resolve recipients from current dated officer assignments and active, verified login
+    accounts at delivery time. Never hard-code Post 165 people or addresses.
+  - Keep restricted transcript and working-minutes content out of email. Identify the
+    Meeting, explain the requested action in plain language, and link back to the signed-in
+    officer workspace.
+  - Deduplicate by lifecycle transition, revision, recipient, and notification purpose;
+    suppress stale reminders after the record advances or reopens; and expose delivery or
+    retry state through the existing Jobs ledger.
+- Add member-facing email distribution and delivery records after final document
+  generation is stable. Do not treat officer action notifications as distribution of the
+  official record.
 - Draft-minutes, approval, and attestation API/handbook parity are complete. Reopening and
   membership-approval recording currently require the signed-in website. Add delegated
   membership-approval and amendment surfaces only with the same exact capability,

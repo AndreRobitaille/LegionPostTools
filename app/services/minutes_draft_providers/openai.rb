@@ -1,6 +1,6 @@
 module MinutesDraftProviders
   class Openai
-    MODEL = ENV.fetch("OPENAI_MINUTES_MODEL", "gpt-5.6-sol")
+    MODEL = ENV.fetch("OPENAI_MINUTES_MODEL", "gpt-6-astra")
     REASONING_EFFORT = ENV.fetch("OPENAI_MINUTES_REASONING_EFFORT", "high")
     TEXT_VERBOSITY = ENV.fetch("OPENAI_MINUTES_TEXT_VERBOSITY", "medium")
     TIMEOUT_SECONDS = Integer(ENV.fetch("OPENAI_MINUTES_TIMEOUT_SECONDS", "360"))

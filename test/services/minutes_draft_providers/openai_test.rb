@@ -23,7 +23,7 @@ class MinutesDraftProviders::OpenaiTest < ActiveSupport::TestCase
       :completed,
       JSON.generate(suggestions: []),
       "resp_123",
-      "gpt-5.6-sol",
+      "gpt-6-astra",
       usage,
       "req_123"
     )
@@ -35,7 +35,7 @@ class MinutesDraftProviders::OpenaiTest < ActiveSupport::TestCase
       safety_identifier: "safe-user"
     )
 
-    assert_equal "gpt-5.6-sol", responses.parameters[:model]
+    assert_equal "gpt-6-astra", responses.parameters[:model]
     assert_equal({ effort: "high" }, responses.parameters[:reasoning])
     assert_equal false, responses.parameters[:store]
     assert_equal [], responses.parameters[:tools]
@@ -44,6 +44,7 @@ class MinutesDraftProviders::OpenaiTest < ActiveSupport::TestCase
     assert_equal :medium, responses.parameters.dig(:text, :verbosity)
     assert_equal :json_schema, responses.parameters.dig(:text, :format, :type)
     assert_equal true, responses.parameters.dig(:text, :format, :strict)
+    assert_empty responses.parameters.keys & %i[temperature top_p top_logprobs logprobs prompt_cache_retention]
     assert_equal "req_123", result.provider_request_id
     assert_equal 75, result.reasoning_tokens
   end

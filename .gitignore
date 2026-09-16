@@ -72,6 +72,8 @@ yarn-debug.log*
 /docs/superpowers/
 !/docs/superpowers/
 /docs/superpowers/*
+!/docs/superpowers/AGENTS.md
+!/docs/superpowers/CLAUDE.md
 !/docs/superpowers/specs/
 /docs/superpowers/specs/*
 !/docs/superpowers/specs/2026-08-30-roster-managed-user-access-design.md

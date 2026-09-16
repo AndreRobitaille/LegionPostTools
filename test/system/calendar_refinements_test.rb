@@ -127,6 +127,7 @@ Setup begins before the doors open; see the organizer for details.")
     assert_selector ".calendar-event-type", text: /Public events/i
     assert_no_selector ".calendar-event-timezone"
     assert_no_text "America/Chicago"
+    assert_no_text "Date only"
     page.save_screenshot("/tmp/calendar-detail-date-only-mobile.png")
   end
 end

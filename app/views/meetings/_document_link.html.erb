@@ -1,0 +1,9 @@
+<%= link_to path, class: "meeting-document-card" do %>
+  <svg class="meeting-document-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M8 12h8M8 16h6"/></svg>
+  <span class="meeting-document-copy">
+    <span class="meeting-document-title"><%= title %></span>
+    <span class="meeting-document-status"><%= status %></span>
+    <% if note.present? %><span class="meeting-document-note"><%= note %></span><% end %>
+  </span>
+  <span class="meeting-document-open">Open <span aria-hidden="true">→</span></span>
+<% end %>

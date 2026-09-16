@@ -79,7 +79,7 @@ and completed_by_id. Public previews expose only the documented safe field allow
 JSON fields are top-level, consistent with the private API. Dates are strict YYYY-MM-DD.
 Timed events use ISO 8601 datetimes with an explicit offset or Z. Date-only events use
 `all_day: true` and YYYY-MM-DD starts_at/ends_at; local midnight and inclusive end-of-day
-storage match the UI. The schedule and details display “Date only”; month blocks omit it. Explain unknown times in the description.
+storage match the UI. Member views omit time metadata for date-only events. Explain unknown times in the description.
 Dates normalize in the Post's saved timezone, which responses identify. Do not
 invent times, infer event dates from project deadlines, or publish private logistics.
 When switching all_day mode, send both starts_at and ends_at (null is allowed for end).

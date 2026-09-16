@@ -7,34 +7,36 @@
     <%= render "shared/meeting_date_plate", meeting: @meeting %>
     <div>
       <p class="meeting-record-kicker"><%= @meeting.starts_at >= Time.zone.today.beginning_of_day ? "Scheduled meeting" : "Meeting record" %></p>
-      <h1 class="page-title"><%= @meeting.title %></h1>
+      <h1 class="page-title"><%= member_meeting_title(@meeting) %></h1>
       <p class="page-sub"><%= @meeting.meeting_body.name %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
     </div>
   </header>
 
   <dl class="meeting-facts">
     <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
-    <div><dt>Documents</dt><dd>
-      <% if @member_minutes %>
-        <%= link_to(@member_minutes.membership_approved? ? "Read official minutes" : "Read minutes awaiting membership approval", meeting_minutes_path(@meeting), class: "meeting-document-link") %>
-        <% if @member_minutes.membership_approved? %>
-          <span class="meeting-document-note"><%= @member_minutes.membership_approval.disposition_label %> at <%= @member_minutes.membership_approval.approving_meeting.title %>.</span>
-        <% elsif @member_minutes.reopened? || @member_minutes.approved? %>
-          <span class="meeting-document-note">A correction is being prepared. The last attested revision remains available.</span>
-        <% else %>
-          <span class="meeting-document-note">Attested by <%= @member_minutes.member_revision.attestation.attester_name %>. Membership approval has not yet been recorded.</span>
-        <% end %>
-        <% if @published_agenda %><%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-secondary" %><% end %>
-      <% elsif @published_agenda %>
-        <%= link_to "Read the published agenda", dated_agenda_path(@published_agenda), class: "meeting-document-link" %>
-        <% if @meeting.starts_at < Time.zone.today.beginning_of_day %>
-          <span class="meeting-document-note">Minutes have not been published yet.</span>
-        <% end %>
-      <% elsif @meeting.starts_at < Time.zone.today.beginning_of_day %>
-        <span>No agenda was published for this meeting.</span>
-      <% else %>
-        <span>The agenda has not been published yet.</span>
-      <% end %>
-    </dd></div>
   </dl>
+  <section class="meeting-documents" aria-labelledby="meeting-documents-heading">
+    <h2 id="meeting-documents-heading">Documents</h2>
+    <div class="meeting-document-list">
+      <% if @member_minutes %>
+        <% note = nil %>
+        <% if @member_minutes.membership_approved? %>
+          <% status = "Official record" %>
+          <% note = "#{@member_minutes.membership_approval.disposition_label} at #{@member_minutes.membership_approval.approving_meeting.title}." %>
+        <% else %>
+          <% status = "Awaiting membership approval" %>
+          <% note = "A correction is being prepared. The last attested revision remains available." if @member_minutes.reopened? || @member_minutes.approved? %>
+        <% end %>
+        <%= render "document_link", title: "Minutes", status: status, note: note, path: meeting_minutes_path(@meeting) %>
+      <% end %>
+      <% if @published_agenda %>
+        <%= render "document_link", title: "Agenda", status: "Published", note: nil, path: dated_agenda_path(@published_agenda) %>
+      <% end %>
+    </div>
+    <% if !@member_minutes && @meeting.starts_at < Time.zone.today.beginning_of_day %>
+      <p class="meeting-document-unavailable"><%= @published_agenda ? "Minutes have not been published yet." : "No agenda or minutes have been published for this meeting." %></p>
+    <% elsif !@member_minutes && !@published_agenda %>
+      <p class="meeting-document-unavailable">The agenda has not been published yet.</p>
+    <% end %>
+  </section>
 </article>

@@ -65,7 +65,8 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Open Meeting"
-    assert_select ".meeting-facts", text: /agenda has not been published yet/i
+    assert_select ".meeting-document-unavailable", text: /agenda has not been published yet/i
+    assert_select ".meeting-document-card", count: 0
   end
 
   test "past meeting retains the agenda link and identifies missing minutes" do
@@ -77,8 +78,8 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     get meeting_path(agenda.meeting)
 
     assert_response :success
-    assert_select "a[href='#{dated_agenda_path(agenda)}']", text: /Read the published agenda/
-    assert_select ".meeting-document-note", text: /Minutes have not been published yet/
+    assert_select "a[href='#{dated_agenda_path(agenda)}']", text: /Agenda.*Published.*Open/m
+    assert_select ".meeting-document-unavailable", text: /Minutes have not been published yet/
   end
 
   test "attested revision is member visible while still awaiting membership approval" do
@@ -95,7 +96,7 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
 
     get meeting_path(meeting)
     assert_response :success
-    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /minutes awaiting membership approval/i
+    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /Minutes.*Awaiting membership approval.*Open/m
 
     get meeting_minutes_path(meeting)
     assert_response :success
@@ -130,6 +131,9 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
       )
     )
     sign_in_as(@user)
+
+    get meeting_path(meeting)
+    assert_select ".meeting-document-card", text: /Minutes.*Official record.*Approved as corrected.*September Membership/m
 
     get meeting_minutes_path(meeting)
 

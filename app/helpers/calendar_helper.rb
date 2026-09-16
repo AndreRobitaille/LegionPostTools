@@ -20,10 +20,9 @@ module CalendarHelper
     calendar_event_path(entry, preview: @month&.public_preview? ? "public" : nil)
   end
 
-  def calendar_entry_time(entry, block: false)
-    return nil if block && entry.is_a?(CalendarEvent) && entry.all_day?
+  def calendar_entry_time(entry)
     return "Due date · not a scheduled event" if entry.is_a?(CalendarDeadline)
-    return "Date only" if entry.is_a?(CalendarEvent) && entry.all_day?
+    return nil if entry.is_a?(CalendarEvent) && entry.all_day?
 
     zone = entry.organization.calendar_time_zone
     starts_at = entry.starts_at.in_time_zone(zone)

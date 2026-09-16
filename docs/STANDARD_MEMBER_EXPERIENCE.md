@@ -145,3 +145,22 @@ inside the signed-in member site; no public website synchronization is active.
 Members read the same schedules and tasks through the private API. Calendar Meeting
 projections contain schedule fields only, not working minutes or draft agenda metadata.
 See `CALENDAR_API.md` for the follow-up API contract and release boundary.
+
+## Meeting detail documents
+
+The member meeting detail uses a dedicated Documents section, separate from place facts.
+Each available document is a full-width link inside the bounded record card, with a
+recognizable document icon, short title (Minutes or Agenda), one status line, and a
+visible Open arrow. Minutes come first when available. Avoid embedding long approval
+sentences in link titles or repeating awaiting-approval text in a second paragraph.
+Attestation identities remain on the minutes themselves. Keep correction notices and
+membership disposition/approving-meeting context visible without adding approval actions.
+Unavailable documents use plain noninteractive text; never expose draft documents.
+
+Visual direction: The 1919 navy (#0A2240) for titles/actions, paper (#FFFDF7) for document
+surfaces, muted slate (#536477) for secondary text, restrained gold (#B58B2A) for the
+section label, and a visible neutral outline. Use system sans at 18px for titles, 16px
+for actions, and 14px for statuses. An inset document icon and right-hand Open arrow
+make the whole row's action evident; hover and keyboard focus reinforce it. Phone rows
+retain the action and wrap status text, with no horizontal overflow. The existing title
+helper suppresses matching date suffixes already shown in the meeting date treatment.

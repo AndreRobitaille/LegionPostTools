@@ -67,7 +67,7 @@ does not infer membership approval merely because time passed or another Meeting
 - Use the OpenAI Responses API with strict structured output, `store: false`, no tools, and
   a replaceable provider boundary. Save local provenance and suggestions, not provider
   conversation state.
-- Use `gpt-5.6-sol` with high reasoning effort as the initial minutes-drafting default.
+- Use `gpt-6-astra` with high reasoning effort as the minutes-drafting default.
   Evaluate other reasoning levels against representative Post transcripts; use Terra or
   Luna for a lower-risk task only after task-specific evidence shows that quality holds.
 - Draft selectively complete minutes, not a skeletal outline and not a transcript. A member
@@ -950,10 +950,10 @@ textbox. Persist prompt version and SHA-256, provider, exact model, request/resp
 token usage, source digest, schema version, requester, timestamps, and terminal status in
 `MinutesDraftRun`.
 
-The initial OpenAI provider sends `model: "gpt-5.6-sol"` and
+The OpenAI provider defaults to `model: "gpt-6-astra"` and
 `reasoning: { effort: "high" }`. Keep model and reasoning selection in provider
 configuration rather than domain records, while recording the effective values on every
-run. Sol is still an untrusted drafting assistant: the source-evidence, missing-fact, and
+run. Astra is still an untrusted drafting assistant: the source-evidence, missing-fact, and
 human-review rules apply regardless of model capability.
 
 ### Suggestion staging

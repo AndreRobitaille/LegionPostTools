@@ -17,7 +17,7 @@
           <dt>When</dt>
           <dd>
             <p class="calendar-event-date"><%= @event.starts_at.strftime("%A") %>, <%= legion_date(@event.starts_at) %><% if @event.ends_at && @event.ends_at.to_date != @event.starts_at.to_date %> – <%= @event.ends_at.strftime("%A") %>, <%= legion_date(@event.ends_at) %><% end %></p>
-            <p class="calendar-event-time"><%= calendar_entry_time(@event) %></p>
+            <% if (time = calendar_entry_time(@event)).present? %><p class="calendar-event-time"><%= time %></p><% end %>
             <% unless @event.all_day? %><p class="calendar-event-timezone">Times in <%= Time.zone.name %></p><% end %>
           </dd>
         </div>

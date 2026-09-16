@@ -128,6 +128,10 @@ public event screenshots. No horizontal overflow at 390px; event type is above t
 timezone is absent for date-only events, and member pages have no edit action. Focused
 Ruby lint and diff whitespace checks pass.
 
+Date-only event presentation now shows the date without an extra “Date only” label in
+details, schedule, or linked Endeavor activity. Omit empty time rows and separators; keep
+the explicit date-only option in the editing form, where it is a scheduling choice.
+
 ## Mobile schedule refinement — September 6, 2026
 
 Use the dashboard's event cues for the calendar schedule: paper cards, a category-colored

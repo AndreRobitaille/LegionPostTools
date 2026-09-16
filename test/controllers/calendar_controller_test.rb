@@ -37,6 +37,8 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     @event.update!(all_day: true)
     get calendar_event_path(@event)
     assert_select ".calendar-event-timezone", count: 0
+    assert_select ".calendar-event-time", count: 0
+    assert_no_match(/Date only/, response.body)
     assert_select "a[href=?]", edit_calendar_event_path(@event), count: 0
   end
 
