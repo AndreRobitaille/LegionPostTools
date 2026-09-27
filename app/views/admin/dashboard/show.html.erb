@@ -3,14 +3,14 @@
 
 <div class="page-lead">
   <h1 class="page-title"><%= admin_area_name %></h1>
-  <p class="page-sub"><%= technical_admin ? "Everything that keeps the post’s tools running." : "Meeting preparation and records for your Post duties." %></p>
+  <p class="page-sub"><%= technical_admin ? "Everything that keeps the post’s tools running." : "Tools for your assigned Post duties." %></p>
 </div>
 
 <% unless technical_admin %>
-  <% role_summary = current_user.person.active_role_labels.to_sentence.presence || "Meeting and records duties" %>
+  <% role_summary = current_user.person.active_role_labels.to_sentence.presence || "Assigned Post duties" %>
   <aside class="officer-workspace-context" aria-label="Officer access boundary">
     <p><span>Scoped officer access</span> <%= role_summary %></p>
-    <strong>Meeting and records tools are available for your duties.</strong>
+    <strong>Tools are available for your assigned Post duties.</strong>
     <small>Account, permission, and system settings remain with application administrators.</small>
   </aside>
 <% end %>
@@ -144,4 +144,8 @@
       </div>
     </div>
   </section>
+<% end %>
+
+<% if current_user.can?("publish_public_content") %>
+  <section class="hub-sec"><h2 class="hub-sec-h">Public website</h2><p>Review introductions, portraits and activities before visitors see them.</p><%= link_to "Open public website publishing →", admin_website_publications_path, class: "btn-primary" %></section>
 <% end %>

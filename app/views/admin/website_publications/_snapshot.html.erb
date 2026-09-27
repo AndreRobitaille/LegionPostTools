@@ -1,0 +1,14 @@
+<% if publication.published? %>
+  <% snapshot = publication.snapshot %>
+  <h3><%= snapshot["display_name"] || snapshot["title"] %></h3>
+  <% if publication.story? %>
+    <%= image_tag portrait_admin_website_publication_path(publication, revision: snapshot["portrait_revision"], size: "small"), alt: snapshot["portrait_alt"], width: 320, height: 400, class: "publishing-portrait" %>
+    <% %w[introduction story conversation_starter].each do |field| %><p class="publishing-text"><%= snapshot[field] %></p><% end %>
+  <% else %>
+    <p class="publishing-text"><%= snapshot["description"] %></p>
+    <p class="form-help"><%= snapshot["all_day"] ? "All day; the last date is included." : "Times in #{Time.zone.tzinfo.identifier}" %></p>
+    <dl class="publishing-facts"><dt>Starts</dt><dd><%= website_event_start(snapshot) %></dd><dt>Ends</dt><dd><%= website_event_end(snapshot) %></dd><dt>Location</dt><dd><%= snapshot["location"] || "Not specified" %></dd><dt>Status</dt><dd><%= snapshot["cancelled"] ? "Cancelled" : "Active" %></dd></dl>
+  <% end %>
+<% else %>
+  <p class="empty">This <%= publication.story? ? "introduction" : "event" %> is not currently public.</p>
+<% end %>

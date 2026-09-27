@@ -253,3 +253,18 @@ and completion actor/time. API bearer writes also retain the existing AgentApiEx
 provenance and idempotency controls. Calendar publication flags do not grant access to
 private project context or official documents. Public preview is authenticated and uses
 an explicit allowlist. See `CALENDAR_API.md` for the endpoint contract.
+
+## Public website publishing
+
+`publish_public_content` allows drafting public introductions, preparing their
+portraits, recording consent, reviewing event eligibility, publishing/withdrawing
+content, and choosing up to three homepage introductions. It is available as an
+explicit user grant or current office-derived grant, and is **not** implied by
+`manage_settings`. This migration gives it to nobody. Grant selection and real
+publication remain the installation owner's decisions.
+
+A publisher may write public event wording and review eligibility without editing
+the source calendar. Dates and location remain source-owned. Calendar managers
+may cancel or restrict public output without acquiring publication authority;
+ordinary calendar edits never restore withdrawn content. See
+[Public publishing](PUBLIC_PUBLISHING.md) for the review and consent boundary.

@@ -62,7 +62,19 @@ module Api
       def calendar_event_payload(event, public_preview: false)
         return event.public_calendar_attributes if public_preview
 
-        event.attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "visibility", "endeavor_id", "lock_version", "created_by_id", "updated_by_id", "created_at", "updated_at", "calendar_category").merge("category" => CalendarCategories.for(event))
+        event.attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "visibility", "endeavor_id", "lock_version", "created_by_id", "updated_by_id", "created_at", "updated_at", "calendar_category", "website_designation").merge(
+          "category" => CalendarCategories.for(event),
+          "website_publication" => website_publication_status(event))
+      end
+
+      def website_publication_status(event)
+        publication = event.website_publication
+        return { status: "unpublished", publishing_permission: "publish_public_content" } unless publication
+
+        { status: publication.status, pending_calendar_changes: publication.pending_source_changes?,
+          published_event: publication.published? ? publication.snapshot : nil,
+          review_path: "/admin/website_publications/#{publication.id}/edit",
+          publishing_permission: "publish_public_content" }
       end
 
       def endeavor_task_payload(task)

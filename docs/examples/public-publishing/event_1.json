@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "timezone": "America/Chicago",
+  "event": {
+    "id": "25c4f6c0516d8190de4f1a1dcd2dabe2",
+    "title": "Synthetic all-day activity",
+    "all_day": true,
+    "ends_at": null,
+    "category": "public_event",
+    "location": "Example hall (not a real event)",
+    "cancelled": true,
+    "starts_at": null,
+    "starts_on": "2026-10-10",
+    "updated_at": "2026-09-27T18:31:40.943459Z",
+    "description": "Synthetic event for integration testing only.",
+    "ends_on_exclusive": "2026-10-12"
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "featured": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"c2a9f91f4be1e5b04b333fa2ad7aaaf924eaec2094c1b498176e25a5925ca647\""
+    },
+    "bytes": 926
+  },
+  "featured_conditional": {
+    "status": 304,
+    "headers": {
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"c2a9f91f4be1e5b04b333fa2ad7aaaf924eaec2094c1b498176e25a5925ca647\""
+    },
+    "bytes": 0
+  },
+  "featured_head": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"c2a9f91f4be1e5b04b333fa2ad7aaaf924eaec2094c1b498176e25a5925ca647\""
+    },
+    "bytes": 0
+  },
+  "story_0": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"c4bfaa20d1ec8873c86c1bf7ebf9b54a33615ca01cb2c8bf10072404d5e4bb1c\""
+    },
+    "bytes": 907
+  },
+  "portrait_0_small": {
+    "status": 200,
+    "headers": {
+      "content-type": "image/webp",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"a98813c4eb639c3e779e0758a250851f250805f30d511356c9dca5d3bd45f782\""
+    },
+    "bytes": 306
+  },
+  "portrait_0_small_conditional": {
+    "status": 304,
+    "headers": {
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"a98813c4eb639c3e779e0758a250851f250805f30d511356c9dca5d3bd45f782\""
+    },
+    "bytes": 0
+  },
+  "portrait_0_small_head": {
+    "status": 200,
+    "headers": {
+      "content-type": "image/webp",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"a98813c4eb639c3e779e0758a250851f250805f30d511356c9dca5d3bd45f782\""
+    },
+    "bytes": 0
+  },
+  "portrait_0_large": {
+    "status": 200,
+    "headers": {
+      "content-type": "image/webp",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"e394a0391dcecd35ad6380c1001dee4c20e2bd080e4de152c2b661f28fa2be99\""
+    },
+    "bytes": 990
+  },
+  "portrait_0_large_conditional": {
+    "status": 304,
+    "headers": {
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"e394a0391dcecd35ad6380c1001dee4c20e2bd080e4de152c2b661f28fa2be99\""
+    },
+    "bytes": 0
+  },
+  "portrait_0_large_head": {
+    "status": 200,
+    "headers": {
+      "content-type": "image/webp",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"e394a0391dcecd35ad6380c1001dee4c20e2bd080e4de152c2b661f28fa2be99\""
+    },
+    "bytes": 0
+  },
+  "events": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"ec05a9be0cf217a1f23261fbe16542354e44b888abe6b38d55f95b0c68b360f6\""
+    },
+    "bytes": 900
+  },
+  "event_0": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"9cfc556d6d4614aae5916ed9d6a92e8d521c0a2c0285d83e90ba5654328b6f7f\""
+    },
+    "bytes": 466
+  },
+  "event_1": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "cache-control": "max-age=300, public, must-revalidate",
+      "date": "Sun, 27 Sep 2026 18:37:27 GMT",
+      "age": "0",
+      "etag": "\"f5d81e22914f65d827b7e36d13fb19a81efcb8bfe561554bfad1ca696042e9b0\""
+    },
+    "bytes": 434
+  },
+  "not_found": {
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "bytes": 71
+  },
+  "invalid_interval": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
+    },
+    "bytes": 119
+  }
+}

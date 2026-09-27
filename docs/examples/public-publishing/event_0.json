@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "timezone": "America/Chicago",
+  "event": {
+    "id": "276ea3be9c47c3342f0f1c28b8a38f72",
+    "title": "Synthetic public gathering",
+    "all_day": false,
+    "ends_at": "2026-10-03T20:00:00-05:00",
+    "category": "public_event",
+    "location": "Example hall (not a real event)",
+    "cancelled": false,
+    "starts_at": "2026-10-03T18:00:00-05:00",
+    "starts_on": null,
+    "updated_at": "2026-09-27T18:31:40.912999Z",
+    "description": "Synthetic event for integration testing only.",
+    "ends_on_exclusive": null
+  }
+}

@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+require "uri"
+Dir.chdir(File.expand_path("..", __dir__))
+ENV["RAILS_ENV"] = "test"
+ENV["DATABASE_URL"] = "postgresql:///legion_post_tools_publisher_demo_test"
+port = Integer(ENV.fetch("PUBLISHER_DEMO_PORT", "3105"))
+ENV["PUBLIC_PUBLISHER_ORIGIN"] ||= "http://localhost:#{port}"
+ENV["RAILS_MAX_THREADS"] ||= "5"
+case ARGV.first
+when "prepare"
+  abort "Database preparation failed" unless system("bin/rails", "db:prepare")
+  exec("bin/rails", "runner", "script/publisher_demo.rb")
+when "serve"
+  exec("bin/rails", "server", "-b", "0.0.0.0", "-p", port.to_s, "--pid", "tmp/pids/publisher-demo-#{port}.pid")
+when "login"
+  # The usual short-lived magic-link flow, scoped to the synthetic editor only.
+  exec("bin/rails", "runner", 'raise "Wrong database" unless ActiveRecord::Base.connection_db_config.database == "legion_post_tools_publisher_demo_test"; user = User.find_by!(email_address: "publisher-demo@example.test"); puts "#{ENV.fetch("PUBLIC_PUBLISHER_ORIGIN")}/session/magic_link?token=#{MagicLink.create_for!(user).token}"')
+else
+  abort "Usage: bin/publisher-demo prepare|serve|login"
+end

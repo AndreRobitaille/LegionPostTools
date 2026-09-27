@@ -47,6 +47,7 @@ module Api
 
     def destroy
       @event.lock_version = activity_lock_version!(@event)
+      @event.website_restriction_actor = current_user
       @event.destroy!
       head :no_content
     rescue ActiveRecord::RecordNotDestroyed
@@ -64,6 +65,10 @@ module Api
     end
 
     def assign_event_attributes
+      if params.key?(:website_designation)
+        raise ArgumentError, "Only internal designation may be set through the calendar API." unless params[:website_designation] == "internal"
+        @event.website_designation = "internal"
+      end
       @event.assign_attributes(params.permit(:calendar_category, :title, :description, :location, :visibility))
       if params.key?(:endeavor_id)
         @event.endeavor = params[:endeavor_id].present? ? organization.endeavors.find(params[:endeavor_id]) : nil

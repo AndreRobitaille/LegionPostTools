@@ -290,3 +290,26 @@ For deployment-specific checks, also confirm:
 - a passkey sign-in works at `APP_HOST`
 - storage survives a container restart
 - restore rehearsal evidence exists for the install
+
+## Public publishing configuration
+
+The anonymous publishing API uses `PUBLIC_PUBLISHER_ORIGIN` for absolute portrait
+URLs, falling back to `https://` plus the existing `APP_HOST`. Use one HTTPS origin
+without a trailing slash or path. A missing/invalid configuration yields a no-store
+503; it does not invent an empty collection. `PUBLIC_PUBLISHER_UNAVAILABLE=1` is an
+optional maintenance switch that also returns no-store 503 with Retry-After: 60.
+
+The publishing migration creates no grants or published content. The installation
+owner must separately authorize initial `publish_public_content` user or office
+grants and real content publication. `manage_settings` does not imply publishing.
+No change to private authentication, public-site credentials, or CORS is required.
+
+Do not configure a proxy/CDN to cache beyond the API's remaining 300-second age,
+serve stale on failure, cache errors, or route portraits around Rails. Portraits
+are private database WebP renditions, not public Active Storage originals. Account
+for this small bounded media storage in ordinary PostgreSQL backups. Current
+portrait input limits are 10 MiB / 40 megapixels; no original upload is retained.
+
+Local synthetic access, consumer accommodation, and verification are documented
+in [the publisher handoff](PUBLIC_PUBLISHING_HANDOFF.md). Production proxy/TLS
+behavior and live publication remain separate release verification work.

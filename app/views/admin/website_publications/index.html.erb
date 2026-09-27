@@ -1,0 +1,32 @@
+<% content_for :title, "Public website" %>
+<div class="page-lead"><h1 class="page-title">Public website</h1><p class="page-sub">Introduce your Post and share approved activities with visitors.</p></div>
+<section class="panel publishing-panel">
+  <h2 class="section-title">Introductions</h2>
+  <p>Save a working draft, review consent and the portrait, then publish. Removing an introduction from the homepage keeps its published story available.</p>
+  <%= button_to "Write an introduction", admin_website_publications_path, class: "btn-primary" %>
+  <% @stories.each do |publication| %>
+    <div class="publishing-row"><%= link_to publication.draft["display_name"].presence || "Untitled introduction", edit_admin_website_publication_path(publication) %><span><%= publication.status.humanize %></span></div>
+  <% end %>
+  <% if @stories.empty? %><p class="empty">No introductions yet. Start with approved text and a portrait the person has agreed to share.</p><% end %>
+</section>
+<section class="panel publishing-panel">
+  <h2 class="section-title">Homepage order</h2>
+  <%= form_with url: feature_admin_website_publications_path, class: "stacked-form" do |form| %>
+    <% @stories.each do |publication| %><%= hidden_field_tag "versions[#{publication.id}]", publication.lock_version %><% end %>
+    <% 3.times do |index| %>
+      <div class="fl"><%= label_tag "featured_#{index}", "Introduction #{index + 1}" %><%= select_tag "ids[]", options_for_select([["None", ""]] + @stories.select(&:published?).map { |publication| [publication.snapshot["display_name"], publication.public_id] }, @stories.find { |publication| publication.featured_position == index + 1 }&.public_id), id: "featured_#{index}", class: "f" %></div>
+    <% end %>
+    <%= form.submit "Update homepage order", class: "btn-primary" %>
+  <% end %>
+</section>
+<section class="panel publishing-panel">
+  <h2 class="section-title">Public events</h2>
+  <p>Choose an existing calendar event. Dates and location stay with the calendar; public wording and publication are reviewed here.</p>
+  <%= form_with url: admin_website_publications_path, class: "stacked-form" do |form| %>
+    <div class="fl"><%= form.label :calendar_event_id, "Calendar event" %><%= form.select :calendar_event_id, @calendar_events.map { |event| ["#{event.starts_at.to_date} — #{event.title}", event.id] }, { include_blank: "Choose an event" }, required: true, class: "f" %></div>
+    <%= form.submit "Review for the website", class: "btn-primary" %>
+  <% end %>
+  <% @events.each do |publication| %>
+    <div class="publishing-row"><%= link_to publication.draft["title"].presence || "Untitled event", edit_admin_website_publication_path(publication) %><span><%= publication.pending_source_changes? ? "Calendar changes pending" : publication.status.humanize %></span></div>
+  <% end %>
+</section>

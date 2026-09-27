@@ -212,7 +212,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
 
   test "handbook catalog actions are real routes" do
     AgentHandbook.catalog.each do |action|
-      path = action.fetch(:path).gsub(/:\w+/, "1")
+      path = action.fetch(:path).sub(":size", "small").gsub(/:\w+/, "1")
       recognized = Rails.application.routes.recognize_path(path, method: action.fetch(:method))
       assert recognized[:controller].start_with?("api/"), "#{action[:method]} #{path} should route into Api"
     end

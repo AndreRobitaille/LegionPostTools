@@ -3,6 +3,7 @@ class User < ApplicationRecord
   ROSTER_LOGIN_ENABLED_STATUSES = %w[active grace].freeze
   ROSTER_LOGIN_DISABLED_STATUSES = %w[expired deceased].freeze
   ADMIN_AREA_CAPABILITIES = %w[
+    publish_public_content
     manage_settings
     manage_agendas
     manage_minutes

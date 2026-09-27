@@ -41,6 +41,8 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert_equal "P.O. Box 11\nTwo Rivers, WI 54241", organization.mailing_address
     assert_equal "post165@example.org", organization.public_email
     assert user.can?("manage_settings")
+    assert_not user.can?("publish_public_content")
+    assert_not PositionCapabilityGrant.exists?(capability: "publish_public_content")
     assert_equal 11, organization.position_titles.count
     assert_equal 2, organization.meeting_bodies.count
     assert_equal 1, Installation.count

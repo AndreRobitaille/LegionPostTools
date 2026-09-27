@@ -2418,3 +2418,25 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 @media print { .calendar-schedule-action { display: none; } }
 
 .pdf-omitted-media { font-family: var(--font-sans); font-size: 14px; font-style: italic; overflow-wrap: anywhere; }
+
+/* Public website review uses the same working-screen vocabulary as officer tools. */
+.publishing-review { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.publishing-panel { padding: 24px; margin-bottom: 24px; min-width: 0; overflow-wrap: anywhere; }
+.publishing-panel h3 { font-size: 18px; margin: 20px 0 12px; }
+.publishing-panel p { margin: 12px 0; }
+.publishing-panel .section-title { font-size: 20px; font-weight: 700; color: var(--color-navy); border-bottom: 2px solid var(--rule); padding-bottom: 12px; margin-bottom: 20px; }
+.publishing-panel .fl { gap: 8px; }
+.publishing-panel input, .publishing-panel select, .publishing-panel textarea { max-width: 100%; min-width: 0; font-size: 16px; }
+.publishing-panel textarea { width: 100%; }
+.publishing-panel label, .publishing-panel figcaption { font-size: 14px; }
+.publishing-row { display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.publishing-row span { font-size: 14px; }
+.publishing-text { white-space: pre-wrap; }
+.publishing-portrait { width: 100%; max-width: 320px; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+.publishing-portraits { display: flex; gap: 16px; }
+.publishing-portraits figure { flex: 1; margin: 0; min-width: 0; }
+.publishing-facts dt { font-size: 14px; margin-top: 16px; }
+.publishing-facts dd { margin: 4px 0; }
+@media (max-width: 900px) { .publishing-review { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .publishing-panel { padding: 16px; } .publishing-row { flex-direction: column; gap: 4px; } }
+.publishing-row a { color: var(--color-navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

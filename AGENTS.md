@@ -158,6 +158,9 @@ reset development data. Simplicity guidance does not waive authorization or audi
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
 - `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, Four Pillars, Legion Family, source authority, and AI interpretation rules.
+- `docs/PUBLIC_PUBLISHING.md` — reviewed website snapshots, consent, portraits, event eligibility, and editorial authority.
+- `docs/PUBLIC_PUBLISHING_HANDOFF.md` — consumer contract, synthetic test access, examples, and verification.
+- `docs/WEBSITE_PUBLISHING_API.md` — authenticated editorial API, consent and publishing actions, private portraits, and agent handbook.
 - `docs/CALENDAR_API.md` — private calendar/activity endpoints, field semantics, permission matching, and safe public projection.
 - `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.

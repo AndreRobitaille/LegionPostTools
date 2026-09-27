@@ -14,7 +14,7 @@ class AgentOperatorInstructions
       - Routine terminal API: use the named agent token from this computer's secure credential storage. Never paste the token into chat, URLs, command history, or logs. Other Bots on this computer may be able to use credentials stored there.
       - At the start of every working session, read `#{@base_url}/api` in full before changing anything. Re-read it after deployment, role changes, or signing in again because endpoints, grants, and instructions may change. A 401 means the user must sign in again or replace a revoked or expired token.
 
-      Calendar events, Endeavor deadlines, and next steps are separate records. List before creating; retain past activities, avoid invented times, and use only the public-preview projection for future public consumers. Read the current handbook for fields, pagination, locks, and calendar-management permissions.
+      Calendar events, Endeavor deadlines, and next steps are separate records. List before creating; retain past activities and avoid invented times. Public consumers use approved anonymous `/public/v1` snapshots, not authenticated calendar preview or editorial drafts. Website editing requires explicit `publish_public_content`; read `/api` for its consent, review, publication and withdrawal workflow. Publish or record a consent/eligibility decision only on the human's exact instruction. Read the current handbook for fields, pagination, locks, and calendar-management permissions.
 
       Neither a browser session nor an agent token proves fresh human intent for an official-record act.
       Further reading is `/api`, not this note.

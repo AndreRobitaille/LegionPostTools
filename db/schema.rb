@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -131,6 +131,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
     t.datetime "updated_at", null: false
     t.bigint "updated_by_id", null: false
     t.string "visibility", default: "members", null: false
+    t.string "website_designation", default: "unreviewed", null: false
     t.index ["created_by_id"], name: "index_calendar_events_on_created_by_id"
     t.index ["endeavor_id"], name: "index_calendar_events_on_endeavor_id"
     t.index ["organization_id", "starts_at"], name: "index_calendar_events_on_organization_id_and_starts_at"
@@ -403,7 +404,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
     t.index ["session_id"], name: "index_magic_links_on_session_id"
     t.index ["token_digest"], name: "index_magic_links_on_token_digest", unique: true
     t.index ["user_id"], name: "index_magic_links_on_user_id"
-    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying, 'official_minutes_action'::character varying, 'enroll_passkey'::character varying]::text[])", name: "magic_links_purpose_check"
+    t.check_constraint "purpose::text = ANY (ARRAY['sign_in'::character varying::text, 'create_agent_access_token'::character varying::text, 'official_minutes_action'::character varying::text, 'enroll_passkey'::character varying::text])", name: "magic_links_purpose_check"
   end
 
   create_table "meeting_bodies", force: :cascade do |t|
@@ -856,7 +857,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
     t.bigint "user_id", null: false
     t.index ["user_id", "capability"], name: "index_permission_grants_on_user_id_and_capability", unique: true
     t.index ["user_id"], name: "index_permission_grants_on_user_id"
-    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying::text, 'manage_people'::character varying::text, 'manage_meeting_bodies'::character varying::text, 'manage_agendas'::character varying::text, 'manage_minutes'::character varying::text, 'approve_minutes'::character varying::text, 'attest_minutes'::character varying::text, 'record_minutes_approval'::character varying::text, 'view_internal_records'::character varying::text])", name: "permission_grants_capability_check"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying]::text[])", name: "permission_grants_capability_check"
   end
 
   create_table "position_assignments", force: :cascade do |t|
@@ -879,7 +880,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
     t.datetime "updated_at", null: false
     t.index ["position_title_id", "capability"], name: "index_position_capabilities_on_title_and_capability", unique: true
     t.index ["position_title_id"], name: "index_position_capability_grants_on_position_title_id"
-    t.check_constraint "capability::text = ANY (ARRAY['manage_people'::character varying::text, 'manage_meeting_bodies'::character varying::text, 'manage_agendas'::character varying::text, 'manage_minutes'::character varying::text, 'approve_minutes'::character varying::text, 'attest_minutes'::character varying::text, 'record_minutes_approval'::character varying::text, 'view_internal_records'::character varying::text])", name: "position_capability_grants_capability_check"
+    t.check_constraint "capability::text = ANY (ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying]::text[])", name: "position_capability_grants_capability_check"
   end
 
   create_table "position_titles", force: :cascade do |t|
@@ -941,6 +942,52 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
     t.index ["login_access_override"], name: "index_users_on_login_access_override"
     t.index ["person_id"], name: "index_users_on_person_id", unique: true
     t.index ["webauthn_id"], name: "index_users_on_webauthn_id", unique: true
+  end
+
+  create_table "website_portraits", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.binary "large", null: false
+    t.string "revision", null: false
+    t.binary "small", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "website_publication_id", null: false
+    t.index ["revision"], name: "index_website_portraits_on_revision", unique: true
+    t.index ["website_publication_id"], name: "index_website_portraits_on_website_publication_id"
+  end
+
+  create_table "website_publication_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id"
+    t.datetime "created_at", null: false
+    t.jsonb "details", default: {}, null: false
+    t.integer "version", null: false
+    t.bigint "website_publication_id", null: false
+    t.index ["website_publication_id"], name: "index_website_publication_events_on_website_publication_id"
+  end
+
+  create_table "website_publications", force: :cascade do |t|
+    t.bigint "calendar_event_id"
+    t.boolean "consent", default: false, null: false
+    t.text "consent_note"
+    t.datetime "created_at", null: false
+    t.jsonb "draft", default: {}, null: false
+    t.text "eligibility_reason"
+    t.integer "eligibility_source_version"
+    t.integer "featured_position"
+    t.string "kind", null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "organization_id", null: false
+    t.bigint "original_calendar_event_id"
+    t.string "public_id", null: false
+    t.integer "published_source_version"
+    t.jsonb "snapshot", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "updated_at", null: false
+    t.index ["calendar_event_id"], name: "index_website_publications_on_calendar_event_id", unique: true
+    t.index ["organization_id", "featured_position"], name: "website_featured_positions", unique: true, where: "(featured_position IS NOT NULL)"
+    t.index ["organization_id"], name: "index_website_publications_on_organization_id"
+    t.index ["public_id"], name: "index_website_publications_on_public_id", unique: true
+    t.check_constraint "featured_position IS NULL OR featured_position >= 1 AND featured_position <= 3", name: "website_featured_limit"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -1066,4 +1113,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_233000) do
   add_foreign_key "position_titles", "organizations"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "people"
+  add_foreign_key "website_portraits", "website_publications"
+  add_foreign_key "website_publication_events", "website_publications"
+  add_foreign_key "website_publications", "calendar_events"
+  add_foreign_key "website_publications", "organizations"
 end

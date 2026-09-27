@@ -38,7 +38,8 @@ class SetupController < ApplicationController
         user = User.create!(person: person, email_address: email_address, email_verified_at: Time.current)
       end
 
-      PermissionGrant::CAPABILITIES.each do |capability|
+      # Website publication needs a separately chosen editorial grant, even on first setup.
+      PermissionGrant::CAPABILITIES.excluding("publish_public_content").each do |capability|
         PermissionGrant.find_or_create_by!(user: user, capability: capability)
       end
 

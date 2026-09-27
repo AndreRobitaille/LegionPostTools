@@ -33,12 +33,13 @@
     <div class="fl">
       <%= form.label :visibility, "Who can see this event?" %>
       <%= form.select :visibility, CalendarEvent::VISIBILITIES.map { |value, label| [ label, value ] }, {}, class: "f" %>
-      <span class="form-help">Public events are marked for the future public website. Only this event's details will be shared; Endeavor history stays private.</span>
+      <span class="form-help">Public visibility allows a publisher to review this activity for the website. Save does not publish it. Endeavor history stays private.</span>
     </div>
     <div class="fl">
       <%= form.label :endeavor_id, "Related Endeavor (optional)" %>
       <%= form.collection_select :endeavor_id, @endeavors, :id, :title, { include_blank: "No Endeavor — standalone event" }, class: "f" %>
     </div>
+    <% if @event.persisted? %><label class="calendar-checkbox"><%= check_box_tag "calendar_event[website_designation]", "internal", @event.website_designation == "internal" %> Internal Post activity — withdraw from the public website</label><p class="form-help">Only a publisher can approve public eligibility again.</p><% end %>
     <% if @event.persisted? %><label class="calendar-checkbox"><%= form.check_box :cancelled %> This event is cancelled</label><p class="form-help">Keep the event visible with a cancellation notice so members know plans changed.</p><% end %>
     <div class="btnrow"><%= form.submit @event.persisted? ? "Save event" : "Add event", class: "btn-primary" %><%= link_to "Cancel", manage_calendar_path, class: "btn-secondary" %></div>
   <% end %>

@@ -59,6 +59,8 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/CALENDAR.md` — member calendar, visibility, and verified calendar release.
 - `docs/ENDEAVOR_ACTIVITIES.md` — next steps, deadlines, scheduled activities, and seed provenance.
 - `docs/CALENDAR_API.md` — private calendar/activity API fields, permissions, and operator examples.
+- `docs/PUBLIC_PUBLISHING_HANDOFF.md` — anonymous public-site feed, caching contract, and synthetic preview access.
+- `docs/WEBSITE_PUBLISHING_API.md` — authenticated publishing workflow API, consent, portraits, and agent documentation.
 - `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
 - `docs/STANDARD_MEMBER_EXPERIENCE.md` — the implemented member dashboard, Meeting actions,

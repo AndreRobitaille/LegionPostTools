@@ -1,0 +1,58 @@
+<% content_for :title, "Review public content" %>
+<%= link_to "← Public website", admin_website_publications_path, class: "back" %>
+<div class="page-lead"><h1 class="page-title"><%= @publication.story? ? "Review introduction" : "Review public event" %></h1><p class="page-sub">Saving keeps a draft. Publish makes the reviewed version available to visitors.</p></div>
+<div class="publishing-review">
+  <section class="panel publishing-panel">
+    <h2 class="section-title">Working draft</h2>
+    <%= form_with url: admin_website_publication_path(@publication), method: :patch, multipart: true, class: "stacked-form" do |form| %>
+      <%= hidden_field_tag :version, @publication.lock_version %>
+      <% fields = @publication.story? ? WebsitePublication::STORY_FIELDS : WebsitePublication::EVENT_FIELDS %>
+      <% fields.each do |field| %><div class="fl"><%= label_tag "draft_#{field}", field.humanize %><%= text_area_tag "draft[#{field}]", @publication.draft[field], rows: %w[story description].include?(field) ? 6 : 2, maxlength: 20000, class: "f" %></div><% end %>
+      <% if @publication.story? %>
+        <div class="fl"><%= label_tag :portrait, "Portrait" %><%= file_field_tag :portrait, accept: "image/jpeg,image/png,image/webp" %><p class="form-help">JPEG, PNG or WebP, up to 10 MiB. The portrait is cropped from the center. Save to review both sizes before publishing.</p></div>
+      <% end %>
+      <%= form.submit "Save draft", class: "btn-primary" %>
+    <% end %>
+    <% if @publication.story? && @publication.draft["portrait_revision"] %>
+      <h3>Portrait preview</h3>
+      <div class="publishing-portraits"><% %w[small large].each do |size| %><figure><%= image_tag portrait_admin_website_publication_path(@publication, revision: @publication.draft["portrait_revision"], size: size), alt: @publication.draft["portrait_alt"].presence || "Draft portrait", class: "publishing-portrait" %><figcaption><%= size == "small" ? "320 × 400" : "640 × 800" %></figcaption></figure><% end %></div>
+    <% end %>
+    <% if (source = @publication.calendar_event) %>
+      <% schedule = @publication.source_fields %>
+      <h3>Current calendar details</h3>
+      <p><strong><%= source.title %></strong></p><p class="publishing-text"><%= source.description %></p>
+      <p><%= website_event_start(schedule) %> → <%= website_event_end(schedule) %></p>
+      <p><%= source.all_day? ? "All day" : "Times in #{Time.zone.tzinfo.identifier}" %> · <%= source.location.presence || "No location specified" %> · <%= source.cancelled? ? "Cancelled" : "Active" %></p>
+      <p>Visibility: <%= source.visibility %>. Website eligibility: <%= source.website_designation.humanize %>.</p>
+      <%= link_to "Open calendar event", calendar_event_path(source), class: "btn-secondary" %>
+      <% if @publication.pending_source_changes? %><p class="flash flash--alert">Calendar changes are pending. The published version stays in place until you publish again.</p><% end %>
+    <% end %>
+  </section>
+  <section class="panel publishing-panel"><h2 class="section-title">Currently published</h2><%= render "snapshot", publication: @publication %></section>
+</div>
+<section class="panel publishing-panel">
+  <h2 class="section-title"><%= @publication.story? ? "Consent and publication" : "Eligibility and publication" %></h2>
+  <% if @publication.story? %>
+    <p><%= @publication.consent_covers_draft? ? "Consent is recorded for this draft and portrait." : "Confirm that this exact text and portrait are approved by the person before publishing." %></p>
+    <%= form_with url: consent_admin_website_publication_path(@publication), class: "stacked-form" do |form| %>
+      <%= hidden_field_tag :version, @publication.lock_version %>
+      <div class="fl"><%= form.label :note, "Consent record" %><%= form.text_area :note, required: true, class: "f", placeholder: "How and when did the person approve this text and portrait?" %></div>
+      <%= form.submit "Record consent for this draft", class: "btn-secondary" %>
+    <% end %>
+  <% elsif source %>
+    <% if (flag = @publication.title_flag) %><p class="flash flash--alert">The title suggests <%= CalendarCategories::LABELS.fetch(flag) %>. If this is internal Post work, mark it internal.</p><% end %>
+    <%= form_with url: eligibility_admin_website_publication_path(@publication), class: "stacked-form" do |form| %>
+      <%= hidden_field_tag :version, @publication.lock_version %><%= hidden_field_tag :source_version, source.lock_version %>
+      <div class="fl"><%= form.label :reason, "Why is this activity open to the public?" %><%= form.text_area :reason, required: true, class: "f" %></div>
+      <% if flag %><label><%= check_box_tag :resolve_flags, "1" %> The title warning is a false match; my explanation above records why.</label><% end %>
+      <%= form.submit "Approve eligibility", class: "btn-secondary" %>
+    <% end %>
+    <%= button_to "Mark internal and withdraw", internal_admin_website_publication_path(@publication), params: { version: @publication.lock_version, source_version: source.lock_version }, class: "btn-danger" %>
+  <% end %>
+  <div class="btnrow">
+    <% if @publication.story? || source %><%= button_to "Publish reviewed version", publish_admin_website_publication_path(@publication), params: { version: @publication.lock_version, source_version: source&.lock_version }, class: "btn-confirm" %><% end %>
+    <%= button_to "Withdraw", withdraw_admin_website_publication_path(@publication), params: { version: @publication.lock_version }, class: "btn-danger" %>
+    <% if @publication.story? %><%= button_to "Revoke consent and withdraw", withdraw_admin_website_publication_path(@publication), params: { version: @publication.lock_version, revoke_consent: "1" }, class: "btn-danger" %><% end %>
+  </div>
+</section>
+<section class="panel publishing-panel"><h2 class="section-title">Publication history</h2><% @publication.publication_events.order(created_at: :desc, id: :desc).limit(20).each do |event| %><p><%= event.created_at.utc.iso8601 %> · <%= event.action.humanize %> · revision <%= event.version %></p><% end %></section>

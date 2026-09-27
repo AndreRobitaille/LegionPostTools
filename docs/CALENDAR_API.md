@@ -142,3 +142,27 @@ overrides remain readable but use current title/visibility classification. Volun
 is participation, not an event type; Honor Guard does not imply open recruitment.
 
 Event deletion design and verification: `CALENDAR_EVENT_DELETION.md`.
+
+## Separate website publication (local implementation, September 27, 2026)
+
+`/public/v1` serves explicitly reviewed website snapshots, independently of the
+existing private API and its public preview. Public calendar visibility never
+publishes an event by itself. See [Public publishing](PUBLIC_PUBLISHING.md).
+
+Normal private event payloads now add `website_designation` and
+`website_publication`: publication status, `pending_calendar_changes`, the last
+approved `published_event` (or null), the signed-in `review_path`, and the required
+`publish_public_content` permission. Public-preview payloads remain unchanged.
+A missing publication reports `status: unpublished` and the publishing permission.
+
+Calendar create/update accepts `website_designation: internal` only. An internal
+category or designation, private visibility, or authorized deletion immediately
+withdraws any website publication in the same transaction, through either HTML
+or API. Cancellation immediately marks the existing approved snapshot cancelled.
+Clearing cancellation restores only the private calendar: public reinstatement
+requires publishing again. Normal title, description, date and location changes
+remain pending; they do not silently replace approved public content.
+
+Eligibility approval and publication are separate actions in Public website under
+Officer tools, requiring an explicit publishing grant. Calendar-management access
+alone cannot publish or approve eligibility.

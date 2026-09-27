@@ -28,6 +28,7 @@ class CalendarEventsController < ApplicationController
   def update
     @event.assign_attributes(event_params)
     @event.updated_by = current_user
+    @event.website_designation = "internal" if params.dig(:calendar_event, :website_designation) == "internal"
     save_event(:edit, "Calendar event saved.")
   rescue ActiveRecord::StaleObjectError
     redirect_to edit_calendar_event_path(@event), alert: "This event changed elsewhere. Review the latest details before saving again."
@@ -41,6 +42,7 @@ class CalendarEventsController < ApplicationController
     raise ActiveRecord::StaleObjectError.new(@event, "destroy") if version.to_i != @event.lock_version
 
     date = @event.starts_at.to_date
+    @event.website_restriction_actor = current_user
     @event.destroy!
     redirect_to manage_calendar_path(start_date: date), notice: "Calendar event deleted.", status: :see_other
   rescue ActiveRecord::RecordNotDestroyed

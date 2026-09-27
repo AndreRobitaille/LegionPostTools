@@ -16,7 +16,8 @@ class AgentHandbook
     "AI draft runs create reviewable suggestions, not minutes. A person or their delegated agent must explicitly use, edit, or discard each suggestion.",
     "Commander approval and Adjutant attestation are available through this API under Only when asked. Reopening and membership approval currently require the signed-in website; later amendments are not implemented. Do not guess API routes for them.",
     "Calendar events are scheduled activities; Endeavor due_on and next-step due_on are deadlines, not event dates. Never invent times or turn a deadline into an event. Keep home meetings and volunteer logistics members-only unless explicitly authorized otherwise.",
-    "Use the public calendar preview projection for later public synchronization, never the full private event or Endeavor response. The API remains authenticated and no website synchronization is active.",
+    "Public websites consume only anonymous /public/v1 approved snapshots. Authenticated calendar preview is not publishing approval. Never send private event, Endeavor, draft, consent or audit responses to a public consumer.",
+    "Website publishing requires explicit publish_public_content authority. Record supplied human consent and editorial decisions only; never invent consent or publish, withdraw, resolve eligibility, mark internal, or change featured order without the human requesting that exact act.",
     "Always list before creating, so an existing Endeavor is not duplicated. Create or link identity only when the human explicitly directs it."
   ].freeze
 
@@ -55,6 +56,21 @@ class AgentHandbook
   }.freeze
 
   GUIDED_WORKFLOWS = [
+    {
+      name: "prepare_website_publication",
+      capability: "publish_public_content",
+      purpose: "Prepare reviewed member introductions and public-event snapshots for the separate public website.",
+      steps: [
+        "List website publications before creating. Create a story with an empty object, or an event draft with a calendar_event_id from GET /api/calendar_events. One event keeps one permanent publication identity, even after withdrawal.",
+        "Read detail and lock_version. PATCH draft text only; event schedule/location come from the source calendar. A publishing grant does not grant calendar editing authority. Never copy member-only notes into public wording automatically.",
+        "For a story, upload supplied portrait bytes as strict portrait_base64 JSON. Inspect both authenticated rendition paths and complete portrait_alt. Do not fetch arbitrary remote image URLs or infer consent from roster membership.",
+        "On the human's exact instruction, record their consent note for the final story text and portrait, or approve public-event eligibility with source_lock_version and the supplied reason. Resolve a title flag only with an explicit human disposition; stored internal categories cannot be approved.",
+        "Read the latest draft, snapshot, consent coverage, source and versions together. Publish only when explicitly asked, using the returned lock_version and, for events, source.lock_version as source_lock_version. An intervening edit returns 409; refetch and review rather than blindly retrying with newer versions.",
+        "Homepage placement is a separate exact action. GET featured, then PUT the chosen ordered public_ids and complete versions map; an empty public_ids clears the selection. Up to three already published stories are allowed.",
+        "To remove content on instruction, withdraw it; revoke_consent true also revokes consent. Withdrawal accepts an older nonnegative version and keeps identity/history. Never delete and recreate to bypass a restriction.",
+        "Read back the publication and history. Check anonymous /public/v1 when appropriate; public caches can retain a previously approved response for up to 300 seconds. Report pending source edits separately from currently published content."
+      ]
+    },
     {
       name: "backfill_historical_business",
       capability: "manage_agendas",
@@ -223,6 +239,48 @@ class AgentHandbook
   ].freeze
 
   CATALOG = [
+    { name: "list_website_publications", method: "GET", path: "/api/website_publications", capability: "publish_public_content", group: :common,
+      summary: "List private draft, published and withdrawn records in id order. Optional kind=story|event and status=draft|published|withdrawn. limit/offset pagination defaults/max 500. Never expose this response publicly.",
+      example: "GET /api/website_publications?kind=story&limit=100" },
+    { name: "show_website_publication", method: "GET", path: "/api/website_publications/:id", capability: "publish_public_content", group: :common,
+      summary: "Read authored draft, last approved snapshot, consent coverage, source review fields/lock_version, pending changes, private portrait paths and history_path. id is the internal integer; public_id is the anonymous identity.",
+      example: "GET /api/website_publications/1" },
+    { name: "create_website_publication", method: "POST", path: "/api/website_publications", capability: "publish_public_content", group: :common,
+      summary: "Create an empty story draft with {}, or link a current Post calendar event using calendar_event_id. This never publishes or grants eligibility. Duplicate source returns 409. No Person/roster link.",
+      example: "POST /api/website_publications\n{\"calendar_event_id\":12}" },
+    { name: "update_website_publication", method: "PATCH", path: "/api/website_publications/:id", capability: "publish_public_content", group: :common,
+      summary: "Save authored text under draft with lock_version. Story fields: display_name, introduction, story, conversation_starter, portrait_alt. Event fields: title, description. Strings only, at most 20000 characters each; empty string clears. No HTML conversion. Editing leaves the approved snapshot unchanged and can invalidate consent coverage.",
+      example: "PATCH /api/website_publications/1\n{\"lock_version\":0,\"draft\":{\"display_name\":\"Avery (fictional)\",\"introduction\":\"A synthetic introduction.\"}}" },
+    { name: "upload_website_portrait", method: "POST", path: "/api/website_publications/:id/portrait", capability: "publish_public_content", group: :common,
+      summary: "Upload portrait_base64 (strict base64, no data URL) plus lock_version. JPEG/PNG/WebP at most 10 MiB, minimum 320x400, dimensions at most 12000 and 40 megapixels. Generates centered 320x400 and 640x800 WebP crops; no original retained. Re-read consent coverage afterward.",
+      example: "POST /api/website_publications/1/portrait\n{\"lock_version\":1,\"portrait_base64\":\"<base64 image bytes>\"}" },
+    { name: "read_website_portrait", method: "GET", path: "/api/website_publications/:id/portrait/:revision/:size.webp", capability: "publish_public_content", group: :common,
+      summary: "Read private small or large image/webp rendition from draft_portrait or snapshot_portrait paths. Requires publishing authority; no-store. Public consumers use the anonymous current-approved portrait URL.",
+      example: "GET /api/website_publications/1/portrait/<revision>/small.webp" },
+    { name: "read_website_publication_history", method: "GET", path: "/api/website_publications/:id/history", capability: "publish_public_content", group: :common,
+      summary: "Read append-only publication_events with action, actor_id, version, details and created_at. Bearer-originated actions include details.delegated_agent token_id/name, never credentials. limit/offset pagination defaults/max 500.",
+      example: "GET /api/website_publications/1/history?limit=100" },
+    { name: "read_featured_website_publications", method: "GET", path: "/api/website_publications/featured", capability: "publish_public_content", group: :common,
+      summary: "Read ordered public_ids and complete versions map keyed by internal story id, including unfeatured and withdrawn stories. Use this exact review state for replacement.",
+      example: "GET /api/website_publications/featured" },
+    { name: "confirm_website_publication_consent", method: "POST", path: "/api/website_publications/:id/consent", capability: "publish_public_content", group: :only_when_asked,
+      summary: "Record human-supplied note (required, at most 2000 characters) and lock_version for consent covering this exact story draft and portrait. Never invent consent. Text/portrait edits require a renewed decision.",
+      example: "POST /api/website_publications/1/consent\n{\"lock_version\":2,\"note\":\"Synthetic test content only; human supplied consent evidence goes here.\"}" },
+    { name: "approve_website_publication_eligibility", method: "POST", path: "/api/website_publications/:id/eligibility", capability: "publish_public_content", group: :only_when_asked,
+      summary: "Event only: lock_version, source_lock_version, reason (required, at most 2000 characters), optional resolve_flags boolean default false. Source must be public and have no stored internal category. A title warning requires explicit resolve_flags true and human disposition. This changes source.lock_version; re-read before publishing.",
+      example: "POST /api/website_publications/2/eligibility\n{\"lock_version\":0,\"source_lock_version\":0,\"reason\":\"Human confirmed this synthetic activity is open to the public.\",\"resolve_flags\":false}" },
+    { name: "mark_website_publication_internal", method: "POST", path: "/api/website_publications/:id/internal", capability: "publish_public_content", group: :only_when_asked,
+      summary: "Event only: mark the source internal and withdraw its publication atomically. Requires lock_version and source_lock_version. Public visibility alone cannot restore publication.",
+      example: "POST /api/website_publications/2/internal\n{\"lock_version\":3,\"source_lock_version\":2}" },
+    { name: "publish_website_publication", method: "POST", path: "/api/website_publications/:id/publish", capability: "publish_public_content", group: :only_when_asked,
+      summary: "Publish the exact reviewed draft with lock_version and, for events, source_lock_version. Requires exact-draft story consent and portrait or public-event eligibility. No automatic scheduling/republishing. Schedule/location edits stay pending; restrictions suppress immediately and cancellation remains until explicit republish.",
+      example: "POST /api/website_publications/2/publish\n{\"lock_version\":1,\"source_lock_version\":1}" },
+    { name: "withdraw_website_publication", method: "POST", path: "/api/website_publications/:id/withdraw", capability: "publish_public_content", group: :only_when_asked,
+      summary: "Withdraw with lock_version; optional revoke_consent JSON boolean defaults false. Restrictive removal permits an older version of this identity, but rejects future versions. Clears homepage placement, keeps identity and audit, and blocks old Publish requests.",
+      example: "POST /api/website_publications/1/withdraw\n{\"lock_version\":3,\"revoke_consent\":true}" },
+    { name: "feature_website_publications", method: "PUT", path: "/api/website_publications/featured", capability: "publish_public_content", group: :only_when_asked,
+      summary: "Replace homepage order with zero to three distinct published story public_ids and complete versions from GET featured (integer values keyed by internal id). [] clears. New/changed stories make the review stale (409). This does not publish drafts.",
+      example: "PUT /api/website_publications/featured\n{\"public_ids\":[\"<public_id>\"],\"versions\":{\"1\":4,\"3\":0}}" },
     { name: "list_people", method: "GET", path: "/api/people", capability: nil, group: :common,
       summary: "List the signed-in Post member directory with names, current roles, email addresses, and phone numbers. Optional q filters names.",
       example: "GET /api/people\nGET /api/people?q=Smith" },
@@ -401,7 +459,7 @@ class AgentHandbook
       summary: "Create a standalone or Endeavor-linked event. Fields: title, description, location, calendar_category, endeavor_id, visibility (members default), all_day, starts_at, ends_at, cancelled. Uses the website calendar-manager policy, not manual manage_agendas alone. Dates/times follow activity_fields. Optional calendar_category: officer_meeting, honor_guard, planning_meeting, member_meeting, other; null uses conservative name-based classification, then public visibility. Public events is derived; volunteering is not an event type.",
       example: "POST /api/calendar_events\n{\"title\":\"Volunteer planning\",\"endeavor_id\":1,\"starts_at\":\"2026-09-08T17:30:00-05:00\",\"visibility\":\"members\"}" },
     { name: "update_calendar_event", method: "PATCH", path: "/api/calendar_events/:id", capability: nil, calendar_management: true, group: :common,
-      summary: "Edit event fields with required last-read lock_version. cancelled true cancels; false restores. Null clears end or Endeavor link. Changing all_day requires starts_at and ends_at (null allowed). Delete only when the human explicitly requests removal of this exact event.",
+      summary: "Edit event fields with required last-read lock_version. cancelled true also immediately cancels an approved website snapshot; false restores only the private calendar until a publisher explicitly republishes. website_designation accepts internal only and withdraws any website publication. Private visibility, stored internal categories, and deletion also withdraw it. Schedule and location edits remain pending for public publication. Null clears end or Endeavor link. Changing all_day requires starts_at and ends_at (null allowed). Delete only when the human explicitly requests removal of this exact event.",
       example: "PATCH /api/calendar_events/1\n{\"lock_version\":0,\"cancelled\":true}" },
     { name: "list_endeavor_tasks", method: "GET", path: "/api/endeavors/:endeavor_id/tasks", capability: nil, group: :common,
       summary: "List paginated next steps including completed history; optional status=open|completed. Task completion and due dates are separate from event attendance.",
@@ -530,6 +588,7 @@ class AgentHandbook
       agenda_item_fields: agenda_item_fields,
       minutes_fields: minutes_fields,
       activity_fields: activity_fields,
+      website_publishing_fields: website_publishing_fields,
       guided_workflows: guided_workflows,
       common_actions: actions_for(:common),
       only_when_asked: actions_for(:only_when_asked)
@@ -587,6 +646,11 @@ class AgentHandbook
       minutes_fields.each do |field|
         lines << "- **#{field["name"]}** (#{field["applies_to"]}) — #{field["meaning"]}"
       end
+      lines << ""
+    end
+    if website_publishing_fields.present?
+      lines << "## Website publishing fields"
+      website_publishing_fields.each { |field| lines << "- **#{field["name"]}** — #{field["meaning"]}" }
       lines << ""
     end
     if guided_workflows.present?
@@ -683,12 +747,26 @@ class AgentHandbook
     end
   end
 
+  def website_publishing_fields
+    return [] unless @user.can?("publish_public_content")
+
+    [
+      { "name" => "authority", "meaning" => "Every editorial route requires current explicit publish_public_content, including portrait and audit reads. manage_settings and calendar-management authority do not imply it. All responses are no-store. Anonymous /public/v1 is a separate read-only contract." },
+      { "name" => "versions", "meaning" => "Send nonnegative JSON integer lock_version from detail; event eligibility/internal/publish also require source_lock_version from source.lock_version. Missing/malformed input returns 422; stale review returns 409. Re-read before deciding again. Withdrawal accepts an older version for safe removal." },
+      { "name" => "draft and snapshot", "meaning" => "draft contains authored plain text and server-managed portrait_revision; never write revision or snapshot. snapshot is the last approved body, retained after withdrawal and therefore not proof of current public availability. status and source restrictions control availability. consent_covers_draft applies only to the current story draft; a later unconsented draft does not rewrite its approved snapshot." },
+      { "name" => "source", "meaning" => "Event source contains private review title/description, visibility, designation, stored category and title warning; source schedule fields use public projection semantics (explicit offsets, all-day dates and exclusive end). Never expose source to public consumers. pending_source_changes identifies changes awaiting republish; eligibility changes also advance source.lock_version." },
+      { "name" => "portraits", "meaning" => "POST portrait accepts lock_version and portrait_base64 JSON; maximum decoded image 10 MiB. No multipart or remote URLs. Read private draft_portrait and snapshot_portrait small/large paths before publishing; public images expose only the currently approved revision." },
+      { "name" => "responses and errors", "meaning" => "Detail/create/mutations return website_publication (create 201, others 200); list returns website_publications plus pagination. GET/PUT featured return public_ids and versions. History returns publication_events plus pagination. 401 unauthenticated, 403 missing authority, 404 absent/foreign source or publication, 409 conflict, 422 invalid input. Errors use error/details." },
+      { "name" => "retries", "meaning" => "Bearer writes require a distinct Idempotency-Key per intended action. Retry identical JSON with the same key after transport failure; changed payload with that key returns 409. A replay returns the original response, which can have an old lock_version; GET detail for current state. Session writes require X-CSRF-Token from this handbook." }
+    ]
+  end
+
   def activity_fields
     [
       { "name" => "dates", "meaning" => "due_on and date-only event starts_at/ends_at use strict YYYY-MM-DD. due_on is preferred; legacy raise_by_on remains the same stored project deadline. due_on wins when both are sent." },
       { "name" => "times", "meaning" => "Timed starts_at/ends_at require ISO 8601 with explicit offset or Z. all_day true uses date-only input and inclusive local end-of-day. Use the response timezone. Explain unknown times; do not guess an end time." },
       { "name" => "patches", "meaning" => "Top-level JSON fields; omit unchanged fields, use null to clear optional dates/links. Send actual JSON booleans. New activity/Endeavor PATCH endpoints require a nonnegative integer lock_version from the latest read; 409 means fetch and reconsider, 422 means invalid/missing input." },
-      { "name" => "public_preview", "meaning" => "Authenticated public view includes only id, title, description, location, starts_at, ends_at, all_day, cancelled, updated_at (plus type in monthly entries). No internal links, actors, tasks, meeting records, or locks. Public sync is not yet activated." },
+      { "name" => "public_preview", "meaning" => "Authenticated public view includes only id, title, description, location, starts_at, ends_at, all_day, cancelled, updated_at (plus type in monthly entries). No internal links, actors, tasks, meeting records, or locks. This preview is not the anonymous website feed or eligibility approval; public consumers use /public/v1 approved snapshots." },
       { "name" => "collections", "meaning" => "limit defaults to 500 (maximum 500); offset defaults to 0. Read pagination metadata and follow remaining pages. Endeavor detail includes tasks_path and calendar_events_path. GET /api/calendar includes week padding around the requested month." },
       { "name" => "authority", "meaning" => "Event writes require current calendar-management authority (admin or current Commander/Adjutant-derived authority); manual manage_agendas alone does not qualify. Task and project writes require manage_agendas. Bearer writes require Idempotency-Key; session writes require X-CSRF-Token." }
     ]

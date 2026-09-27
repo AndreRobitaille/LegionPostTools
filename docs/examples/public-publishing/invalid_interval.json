@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "error": {
+    "code": "invalid_interval",
+    "message": "Supply from and to as dates spanning 1 to 93 days."
+  }
+}

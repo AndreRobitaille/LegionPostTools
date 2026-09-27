@@ -21,7 +21,15 @@ class CalendarEvent < ApplicationRecord
   scope :overlapping, ->(from, to) { where("starts_at < ? AND COALESCE(ends_at, starts_at) >= ?", to, from) }
   scope :publicly_visible, -> { where(visibility: "public") }
 
+  attr_accessor :website_restriction_actor
+  has_one :website_publication
+  validates :website_designation, inclusion: { in: %w[unreviewed internal public_eligible] }
+  before_validation :enforce_internal_website_category
+  around_save :serialize_website_change
+  around_destroy :serialize_website_change
+  after_save :restrict_website_publication
   before_destroy :protect_meeting_entry
+  before_destroy :withdraw_website_publication
 
   def calendar_deletable?
     !%w[member_meeting officer_meeting].include?(CalendarCategories.for(self))
@@ -29,7 +37,7 @@ class CalendarEvent < ApplicationRecord
 
   def public? = visibility == "public"
 
-  # A future public feed must use this allowlist, never serialize the parent record.
+  # Private calendar public-preview projection. Anonymous publication uses reviewed snapshots.
   def public_calendar_attributes
     return nil unless public?
 
@@ -37,6 +45,33 @@ class CalendarEvent < ApplicationRecord
   end
 
   private
+
+  def serialize_website_change(&block)
+    WebsitePublishing::Boundary.synchronize(organization_id, &block)
+  end
+
+  def enforce_internal_website_category
+    self.website_designation = "internal" if WebsitePublication::INTERNAL_CATEGORIES.include?(calendar_category)
+  end
+
+  def restrict_website_publication
+    publication = WebsitePublication.find_by(calendar_event_id: id)
+    return unless publication
+
+    if (saved_change_to_visibility? && !public?) || (saved_change_to_website_designation? && website_designation != "public_eligible") || (saved_change_to_calendar_category? && WebsitePublication::INTERNAL_CATEGORIES.include?(calendar_category))
+      publication.restrict!("source_restricted", updated_by, designation: website_designation, visibility: visibility)
+    elsif saved_change_to_cancelled? && cancelled?
+      publication.cancel_from_source!(updated_by)
+    end
+  end
+
+  def withdraw_website_publication
+    publication = WebsitePublication.find_by(calendar_event_id: id)
+    return unless publication
+
+    publication.restrict!("source_deleted", website_restriction_actor || updated_by)
+    publication.update!(calendar_event: nil)
+  end
 
   def protect_meeting_entry
     return if calendar_deletable?

@@ -1,5 +1,6 @@
 class PermissionGrant < ApplicationRecord
   CAPABILITIES = %w[
+    publish_public_content
     manage_settings
     manage_people
     manage_meeting_bodies
@@ -15,10 +16,12 @@ class PermissionGrant < ApplicationRecord
     [ "Administration", %w[manage_settings manage_people] ],
     [ "Meetings", %w[manage_meeting_bodies manage_agendas manage_minutes] ],
     [ "Approvals", %w[approve_minutes attest_minutes record_minutes_approval] ],
-    [ "Records", %w[view_internal_records] ]
+    [ "Records", %w[view_internal_records] ],
+    [ "Public website", %w[publish_public_content] ]
   ].freeze
 
   LABELS = {
+    "publish_public_content" => "Publish public website content",
     "manage_settings" => "Manage app settings",
     "manage_people" => "Manage people and accounts",
     "manage_meeting_bodies" => "Manage meeting types",

@@ -1,4 +1,13 @@
 Rails.application.routes.draw do
+  scope "/public/v1", controller: "public/v1/publications", format: false do
+    match "featured_members", action: :featured, via: :all
+    match "member_stories/:id", action: :story, via: :all
+    match "member_stories/:id/portrait/:revision/:size.webp", action: :portrait, via: :all
+    match "events", action: :events, via: :all
+    match "events/:id", action: :event, via: :all
+    match "*path", action: :missing, via: :all
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
   get "internal/dated-agenda-pdf-source", to: "dated_agenda_pdf_sources#show", as: :dated_agenda_pdf_source
   get "internal/meeting-minutes-pdf-source", to: "meeting_minutes_pdf_sources#show", as: :meeting_minutes_pdf_source
@@ -61,6 +70,16 @@ Rails.application.routes.draw do
     get :print, on: :member
   end
   namespace :admin do
+    resources :website_publications, only: %i[index create edit update] do
+      post :feature, on: :collection
+      post :publish, on: :member
+      post :withdraw, on: :member
+      post :consent, on: :member
+      post :eligibility, on: :member
+      post :internal, on: :member
+      get :portrait, on: :member
+    end
+
     resources :endeavors, only: :index do
       resource :history, only: %i[show create], controller: "endeavor_histories"
     end
@@ -164,6 +183,22 @@ Rails.application.routes.draw do
   resource :dashboard, only: %i[show], controller: "dashboard"
   namespace :api do
     get "/", to: "handbook#show"
+    resources :website_publications, only: %i[index show create update] do
+      collection do
+        get :featured
+        put :featured, action: :feature
+      end
+      member do
+        post :consent
+        post :eligibility
+        post :internal
+        post :publish
+        post :withdraw
+        post :portrait, action: :upload_portrait
+        get "portrait/:revision/:size", action: :portrait, constraints: { size: /small|large/ }, defaults: { format: :webp }
+        get :history
+      end
+    end
     resources :people, only: %i[index show] do
       resource :account, only: %i[show create destroy], controller: "user_accounts" do
         patch :roster_control
