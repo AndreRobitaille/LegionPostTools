@@ -2,7 +2,7 @@
 
 <div class="page-lead">
   <h1 class="page-title">Confirm your identity</h1>
-  <p class="page-sub">Finish the confirmation you requested for agent access.</p>
+  <p class="page-sub">Finish the confirmation you requested to create a token.</p>
 </div>
 
 <section class="profile-section agent-access-section">
@@ -16,4 +16,4 @@
   </div>
 </section>
 
-<p class="profile-crosslink"><%= link_to "Back to agent access", agent_access_tokens_path, class: "lnk" %></p>
+<p class="profile-crosslink"><%= link_to website_token_reauthentication? ? "Back to website connections" : "Back to agent access", website_token_reauthentication? ? admin_website_access_tokens_path : agent_access_tokens_path, class: "lnk" %></p>

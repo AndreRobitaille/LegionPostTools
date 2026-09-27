@@ -9,8 +9,11 @@ database. Confirm the actual deployed revision through the release verification.
 
 ## Interface and operation
 
-No public JSON, route, identity, interval, or freshness differences from revision 3
-are proposed. These anonymous routes accept GET and HEAD:
+JSON, route, identity and interval shapes remain as in revision 3. Authentication
+and caching now differ: **all routes require a Post-owned website bearer token**.
+There is no anonymous feed. See [WEBSITE_CONNECTIONS.md](WEBSITE_CONNECTIONS.md)
+for admin issuance, fixed read-only scope, rotation and the breaking rollout change.
+These routes accept GET and HEAD:
 
 | Route | Output |
 | --- | --- |
@@ -20,19 +23,71 @@ are proposed. These anonymous routes accept GET and HEAD:
 | `/public/v1/events/:id` | Published event, including past/cancelled events |
 | `/public/v1/member_stories/:id/portrait/:revision/:size.webp` | Current approved `small` 320×400 or `large` 640×800 WebP bytes |
 
+### Obtain and maintain a website token
+
+A human administrator opens **Admin → Website connections**, creates a named
+connection after a recent sign-in, and securely stores the one-time secret on the
+website server. The token belongs to the Post and has fixed website-read access;
+it is independent of the administrator's role, permissions and account status.
+It cannot edit, publish, read private records, access `/api`, or create tokens.
+
+**There is no token creation or management API.** Existing bearer credentials
+cannot authenticate the browser token screens or mint additional credentials.
+Personal agent tokens also remain browser-managed, through **Agent access**.
+Never automate these browser endpoints as substitute API routes.
+
+Website tokens last until revoked. To rotate, create a replacement in the admin
+screens, install and test it on the consumer server, then revoke the old token.
+A revoked secret cannot be retrieved or restored; the audit row remains.
+The migration does not create or distribute a credential.
+
+### Requests, caching and errors
+
 The deployment's existing `APP_HOST` yields the intended publisher origin
 `https://members.wipost165.org` after this release.
 `PUBLIC_PUBLISHER_ORIGIN` can explicitly override the origin. No request Host value
 is copied into portrait URLs. Production requires HTTPS, with no trailing slash.
-No consumer credentials, shared database, browser JSON requests, or CORS are needed.
+Store the website token on the consumer's server and send `Authorization: Bearer
+<website token>` on every request, including portraits and conditional requests.
+Personal agent tokens and browser sessions are not accepted. There is no shared
+database or CORS. Public pages must serve portraits through the consumer's own
+server; publisher URLs cannot be used as anonymous image sources.
 
 Success uses `application/json` (images use `image/webp`), representation ETags,
-Date, Age: 0 and `max-age=300, public, must-revalidate`. Cache directive ordering is
-semantically equivalent to the requested ordering. Every conditional request checks
-current publication state before returning 304. Errors are no-store: 400, 404,
-405 with Allow, 429 with Retry-After: 60, and 503 with Retry-After: 60. The initial
+Date, Age: 0, `max-age=300, private, must-revalidate` and `Vary: Authorization`.
+Cache directive ordering is not significant. Every conditional request checks
+website authentication and current publication state before returning 304. Errors
+are no-store: 400; 401 for missing, invalid or revoked website tokens; 404; 405 with
+Allow; 429 with Retry-After: 60; and 503 with Retry-After: 60. The initial
 throttle is 240 requests/minute per client IP across these routes, backed by the
 configured Rails cache. There is no silent truncation or stale-on-error fallback.
+
+For example, send this request from the website server, using its stored secret:
+
+```http
+GET /public/v1/featured_members
+Authorization: Bearer <website token from server secret storage>
+Accept: application/json
+```
+
+Do not send the token as a query parameter. Use the same header for portrait,
+HEAD and conditional requests. A missing, malformed or revoked token returns
+`401`, `WWW-Authenticate: Bearer realm="website"`, `Cache-Control: no-store` and,
+except for HEAD, this JSON body:
+
+```json
+{"schema_version":1,"error":{"code":"unauthorized","message":"A valid website token is required"}}
+```
+
+Authentication is checked before resource lookup or ETags. On 401, invalidate
+cached access and fail closed; never fall back to anonymous requests or a personal
+agent token. Keep private consumer caches separate by credential and carry forward
+the remaining 300-second freshness budget. Never cache publisher responses in a
+shared proxy/CDN or serve expired content on failure. Revocation rejects subsequent
+origin requests; already fetched content can remain visible for its remaining
+five-minute freshness lifetime. Published JSON shapes are unchanged, but the
+consumer must now authenticate JSON and portraits and support the private cache
+policy. Coordinate release and purge previous anonymous shared-cache entries.
 
 The members app remains private. Its new **Public website** workspace is under
 Admin/Officer tools at `/admin/website_publications`, gated by an explicit user or
@@ -42,7 +97,7 @@ handles drafts, crop previews, exact-draft consent, eligibility, explicit Publis
 withdrawal, and homepage order. The same operations are available to authorized
 operators through the [authenticated editorial API](WEBSITE_PUBLISHING_API.md),
 documented in the caller's permission-filtered `GET /api` handbook. Public-site
-consumers continue to use only the anonymous routes above.
+consumers use only the authenticated read-only routes above.
 Create a new introduction for a different person;
 do not reuse an existing public identity for another subject. Calendar editors and private API readers see the
 last approved event and pending changes. Source restrictions/cancellation work
@@ -60,7 +115,8 @@ Internal implementation choices worth carrying back to the companion:
   an intervening publication cannot prevent removal. They still advance the version;
   an earlier Publish cannot resurrect the content.
 
-These choices preserve the external behavior. Full implementation rationale is in
+These content choices preserve payload behavior. Authentication and cache changes
+are described above. Full implementation rationale is in
 [PUBLIC_PUBLISHING.md](PUBLIC_PUBLISHING.md).
 
 ## Reproducible synthetic access
@@ -80,14 +136,14 @@ records. The server binds `0.0.0.0:3105`; local API origin is `http://localhost:
 The dates are fixed so boundary checks remain reproducible even after October.
 
 ```sh
-curl -i http://localhost:3105/public/v1/featured_members
-curl -i 'http://localhost:3105/public/v1/events?from=2026-10-01&to=2026-11-01'
 bin/publisher-demo login
 ```
 
 The final command prints a fresh, short-lived sign-in URL for the **synthetic**
 editor. Follow the ordinary confirmation page, then open
-`http://localhost:3105/admin/website_publications`. No credentials or sign-in tokens
+`http://localhost:3105/admin/website_publications`. To test the consumer, open
+`/admin/website_access_tokens` in that synthetic session and create a website connection. Save its one-time secret securely. Unauthenticated
+requests to `/public/v1` now return 401. No credentials or sign-in tokens
 are recorded in this handoff. Stop a foreground server with Ctrl-C.
 
 For another machine on the local network, use an origin that machine can resolve:
@@ -100,7 +156,9 @@ Use the same origin when requesting `bin/publisher-demo login`. Port reachabilit
 from another machine/firewall was not verified. This test environment is synthetic;
 its HTTP setting is not a production configuration.
 
-The current companion **Client intentionally rejects HTTP origins**. Two local
+The companion **Client intentionally rejects HTTP origins**. It also needs adaptation
+to the authenticated contract before this end-to-end check can pass; earlier
+verification below describes the original anonymous implementation. Two local
 options are available: put a trusted HTTPS reverse proxy in front of this server,
 or inject a test transport while keeping the logical publisher origin HTTPS. Do
 not weaken production TLS validation. The following check implements the second
@@ -114,17 +172,24 @@ PUBLISHER_DEMO_PORT=3106 PUBLIC_PUBLISHER_ORIGIN=https://localhost:3106 bin/publ
 # From this repository; PUBLIC_SITE_REPO defaults to ../wipost165:
 CHECK_PUBLISHER_ORIGIN=https://localhost:3106 \
 CHECK_PUBLISHER_CONNECT_ORIGIN=http://localhost:3106 \
+CHECK_PUBLISHER_TOKEN_FILE=/secure/path/synthetic-website-token \
 PUBLISHER_EXAMPLES_DIR=tmp/publisher-https-examples \
 RAILS_ENV=test bin/rails runner script/check_public_publisher.rb
 ```
 
-This checks the **actual companion Contract, Client and Transport** against live
+Supply `CHECK_PUBLISHER_TOKEN_FILE` as the path to a local, mode-0600 file containing
+only a synthetic website token. The script never writes it into captured examples.
+The transport adapter adds it server-side. This checks the **actual companion
+Contract, Client and Transport** against live
 publisher bytes, with a narrowly injected connection-origin adapter. It is not a
-TLS or public-browser integration test: browsers following the HTTPS portrait URLs
-would still need a real HTTPS proxy. For directly fetchable browser portraits, use
-the normal HTTP demo on port 3105 or a trusted HTTPS test origin.
+TLS or public-browser integration test. Browser portraits must now be served
+through the consumer's own presentation routes; the consumer fetches the publisher
+portrait with its token. A TLS proxy alone does not provide authentication.
 
-## Sanitized examples and headers
+## Historical sanitized examples and headers
+
+The captured response headers below predate website authentication; they are not
+the current cache/access contract. Regenerate them after adapting the consumer.
 
 [examples/public-publishing](examples/public-publishing/) contains captured output
 from the running HTTP demonstration:
@@ -142,11 +207,12 @@ from the running HTTP demonstration:
   [large portrait](examples/public-publishing/portrait_0_large.webp): plain blue
   test cards, with no likeness or personal metadata.
 
-The URLs inside `featured.json` are directly fetchable while the original synthetic
-server/database exists. A newly prepared database gets different random public
+The URLs inside `featured.json` require a website token and the original synthetic
+server/database. A newly prepared database gets different random public
 IDs; discover them from the feed. To regenerate captures and verify all details:
 
 ```sh
+CHECK_PUBLISHER_TOKEN_FILE=/secure/path/synthetic-website-token \
 RAILS_ENV=test bin/rails runner script/check_public_publisher.rb
 ```
 
@@ -167,7 +233,10 @@ Example error bodies additionally verified by integration tests:
 The 405 includes `Allow: GET, HEAD`; 429/503 include `Retry-After: 60`. All have
 `Cache-Control: no-store`, and no internal reason or private identifier.
 
-## Verification evidence
+## Original publication verification evidence
+
+The following results predate website-token authentication. Current credential
+verification is recorded in [Website connections](WEBSITE_CONNECTIONS.md).
 
 The new regression coverage verifies:
 

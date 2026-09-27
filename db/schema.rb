@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -944,6 +944,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000000) do
     t.index ["webauthn_id"], name: "index_users_on_webauthn_id", unique: true
   end
 
+  create_table "website_access_tokens", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "display_hint", null: false
+    t.datetime "last_used_at"
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.string "public_id", null: false
+    t.datetime "revoked_at"
+    t.bigint "revoked_by_id"
+    t.string "secret_digest", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_website_access_tokens_on_created_by_id"
+    t.index ["organization_id"], name: "index_website_access_tokens_on_organization_id"
+    t.index ["public_id"], name: "index_website_access_tokens_on_public_id", unique: true
+    t.index ["revoked_by_id"], name: "index_website_access_tokens_on_revoked_by_id"
+  end
+
   create_table "website_portraits", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.binary "large", null: false
@@ -1113,6 +1131,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000000) do
   add_foreign_key "position_titles", "organizations"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "people"
+  add_foreign_key "website_access_tokens", "organizations"
+  add_foreign_key "website_access_tokens", "users", column: "created_by_id"
+  add_foreign_key "website_access_tokens", "users", column: "revoked_by_id"
   add_foreign_key "website_portraits", "website_publications"
   add_foreign_key "website_publication_events", "website_publications"
   add_foreign_key "website_publications", "calendar_events"

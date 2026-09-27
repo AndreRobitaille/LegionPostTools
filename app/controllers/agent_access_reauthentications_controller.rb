@@ -3,6 +3,7 @@ class AgentAccessReauthenticationsController < ApplicationController
   PENDING_COOKIE = :pending_agent_access_reauthentication
 
   before_action :require_authentication
+  helper_method :website_token_reauthentication?, :token_creation_path
 
   rate_limit to: 5,
     within: 5.minutes,
@@ -78,6 +79,14 @@ class AgentAccessReauthenticationsController < ApplicationController
 
   private
 
+  def website_token_reauthentication?
+    session[:website_token_reauthentication] && current_user.can?("manage_settings")
+  end
+
+  def token_creation_path
+    website_token_reauthentication? ? new_admin_website_access_token_path : new_agent_access_token_path
+  end
+
   def set_pending_cookie(value)
     cookies.encrypted[PENDING_COOKIE] = {
       value: value,
@@ -97,9 +106,11 @@ class AgentAccessReauthenticationsController < ApplicationController
   end
 
   def complete_reauthentication
+    destination = token_creation_path
     Current.session.reauthenticate!
     session.delete(:reauthentication_purpose)
+    session.delete(:website_token_reauthentication)
     cookies.delete(PENDING_COOKIE)
-    redirect_to new_agent_access_token_path, notice: "Identity confirmed. You may create an agent token now."
+    redirect_to destination, notice: "Identity confirmed. You may create a token now."
   end
 end

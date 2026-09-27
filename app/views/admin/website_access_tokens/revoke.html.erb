@@ -1,0 +1,16 @@
+<% content_for :title, "Revoke website token" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Revoke <%= @website_access_token.name %>?</h1>
+  <p class="page-sub">The website will no longer be able to fetch content with this token.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <div class="panel">
+    <p class="panel-lead">If the website still uses this token, install a replacement first. Already fetched content may remain visible for up to five minutes.</p>
+    <div class="btnrow">
+      <%= button_to "Revoke token", admin_website_access_token_path(@website_access_token), method: :delete, class: "btn-return" %>
+      <%= link_to "Keep token", admin_website_access_tokens_path, class: "btn-secondary" %>
+    </div>
+  </div>
+</section>

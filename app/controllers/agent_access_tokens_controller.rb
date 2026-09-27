@@ -50,6 +50,7 @@ class AgentAccessTokensController < ApplicationController
   private
 
   def require_recent_authentication
+    session.delete(:website_token_reauthentication)
     return if Current.session&.recently_authenticated?
 
     redirect_to new_agent_access_reauthentication_path,

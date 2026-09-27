@@ -1,6 +1,7 @@
 module Public
   module V1
     class PublicationsController < ActionController::API
+      before_action :require_website_token
       before_action :read_only
       rate_limit to: 240, within: 1.minute, with: -> { response.set_header("Retry-After", "60"); error(429, "rate_limited", "Try again later") }
       rescue_from StandardError, with: :unavailable
@@ -38,6 +39,16 @@ module Public
 
       private
 
+      def require_website_token
+        response.set_header("Vary", "Authorization")
+        scheme, credential = request.headers["Authorization"].to_s.split(" ", 2)
+        @website_token = WebsiteAccessToken.authenticate(credential) if scheme&.casecmp?("Bearer")
+        return if @website_token
+
+        response.set_header("WWW-Authenticate", 'Bearer realm="website"')
+        error(401, "unauthorized", "A valid website token is required")
+      end
+
       def read_only
         return if request.get? || request.head?
         response.set_header("Allow", "GET, HEAD")
@@ -46,7 +57,7 @@ module Public
 
       def with_feed
         raise "Publisher temporarily unavailable" if ENV["PUBLIC_PUBLISHER_UNAVAILABLE"] == "1"
-        organization = Organization.first || raise("Publisher organization unavailable")
+        organization = @website_token.organization
         origin = ENV.fetch("PUBLIC_PUBLISHER_ORIGIN") { "https://#{ENV.fetch("APP_HOST")}" }
         uri = URI.parse(origin)
         unless uri.host && uri.userinfo.nil? && uri.query.nil? && uri.fragment.nil? && uri.path.empty? && (uri.scheme == "https" || (!Rails.env.production? && uri.scheme == "http"))
@@ -62,7 +73,7 @@ module Public
       end
 
       def represent(body, content_type)
-        response.set_header("Cache-Control", "public, max-age=300, must-revalidate")
+        response.set_header("Cache-Control", "private, max-age=300, must-revalidate")
         response.set_header("Date", Time.current.httpdate)
         response.set_header("Age", "0")
         response.set_header("ETag", %Q("#{Digest::SHA256.hexdigest(body)}"))

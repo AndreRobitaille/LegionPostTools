@@ -65,7 +65,9 @@ class ApiWebsitePublicationsTest < ActionDispatch::IntegrationTest
     api(:put, "/featured", selection)
     assert_response :success
     assert_equal [ @record.public_id ], response.parsed_body["public_ids"]
-    get "/public/v1/featured_members", as: :json
+    _website_token, website_secret = WebsiteAccessToken.issue!(organization: @organization, actor: @manager, name: "Website")
+    website_headers = { "Authorization" => "Bearer #{website_secret}" }
+    get "/public/v1/featured_members", as: :json, headers: website_headers
     assert_response :success
     assert_includes response.body, @record.public_id
     api(:post, "#{member_path}/withdraw", { lock_version: 0, revoke_consent: true })
@@ -73,7 +75,7 @@ class ApiWebsitePublicationsTest < ActionDispatch::IntegrationTest
     assert_equal "withdrawn", payload["status"]
     assert_not payload["consent"]
     assert_nil payload["featured_position"]
-    get "/public/v1/member_stories/#{@record.public_id}", as: :json
+    get "/public/v1/member_stories/#{@record.public_id}", as: :json, headers: website_headers
     assert_response :not_found
     api(:get, "#{member_path}/history")
     events = response.parsed_body["publication_events"]

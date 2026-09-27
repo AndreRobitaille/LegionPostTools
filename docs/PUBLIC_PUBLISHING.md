@@ -10,7 +10,7 @@ separate decisions.
 The members application remains the private meeting and officer workspace. A
 capability-gated **Public website** workspace in Officer tools owns introductions,
 portrait review, approved event copy, and homepage selection. The separate public
-website consumes anonymous snapshots; there is no shared login or database.
+website consumes approved snapshots using a Post-owned website token; there is no shared login or database.
 
 Use The 1919 working-screen system: navy actions, ivory panels, warm rules, gold
 only for Publish, red for withdrawal. Sans-serif working text, 16px inputs/body,
@@ -45,11 +45,13 @@ No real member or generated likeness is supplied as default content.
   re-encoded without metadata. Only the two WebP renditions are retained in private
   database storage. No original or Active Storage signed URL exists for these
   uploads. This deliberately avoids adding a second public storage access path.
-- Anonymous GET/HEAD routes exactly match the companion contract. No CORS or auth.
+- GET/HEAD routes require a Post-owned website bearer token, including portraits. No CORS.
+  This supersedes the original anonymous contract; see [WEBSITE_CONNECTIONS.md](WEBSITE_CONNECTIONS.md).
   Configured `PUBLIC_PUBLISHER_ORIGIN` is used for image URLs (HTTPS in production),
   falling back to `https://` plus the existing `APP_HOST`.
   Fresh responses use representation digests, Date, Age: 0 and a 300-second total
-  cache lifetime; every conditional read rechecks current publication state.
+  private cache lifetime and `Vary: Authorization`; every conditional read rechecks
+  website authentication and current publication state. Shared caching is forbidden.
   Errors are no-store. No fallback cache or stale-on-error publication exists.
 - The public event feed uses snapshot overlap rules, independent of the existing
   private calendar scope. Complete 1–93-day intervals include cancellations and
@@ -62,7 +64,8 @@ so stories cannot accidentally disclose roster fields. Portrait originals are
 not retained; staff can upload a replacement to change the center crop. One
 optimistic publication version covers the separately described draft, consent,
 and restriction versions. It advances for every such change and provides the
-same stale-review protection. There are no proposed public interface differences.
+same stale-review protection. Website-token authentication supersedes the original
+anonymous transport; the payload shapes remain unchanged.
 
 Verification and reproducible synthetic access are recorded in
 `PUBLIC_PUBLISHING_HANDOFF.md` after implementation.
@@ -72,7 +75,8 @@ Verification and reproducible synthetic access are recorded in
 Provide admin-workflow parity under `/api/website_publications`, using the existing
 session/CSRF and bearer/Idempotency-Key contract. Every editorial read and write
 requires current explicit `publish_public_content`; no grants are added. The
-anonymous `/public/v1` consumer contract remains unchanged. No UI changes are needed.
+`/public/v1` consumer payloads remain unchanged. Website connections now require
+a dedicated Post-owned token; see [WEBSITE_CONNECTIONS.md](WEBSITE_CONNECTIONS.md).
 
 Controllers call the existing publication domain operations, including their
 transaction boundary, consent fingerprint, event restrictions, and stale-review

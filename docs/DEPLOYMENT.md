@@ -293,7 +293,7 @@ For deployment-specific checks, also confirm:
 
 ## Public publishing configuration
 
-The anonymous publishing API uses `PUBLIC_PUBLISHER_ORIGIN` for absolute portrait
+The website-token-authenticated publishing API uses `PUBLIC_PUBLISHER_ORIGIN` for absolute portrait
 URLs, falling back to `https://` plus the existing `APP_HOST`. Use one HTTPS origin
 without a trailing slash or path. A missing/invalid configuration yields a no-store
 503; it does not invent an empty collection. `PUBLIC_PUBLISHER_UNAVAILABLE=1` is an
@@ -302,10 +302,21 @@ optional maintenance switch that also returns no-store 503 with Retry-After: 60.
 The publishing migration creates no grants or published content. The installation
 owner must separately authorize initial `publish_public_content` user or office
 grants and real content publication. `manage_settings` does not imply publishing.
-No change to private authentication, public-site credentials, or CORS is required.
+Create a Post-owned credential under Admin → Website connections and install it in
+the public website's server-side secret storage. This credential has fixed read-only
+website access; it is not a role or personal agent token. No credentials are created
+by the migration. See [Website connections](WEBSITE_CONNECTIONS.md).
 
-Do not configure a proxy/CDN to cache beyond the API's remaining 300-second age,
-serve stale on failure, cache errors, or route portraits around Rails. Portraits
+All `/public/v1` requests, including portraits and conditional reads, require the
+website bearer token. The consumer must support the new `private` cache policy,
+credential-separated server caching, and serving portraits through its own routes
+before a coordinated release. Purge prior anonymous responses from shared caches;
+otherwise they can remain usable for their remaining 300-second lifetime.
+
+Do not configure a shared proxy/CDN cache for this API. The consumer's private
+cache must honor the remaining 300-second age, fail closed on authentication
+failure and never serve expired content on other failures. Do not cache errors or
+route portraits around Rails. Portraits
 are private database WebP renditions, not public Active Storage originals. Account
 for this small bounded media storage in ordinary PostgreSQL backups. Current
 portrait input limits are 10 MiB / 40 megapixels; no original upload is retained.

@@ -70,6 +70,9 @@ Rails.application.routes.draw do
     get :print, on: :member
   end
   namespace :admin do
+    resources :website_access_tokens, only: %i[index new create destroy] do
+      get :revoke, on: :member
+    end
     resources :website_publications, only: %i[index create edit update] do
       post :feature, on: :collection
       post :publish, on: :member

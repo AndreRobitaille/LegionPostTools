@@ -2,17 +2,41 @@
 
 Implemented locally September 27, 2026. This is the authenticated API for operating
 LegionPostTools' **Public website** workspace. The separate public site continues to
-consume the anonymous, read-only `/public/v1` contract documented in
+consume the website-token-authenticated, read-only `/public/v1` contract documented in
 [PUBLIC_PUBLISHING_HANDOFF.md](PUBLIC_PUBLISHING_HANDOFF.md). This editorial API is
 never a public-site data source: its responses include private drafts, source
 reviews, consent notes and audit history.
 
 ## Authentication and authority
 
+There are two distinct credential types:
+
+| Credential | Accepted interface | Authority |
+| --- | --- | --- |
+| Personal agent token (`lpt_…`) | Private `/api`, including this editorial API | The person's current permissions; editorial actions require `publish_public_content`. |
+| Post-owned website token (`lptw_…`) | Read-only `/public/v1` collections, details and portraits | Fixed access to approved website content for its Post; no user role or inherited permissions. |
+
+**Token creation and management are not API operations.** Personal tokens are
+created by the person in their signed-in **Agent access** screen. Website tokens
+are created by a human administrator in **Admin → Website connections**. Both
+require recent browser authentication; browser mutations retain CSRF protection.
+An existing bearer token cannot create another token or authenticate these screens.
+There are no API routes to create, reveal, rotate or revoke either token type.
+Do not substitute browser fetches to management screens for missing API operations.
+
+Website tokens cannot authenticate this editorial API or `GET /api`. Conversely,
+personal agent tokens and browser sessions cannot authenticate `/public/v1`.
+For website connection setup, rotation, portrait delivery, cache handling and 401
+behavior, see [the consumer handoff](PUBLIC_PUBLISHING_HANDOFF.md) and
+[Website connections](WEBSITE_CONNECTIONS.md).
+
 Start every operator session by reading `GET /api`. Its JSON and Markdown handbook
 is generated from the caller's current permissions and includes these routes,
 field meanings and the `prepare_website_publication` guided workflow only for
 publishers. Use `Accept: application/json` or `Accept: text/markdown`.
+The JSON `website_access` section and Markdown **Website connection access**
+section describe the separate consumer contract for all authenticated operators;
+they do not add token-management actions to the API catalog.
 
 Every route below requires explicit `publish_public_content`, assigned directly
 or through a current Post office. `manage_settings`, membership access, and
@@ -21,7 +45,7 @@ calendar editing or roster authority. No grants are made by this implementation.
 
 - Session requests use the signed-in browser's cookie. Writes require
   `X-CSRF-Token` from the current `/api` handbook.
-- Bearer requests use `Authorization: Bearer <token>` from secure credential
+- Bearer requests use `Authorization: Bearer <personal agent token>` from secure credential
   storage. Every write requires a distinct `Idempotency-Key` for that intended
   action. Retry identical JSON with the same key after an uncertain transport
   result; changing the body, method or path with that key returns 409.
@@ -42,7 +66,7 @@ or decide that something should be public.
 ## Routes and request bodies
 
 All paths below are prefixed with `/api/website_publications`. `:id` is the internal
-integer publication id. `public_id` is the separate opaque anonymous identity.
+integer publication id. `public_id` is the separate opaque published-content identity.
 Create a new story for a different person; never repurpose an existing identity.
 
 | Method and path | Request / behavior |
@@ -113,7 +137,7 @@ Detail/create/mutation responses wrap their data in `website_publication`:
   source version too: use the new `source.lock_version` when publishing.
 - `draft_portrait` and `snapshot_portrait` contain authenticated small/large paths,
   or null. `history_path` exposes the separate paginated audit.
-- `public_path` identifies the anonymous detail route. Its presence, or a retained
+- `public_path` identifies the website-token-authenticated detail route. Its presence, or a retained
   snapshot, does not mean the record is public: withdrawn tombstones retain both.
 
 Audit entries expose `id`, `action`, human `actor_id`, publication `version`,
@@ -155,7 +179,7 @@ seconds under the consumer contract.
 | 422 | Missing/malformed version, non-boolean flag, invalid draft/image, unmet consent/eligibility requirements, invalid pagination, missing CSRF or Idempotency-Key. |
 
 Errors use the existing private API shape: `{"error":"Explanation","details":[]}`;
-validation errors may populate `details`. The anonymous feed has its own HTTP/cache
+validation errors may populate `details`. The website feed has its own HTTP/cache
 contract. Do not interpret a private API error as a public-feed response.
 
 ## Sanitized operator examples
@@ -184,7 +208,7 @@ the updated version, a human-requested consent action could use:
 ```
 
 Publish only on the person's explicit request, using the version returned after
-consent. Read back private detail and audit, then check the anonymous detail. For
+consent. Read back private detail and audit, then check the detail with a website token. For
 events, obtain the source through `GET /api/calendar_events`, create its publication,
 review eligibility, re-read source and draft, and publish using both current
 versions. Change the source schedule through the existing calendar API only if the

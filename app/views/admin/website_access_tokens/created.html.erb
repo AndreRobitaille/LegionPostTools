@@ -1,0 +1,24 @@
+<% content_for :title, "Copy website token" %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
+<div class="page-lead">
+  <h1 class="page-title">Copy your website token now</h1>
+  <p class="page-sub">This is the only time the complete token will be shown.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "One-time token" %>
+  <div class="panel agent-token-reveal" data-controller="copy-token">
+    <p class="panel-lead">Store this token in your website server’s secret settings. Keep it out of public pages, browser scripts, URLs and logs.</p>
+    <label class="agent-token-label" for="issued-website-token">Token for <%= @website_access_token.name %></label>
+    <textarea id="issued-website-token" class="agent-token-value" rows="4" readonly data-copy-token-target="source"><%= @plaintext_token %></textarea>
+    <div class="btnrow">
+      <button type="button" class="btn-primary" data-copy-token-target="button" data-action="copy-token#copy" hidden>Copy token</button>
+      <%= link_to "I have stored it", admin_website_access_tokens_path, class: "btn-secondary" %>
+    </div>
+    <p class="pk-card-status" data-copy-token-target="status" role="status" aria-live="polite">Without JavaScript, select the token above and copy it manually.</p>
+    <p>If you lose the token, create a replacement and revoke this one.</p>
+  </div>
+</section>

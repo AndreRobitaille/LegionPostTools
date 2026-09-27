@@ -1,4 +1,5 @@
 class Organization < ApplicationRecord
+  has_many :website_access_tokens, dependent: :restrict_with_exception
   has_many :dated_agendas, dependent: :restrict_with_exception
   has_many :calendar_events, dependent: :restrict_with_exception
   has_many :meetings, dependent: :restrict_with_exception

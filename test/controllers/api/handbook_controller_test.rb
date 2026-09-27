@@ -218,6 +218,31 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "JSON and Markdown document website credentials without advertising token management actions" do
+    _token, secret = AgentAccessToken.issue!(user: @commander, name: "Administrator agent", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{secret}" }
+    get "/api", headers: headers, as: :json
+    assert_response :success
+    body = response.parsed_body
+    access = body.fetch("website_access")
+    assert_match(/no role.*no user permissions/, access.fetch("scope"))
+    assert_match(/no API endpoint.*create.*revoke/i, access.fetch("setup"))
+    assert_match(/Admin > Website connections/, access.fetch("setup"))
+    assert_match(/including GET, HEAD, portraits and conditional/, access.fetch("authentication"))
+    assert_match(/private.*Vary: Authorization/, access.fetch("caching"))
+    assert_match(/401.*no-store/, access.fetch("errors"))
+    assert_match(/website server's secret storage/, access.fetch("delivery"))
+    assert_match(/survive officer, role and creator-account changes/, access.fetch("rotation"))
+    actions = body.fetch("common_actions") + body.fetch("only_when_asked")
+    assert_not actions.any? { |action| action.fetch("path").match?(/access_tokens/) }
+
+    get "/api", headers: headers.merge("Accept" => "text/markdown")
+    assert_response :success
+    assert_includes response.body, "## Website connection access"
+    access.each_value { |meaning| assert_includes response.body, meaning }
+    assert_not_includes response.body, secret
+  end
+
   private
 
   def create_user(label, capabilities: [])

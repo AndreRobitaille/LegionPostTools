@@ -1,0 +1,30 @@
+<% content_for :title, "Create website connection" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Create website connection</h1>
+  <p class="page-sub">This connection belongs to <%= @website_access_token.organization.name %>, not your personal account.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Connection details" %>
+  <div class="panel">
+    <%= form_with model: [:admin, @website_access_token], class: "stacked-form", data: { turbo: false } do |form| %>
+      <% if @website_access_token.errors.any? %>
+        <div class="error-summary" role="alert">
+          <strong>Check these details:</strong>
+          <ul><% @website_access_token.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+        </div>
+      <% end %>
+      <div class="fl">
+        <%= form.label :name, "Connection name" %>
+        <%= form.text_field :name, class: "f", placeholder: "e.g. Post public website", maxlength: 80, required: true, autocomplete: "off" %>
+        <p class="fl-help">Choose a name you will recognize when replacing or revoking this token.</p>
+      </div>
+      <p>Approved website content only. The token works until an administrator revokes it.</p>
+      <div class="btnrow">
+        <%= form.button "Create token", class: "btn-primary" %>
+        <%= link_to "Cancel", admin_website_access_tokens_path, class: "btn-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</section>

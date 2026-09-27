@@ -2,7 +2,7 @@
 
 <div class="page-lead">
   <h1 class="page-title">Confirm your identity</h1>
-  <p class="page-sub">Creating a new agent token requires a recent sign-in.</p>
+  <p class="page-sub">Creating a new <%= website_token_reauthentication? ? "website" : "agent" %> token requires a recent sign-in.</p>
 </div>
 
 <section class="profile-section">
@@ -31,7 +31,7 @@
     <% end %>
 
     <% if current_user.passkey_credentials.any? %>
-      <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= new_agent_access_token_path %>">
+      <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= token_creation_path %>">
         <div class="entry-orline">Or use a passkey</div>
         <button type="button" class="btn-secondary" data-action="passkey#authenticate" data-passkey-target="submit">
           Confirm with a passkey
@@ -42,4 +42,4 @@
   </div>
 </section>
 
-<p class="profile-crosslink"><%= link_to "Back to agent access", agent_access_tokens_path, class: "lnk" %></p>
+<p class="profile-crosslink"><%= link_to website_token_reauthentication? ? "Back to website connections" : "Back to agent access", website_token_reauthentication? ? admin_website_access_tokens_path : agent_access_tokens_path, class: "lnk" %></p>

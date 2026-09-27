@@ -1,11 +1,18 @@
 # RAILS_ENV=test bin/rails runner script/check_public_publisher.rb
-# Read-only live contract check. No credentials, content writes or grant changes.
+# Read-only live contract check using an existing website credential. No content writes or grant changes.
 require "net/http"
 require "fileutils"
 require "vips"
 
+website_secret = File.read(ENV.fetch("CHECK_PUBLISHER_TOKEN_FILE")).strip
+raise "Expected a website token" unless website_secret.match?(/\Alptw_[0-9a-f]{24}_[0-9a-f]{64}\z/)
+
 origin = ENV.fetch("CHECK_PUBLISHER_ORIGIN", "http://localhost:3105")
 connect_origin = ENV.fetch("CHECK_PUBLISHER_CONNECT_ORIGIN", origin)
+connect_uri = URI(connect_origin)
+unless connect_uri.scheme == "https" || (connect_uri.scheme == "http" && %w[localhost 127.0.0.1 [::1]].include?(connect_uri.host))
+  raise "Website credentials require HTTPS except for a local synthetic check"
+end
 companion = ENV.fetch("PUBLIC_SITE_REPO", "../wipost165")
 %w[unavailable not_found response contract transport client].each do |name|
   require File.expand_path("app/services/publishing/#{name}.rb", companion)
@@ -13,19 +20,23 @@ end
 contract = Publishing::Contract.new(origin: origin)
 output = Pathname.new(ENV.fetch("PUBLISHER_EXAMPLES_DIR", Rails.root.join("tmp/publisher-examples").to_s))
 FileUtils.mkdir_p(output)
-headers_to_keep = %w[content-type cache-control date age etag retry-after allow]
+headers_to_keep = %w[content-type cache-control date age etag retry-after allow vary www-authenticate]
 responses = {}
-fetch = lambda do |name, path, method = :get, etag = nil|
+fetch = lambda do |name, path, method = :get, etag = nil, authenticated: true|
   uri = URI(connect_origin + path)
   request = (method == :head ? Net::HTTP::Head : Net::HTTP::Get).new(uri)
   request["Accept"] = "application/json"
+  request["Authorization"] = "Bearer #{website_secret}" if authenticated
   request["If-None-Match"] = etag if etag
   result = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 1, read_timeout: 2) { |http| http.request(request) }
   responses[name] = { status: result.code.to_i, headers: result.to_hash.slice(*headers_to_keep).transform_values(&:first), bytes: result.body.to_s.bytesize }
   result
 end
+unauthorized = fetch.call("unauthorized", "/public/v1/featured_members", authenticated: false)
+raise "Anonymous access was not refused" unless unauthorized.code == "401" && unauthorized["cache-control"] == "no-store"
 featured = fetch.call("featured", "/public/v1/featured_members")
 raise "Featured failed" unless featured.code == "200"
+raise "Shared caching must be forbidden" unless featured["cache-control"].split(",").map(&:strip).include?("private") && featured["vary"].split(",").map(&:strip).include?("Authorization")
 featured_data = contract.validate!(JSON.parse(featured.body), kind: :featured)
 File.write(output.join("featured.json"), JSON.pretty_generate(featured_data) + "\n")
 raise "Conditional failed" unless fetch.call("featured_conditional", "/public/v1/featured_members", :get, featured["etag"]).code == "304"
@@ -65,14 +76,14 @@ raise "400 failed" unless invalid.code == "400" && invalid["cache-control"] == "
 File.write(output.join("invalid_interval.json"), JSON.pretty_generate(JSON.parse(invalid.body)) + "\n")
 File.write(output.join("responses.json"), JSON.pretty_generate(responses) + "\n")
 puts "Companion Contract accepted #{featured_data.fetch('members').size} stories and #{events_data.fetch('events').size} events, including details and both WebP sizes."
-puts "GET, HEAD, 304, 400 and 404 verified. Captured #{responses.size} responses in #{output}."
+puts "GET, HEAD, 304, 400, 401 and 404 verified. Captured #{responses.size} responses in #{output}."
 
 # The HTTPS-only consumer can be exercised against a publisher advertising an
 # HTTPS origin through an explicit LOCAL test transport. Production TLS policy
 # remains unchanged. No response bodies or portrait URLs are rewritten.
 if URI(origin).scheme == "https"
   transport = lambda do |uri, headers|
-    Publishing::Transport.new.call(URI(connect_origin + uri.request_uri), headers)
+    Publishing::Transport.new.call(URI(connect_origin + uri.request_uri), headers.merge("Authorization" => "Bearer #{website_secret}"))
   end
   client = Publishing::Client.new(origin: origin, cache: ActiveSupport::Cache::MemoryStore.new, transport: transport)
   members = client.featured

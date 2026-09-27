@@ -1,0 +1,39 @@
+<% content_for :title, "Website connections" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Website connections</h1>
+  <p class="page-sub">Owned by <%= @organization.name %>. Connections keep working when officers change.</p>
+</div>
+
+<section class="profile-section agent-access-section">
+  <%= render "shared/section_header", label: "Approved website content only" %>
+  <div class="panel">
+    <p class="panel-lead">These tokens let your website read published introductions, portraits and events. They cannot read member records, edit drafts or publish content.</p>
+    <div class="btnrow"><%= link_to "Create website connection", new_admin_website_access_token_path, class: "btn-primary" %></div>
+    <% if @website_access_tokens.any? %>
+      <ul class="pk-list agent-token-list">
+        <% @website_access_tokens.each do |token| %>
+          <li class="pk-row">
+            <div class="pk-row-info">
+              <strong class="agent-token-name"><%= token.name %></strong>
+              <p class="agent-token-status"><%= token.revoked? ? "Revoked" : "Active until revoked" %> &middot; ends in <%= token.display_hint %></p>
+              <p class="pk-row-meta">Created <%= legion_date(token.created_at) %> by <%= token.created_by.person.full_name %>.</p>
+              <p class="pk-row-meta"><%= token.last_used_at ? "Last used #{legion_date(token.last_used_at)}." : "Not used yet." %></p>
+              <% if token.revoked? %>
+                <p class="pk-row-meta">Revoked <%= legion_date(token.revoked_at) %> by <%= token.revoked_by.person.full_name %>.</p>
+              <% end %>
+            </div>
+            <% unless token.revoked? %>
+              <%= link_to "Revoke", revoke_admin_website_access_token_path(token), class: "btn-return", aria: { label: "Revoke #{token.name}" } %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="pk-empty">No website connections yet. Create one to connect your Post’s website.</p>
+    <% end %>
+  </div>
+</section>
+
+<p class="profile-crosslink">To replace a token, create a new connection, install and test it on your website, then revoke the old one.</p>
+<p class="profile-crosslink"><%= link_to "Back to Administration", admin_root_path, class: "lnk" %></p>

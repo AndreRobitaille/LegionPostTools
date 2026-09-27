@@ -145,7 +145,8 @@ Event deletion design and verification: `CALENDAR_EVENT_DELETION.md`.
 
 ## Separate website publication (local implementation, September 27, 2026)
 
-`/public/v1` serves explicitly reviewed website snapshots, independently of the
+`/public/v1` requires a Post-owned website token and serves explicitly reviewed
+website snapshots, independently of the
 existing private API and its public preview. Public calendar visibility never
 publishes an event by itself. See [Public publishing](PUBLIC_PUBLISHING.md).
 
