@@ -1,12 +1,17 @@
 <% publication = @event.website_publication %>
 <section class="panel publishing-panel">
   <h2 class="section-title">Public website</h2>
-  <% if publication&.published? %>
+  <% if @event.organization.website_calendar_enabled? %>
+    <p><%= @event.website_listed? ? "Shown on the public website" : "Hidden from the public website" %> · <%= WebsiteCalendarEntry::LISTINGS.fetch(@event.website_listing) %></p>
+    <% if @event.website_listed? %><h3><%= @event.website_title.presence || @event.title %></h3><%= simple_format(@event.website_calendar_payload["description"]) %><% end %>
+  <% elsif publication&.published? %>
     <p>Saving calendar changes leaves the approved public schedule and wording in place. Cancellation takes effect immediately. Making this event private or internal withdraws it.</p>
     <%= render "admin/website_publications/snapshot", publication: publication %>
     <% if publication.pending_source_changes? %><p class="flash flash--alert">Calendar changes are waiting for a publisher to review.</p><% end %>
   <% else %><p>This event is not published on the public website. Calendar visibility alone does not publish it.</p><% end %>
-  <% if current_user.can?("publish_public_content") %>
+  <% if @event.organization.website_calendar_enabled? %>
+    <% if current_user.can?("publish_public_content") %><%= link_to "Calendar defaults", admin_website_calendar_path, class: "btn-secondary" %><% end %>
+  <% elsif current_user.can?("publish_public_content") %>
     <% if publication %><%= link_to "Review public version", edit_admin_website_publication_path(publication), class: "btn-secondary" %><% else %><%= button_to "Review for public website", admin_website_publications_path, params: { calendar_event_id: @event.id }, class: "btn-secondary" %><% end %>
   <% else %><p class="form-help">A person with Publish public website content permission can review and publish changes.</p><% end %>
 </section>

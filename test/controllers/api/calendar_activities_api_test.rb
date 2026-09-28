@@ -28,7 +28,7 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
     assert_response :success
     entries = response.parsed_body.dig("calendar", "entries")
     assert_equal 3, entries.size
-    assert_equal %w[calendar_category category display_title id location_address location_name starts_at title type], entries.find { |e| e["type"] == "meeting" }.keys.sort
+    assert_equal %w[attendance calendar_category cancelled category display_title id location_address location_name starts_at title type], entries.find { |e| e["type"] == "meeting" }.keys.sort
     assert_equal meeting.id, entries.find { |e| e["type"] == "meeting" }["id"]
     get "/api/calendar", params: { start_date: "2026-09-01", view: "deadlines" }, as: :json
     assert_equal 2, response.parsed_body.dig("calendar", "entries").count { |e| e["type"] == "deadline" }

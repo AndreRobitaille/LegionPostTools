@@ -2,6 +2,7 @@
 <article class="member-meeting-card<%= " member-meeting-card--featured" if local_assigns.fetch(:featured, false) %>">
   <%= render "shared/meeting_date_plate", meeting: meeting %>
   <div class="member-meeting-card-copy">
+    <% if meeting.cancelled? %><p class="calendar-cancelled">Cancelled</p><% end %>
     <h2<% if local_assigns[:heading_id] %> id="<%= heading_id %>"<% end %>><%= member_meeting_title(meeting) %></h2>
     <% if local_assigns.fetch(:show_schedule, false) %>
       <p class="member-meeting-schedule"><%= legion_time(meeting.starts_at) %><% if meeting.location_name.present? %> &middot; <%= meeting.location_name %><% end %></p>

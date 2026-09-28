@@ -1,5 +1,25 @@
 # Publisher handoff to the public-site consumer
 
+## Automatic calendar notices (September 28, 2026)
+
+After publisher-reviewed activation in LegionPostTools, the existing event routes
+serve live CalendarEvent and Meeting notices under the Post's explicit type defaults
+and occurrence overrides. Before activation they retain legacy snapshot behavior.
+Introductions, portraits, authentication, cache limits and interval semantics are unchanged.
+
+Event notices retain `category: public_event` for v1 compatibility: this identifies a
+publicly listed notice, not unrestricted attendance. An additive `attendance` value is
+`members`, `public`, or `invited`; the description also includes the attendance label so
+existing consumers display it. Only dedicated website copy and schedule/place fields
+are included. Internal event descriptions and meeting documents never enter the feed.
+Dates, place, cancellation and public copy follow source saves automatically. Hide and
+deletion return 404 for detail reads and remove the notice from collections. Cache age
+still bounds downstream visibility to 300 seconds. Existing publication IDs are retained.
+
+The current companion `Publishing::Contract` accepts collections and details for timed,
+all-day, cancelled, and member-meeting notices without consumer code changes. Source
+policy and activation details are in [Automatic website calendar](AUTOMATIC_WEBSITE_CALENDAR.md).
+
 September 27, 2026. Implemented and verified locally in LegionPostTools on top of
 `9d278b7ce449ea54d60b151b32f6e23cac97eacf`, then prepared for the authorized release.
 The release migrates the schema without granting publishing access or publishing

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -116,6 +116,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
 
   create_table "calendar_events", force: :cascade do |t|
     t.boolean "all_day", default: false, null: false
+    t.string "attendance", default: "members", null: false
     t.string "calendar_category"
     t.boolean "cancelled", default: false, null: false
     t.datetime "created_at", null: false
@@ -131,12 +132,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
     t.datetime "updated_at", null: false
     t.bigint "updated_by_id", null: false
     t.string "visibility", default: "members", null: false
+    t.text "website_description"
     t.string "website_designation", default: "unreviewed", null: false
+    t.string "website_listing", default: "default", null: false
+    t.string "website_public_id", default: -> { "replace((gen_random_uuid())::text, '-'::text, ''::text)" }, null: false
+    t.string "website_title"
     t.index ["created_by_id"], name: "index_calendar_events_on_created_by_id"
     t.index ["endeavor_id"], name: "index_calendar_events_on_endeavor_id"
     t.index ["organization_id", "starts_at"], name: "index_calendar_events_on_organization_id_and_starts_at"
     t.index ["organization_id"], name: "index_calendar_events_on_organization_id"
     t.index ["updated_by_id"], name: "index_calendar_events_on_updated_by_id"
+    t.index ["website_public_id"], name: "index_calendar_events_on_website_public_id", unique: true
     t.check_constraint "ends_at IS NULL OR ends_at >= starts_at", name: "calendar_events_date_order"
     t.check_constraint "visibility::text = ANY (ARRAY['members'::character varying::text, 'public'::character varying::text])", name: "calendar_events_visibility"
   end
@@ -523,7 +529,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
   end
 
   create_table "meetings", force: :cascade do |t|
+    t.string "attendance", default: "members", null: false
     t.string "calendar_category"
+    t.boolean "cancelled", default: false, null: false
     t.datetime "created_at", null: false
     t.text "location_address"
     t.string "location_name", null: false
@@ -534,10 +542,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
     t.datetime "starts_at", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.text "website_description"
+    t.string "website_listing", default: "default", null: false
+    t.string "website_public_id", default: -> { "replace((gen_random_uuid())::text, '-'::text, ''::text)" }, null: false
+    t.string "website_title"
     t.index ["meeting_body_id"], name: "index_meetings_on_meeting_body_id"
     t.index ["meeting_type_id"], name: "index_meetings_on_meeting_type_id"
     t.index ["organization_id", "starts_at"], name: "index_meetings_on_organization_id_and_starts_at"
     t.index ["organization_id"], name: "index_meetings_on_organization_id"
+    t.index ["website_public_id"], name: "index_meetings_on_website_public_id", unique: true
   end
 
   create_table "minutes_attendance_entries", force: :cascade do |t|
@@ -804,6 +817,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
     t.string "unit_number"
     t.string "unit_type", null: false
     t.datetime "updated_at", null: false
+    t.boolean "website_calendar_enabled", default: false, null: false
+    t.jsonb "website_calendar_types", default: ["member_meeting", "public_event"], null: false
+    t.integer "website_calendar_version", default: 0, null: false
   end
 
   create_table "passkey_credentials", force: :cascade do |t|
@@ -960,6 +976,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
     t.index ["organization_id"], name: "index_website_access_tokens_on_organization_id"
     t.index ["public_id"], name: "index_website_access_tokens_on_public_id", unique: true
     t.index ["revoked_by_id"], name: "index_website_access_tokens_on_revoked_by_id"
+  end
+
+  create_table "website_calendar_changes", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_id"
+    t.datetime "created_at", null: false
+    t.jsonb "details", default: {}, null: false
+    t.bigint "organization_id", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["organization_id"], name: "index_website_calendar_changes_on_organization_id"
   end
 
   create_table "website_portraits", force: :cascade do |t|
@@ -1134,6 +1161,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_010000) do
   add_foreign_key "website_access_tokens", "organizations"
   add_foreign_key "website_access_tokens", "users", column: "created_by_id"
   add_foreign_key "website_access_tokens", "users", column: "revoked_by_id"
+  add_foreign_key "website_calendar_changes", "organizations"
   add_foreign_key "website_portraits", "website_publications"
   add_foreign_key "website_publication_events", "website_publications"
   add_foreign_key "website_publications", "calendar_events"

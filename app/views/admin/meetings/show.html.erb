@@ -12,9 +12,12 @@
 </div>
 
 <dl class="admin-meeting-facts">
+  <div><dt>Attendance</dt><dd><%= WebsiteCalendarEntry::ATTENDANCE.fetch(@meeting.attendance) %></dd></div>
+  <% if @organization.website_calendar_enabled? %><div><dt>Public website</dt><dd><%= @meeting.website_listed? ? "Shown" : "Hidden" %></dd></div><% end %>
   <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
   <div><dt>Meeting type</dt><dd><%= @meeting.meeting_type&.name || "Not chosen yet" %></dd></div>
 </dl>
+<% if @meeting.cancelled? %><p class="calendar-cancelled" role="status">This meeting is cancelled.</p><% end %>
 
 <div class="meeting-document-progression">
 <section class="meeting-agenda-workflow" aria-labelledby="meeting-agenda-heading">

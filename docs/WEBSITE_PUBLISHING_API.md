@@ -1,5 +1,11 @@
 # Website publishing editorial API
 
+After automatic calendar activation, event editorial mutations here return 422 with
+directions to edit the calendar. Use CalendarEvent/Meeting fields and publisher-only
+`/api/website_calendar` preview/defaults endpoints in [Calendar API](CALENDAR_API.md).
+This API continues to manage introductions, consent, portraits and featured order.
+Legacy event reads and audit history remain. See [the transition](AUTOMATIC_WEBSITE_CALENDAR.md).
+
 Implemented locally September 27, 2026. This is the authenticated API for operating
 LegionPostTools' **Public website** workspace. The separate public site continues to
 consume the website-token-authenticated, read-only `/public/v1` contract documented in

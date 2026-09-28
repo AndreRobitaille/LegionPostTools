@@ -29,7 +29,7 @@ module Api
       when CalendarEvent
         calendar_event_payload(entry, public_preview:).merge("type" => "event")
       when Meeting
-        entry.attributes.slice("id", "title", "starts_at", "location_name", "location_address").merge("type" => "meeting", "calendar_category" => entry.calendar_category, "category" => CalendarCategories.for(entry), "display_title" => helpers.member_meeting_title(entry))
+        entry.attributes.slice("id", "title", "starts_at", "location_name", "location_address", "cancelled", "attendance").merge("type" => "meeting", "calendar_category" => entry.calendar_category, "category" => CalendarCategories.for(entry), "display_title" => helpers.member_meeting_title(entry))
       when CalendarDeadline
         { type: "deadline", category: "deadline", title: entry.title, due_on: entry.record.due_on, endeavor_id: entry.endeavor.id,
           task_id: (entry.id if entry.record.is_a?(EndeavorTask)) }

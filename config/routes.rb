@@ -70,6 +70,9 @@ Rails.application.routes.draw do
     get :print, on: :member
   end
   namespace :admin do
+    resource :website_calendar, only: %i[show update], controller: "website_calendar" do
+      post :preview
+    end
     resources :website_access_tokens, only: %i[index new create destroy] do
       get :revoke, on: :member
     end
@@ -185,6 +188,9 @@ Rails.application.routes.draw do
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
   namespace :api do
+    resource :website_calendar, only: %i[show update], controller: "website_calendar" do
+      post :preview
+    end
     get "/", to: "handbook#show"
     resources :website_publications, only: %i[index show create update] do
       collection do

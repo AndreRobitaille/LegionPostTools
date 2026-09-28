@@ -13,8 +13,10 @@
   </header>
 
   <dl class="meeting-facts">
+    <div><dt>Attendance</dt><dd><%= WebsiteCalendarEntry::ATTENDANCE.fetch(@meeting.attendance) %></dd></div>
     <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
   </dl>
+  <% if @meeting.cancelled? %><p class="calendar-cancelled" role="status">This meeting is cancelled.</p><% end %>
   <section class="meeting-documents" aria-labelledby="meeting-documents-heading">
     <h2 id="meeting-documents-heading">Documents</h2>
     <div class="meeting-document-list">

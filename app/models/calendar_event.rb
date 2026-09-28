@@ -1,4 +1,5 @@
 class CalendarEvent < ApplicationRecord
+  include WebsiteCalendarEntry
   VISIBILITIES = { "members" => "Members only", "public" => "Public" }.freeze
 
   normalizes :calendar_category, with: ->(value) { value.presence }

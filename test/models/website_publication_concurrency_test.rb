@@ -13,10 +13,30 @@ class WebsitePublicationConcurrencyTest < ActiveSupport::TestCase
       WebsitePortrait.where(website_publication_id: ids).delete_all
       WebsitePublication.where(id: ids).delete_all
       CalendarEvent.where(organization_id: @organization.id).delete_all
+      WebsiteCalendarChange.where(organization_id: @organization.id).delete_all
       @organization.reload.destroy!
       @publisher.person.destroy!
     end
     teardown_publisher
+  end
+
+  test "automatic calendar activation serializes with listing restrictions in both commit orders" do
+    [ true, false ].each do |activate_first|
+      source = event_source(calendar_category: "public_event")
+      policy = WebsitePublishing::CalendarPolicy.new(@organization)
+      token = policy.preview(types: %w[public_event])[:review_token]
+      activate = -> { WebsitePublishing::CalendarPolicy.new(Organization.find(@organization.id)).apply!(actor: User.find(@publisher.id), review_token: token) }
+      hide = -> { CalendarEvent.find(source.id).update!(website_listing: "hide") }
+      results = in_commit_order(*(activate_first ? [ activate, hide ] : [ hide, activate ]))
+      assert_nil results.first
+      if activate_first
+        assert_nil results.last
+      else
+        assert_kind_of WebsitePublishing::CalendarPolicy::Conflict, results.last
+      end
+      feed = WebsitePublishing::Feed.new(@organization.reload, origin: "https://publisher.example.test")
+      assert_raises(ActiveRecord::RecordNotFound) { feed.event_detail(source.website_public_id) }
+    end
   end
 
   test "both real commit orders serialize publication against every source restriction and edit" do

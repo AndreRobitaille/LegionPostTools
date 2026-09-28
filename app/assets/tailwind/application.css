@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../stylesheets/website_calendar.css";
 
 @theme {
   --color-navy: #0A2240;

@@ -2,7 +2,7 @@ module CalendarCategories
   LABELS = { "member_meeting" => "Member Meeting", "officer_meeting" => "Officer Meeting",
     "planning_meeting" => "Planning meetings", "honor_guard" => "Honor Guard",
     "public_event" => "Public events", "other" => "Other activities", "deadline" => "Due dates" }.freeze
-  EDITABLE = LABELS.except("deadline", "public_event").freeze
+  EDITABLE = LABELS.except("deadline").freeze
   LEGACY_VALUES = %w[volunteers].freeze
 
   def self.for(entry)

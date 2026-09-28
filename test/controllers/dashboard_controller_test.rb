@@ -133,6 +133,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "shows the next and most recent meetings with direct document actions" do
+    travel_to Time.zone.local(2026, 10, 15, 12)
     signed_in_member
     organization = Organization.first
     body = organization.meeting_bodies.create!(name: "Membership", slug: "membership")

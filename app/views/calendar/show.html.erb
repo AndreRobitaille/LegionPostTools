@@ -45,7 +45,11 @@
         <nav class="calendar-officer-tools" aria-label="Officer calendar tools">
           <%= link_to "Member view", calendar_path(start_date: @month.date, categories: @month.categories.presence || [ "" ]), data: { calendar_target: "navigation" } %>
           <%= link_to "Planning due dates", manage_calendar_path(start_date: @month.date, view: "deadlines") %>
-          <%= link_to "Public event preview", manage_calendar_path(start_date: @month.date, view: "public") %>
+          <% if @organization.website_calendar_enabled? %>
+            <% if current_user.can?("publish_public_content") %><%= link_to "Website calendar defaults", admin_website_calendar_path %><% end %>
+          <% else %>
+            <%= link_to "Public event preview", manage_calendar_path(start_date: @month.date, view: "public") %>
+          <% end %>
         </nav>
       <% end %>
     </aside>
@@ -54,7 +58,7 @@
         <span class="calendar-day-number"><%= day.day %></span>
         <% @month.entries_on(day, filtered: false).each do |entry| %>
           <%= link_to calendar_entry_path(entry), class: "calendar-grid-event calendar-category--#{CalendarCategories.for(entry)}", hidden: calendar_entry_hidden?(entry), title: [calendar_entry_title(entry), calendar_entry_time(entry)].compact.join(" · "), data: { calendar_target: "entry", category: CalendarCategories.for(entry) }, aria: { label: [calendar_entry_title(entry), CalendarCategories::LABELS.fetch(CalendarCategories.for(entry)), calendar_entry_time(entry)].compact.join(", ") } do %>
-            <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
+            <% if entry.respond_to?(:cancelled?) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
             <span class="calendar-block-title"><%= calendar_entry_title(entry) %></span>
             <% if (time = calendar_entry_time(entry)).present? %><span class="calendar-block-time"><%= time %></span><% end %>
           <% end %>
@@ -70,7 +74,7 @@
                   <%= link_to calendar_entry_path(entry), class: "calendar-schedule-event" do %>
                     <div class="calendar-schedule-copy">
                       <div class="calendar-schedule-kind"><%= render "shared/activity_icon", kind: CalendarCategories.for(entry) %><span><%= CalendarCategories::LABELS.fetch(CalendarCategories.for(entry)) %></span></div>
-                      <% if entry.is_a?(CalendarEvent) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
+                      <% if entry.respond_to?(:cancelled?) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
                       <h4><%= calendar_entry_title(entry) %></h4>
                       <% time = entry.is_a?(CalendarEvent) && entry.all_day? ? nil : calendar_entry_time(entry) %>
                       <% location = calendar_entry_location(entry) %>

@@ -70,7 +70,7 @@ class CalendarEventsController < ApplicationController
   end
 
   def event_params
-    params.require(:calendar_event).permit(:calendar_category, :title, :description, :location, :endeavor_id, :visibility, :all_day, :cancelled, :lock_version)
+    params.require(:calendar_event).permit(:calendar_category, :title, :description, :location, :endeavor_id, :visibility, :all_day, :cancelled, :lock_version, *WebsiteCalendarEntry::FIELDS)
   end
 
   def save_event(template, notice)

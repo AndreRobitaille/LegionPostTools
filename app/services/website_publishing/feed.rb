@@ -16,6 +16,11 @@ module WebsitePublishing
     end
 
     def event_detail(id)
+      if @organization.website_calendar_enabled?
+        record = @organization.calendar_events.find_by(website_public_id: id) || @organization.meetings.find_by(website_public_id: id)
+        raise ActiveRecord::RecordNotFound unless record&.website_listed?
+        return { schema_version: 1, timezone: timezone, event: record.website_calendar_payload }
+      end
       { schema_version: 1, timezone: timezone, event: scope.find_by!(kind: "event", public_id: id).snapshot }
     end
 
@@ -26,7 +31,14 @@ module WebsitePublishing
       end
       raise ArgumentError unless (last - first).between?(1, 93)
       lower, upper = [ first, last ].map { |date| midnight(date) }
-      records = scope.where(kind: "event").map(&:snapshot).select do |record|
+      candidates = if @organization.website_calendar_enabled?
+        events = @organization.calendar_events.overlapping(lower, upper)
+        meetings = @organization.meetings.where(starts_at: lower...upper)
+        (events.to_a + meetings.to_a).select(&:website_listed?).map(&:website_calendar_payload)
+      else
+        scope.where(kind: "event").map(&:snapshot)
+      end
+      records = candidates.select do |record|
         start, finish = span(record)
         start < upper && (finish > start ? finish > lower : start >= lower)
       end.sort_by { |record| [ span(record).first, record.fetch("id") ] }

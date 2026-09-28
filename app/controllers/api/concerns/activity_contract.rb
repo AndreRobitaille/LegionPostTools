@@ -64,10 +64,15 @@ module Api
 
         event.attributes.slice("id", "title", "description", "location", "starts_at", "ends_at", "all_day", "cancelled", "visibility", "endeavor_id", "lock_version", "created_by_id", "updated_by_id", "created_at", "updated_at", "calendar_category", "website_designation").merge(
           "category" => CalendarCategories.for(event),
+          "website_calendar" => event.website_calendar_state,
           "website_publication" => website_publication_status(event))
       end
 
       def website_publication_status(event)
+        if event.organization.website_calendar_enabled?
+          return { status: event.website_listed? ? "listed" : "hidden", automatic: true,
+            published_event: event.website_listed? ? event.website_calendar_payload : nil }
+        end
         publication = event.website_publication
         return { status: "unpublished", publishing_permission: "publish_public_content" } unless publication
 

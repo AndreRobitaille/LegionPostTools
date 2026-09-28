@@ -1,5 +1,22 @@
 # Public website publishing
 
+## Automatic calendar listings (September 28, 2026)
+
+The event workflow below is legacy behavior until automatic listings are activated.
+See [Automatic website calendar](AUTOMATIC_WEBSITE_CALENDAR.md) for the current design.
+In Public website > Calendar defaults, a publisher chooses explicit event types,
+reviews the actual notices, and activates the policy. CalendarEvents and formal
+Meetings then supply live notices with Type default / Show / Hide exceptions.
+Attendance is separate from website visibility. Calendar and meeting managers edit
+their respective notices during ordinary saves; no event eligibility or Publish step
+is required. Introductions retain their consent and publication workflow.
+
+Migration leaves the policy inactive and never infers website types from titles.
+Suggested defaults are member_meeting and public_event; unclassified existing events
+need an explicit type or Show exception. Legacy publications and audit remain, but
+event editorial mutations are disabled after activation. Only dedicated website copy
+and schedule/place/attendance/cancellation fields reach the authenticated feed.
+
 Design and implementation, September 27, 2026. Baseline: the companion's revision 3
 `public-publishing-api-v1.md` and `publisher-api-request.md`. The subsequent release
 authorization covers deployment and migration; live grants and publication remain

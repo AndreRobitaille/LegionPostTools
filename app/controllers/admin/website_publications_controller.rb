@@ -21,7 +21,11 @@ module Admin
       redirect_to edit_admin_website_publication_path(publication)
     end
 
-    def edit; end
+    def edit
+      if !@publication.story? && @organization.website_calendar_enabled?
+        redirect_to admin_website_calendar_path, notice: "Event listings are managed on the calendar."
+      end
+    end
 
     def update
       @publication.edit_draft!(actor: current_user, version: params[:version],

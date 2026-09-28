@@ -16,10 +16,11 @@ class CalendarController < ApplicationController
 
   def load_month
     @managing = action_name == "manage"
+    @organization = Organization.first!
     date = params[:start_date].present? ? Date.iso8601(params[:start_date]) : Date.current
     raise Date::Error unless (1900..2200).cover?(date.year)
 
-    @month = CalendarMonth.new(organization: Organization.first!, date: date, view: params[:view], categories: params[:categories])
+    @month = CalendarMonth.new(organization: @organization, date: date, view: params[:view], categories: params[:categories])
   rescue Date::Error, TypeError
     redirect_to calendar_path, alert: "Choose a valid calendar month between 1900 and 2200."
   end

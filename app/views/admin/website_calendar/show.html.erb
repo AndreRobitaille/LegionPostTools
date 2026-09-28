@@ -1,0 +1,48 @@
+<% content_for :title, "Website calendar defaults" %>
+<%= link_to "Public website", admin_website_publications_path, class: "back" %>
+<div class="page-lead">
+  <h1 class="page-title">Website calendar defaults</h1>
+  <p class="page-sub"><%= @organization.website_calendar_enabled? ? "Automatic calendar listings are active." : "Automatic calendar listings are not active." %></p>
+</div>
+<%= form_with url: preview_admin_website_calendar_path, class: "stacked-form website-calendar-policy", data: { turbo: false } do |form| %>
+  <fieldset>
+    <legend>Event types shown by default</legend>
+    <%= hidden_field_tag "types[]", "" %>
+    <% CalendarCategories::EDITABLE.each do |value, label| %>
+      <label class="calendar-checkbox"><%= check_box_tag "types[]", value, @types.include?(value), id: "website_type_#{value}" %> <%= label %></label>
+    <% end %>
+  </fieldset>
+  <%= form.submit "Review defaults", class: "btn-primary" %>
+<% end %>
+<% if @preview %>
+  <section class="website-calendar-preview" aria-label="Proposed website listings">
+    <%= render "shared/section_header", label: "Proposed website listings" %>
+    <p><%= @preview[:entries].count { |entry| entry[:listed] } %> shown; <%= @preview[:entries].count { |entry| !entry[:listed] } %> hidden. Includes past and upcoming records.</p>
+    <div class="website-calendar-preview-list">
+      <% @preview[:entries].each do |entry| %>
+        <article class="website-calendar-preview-row">
+          <div>
+            <h3><%= entry[:title] %></h3>
+            <% if entry[:type] == "CalendarEvent" && current_user.can_manage_calendar? %>
+              <%= link_to "Edit event", edit_calendar_event_path(entry[:id]) %>
+            <% elsif entry[:type] == "Meeting" && current_user.can?("manage_agendas") %>
+              <%= link_to "Edit meeting", edit_admin_meeting_path(entry[:id]) %>
+            <% end %>
+            <p><%= legion_datetime(entry[:starts_at].in_time_zone(@organization.calendar_time_zone)) %> · <%= CalendarCategories::LABELS[entry[:category]] || "Unspecified type" %></p>
+            <% if entry[:listed] %>
+              <p><%= entry[:public_event]["location"] %></p>
+              <%= simple_format(entry[:public_event]["description"]) %>
+              <% if entry[:public_event]["cancelled"] %><p>Cancelled</p><% end %>
+            <% end %>
+          </div>
+          <strong><%= entry[:listed] ? "Shown" : "Hidden" %><span class="website-calendar-preview-reason"><%= WebsiteCalendarEntry::LISTINGS.fetch(entry[:listing]) %></span></strong>
+        </article>
+      <% end %>
+    </div>
+    <% if @preview[:entries].empty? %><p class="empty">No calendar records yet.</p><% end %>
+    <%= form_with url: admin_website_calendar_path, method: :patch do |form| %>
+      <%= hidden_field_tag :review_token, @preview[:review_token] %>
+      <%= form.submit @organization.website_calendar_enabled? ? "Save defaults" : "Activate calendar listings", class: "btn-confirm" %>
+    <% end %>
+  </section>
+<% end %>

@@ -1,0 +1,21 @@
+<fieldset class="website-calendar-fields">
+  <legend>Attendance and website listing</legend>
+  <div class="fl">
+    <%= form.label :attendance, "Who may attend?" %>
+    <%= form.select :attendance, WebsiteCalendarEntry::ATTENDANCE.map { |value, label| [label, value] }, {}, class: "f" %>
+  </div>
+  <div class="fl">
+    <%= form.label :website_listing, "Public website" %>
+    <%= form.select :website_listing, WebsiteCalendarEntry::LISTINGS.map { |value, label| [label, value] }, {}, class: "f" %>
+    <span class="form-help">Default shown types: <%= form.object.organization.website_calendar_types.map { |type| CalendarCategories::LABELS.fetch(type) }.join(", ").presence || "None" %>.</span>
+    <% unless form.object.organization.website_calendar_enabled? %><span class="form-help">Calendar defaults not yet active.</span><% end %>
+  </div>
+  <div class="fl">
+    <%= form.label :website_title, "Website title (optional)" %>
+    <%= form.text_field :website_title, class: "f", maxlength: 200, placeholder: form.object.title %>
+  </div>
+  <div class="fl">
+    <%= form.label :website_description, "Public description (optional)" %>
+    <%= form.text_area :website_description, class: "f", rows: 4, maxlength: 10000 %>
+  </div>
+</fieldset>

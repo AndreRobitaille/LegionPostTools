@@ -64,6 +64,7 @@ module Public
           raise "Invalid publisher origin"
         end
         WebsitePublishing::Boundary.synchronize(organization.id) do
+          organization.reload
           yield WebsitePublishing::Feed.new(organization, origin: origin)
         end
       end

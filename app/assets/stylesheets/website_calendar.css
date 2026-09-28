@@ -1,0 +1,79 @@
+.website-calendar-policy,
+.website-calendar-preview {
+  max-width: var(--w-main);
+  margin-block: 24px;
+}
+
+.stacked-form.website-calendar-policy {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.website-calendar-policy .calendar-checkbox {
+  min-height: 44px;
+}
+
+.website-calendar-fields {
+  min-width: 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  padding: 20px 0 0;
+}
+
+.website-calendar-fields legend,
+.website-calendar-policy legend {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.website-calendar-fields .fl {
+  margin-bottom: 18px;
+}
+
+.website-calendar-preview-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+  overflow-wrap: anywhere;
+  font-size: 16px;
+}
+
+.website-calendar-preview-row h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.website-calendar-preview-row a {
+  color: var(--color-navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.website-calendar-preview-row p,
+.website-calendar-preview-reason {
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.website-calendar-preview-reason {
+  display: block;
+  font-weight: 400;
+}
+
+.website-calendar-preview form {
+  margin-top: 24px;
+}
+
+@media (max-width: 560px) {
+  .website-calendar-preview-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}

@@ -13,6 +13,7 @@
     </header>
     <section class="calendar-event-details" aria-label="Event details">
       <dl class="calendar-event-facts">
+        <div><dt>Attendance</dt><dd><%= WebsiteCalendarEntry::ATTENDANCE.fetch(@event.attendance) %></dd></div>
         <div>
           <dt>When</dt>
           <dd>

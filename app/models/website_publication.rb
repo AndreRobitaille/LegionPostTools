@@ -22,13 +22,14 @@ class WebsitePublication < ApplicationRecord
   def self.create_draft!(organization:, actor:, calendar_event: nil)
     WebsitePublishing::Boundary.synchronize(organization.id) do
       authorize!(actor)
+      raise ArgumentError, "Manage website listings on the calendar." if calendar_event && organization.reload.website_calendar_enabled?
       if calendar_event
         calendar_event.reload
         raise ArgumentError, "Choose an event from this Post." unless calendar_event.organization_id == organization.id
       end
       raise Conflict, "This calendar event already has a publication. Reload the workspace." if calendar_event && exists?(calendar_event_id: calendar_event.id)
       create!(organization: organization, calendar_event: calendar_event,
-        original_calendar_event_id: calendar_event&.id, kind: calendar_event ? "event" : "story",
+        original_calendar_event_id: calendar_event&.id, public_id: calendar_event&.website_public_id, kind: calendar_event ? "event" : "story",
         draft: calendar_event ? { title: calendar_event.title, description: calendar_event.description } : {}).tap do |publication|
         publication.record!("created", actor)
       end
@@ -192,6 +193,7 @@ class WebsitePublication < ApplicationRecord
     WebsitePublishing::Boundary.synchronize(organization_id) do
       self.class.authorize!(actor)
       reload
+      raise ArgumentError, "Manage website listings on the calendar." if !story? && organization.reload.website_calendar_enabled?
       valid_version = version.to_s.match?(/\A\d+\z/) && (restrictive ? version.to_i <= lock_version : version.to_i == lock_version)
       raise Conflict, "This review is out of date. Review the latest version." unless valid_version
       unless story? || restrictive

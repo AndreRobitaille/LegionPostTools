@@ -1,4 +1,5 @@
 class Meeting < ApplicationRecord
+  include WebsiteCalendarEntry
   HEADING_FIELDS = %w[starts_at title location_name location_address].freeze
 
   normalizes :calendar_category, with: ->(value) { value.presence }
@@ -26,6 +27,8 @@ class Meeting < ApplicationRecord
   before_validation :apply_default_title
   before_validation :apply_location_defaults, on: :create
   after_update :sync_draft_agenda_heading!
+  around_save :serialize_website_calendar_change
+  around_destroy :serialize_website_calendar_change
 
   validates :title, :starts_at, :location_name, presence: true
   validate :associations_belong_to_same_organization
@@ -51,6 +54,10 @@ class Meeting < ApplicationRecord
   end
 
   private
+
+  def serialize_website_calendar_change(&block)
+    WebsitePublishing::Boundary.synchronize(organization_id, &block)
+  end
 
   def apply_default_title
     self.title = self.class.default_title(meeting_body:, meeting_type:, starts_at:) if title.blank?

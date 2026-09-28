@@ -26,6 +26,7 @@ module Admin
 
     def create
       @meeting = @organization.meetings.new(meeting_params)
+      @meeting.website_calendar_actor = current_user
       if @meeting.save
         redirect_to admin_meeting_path(@meeting), notice: "Meeting created."
       else
@@ -36,6 +37,7 @@ module Admin
     def edit; end
 
     def update
+      @meeting.website_calendar_actor = current_user
       if @meeting.update_with_agenda_sync(meeting_params)
         redirect_to admin_meeting_path(@meeting), notice: "Meeting details saved."
       else
@@ -50,6 +52,7 @@ module Admin
         return redirect_to admin_meeting_path(@meeting), alert: "Remove the meeting's agenda before deleting the meeting."
       end
 
+      @meeting.website_calendar_actor = current_user
       @meeting.destroy!
       redirect_to admin_meetings_path, notice: "Meeting deleted.", status: :see_other
     rescue ActiveRecord::DeleteRestrictionError, ActiveRecord::RecordNotDestroyed
@@ -104,7 +107,7 @@ module Admin
         :title,
         :location_name,
         :location_address,
-        :lock_version
+        :lock_version, :cancelled, *WebsiteCalendarEntry::FIELDS
       )
 
       if permitted.key?(:starts_at_date)

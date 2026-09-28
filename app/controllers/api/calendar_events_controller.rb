@@ -66,10 +66,11 @@ module Api
 
     def assign_event_attributes
       if params.key?(:website_designation)
+        raise ArgumentError, "Use website_listing: hide to remove an automatic listing." if organization.website_calendar_enabled?
         raise ArgumentError, "Only internal designation may be set through the calendar API." unless params[:website_designation] == "internal"
         @event.website_designation = "internal"
       end
-      @event.assign_attributes(params.permit(:calendar_category, :title, :description, :location, :visibility))
+      @event.assign_attributes(params.permit(:calendar_category, :title, :description, :location, :visibility, *WebsiteCalendarEntry::FIELDS))
       if params.key?(:endeavor_id)
         @event.endeavor = params[:endeavor_id].present? ? organization.endeavors.find(params[:endeavor_id]) : nil
       end

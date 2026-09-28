@@ -1,5 +1,44 @@
 # Calendar and Endeavor activity API
 
+## Automatic website calendar (September 28, 2026)
+
+This section supersedes the older event-publication and derived-only public_event
+rules below after activation. CalendarEvent and Meeting create/update accept explicit
+`calendar_category: public_event` as well as other stored categories. Null can infer a
+display category, but never website eligibility.
+
+Both resources accept these top-level fields under existing write permissions:
+
+- `website_listing`: `default`, `show`, or `hide` (default `default`).
+- `attendance`: `members`, `public`, or `invited` (default `members`). Independent of listing.
+- `website_title`: optional public title; blank uses the source title.
+- `website_description`: optional public copy, never copied from internal descriptions.
+- Meetings also accept `cancelled` as a JSON boolean and show cancellation notices.
+
+Private responses include `website_calendar` with those four website/attendance
+fields, `enabled`, `listed`, and `type_default`. Active CalendarEvents report
+`website_publication.status` as `listed` or `hidden`, `automatic: true`, and the current
+public projection when listed. The older publication state remains before activation.
+After activation `website_designation` writes are rejected; use `website_listing: hide`.
+Schedule/place/copy edits and cancellation immediately affect active notices.
+Public responses keep existing v1 fields and add attendance; description includes
+the attendance label for compatibility with existing consumers.
+
+Publisher-only policy endpoints:
+
+- `GET /api/website_calendar`: enabled, types, version and available_types.
+- `POST /api/website_calendar/preview`, with `types: [...]`: all existing occurrences,
+  proposed visibility and public fields, plus a signed `review_token` valid for 30 minutes.
+  This is a private review; no writes or publication occur.
+- `PATCH /api/website_calendar`, with `review_token`: activate or update the reviewed
+  defaults on human instruction. Stale source/policy state or invalid/expired token
+  returns 409; invalid types return 422. Activation is one-way to prevent restoring
+  stale legacy snapshots. Empty types hides defaults, but Show overrides remain.
+
+Session CSRF and bearer Idempotency-Key apply to both POST and PATCH. Existing records
+are not automatically classified or exposed by migration. Audit captures notice/policy
+changes, actor and delegated-agent identity. See [the design](AUTOMATIC_WEBSITE_CALENDAR.md).
+
 Design and implementation contract, 6 September 2026. The existing calendar UI and
 production seed were deployed at `f22eec3`; this follow-up release adds private API parity. No public website synchronization, caching, or unauthenticated feed is
 introduced. Repository-only development does not require a production API sign-in.

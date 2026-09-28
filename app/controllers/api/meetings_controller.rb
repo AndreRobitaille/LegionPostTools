@@ -14,6 +14,7 @@ module Api
 
     def create
       meeting = organization.meetings.new(meeting_attributes)
+      meeting.website_calendar_actor = current_user
       meeting.save!
       render json: { meeting: meeting_payload(meeting) }, status: :created
     rescue ArgumentError, ActiveRecord::RecordInvalid => error
@@ -26,6 +27,7 @@ module Api
     end
 
     def update
+      @meeting.website_calendar_actor = current_user
       if @meeting.update_with_agenda_sync(meeting_attributes)
         render json: { meeting: meeting_payload(@meeting.reload) }
       else
@@ -43,6 +45,7 @@ module Api
       end
 
       deleted = meeting_payload(@meeting)
+      @meeting.website_calendar_actor = current_user
       @meeting.destroy!
       render json: { deleted_meeting: deleted }
     rescue ActiveRecord::RecordNotDestroyed, ActiveRecord::DeleteRestrictionError
@@ -80,8 +83,13 @@ module Api
         :title,
         :location_name,
         :location_address,
-        :lock_version
+        :lock_version, *WebsiteCalendarEntry::FIELDS
       ).to_h.symbolize_keys
+
+      if params.key?(:cancelled)
+        raise ArgumentError, "cancelled must be true or false." unless [ true, false ].include?(params[:cancelled])
+        permitted[:cancelled] = params[:cancelled]
+      end
 
       if permitted.key?(:starts_at)
         permitted[:starts_at] = Time.zone.parse(permitted[:starts_at].to_s)
