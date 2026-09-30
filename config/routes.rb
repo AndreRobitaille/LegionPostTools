@@ -156,6 +156,7 @@ Rails.application.routes.draw do
         end
         resources :items, except: %i[index show], controller: "minutes_items" do
           patch :move, on: :member
+          resource :endeavor, only: %i[new create], controller: "minutes_item_endeavors"
         end
         resources :outcomes, except: %i[index show], controller: "minutes_outcomes" do
           patch :move, on: :member
@@ -177,6 +178,8 @@ Rails.application.routes.draw do
         patch :move, on: :member
       end
       resources :agenda_items, controller: "dated_agenda_items", as: :agenda_items, only: %i[new create edit update destroy] do
+        get :new_discussion, on: :collection
+        post :create_discussion, on: :collection
         post :reorder, on: :collection
         patch :refresh_roll_call, on: :member
         resource :roll_call, only: %i[edit update], controller: "dated_agenda_roll_calls"
@@ -232,7 +235,9 @@ Rails.application.routes.draw do
         post "sections/:section_id/items/reorder", to: "minutes_items#reorder"
         post "items/:item_id/outcomes/reorder", to: "minutes_outcomes#reorder"
         resources :sections, only: %i[create update destroy], controller: "minutes_sections"
-        resources :items, only: %i[create update destroy], controller: "minutes_items"
+        resources :items, only: %i[create update destroy], controller: "minutes_items" do
+          resource :endeavor, only: :create, controller: "minutes_item_endeavors"
+        end
         resources :outcomes, only: %i[create update destroy], controller: "minutes_outcomes"
         resources :draft_runs, only: %i[index show create], controller: "minutes_draft_runs" do
           member do

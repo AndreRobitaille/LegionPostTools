@@ -36,6 +36,130 @@ class ApiMinutesDraftApiTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "Commander opened"
   end
 
+  test "Endeavor proposal API requires explicit identity choice and creation authority" do
+    item = @minutes.sections.first.items.create!(title: "Breakfast", behavior_type: "business_item", position: 1)
+    run = succeeded_run
+    proposal = run.suggestions.create!(kind: "endeavor_proposal", minutes_item: item,
+      payload: { "title" => "Community breakfast", "body" => "Plan a breakfast.", "reason" => "Continuing work." },
+      source_start_line: 2, source_end_line: 2, confidence: "high", missing_facts: [])
+    path = "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{run.id}/suggestions/#{proposal.id}/use"
+
+    assert_no_difference "Endeavor.count" do
+      patch path, as: :json
+      assert_response :unprocessable_entity
+      patch path, params: { endeavor_action: "create", title: "Breakfast", body: "Plan it.", lock_version: item.lock_version }, as: :json
+      assert_response :unprocessable_entity
+    end
+    assert_nil item.reload.endeavor_id
+    assert proposal.reload.unreviewed?
+
+    PermissionGrant.create!(user: @manager, capability: "manage_agendas")
+    assert_difference "Endeavor.count", 1 do
+      patch path, params: { endeavor_action: "create", title: "Community breakfast", body: "Plan a breakfast.", lock_version: item.lock_version }, as: :json
+    end
+    assert_response :success
+    assert_equal "used", proposal.reload.review_state
+    assert_equal @manager, item.reload.endeavor.created_by
+    assert_no_difference "Endeavor.count" do
+      patch path, params: { endeavor_action: "create", title: "Another breakfast", lock_version: 0 }, as: :json
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "Endeavor proposal API permits confirmed existing links but rejects stale or foreign identities" do
+    item = @minutes.sections.first.items.create!(title: "Breakfast", behavior_type: "business_item", position: 1)
+    proposal = succeeded_run.suggestions.create!(kind: "endeavor_proposal", minutes_item: item,
+      payload: { "title" => "Breakfast", "body" => "Plan it.", "reason" => "Continuing work." },
+      source_start_line: 2, source_end_line: 2, confidence: "high", missing_facts: [])
+    existing = @organization.endeavors.create!(title: "Breakfast planning", created_by: @manager, importance: "standard", status: "active")
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.endeavors.create!(title: "Other work", created_by: @manager, importance: "standard", status: "active")
+    path = "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{proposal.minutes_draft_run_id}/suggestions/#{proposal.id}/use"
+    patch path, params: { endeavor_action: "link", endeavor_id: foreign.id, lock_version: item.lock_version }, as: :json
+    assert_response :unprocessable_entity
+    assert_nil item.reload.endeavor_id
+    version = item.lock_version
+    item.update!(title: "Changed discussion")
+    patch path, params: { endeavor_action: "link", endeavor_id: existing.id, lock_version: version }, as: :json
+    assert_response :unprocessable_entity
+    assert proposal.reload.unreviewed?
+    patch path, params: { endeavor_action: "link", endeavor_id: existing.id, lock_version: item.lock_version }, as: :json
+    assert_response :success
+    assert_equal existing, item.reload.endeavor
+    assert_equal "edited", proposal.reload.review_state
+  end
+
+  test "AI proposal evidence is explicit normalized restricted and absent after purge" do
+    @transcript.update!(content: "Commander opened the meeting.\n\n  The membership   discussed the event.\nA motion was made and passed.")
+    item = @minutes.sections.first.items.create!(title: "Breakfast", behavior_type: "business_item", position: 1)
+    run = succeeded_run
+    proposal = endeavor_proposal(run, item)
+    path = "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{run.id}"
+    _token, secret = AgentAccessToken.issue!(user: @manager, name: "Evidence review", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{secret}" }
+    get path, headers: headers, as: :json
+    assert_response :success
+    assert_not response.parsed_body.dig("draft_run", "suggestions", 0).key?("source_excerpt")
+    get path, params: { include_source: true }, headers: headers, as: :json
+    assert_response :success
+    returned = response.parsed_body.dig("draft_run", "suggestions", 0)
+    assert_equal proposal.id, returned["id"]
+    assert_equal "L0002 The membership discussed the event.", returned["source_excerpt"]
+    assert_equal proposal.payload, returned["payload"]
+    assert_includes response.headers["Cache-Control"], "no-store"
+    @transcript.update!(content: nil, purged_at: Time.current, purged_by: @manager)
+    get path, params: { include_source: true }, headers: headers, as: :json
+    assert_response :success
+    assert_nil response.parsed_body.dig("draft_run", "suggestions", 0, "source_excerpt")
+    @manager.permission_grants.find_by!(capability: "manage_minutes").destroy!
+    get path, params: { include_source: true }, headers: headers, as: :json
+    assert_response :forbidden
+    assert_not_includes response.body, "membership discussed"
+  end
+
+  test "bearer AI corrections and dismissal preserve original evidence and review provenance" do
+    PermissionGrant.create!(user: @manager, capability: "manage_agendas")
+    item = @minutes.sections.first.items.create!(title: "Breakfast", body: "Members agreed to recurring work.",
+      agenda_body: "Explore a breakfast.", behavior_type: "business_item", position: 1)
+    proposal = endeavor_proposal(succeeded_run, item)
+    original_payload = proposal.payload.deep_dup
+    original_record = [ item.title, item.body.to_plain_text, item.agenda_body.to_plain_text ]
+    token, secret = AgentAccessToken.issue!(user: @manager, name: "Minutes review", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{secret}", "Idempotency-Key" => "edited-ai-breakfast" }
+    path = "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{proposal.minutes_draft_run_id}/suggestions/#{proposal.id}/edit"
+    payload = { endeavor_action: "create", title: "Monthly community breakfast", body: "Plan recurring breakfasts.", lock_version: item.lock_version }
+    assert_difference "Endeavor.count", 1 do
+      patch path, params: payload, headers: headers, as: :json
+    end
+    assert_response :success
+    assert_equal "edited", response.parsed_body.dig("suggestion", "review_state")
+    assert_equal original_payload, response.parsed_body.dig("suggestion", "payload")
+    assert_equal "Endeavor", response.parsed_body.dig("suggestion", "applied_record_type")
+    assert_equal item.reload.endeavor_id, response.parsed_body.dig("suggestion", "applied_record_id")
+    assert_equal @manager, proposal.reload.reviewed_by
+    assert_not_nil proposal.reviewed_at
+    assert_equal original_record, [ item.title, item.body.to_plain_text, item.agenda_body.to_plain_text ]
+    assert_no_difference "Endeavor.count" do
+      patch path, params: payload, headers: headers, as: :json
+    end
+    assert_response :success
+    assert_equal 200, token.agent_api_executions.find_by!(idempotency_key: "edited-ai-breakfast").response_status
+
+    second_item = @minutes.sections.first.items.create!(title: "Another discussion", behavior_type: "business_item", position: 2)
+    dismissed = endeavor_proposal(proposal.minutes_draft_run, second_item)
+    discard_path = "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{dismissed.minutes_draft_run_id}/suggestions/#{dismissed.id}/discard"
+    assert_no_difference "Endeavor.count" do
+      patch discard_path, headers: headers.merge("Idempotency-Key" => "dismiss-ai-work"), as: :json
+    end
+    assert_response :success
+    assert_equal "discarded", response.parsed_body.dig("suggestion", "review_state")
+    assert_equal @manager, dismissed.reload.reviewed_by
+    assert_not_nil dismissed.reviewed_at
+    assert_nil dismissed.applied_record_id
+    assert_nil second_item.reload.endeavor_id
+    assert_equal original_payload, dismissed.payload
+  end
+
   test "agent explicitly reviews narrative and roster-verified outcome suggestions" do
     item = @minutes.sections.first.items.create!(
       title: "Car show",
@@ -158,6 +282,12 @@ class ApiMinutesDraftApiTest < ActionDispatch::IntegrationTest
 
   def prepared_run
     MinutesDrafting::Generate.prepare(minutes: @minutes, requester: @manager)
+  end
+
+  def endeavor_proposal(run, item)
+    run.suggestions.create!(kind: "endeavor_proposal", minutes_item: item,
+      payload: { "title" => "Breakfast", "body" => "Plan a breakfast.", "reason" => "Continuing work.", "endeavor_id" => nil },
+      source_start_line: 2, source_end_line: 2, confidence: "high", missing_facts: [])
   end
 
   def succeeded_run

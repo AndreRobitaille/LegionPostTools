@@ -16,6 +16,10 @@ module MinutesDrafting
     end
 
     def call
+      if suggestion.kind == "endeavor_proposal" && action.in?(%w[use edit])
+        MinutesEndeavors::Confirm.call(item: suggestion.minutes_item, reviewer: reviewer, attributes: edits, suggestion: suggestion)
+        return suggestion
+      end
       suggestion.with_lock do
         raise ActiveRecord::RecordInvalid, suggestion unless suggestion.unreviewed?
 

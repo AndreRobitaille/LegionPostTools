@@ -473,7 +473,7 @@ module Api
       }
     end
 
-    def minutes_draft_run_payload(run, include_suggestions: false)
+    def minutes_draft_run_payload(run, include_suggestions: false, include_source: false)
       payload = {
         id: run.id,
         meeting_minutes_id: run.meeting_minutes_id,
@@ -502,12 +502,14 @@ module Api
         updated_at: run.updated_at.iso8601,
         review_counts: run.suggestions.reorder(nil).group(:review_state).count
       }
-      payload[:suggestions] = run.suggestions.map { |suggestion| minutes_draft_suggestion_payload(suggestion) } if include_suggestions
+      if include_suggestions
+        payload[:suggestions] = run.suggestions.map { |suggestion| minutes_draft_suggestion_payload(suggestion, include_source: include_source) }
+      end
       payload
     end
 
-    def minutes_draft_suggestion_payload(suggestion)
-      {
+    def minutes_draft_suggestion_payload(suggestion, include_source: false)
+      payload = {
         id: suggestion.id,
         kind: suggestion.kind,
         confidence: suggestion.confidence,
@@ -525,6 +527,8 @@ module Api
         applied_record_type: suggestion.applied_record_type,
         applied_record_id: suggestion.applied_record_id
       }
+      payload[:source_excerpt] = suggestion.source_excerpt if include_source
+      payload
     end
 
     def user_account_payload(person)

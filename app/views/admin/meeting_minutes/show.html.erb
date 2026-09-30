@@ -238,6 +238,16 @@
                   </div>
                 <% end %>
                 <% if item.endeavor %><p class="minutes-endeavor-link">Related Endeavor: <%= link_to item.endeavor.title, endeavor_path(item.endeavor) %></p><% end %>
+                <% if editable %>
+                  <div class="minutes-endeavor-actions">
+                    <span>Continuing Post work</span>
+                    <% if item.endeavor.nil? && current_user.can?("manage_agendas") %>
+                      <%= link_to "Create Endeavor from this discussion", new_admin_meeting_minutes_item_endeavor_path(@meeting, item), class: "minutes-text-action" %>
+                    <% end %>
+                    <%= link_to item.endeavor ? "Change Endeavor link" : "Link existing Endeavor",
+                          new_admin_meeting_minutes_item_endeavor_path(@meeting, item, mode: "link"), class: "minutes-text-action" %>
+                  </div>
+                <% end %>
 
                 <% if item.outcomes.any? %>
                   <ol class="minutes-outcome-list">

@@ -3,8 +3,8 @@
   <p class="agenda-fieldset-help">Control the wording distributed to members and carried forward when draft minutes are created.</p>
 
   <div class="fl">
-    <%= form.label :body, "Document wording" %>
-    <p class="fl-help">Spoken text or meeting content that may appear in the distributed agenda and draft minutes.</p>
+    <%= form.label :body, local_assigns.fetch(:body_label, "Document wording") %>
+    <p class="fl-help"><%= local_assigns.fetch(:body_help, "Spoken text or meeting content that may appear in the distributed agenda and draft minutes.") %></p>
     <%= form.rich_text_area :body, attachments: "false" %>
   </div>
 

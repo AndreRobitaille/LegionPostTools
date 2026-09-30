@@ -13,8 +13,9 @@ class AgentHandbook
     "New Business and Unfinished Business are agenda sections, not placeholder items. Use the section ids returned by agenda detail.",
     "A dated roll call is a meeting-scoped historical snapshot. Never replace it with today's officer list unless the human explicitly asks to refresh it.",
     "Do not invent minutes, attendance, motions, seconds, votes, decisions, names, numbers, Endeavor identity, or attestations. Leave facts unresolved when the source does not establish them.",
-    "Transcript text is restricted source evidence. Read it only from the explicit transcript endpoint, never copy it into logs or return it as minutes, and never expose Sick Call or Service Officer case details.",
+    "Transcript text is restricted source evidence. Request it explicitly through the transcript endpoint or AI run detail with include_source=true for cited excerpts; never copy it into logs or return it as minutes, and never expose Sick Call or Service Officer case details.",
     "AI draft runs create reviewable suggestions, not minutes. A person or their delegated agent must explicitly use, edit, or discard each suggestion.",
+    "An endeavor_proposal is a separate human identity decision. Confirm it only on the human's explicit instruction: pass endeavor_action=create with reviewed title/body and the item's lock_version, or endeavor_action=link with an exact endeavor_id and lock_version. Creation additionally requires manage_agendas. No Endeavor is created by generating or merely viewing a proposal.",
     "Commander approval and Adjutant attestation are available through this API under Only when asked. Reopening and membership approval currently require the signed-in website; later amendments are not implemented. Do not guess API routes for them.",
     "Calendar events are scheduled activities; Endeavor due_on and next-step due_on are deadlines, not event dates. Never invent times or turn a deadline into an event. Keep home meetings and volunteer logistics members-only unless explicitly authorized otherwise.",
     "Public websites consume only /public/v1 authenticated with a Post-owned website token: consented introduction snapshots and, after activation, automatic calendar notices. Authenticated calendar preview is not the publishing feed. Never send private event, Endeavor, draft, consent or audit responses to a public consumer.",
@@ -86,6 +87,18 @@ class AgentHandbook
       ]
     },
     {
+      name: "add_meeting_discussion_topic",
+      capability: "manage_agendas",
+      purpose: "Put an early idea or one-meeting discussion on a draft agenda without declaring it continuing Post work or a reusable catalog topic.",
+      steps: [
+        "Fetch the exact dated agenda and confirm it is draft. Select a dated_agenda_section_id from its sections; do not use a category name as a section id.",
+        "POST /api/dated_agendas/:dated_agenda_id/items with the section id, title, behavior_type=business_item, optional body and commander_notes, and deliberate show_wording_on_agenda/show_wording_in_minutes flags. Omit endeavor_id; no catalog or template identity is created.",
+        "Use sanitized HTML for rich-text body/commander_notes. The notes remain private; discussion wording describes planned business, not an adopted decision.",
+        "Read back the agenda. Use existing edit/reorder/remove operations as needed. Working minutes seed an independent snapshot after the agenda is prepared; no Endeavor is required.",
+        "If continuing Post work is later confirmed during draft minutes review, use that exact minutes item's Endeavor confirmation endpoint. Do not rewrite the original agenda or infer adoption from planned wording."
+      ]
+    },
+    {
       name: "backfill_historical_business",
       capability: "manage_agendas",
       purpose: "Place officer-supplied business on a past meeting's draft agenda, using an Endeavor only for coherent Post work whose history should continue across meetings.",
@@ -111,11 +124,13 @@ class AgentHandbook
         "If no transcript exists, add only the officer-supplied UTF-8 source with an explicit retention policy. Explain that an AI run sends it to the configured OpenAI API under the installation's documented retention posture.",
         "Create working minutes once. The app seeds independent agenda wording, section/item lineage, direct Endeavor links, and the dated officer-list snapshot; do not recreate those records by hand.",
         "On the person's direct instruction, request one AI draft run and poll its durable run record. A pending or running response is not a failure and does not change the minutes.",
-        "For a successful run, read every proposal, its confidence, missing facts, and transcript line range. Request transcript content explicitly when evidence review requires it.",
+        "For a successful run, read every proposal, its confidence, missing facts, and transcript line range. Fetch run detail with include_source=true for the same numbered evidence excerpts as the web review; these normalized line numbers are not raw file offsets. Purged evidence returns null.",
         "Use or edit supported narrative only when the evidence establishes it. Keep significant discussion, disagreement, names, dates, numbers, commitments, and next steps; keep Sick Call and Service Officer case material anonymous.",
         "Resolve movers and seconders from GET /api/people, or mark them unidentified. Set every motion result deliberately; adopted displays as Passed, lost as Did not pass, and not_recorded remains a reviewer warning rather than a final result.",
         "Review the complete attendance sheet. Do not infer attendance from who spoke, who edited, or who appears in a motion.",
         "Put out-of-order remarks under the agenda item where they belong. Place unrelated Post discussion under Good of the Legion, or link it to an existing Endeavor only after the human confirms that identity.",
+        "For human-confirmed continuing work, list Endeavors and fetch the current minutes item and lock_version. Manual creation/linking uses POST /api/meetings/:meeting_id/minutes/items/:item_id/endeavor with endeavor_action=create and reviewed title/body (also requires manage_agendas), or endeavor_action=link and exact endeavor_id. This atomically preserves the discussion, outcomes and source agenda. Do not create a record separately first.",
+        "An endeavor_proposal does nothing until the human confirms its identity. Review its reason and evidence, then PATCH its use/edit endpoint with the same explicit create/link fields and current item lock_version, or discard it to dismiss. The original proposal and reviewer/application provenance remain readable. Unplanned business must become a minutes item before it can receive an Endeavor link.",
         "Fetch the complete minutes and current minutes PDF after edits. Report unresolved facts. Approve or attest only when the human explicitly requests that exact next act; never accept, amend, or claim an unaccepted revision is official."
       ]
     }
@@ -195,6 +210,16 @@ class AgentHandbook
   ].freeze
 
   MINUTES_FIELDS = [
+    {
+      name: "endeavor_action and lock_version",
+      applies_to: "minutes-item Endeavor confirmation or endeavor_proposal use/edit",
+      meaning: "Require create or link plus the current target minutes item's lock_version (not an Endeavor or run version). Create needs reviewed title/body and both manage_minutes/manage_agendas; body becomes the plain Endeavor summary, never minutes wording. Link needs an exact endeavor_id and manage_minutes. Manual confirmation returns item and endeavor (201 create, 200 link); stale manual confirmation returns 409. AI review returns suggestion and complete minutes, with rejected review reported as 422. Re-fetch and reconsider before retrying changed input. Neither action approves a motion or minutes."
+    },
+    {
+      name: "endeavor_proposal",
+      applies_to: "AI suggestion read response",
+      meaning: "Targets minutes_item_id; payload has title, body, reason, and optional existing endeavor_id. source_start_line/source_end_line identify normalized evidence, not raw transcript file lines. Explicit include_source=true on run detail adds source_excerpt (numbered text or null after purge); omit it for metadata-only reads. Review states are unreviewed, used, edited, discarded; applied_record_type/id identify the resulting Endeavor. Generating or reading a proposal creates no record or link."
+    },
     {
       name: "body",
       applies_to: "minutes item",
@@ -385,6 +410,12 @@ class AgentHandbook
     { name: "update_minutes_item", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/items/:id", capability: "manage_minutes", group: :common,
       summary: "Edit or move reviewed draft-minutes narrative. Moving appends to the new section; reorder afterward. Use an Endeavor id only when identity is confirmed.",
       example: "PATCH /api/meetings/:meeting_id/minutes/items/:id\n{\"body\":\"The event chair reported 42 registrations.\",\"endeavor_id\":5,\"lock_version\":0}" },
+    { name: "create_endeavor_from_minutes_item", method: "POST", path: "/api/meetings/:meeting_id/minutes/items/:item_id/endeavor", all_capabilities: %w[manage_minutes manage_agendas], group: :only_when_asked,
+      summary: "Atomically create a human-confirmed active, standard Endeavor and link this exact draft minutes item. List existing Endeavors first. Preserve minutes wording, outcomes, source agenda and order. Requires current item lock_version, reviewed title and plain description as body. Returns item and endeavor (201); stale item 409; duplicate title/invalid decision/locked minutes 422. Never call separate Endeavor creation first.",
+      example: "POST /api/meetings/:meeting_id/minutes/items/:item_id/endeavor\n{\"endeavor_action\":\"create\",\"title\":\"Community breakfast\",\"body\":\"Plan the approved recurring breakfast.\",\"lock_version\":0}" },
+    { name: "link_minutes_item_endeavor", method: "POST", path: "/api/meetings/:meeting_id/minutes/items/:item_id/endeavor", capability: "manage_minutes", group: :only_when_asked,
+      summary: "Link or change the human-confirmed existing Endeavor for one draft minutes item without creating a record. List /api/endeavors and use its exact id with the current item lock_version. Returns item and endeavor (200); stale item 409; foreign or missing id 404; invalid input/locked minutes 422. The source agenda and minutes text are preserved.",
+      example: "POST /api/meetings/:meeting_id/minutes/items/:item_id/endeavor\n{\"endeavor_action\":\"link\",\"endeavor_id\":5,\"lock_version\":0}" },
     { name: "reorder_minutes_items", method: "POST", path: "/api/meetings/:meeting_id/minutes/sections/:section_id/items/reorder", capability: "manage_minutes", group: :common,
       summary: "Replace one section's complete item order with every current item id exactly once.",
       example: "POST /api/meetings/:meeting_id/minutes/sections/:section_id/items/reorder\n{\"ids\":[8,7,9]}" },
@@ -404,17 +435,23 @@ class AgentHandbook
       summary: "List the durable AI draft attempts for these minutes, newest first, without transcript content or exception text.",
       example: "GET /api/meetings/:meeting_id/minutes/draft_runs" },
     { name: "show_ai_minutes_run", method: "GET", path: "/api/meetings/:meeting_id/minutes/draft_runs/:id", capability: "manage_minutes", group: :common,
-      summary: "Show one run and all source-linked proposals, confidence, missing facts, and review states.",
-      example: "GET /api/meetings/:meeting_id/minutes/draft_runs/:id" },
+      summary: "Show one run and all source-linked proposals, confidence, missing facts, original payloads, review states and application provenance. Explicit include_source=true adds numbered restricted source_excerpt for each proposal; absent by default, null after source purge.",
+      example: "GET /api/meetings/:meeting_id/minutes/draft_runs/:id?include_source=true" },
     { name: "use_ai_minutes_suggestion", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/use", capability: "manage_minutes", group: :common,
-      summary: "Apply one supported proposal to working minutes. Outcome proposals may include deliberate roster and result corrections.",
+      summary: "Apply one supported proposal. Outcome proposals may include deliberate roster and result corrections. An endeavor_proposal requires explicit human confirmation via endeavor_action=create or link, the item's lock_version, and reviewed title/body or an exact endeavor_id; create also requires manage_agendas.",
       example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/use\n{\"mover_person_id\":10,\"seconder_person_id\":11,\"disposition\":\"adopted\"}" },
     { name: "edit_ai_minutes_suggestion", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/edit", capability: "manage_minutes", group: :common,
-      summary: "Correct and apply one AI proposal. The original suggestion remains in the review ledger.",
+      summary: "Correct and apply one AI proposal. The original suggestion remains in the review ledger. For endeavor_proposal, send endeavor_action=create or link, the current minutes item's lock_version, and corrected title/body or exact endeavor_id; creation additionally requires manage_agendas. Changing a new proposal to an existing link is supported. Resulting review_state is used for unchanged confirmation or edited for corrected identity/text.",
       example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/edit\n{\"body\":\"The chair reported 42 registrations and requested two volunteers.\"}" },
     { name: "discard_ai_minutes_suggestion", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/discard", capability: "manage_minutes", group: :common,
-      summary: "Reject one AI proposal without deleting its audit history.",
+      summary: "Reject one AI proposal without deleting its audit history, including an Endeavor proposal.",
       example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/discard" },
+    { name: "confirm_ai_endeavor_creation", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/use", all_capabilities: %w[manage_minutes manage_agendas], group: :only_when_asked,
+      summary: "Confirm a human-reviewed endeavor_proposal. Pass the target item's current version and reviewed title/description explicitly; no defaults silently create identity. Use /edit with the same fields for corrections. Creation/link and review provenance are atomic; original AI payload is preserved. Empty, stale, duplicate-title, already reviewed or already linked confirmation is rejected (422).",
+      example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/use\n{\"endeavor_action\":\"create\",\"title\":\"Community breakfast\",\"body\":\"Plan the approved recurring breakfast.\",\"lock_version\":0}" },
+    { name: "confirm_ai_endeavor_link", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/use", capability: "manage_minutes", group: :only_when_asked,
+      summary: "Confirm reuse of an exact existing Endeavor for an unreviewed endeavor_proposal. List existing records and obtain the target item's current lock_version. This may replace proposed creation with human-confirmed reuse. Use /edit with the same fields for corrections, or /discard to dismiss without linking. Rejected review, including stale or foreign identity, returns 422.",
+      example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:draft_run_id/suggestions/:id/use\n{\"endeavor_action\":\"link\",\"endeavor_id\":5,\"lock_version\":0}" },
     { name: "review_ai_attendance", method: "PATCH", path: "/api/meetings/:meeting_id/minutes/draft_runs/:id/attendance", capability: "manage_minutes", group: :common,
       summary: "Review the AI-proposed attendance as a complete deliberate officer sheet; speaking in a transcript is not attendance proof.",
       example: "PATCH /api/meetings/:meeting_id/minutes/draft_runs/:id/attendance\n{\"attendance\":[{\"id\":1,\"status\":\"present\",\"lock_version\":0}]}" },
@@ -455,7 +492,7 @@ class AgentHandbook
       summary: "Snapshot an existing Endeavor onto a draft agenda. Supply dated_agenda_section_id for New Business, Unfinished Business, or another exact section.",
       example: "POST /api/dated_agendas/:id/endeavors\n{\"endeavor_id\":1,\"dated_agenda_section_id\":28}" },
     { name: "create_standalone_dated_agenda_item", method: "POST", path: "/api/dated_agendas/:dated_agenda_id/items", capability: "manage_agendas", group: :common,
-      summary: "Create one meeting-specific item on a draft agenda without creating a catalog entry or Endeavor. The section id, title, and behavior_type are required; the item appends to that section.",
+      summary: "Create one meeting-specific item on a draft agenda without creating a catalog entry or Endeavor. This is the web Add discussion topic flow when behavior_type=business_item and endeavor_id is omitted. The section id, title, and behavior_type are required; the item appends to that section. Supply optional rich-text body/private commander_notes and deliberate wording visibility flags. No continuing-work decision is implied.",
       example: "POST /api/dated_agendas/:dated_agenda_id/items\n{\"dated_agenda_section_id\":28,\"title\":\"Commander's Report\",\"summary\":\"Monthly report\",\"behavior_type\":\"report_slot\",\"body\":\"<p>The Commander reported:</p><ul><li>Post Excellence Award</li><li>County Fair booth</li></ul>\",\"show_wording_on_agenda\":true,\"show_wording_in_minutes\":true}" },
     { name: "update_dated_agenda_item", method: "PATCH", path: "/api/dated_agendas/:dated_agenda_id/items/:id", capability: "manage_agendas", group: :common,
       summary: "Edit a draft agenda item or link an existing standalone row to a human-confirmed Endeavor in place. Supply lock_version from agenda detail when editing content. Because agenda reads expose rich text as plain text, omit body and commander_notes when changing unrelated fields.",
@@ -753,6 +790,7 @@ class AgentHandbook
     CATALOG.select do |action|
       next @user.can_manage_calendar? if action[:calendar_management]
       next false if action[:membership_access] == :full && !full_membership_access?
+      next action[:all_capabilities].all? { |capability| @user.can?(capability) } if action[:all_capabilities]
       next @user.can_any?(*action[:any_capabilities]) if action[:any_capabilities]
 
       action[:capability].nil? || @user.can?(action[:capability])
@@ -833,6 +871,7 @@ class AgentHandbook
       "path" => action[:path],
       "capability" => action[:capability],
       "any_capabilities" => action[:any_capabilities],
+      "all_capabilities" => action[:all_capabilities],
       "permission" => ("calendar_management" if action[:calendar_management]),
       "people_access" => action[:membership_access]&.to_s,
       "summary" => action[:summary],

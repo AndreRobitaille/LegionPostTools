@@ -218,6 +218,44 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "discussion and confirmation handbook advertises only the caller's permitted identity actions" do
+    minutes_manager = create_user("Minutes", capabilities: %w[manage_minutes])
+    sign_in_as(minutes_manager)
+    get "/api", as: :json
+    handbook = response.parsed_body
+    actions = handbook.fetch("only_when_asked").index_by { |action| action["name"] }
+    assert actions.key?("link_minutes_item_endeavor")
+    assert actions.key?("confirm_ai_endeavor_link")
+    assert_not actions.key?("create_endeavor_from_minutes_item")
+    assert_not actions.key?("confirm_ai_endeavor_creation")
+    assert_match(/endeavor_action.*link/, actions.fetch("link_minutes_item_endeavor")["example"])
+    workflow = handbook.fetch("guided_workflows").find { |entry| entry["name"] == "prepare_and_review_draft_minutes" }
+    assert workflow["steps"].any? { |step| step.include?("include_source=true") }
+    assert workflow["steps"].any? { |step| step.include?("endeavor_proposal") && step.include?("discard") }
+
+    PermissionGrant.create!(user: minutes_manager, capability: "manage_agendas")
+    get "/api", as: :json
+    handbook = response.parsed_body
+    actions = handbook.fetch("only_when_asked").index_by { |action| action["name"] }
+    %w[create_endeavor_from_minutes_item confirm_ai_endeavor_creation].each do |name|
+      assert_equal %w[manage_minutes manage_agendas], actions.fetch(name)["all_capabilities"]
+      assert_match(/endeavor_action.*create/, actions.fetch(name)["example"])
+    end
+    topics = handbook.fetch("guided_workflows").find { |entry| entry["name"] == "add_meeting_discussion_topic" }
+    assert topics["steps"].any? { |step| step.include?("business_item") && step.include?("Omit endeavor_id") }
+    assert topics["steps"].any? { |step| step.include?("Do not rewrite the original agenda") }
+    get "/api"
+    assert_includes response.body, "create_endeavor_from_minutes_item"
+    assert_includes response.body, "include_source=true"
+    assert_includes response.body, "add_meeting_discussion_topic"
+
+    sign_in_as(create_user("Agenda", capabilities: %w[manage_agendas]))
+    get "/api", as: :json
+    names = response.parsed_body.fetch("only_when_asked").pluck("name")
+    assert_not_includes names, "create_endeavor_from_minutes_item"
+    assert_not_includes names, "link_minutes_item_endeavor"
+  end
+
   test "JSON and Markdown document website credentials without advertising token management actions" do
     _token, secret = AgentAccessToken.issue!(user: @commander, name: "Administrator agent", expires_in: 1.day)
     headers = { "Authorization" => "Bearer #{secret}" }

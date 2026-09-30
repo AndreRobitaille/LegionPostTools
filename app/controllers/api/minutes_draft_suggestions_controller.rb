@@ -5,14 +5,14 @@ module Api
     def use
       review!("use", review_edits(for_use: true))
       render_review
-    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, KeyError, ArgumentError => error
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, ActiveRecord::StaleObjectError, KeyError, ArgumentError => error
       render_review_error(error)
     end
 
     def edit
       review!("edit", review_edits(for_use: false))
       render_review
-    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, KeyError, ArgumentError => error
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, ActiveRecord::StaleObjectError, KeyError, ArgumentError => error
       render_review_error(error)
     end
 
@@ -40,6 +40,7 @@ module Api
     end
 
     def review_edits(for_use:)
+      return suggestion_params.to_h if @suggestion.kind == "endeavor_proposal"
       return normalize_outcome_attributes(suggestion_params) if @suggestion.kind == "outcome"
       return {} if for_use
 
@@ -60,7 +61,9 @@ module Api
         :seconder_unidentified,
         :vote_summary,
         :status,
-        :endeavor_id
+        :endeavor_id,
+        :endeavor_action,
+        :lock_version
       )
     end
 

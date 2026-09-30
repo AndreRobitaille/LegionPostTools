@@ -11,7 +11,8 @@ module MinutesDraftSuggestionsHelper
       "item_summary" => "Draft paragraph",
       "outcome" => "Motion or decision",
       "attendance" => "Attendance",
-      "additional_item" => "Unplanned business"
+      "additional_item" => "Unplanned business",
+      "endeavor_proposal" => suggestion.payload["endeavor_id"].present? ? "Suggested Endeavor link" : "Suggested new Endeavor"
     }.fetch(suggestion.kind)
   end
 
@@ -37,6 +38,8 @@ module MinutesDraftSuggestionsHelper
         suggestion.payload.fetch("title"),
         suggestion.payload.fetch("body")
       ].join("\n")
+    when "endeavor_proposal"
+      [ suggestion.payload.fetch("title"), suggestion.payload.fetch("body"), suggestion.payload.fetch("reason") ].join("\n\n")
     end
   end
 
@@ -45,6 +48,10 @@ module MinutesDraftSuggestionsHelper
   end
 
   def minutes_suggestion_review_label(suggestion)
+    if suggestion.kind == "endeavor_proposal"
+      return "Linked" if suggestion.review_state == "used"
+      return "Edited and linked" if suggestion.review_state == "edited"
+    end
     {
       "unreviewed" => "Needs review",
       "used" => "Added",
@@ -87,6 +94,7 @@ module MinutesDraftSuggestionsHelper
       "incomplete" => "OpenAI returned an incomplete draft. Nothing was applied.",
       "refusal" => "OpenAI did not return draft suggestions. Nothing was applied.",
       "source_unavailable" => "The transcript source is no longer available for drafting.",
+      "draft_version_changed" => "The drafting instructions changed before this run started. Try again to create a draft with the current instructions.",
       "provider_error" => "OpenAI could not create the draft. Retry later or continue manually.",
       "queue_error" => "The background draft worker could not be started. Retry or continue manually.",
       "worker_error" => "The background draft stopped unexpectedly. Retry or continue manually."

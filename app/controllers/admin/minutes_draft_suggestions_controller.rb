@@ -3,7 +3,12 @@ module Admin
     before_action :set_suggestion
     before_action :set_endeavors, :set_people, only: %i[edit update]
 
-    def edit; end
+    def edit
+      return unless @suggestion.kind == "endeavor_proposal"
+
+      redirect_to new_admin_meeting_minutes_item_endeavor_path(@meeting, @suggestion.minutes_item,
+        mode: @suggestion.payload["endeavor_id"].present? ? "link" : "create", suggestion_id: @suggestion.id)
+    end
 
     def update
       @submitted_review_values = suggestion_params.to_h

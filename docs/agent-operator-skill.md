@@ -49,3 +49,10 @@ Local maintainers: `docs/CALENDAR_API.md` and `docs/WEBSITE_PUBLISHING_API.md` d
 the endpoint/field contracts and local implementation boundaries. Operational agents
 must use the current `/api`, not a cached local
 endpoint list.
+
+For discussion topics, create a standalone dated item (`business_item`) without an
+Endeavor or catalogue identity. Continuing work is a separate human decision during
+minutes review. The live handbook explains atomic manual create/link and explicit AI
+proposal confirmation, edits, reuse, and dismissal. Do not silently promote topics or
+create an orphaned Endeavor in a separate request. Local maintainers can read
+`docs/DISCUSSION_TOPICS_API.md` for these contracts and recovery rules.

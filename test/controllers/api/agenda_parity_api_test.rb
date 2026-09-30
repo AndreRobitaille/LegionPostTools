@@ -175,6 +175,35 @@ class ApiAgendaParityApiTest < ActionDispatch::IntegrationTest
     assert_equal template_item_count, MeetingTypeAgendaItem.count
   end
 
+  test "bearer discussion topic remains standalone and seeds independent minutes without private notes" do
+    agenda, _unfinished, section = historical_agenda
+    _token, secret = AgentAccessToken.issue!(user: @commander, name: "Agenda agent", expires_in: 1.day)
+    headers = bearer_headers(secret, idempotency_key: "explore-breakfast")
+    path = "/api/dated_agendas/#{agenda.id}/items"
+    payload = { dated_agenda_section_id: section.id, title: "Explore a breakfast", behavior_type: "business_item",
+      body: "<p>Discuss interest and volunteer capacity.</p>", commander_notes: "<p>Ask the Commander first.</p>",
+      show_wording_on_agenda: true, show_wording_in_minutes: true }
+    assert_no_difference [ "Endeavor.count", "AgendaItemCatalogEntry.count", "MeetingTypeAgendaItem.count" ] do
+      post path, params: payload, headers: headers, as: :json
+    end
+    assert_response :created
+    topic_id = response.parsed_body.dig("dated_agenda_item", "id")
+    assert_no_difference "DatedAgendaItem.count" do
+      post path, params: payload, headers: headers, as: :json
+    end
+    assert_response :created
+    assert_equal topic_id, response.parsed_body.dig("dated_agenda_item", "id")
+    post "/api/meetings/#{agenda.meeting_id}/minutes", headers: bearer_headers(secret, idempotency_key: "seed-breakfast-minutes"), as: :json
+    assert_response :created
+    seeded = response.parsed_body.dig("minutes", "sections").flat_map { |row| row["items"] }.find { |row| row["source_dated_agenda_item_id"] == topic_id }
+    assert_not_nil seeded
+    assert_equal "Explore a breakfast", seeded["title"]
+    assert_equal "Discuss interest and volunteer capacity.", seeded["agenda_wording"]
+    assert_nil seeded["endeavor_id"]
+    assert_nil seeded["body"]
+    assert_not_includes response.body, "Ask the Commander first"
+  end
+
   test "standalone dated item creation requires a section and a draft agenda" do
     agenda, unfinished, = historical_agenda
     sign_in_as(@commander)

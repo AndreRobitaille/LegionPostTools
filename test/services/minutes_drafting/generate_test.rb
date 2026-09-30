@@ -61,6 +61,110 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     assert_empty @item.outcomes
   end
 
+  test "new Endeavor proposals are staged without creating or linking until explicit human confirmation" do
+    PermissionGrant.create!(user: @requester, capability: "manage_minutes")
+    PermissionGrant.create!(user: @requester, capability: "manage_agendas")
+    result = provider_result([ suggestion("endeavor_proposal", @item.id,
+      title: "Community breakfast", body: "Plan a breakfast and recruit volunteers.",
+      endeavor_reason: "The Post agreed to continuing planning and volunteer recruitment.") ])
+
+    assert_no_difference "Endeavor.count" do
+      @run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    end
+    proposal = @run.suggestions.sole
+    assert_nil @item.reload.endeavor_id
+    assert_equal "minutes-suggestions-v3", @run.schema_version
+
+    assert_no_difference "Endeavor.count" do
+      assert_raises(ActiveRecord::RecordInvalid) do
+        MinutesDrafting::ReviewSuggestion.call(suggestion: proposal, reviewer: @requester, action: "use")
+      end
+    end
+    assert proposal.reload.unreviewed?
+    assert_difference "Endeavor.count", 1 do
+      MinutesDrafting::ReviewSuggestion.call(suggestion: proposal, reviewer: @requester, action: "use",
+        edits: { endeavor_action: "create", title: proposal.payload["title"], body: proposal.payload["body"], lock_version: @item.lock_version })
+    end
+    assert_equal "used", proposal.reload.review_state
+    assert_equal "Community breakfast", @item.reload.endeavor.title
+    assert_equal @requester, proposal.reviewed_by
+  end
+
+  test "proposal for existing work reuses its exact id and human confirmation creates no Endeavor" do
+    PermissionGrant.create!(user: @requester, capability: "manage_minutes")
+    result = provider_result([ suggestion("endeavor_proposal", @item.id, endeavor_id: @endeavor.id,
+      endeavor_reason: "The continuing flag outreach needs the same volunteer coordination.") ])
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    proposal = run.suggestions.sole
+    assert_equal @endeavor.title, proposal.payload["title"]
+    assert_equal @endeavor.summary, proposal.payload["body"]
+    assert_no_difference "Endeavor.count" do
+      MinutesDrafting::ReviewSuggestion.call(suggestion: proposal, reviewer: @requester, action: "use",
+        edits: { endeavor_action: "link", endeavor_id: @endeavor.id, lock_version: @item.lock_version })
+    end
+    assert_equal @endeavor, @item.reload.endeavor
+    assert_equal "used", proposal.reload.review_state
+  end
+
+  test "proposal cannot change a confirmed Endeavor link or invent an existing identity" do
+    @item.update!(endeavor: @endeavor)
+    result = provider_result([ suggestion("endeavor_proposal", @item.id, endeavor_id: @endeavor.id,
+      endeavor_reason: "Continuing work.") ])
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    end
+    assert_equal @endeavor, @item.reload.endeavor
+    @item.update!(endeavor: nil)
+    result = provider_result([ suggestion("endeavor_proposal", @item.id, endeavor_id: @endeavor.id + 100_000,
+      endeavor_reason: "Continuing work.") ])
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    end
+  end
+
+  test "duplicate proposals for one item roll back the entire generated result" do
+    attributes = suggestion("endeavor_proposal", @item.id, title: "Breakfast", body: "Plan the breakfast.", endeavor_reason: "Continuing planning.")
+    assert_no_difference "MinutesDraftSuggestion.count" do
+      assert_raises(MinutesDrafting::Generate::DraftFailed) do
+        MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(provider_result([ attributes, attributes ])))
+      end
+    end
+  end
+
+  test "missing rationale and cross-meeting targets reject new Endeavor proposals" do
+    result = provider_result([ suggestion("endeavor_proposal", @item.id, title: "Breakfast", body: "Plan a breakfast.") ])
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    end
+    other_meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 2.days.ago)
+    other = MeetingMinutes.create_from_meeting!(meeting: other_meeting).sections.first.items.create!(title: "Other", behavior_type: "business_item", position: 1)
+    result = provider_result([ suggestion("endeavor_proposal", other.id, title: "Breakfast", body: "Plan a breakfast.", endeavor_reason: "Continuing work.") ])
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    end
+  end
+
+  test "a queued older prompt fails before a provider call and asks for a current retry" do
+    run = MinutesDrafting::Generate.prepare(minutes: @minutes, requester: @requester)
+    run.update!(prompt_sha256: "old-prompt", schema_version: "minutes-suggestions-v2")
+    provider = Object.new
+    def provider.draft(**) = raise("An outdated run must not call the provider")
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+    assert_equal "draft_version_changed", run.reload.error_category
+  end
+
+  test "redelivering an older completed run retains its successful historical record" do
+    run = MinutesDrafting::Generate.prepare(minutes: @minutes, requester: @requester)
+    run.update!(prompt_sha256: "old-prompt", schema_version: "minutes-suggestions-v2", status: "succeeded", completed_at: Time.current)
+    provider = Object.new
+    def provider.draft(**) = raise("A completed run must not call the provider")
+    assert_no_changes -> { [ run.reload.status, run.completed_at, run.error_category ] } do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+  end
+
   test "rejects output that targets a record outside these minutes" do
     other_meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 2.days.ago)
     other_minutes = MeetingMinutes.create_from_meeting!(meeting: other_meeting)
@@ -274,6 +378,7 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
       "target_id" => target_id,
       "source_agenda_item_id" => nil,
       "endeavor_id" => nil,
+      "endeavor_reason" => nil,
       "title" => nil,
       "body" => nil,
       "outcome_kind" => nil,

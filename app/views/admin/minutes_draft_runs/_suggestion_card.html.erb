@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(suggestion, :review) do %>
-  <article class="ai-suggestion-card ai-suggestion-card--<%= suggestion.review_state %>" aria-labelledby="suggestion-<%= suggestion.id %>-heading">
+  <article class="ai-suggestion-card ai-suggestion-card--<%= suggestion.review_state %>" data-suggestion-kind="<%= suggestion.kind %>" aria-labelledby="suggestion-<%= suggestion.id %>-heading">
     <div class="ai-suggestion-source-ribbon">
       <span>Source</span>
       L<%= format("%04d", suggestion.source_start_line) %><% if suggestion.source_end_line != suggestion.source_start_line %>–L<%= format("%04d", suggestion.source_end_line) %><% end %>
@@ -70,6 +70,16 @@
       <div class="ai-suggestion-actions ai-suggestion-actions--secondary">
         <%= link_to "Edit wording and details", edit_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), class: "btn-secondary", data: { turbo_frame: "_top" } %>
         <%= button_to "Discard", discard_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), method: :post, class: "ai-discard-button" %>
+      </div>
+    <% elsif suggestion.unreviewed? && suggestion.kind == "endeavor_proposal" %>
+      <div class="ai-suggestion-actions">
+        <% if suggestion.payload["endeavor_id"].blank? && current_user.can?("manage_agendas") %>
+          <%= link_to "Review and create", new_admin_meeting_minutes_item_endeavor_path(meeting, suggestion.minutes_item, suggestion_id: suggestion.id), class: "btn-primary", data: { turbo_frame: "_top" } %>
+          <%= link_to "Edit proposal", new_admin_meeting_minutes_item_endeavor_path(meeting, suggestion.minutes_item, suggestion_id: suggestion.id), class: "btn-secondary", data: { turbo_frame: "_top" } %>
+        <% end %>
+        <%= link_to "Link existing", new_admin_meeting_minutes_item_endeavor_path(meeting, suggestion.minutes_item, mode: "link", suggestion_id: suggestion.id), class: "btn-secondary", data: { turbo_frame: "_top" } %>
+        <% unless current_user.can?("manage_agendas") %><p class="fl-help">Creating a new Endeavor requires permission to manage agendas.</p><% end %>
+        <%= button_to "Dismiss", discard_admin_meeting_minutes_draft_suggestion_path(meeting, suggestion), method: :post, class: "ai-discard-button" %>
       </div>
     <% elsif suggestion.unreviewed? %>
       <div class="ai-suggestion-actions">

@@ -13,7 +13,9 @@ module Api
     end
 
     def show
-      render json: { draft_run: minutes_draft_run_payload(@run, include_suggestions: true) }
+      include_source = ActiveModel::Type::Boolean.new.cast(params[:include_source])
+      prevent_private_data_caching if include_source
+      render json: { draft_run: minutes_draft_run_payload(@run, include_suggestions: true, include_source: include_source) }
     end
 
     def create

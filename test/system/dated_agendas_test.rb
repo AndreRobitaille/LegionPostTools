@@ -48,6 +48,69 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
       "the first item should no longer be first after dragging it down"
   end
 
+  test "officer adds a meeting-specific discussion topic at desktop and narrow widths" do
+    section = @agenda.dated_agenda_sections.create!(title: "New Business", position: 2)
+    visit edit_admin_dated_agenda_path(@agenda)
+
+    within ".agenda-section", text: "New Business" do
+      assert_text "Add a discussion topic for this meeting"
+      click_link "Add discussion topic"
+    end
+
+    assert_selector "h1", text: "Add discussion topic"
+    assert_selector ".picker-destination strong", text: @agenda.title
+    assert_select "Agenda section", selected: "New Business"
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+    page.save_screenshot("/tmp/agenda-discussion-desktop.png")
+
+    fill_in "Topic title", with: "Consider a community breakfast"
+    find("lexxy-editor[name='dated_agenda_item[body]'] [contenteditable='true']").send_keys("Discuss interest and possible dates.")
+    find("lexxy-editor[name='dated_agenda_item[commander_notes]'] [contenteditable='true']").send_keys("Invite ideas before asking for a motion.")
+
+    page.current_window.resize_to(390, 844)
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+    page.save_screenshot("/tmp/agenda-discussion-mobile.png")
+    find("input[name='dated_agenda_item[title]']").click
+    find("input[name='dated_agenda_item[title]']").send_keys(:tab)
+    assert page.evaluate_script("document.activeElement.closest('lexxy-editor') !== null"), "keyboard navigation should reach the details editor"
+    page.current_window.resize_to(390, 2400)
+    page.save_screenshot("/tmp/agenda-discussion-mobile-notes.png")
+    page.current_window.resize_to(390, 844)
+
+    assert_no_difference [ "AgendaItemCatalogEntry.count", "Endeavor.count" ] do
+      click_button "Add discussion topic"
+      assert_current_path edit_admin_dated_agenda_path(@agenda)
+      assert_text "Discussion topic added."
+    end
+
+    item = section.agenda_items.find_by!(title: "Consider a community breakfast")
+    assert_nil item.endeavor_id
+    assert_nil item.agenda_item_catalog_entry_id
+    assert_nil item.meeting_type_agenda_item_id
+    assert_equal 1, item.position
+    assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+    page.current_window.resize_to(390, 2400)
+    page.save_screenshot("/tmp/agenda-discussion-mobile-section.png")
+    page.current_window.resize_to(390, 844)
+
+    @agenda.approve!(@user)
+    @agenda.publish!(@user)
+    visit dated_agenda_path(@agenda)
+    assert_selector ".agenda-item-title", text: "Consider a community breakfast"
+    assert_text "Discuss interest and possible dates."
+    assert_no_text "Invite ideas before asking for a motion."
+
+    minutes = travel_to(@agenda.starts_at + 1.day) do
+      MeetingMinutes.create_from_meeting!(meeting: @agenda.meeting)
+    end
+    minutes_item = minutes.items.find_by!(source_dated_agenda_item: item)
+    assert_equal item.title, minutes_item.title
+    assert_includes minutes_item.agenda_body.to_plain_text, "Discuss interest and possible dates."
+    assert minutes_item.body.blank?, "planned discussion is not a record of what happened"
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "approved agenda hides drag handles and item edit controls" do
     @agenda.approve!(@user)
     visit edit_admin_dated_agenda_path(@agenda)

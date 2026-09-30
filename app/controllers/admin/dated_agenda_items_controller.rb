@@ -4,7 +4,7 @@ module Admin
     before_action :set_organization
     before_action :set_dated_agenda
     before_action :set_item, only: %i[edit update destroy refresh_roll_call]
-    before_action :ensure_draft_agenda, only: %i[new create edit update destroy reorder refresh_roll_call]
+    before_action :ensure_draft_agenda, only: %i[new create new_discussion create_discussion edit update destroy reorder refresh_roll_call]
 
     def new
       set_agenda_sections
@@ -34,6 +34,31 @@ module Admin
 
     def edit
       set_agenda_sections
+    end
+
+    def new_discussion
+      set_agenda_sections
+      @item = @dated_agenda.dated_agenda_items.new(agenda_section: selected_agenda_section, behavior_type: "business_item")
+    end
+
+    def create_discussion
+      @dated_agenda.with_lock do
+        @dated_agenda.reload
+        return redirect_locked_agenda if @dated_agenda.locked_for_editing?
+
+        attributes = discussion_params
+        agenda_section = @dated_agenda.dated_agenda_sections.find(attributes.delete(:dated_agenda_section_id))
+        @item = @dated_agenda.dated_agenda_items.new(attributes)
+        @item.agenda_section = agenda_section
+        @item.position = next_position(agenda_section)
+        @item.behavior_type = "business_item"
+        @item.active = true
+        @item.save!
+      end
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Discussion topic added."
+    rescue ActiveRecord::RecordInvalid
+      set_agenda_sections
+      render :new_discussion, status: :unprocessable_entity
     end
 
     def update
@@ -124,6 +149,17 @@ module Admin
         :show_wording_on_agenda,
         :show_wording_in_minutes,
         :lock_version,
+        :dated_agenda_section_id
+      )
+    end
+
+    def discussion_params
+      params.require(:dated_agenda_item).permit(
+        :title,
+        :body,
+        :commander_notes,
+        :show_wording_on_agenda,
+        :show_wording_in_minutes,
         :dated_agenda_section_id
       )
     end

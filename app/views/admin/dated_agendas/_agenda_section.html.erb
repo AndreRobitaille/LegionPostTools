@@ -50,13 +50,16 @@
         <span class="agenda-section-empty-mark" aria-hidden="true">&#9671;</span>
         <div>
           <strong>Nothing in this section yet</strong>
-          <% if editable %>Add an item from the Post’s agenda catalog, or bring forward a continuing Endeavor.<% end %>
+          <% if editable %>Add a discussion topic for this meeting, choose a catalog item, or bring forward a continuing Endeavor.<% end %>
         </div>
       </div>
     <% end %>
 
     <% if editable %>
       <div class="agenda-section-foot">
+        <%= link_to new_discussion_admin_dated_agenda_agenda_items_path(dated_agenda, dated_agenda_section_id: agenda_section.id), class: "section-add" do %>
+          <span class="section-add-mark" aria-hidden="true">&#43;</span> Add discussion topic
+        <% end %>
         <%= link_to new_admin_dated_agenda_agenda_item_path(dated_agenda, dated_agenda_section_id: agenda_section.id), class: "section-add" do %>
           <span class="section-add-mark" aria-hidden="true">&#43;</span> Add catalog item
         <% end %>

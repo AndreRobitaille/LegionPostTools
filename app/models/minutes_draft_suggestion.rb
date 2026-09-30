@@ -1,5 +1,5 @@
 class MinutesDraftSuggestion < ApplicationRecord
-  KINDS = %w[item_summary outcome attendance additional_item].freeze
+  KINDS = %w[item_summary outcome attendance additional_item endeavor_proposal].freeze
   CONFIDENCES = %w[high medium low].freeze
   REVIEW_STATES = %w[unreviewed used edited discarded].freeze
 
@@ -46,7 +46,7 @@ class MinutesDraftSuggestion < ApplicationRecord
 
   def target_matches_kind
     case kind
-    when "item_summary", "outcome"
+    when "item_summary", "outcome", "endeavor_proposal"
       errors.add(:minutes_item, "is required") if minutes_item.blank?
     when "attendance"
       errors.add(:minutes_attendance_entry, "is required") if minutes_attendance_entry.blank?

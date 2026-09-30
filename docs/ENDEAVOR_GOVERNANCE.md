@@ -50,6 +50,12 @@ A human must confirm the identity decision; a delegated agent may then carry out
 human's current grants. Lack of certainty is a reason to defer creation, not to manufacture
 continuity.
 
+During draft minutes review, officers may create or link an Endeavor from the relevant
+discussion without leaving the meeting workflow. Transcript AI may propose continuing
+work with source citations; it never creates or links a record on its own. The human
+confirmation, permissions, duplicate checks, and historical boundaries are documented
+in [Minutes Endeavor confirmation](MINUTES_ENDEAVOR_CONFIRMATION.md).
+
 ## Identity, Not Taxonomy
 
 An Endeavor answers **which continuing body of work is this?** Taxonomy answers **what kind

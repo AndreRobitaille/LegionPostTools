@@ -117,6 +117,154 @@ class Admin::DatedAgendaItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Catalog item added.", flash[:notice]
   end
 
+  test "discussion form selects the requested section and offers document controls" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    section = @agenda.dated_agenda_sections.create!(title: "New Business", position: 2)
+
+    get new_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: { dated_agenda_section_id: section.id }
+
+    assert_response :success
+    assert_select "h1", text: "Add discussion topic"
+    assert_select ".picker-destination strong", text: @agenda.title
+    assert_select "select[name='dated_agenda_item[dated_agenda_section_id]'] option[selected][value=?]", section.id.to_s
+    assert_select "input[name='dated_agenda_item[title]'][required]"
+    assert_select "lexxy-editor[name='dated_agenda_item[body]']"
+    assert_select "lexxy-editor[name='dated_agenda_item[commander_notes]']"
+    assert_select "input[name='dated_agenda_item[show_wording_on_agenda]'][checked]"
+    assert_select "input[name='dated_agenda_item[show_wording_in_minutes]'][checked]"
+    assert_select "select[name='dated_agenda_item[behavior_type]']", count: 0
+  end
+
+  test "discussion topic belongs only to the selected agenda section" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    section = @agenda.default_agenda_section
+
+    assert_no_difference [ "AgendaItemCatalogEntry.count", "MeetingTypeAgendaItem.count", "Endeavor.count" ] do
+      assert_difference -> { @agenda.dated_agenda_items.count }, 1 do
+        post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: {
+          dated_agenda_item: {
+            dated_agenda_section_id: section.id, title: "Consider a community breakfast",
+            body: "Discuss interest and possible dates.", commander_notes: "Invite ideas before asking for a motion.",
+            show_wording_on_agenda: "1", show_wording_in_minutes: "0",
+            agenda_item_catalog_entry_id: @catalog_entry.id, meeting_type_agenda_item_id: @template_item.id,
+            endeavor_id: 123, behavior_type: "roll_call", active: false, position: 99
+          }
+        }
+      end
+    end
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    assert_equal "Discussion topic added.", flash[:notice]
+    item = @agenda.dated_agenda_items.find_by!(title: "Consider a community breakfast")
+    assert_equal section, item.agenda_section
+    assert_equal 2, item.position
+    assert_equal "business_item", item.behavior_type
+    assert item.active?
+    assert_nil item.agenda_item_catalog_entry_id
+    assert_nil item.meeting_type_agenda_item_id
+    assert_nil item.endeavor_id
+    assert_includes item.body.to_plain_text, "Discuss interest and possible dates."
+    assert_includes item.commander_notes.to_plain_text, "Invite ideas before asking for a motion."
+    assert item.show_wording_on_agenda?
+    assert_not item.show_wording_in_minutes?
+  end
+
+  test "discussion topic can be created with just a title in an empty section" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    section = @agenda.dated_agenda_sections.create!(title: "New Business", position: 2)
+
+    post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: {
+      dated_agenda_item: { dated_agenda_section_id: section.id, title: "Discuss a new idea" }
+    }
+
+    assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+    item = section.agenda_items.find_by!(title: "Discuss a new idea")
+    assert_equal 1, item.position
+    assert item.show_wording_on_agenda?
+    assert item.show_wording_in_minutes?
+  end
+
+  test "invalid discussion topic retains the section wording and visibility choices" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    section = @agenda.dated_agenda_sections.create!(title: "New Business", position: 2)
+
+    assert_no_difference "DatedAgendaItem.count" do
+      post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: {
+        dated_agenda_item: {
+          dated_agenda_section_id: section.id, title: "", body: "Keep this proposed discussion.",
+          commander_notes: "Keep this private cue.", show_wording_on_agenda: "0", show_wording_in_minutes: "0"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select ".error-summary[role='alert']", text: /Title can't be blank/
+    assert_select "select[name='dated_agenda_item[dated_agenda_section_id]'] option[selected][value=?]", section.id.to_s
+    assert_select "lexxy-editor[name='dated_agenda_item[body]'][value*='Keep this proposed discussion.']"
+    assert_select "lexxy-editor[name='dated_agenda_item[commander_notes]'][value*='Keep this private cue.']"
+    assert_select "input[name='dated_agenda_item[show_wording_on_agenda]'][type='checkbox']:not([checked])"
+    assert_select "input[name='dated_agenda_item[show_wording_in_minutes]'][type='checkbox']:not([checked])"
+  end
+
+  test "discussion topics cannot use a section from another agenda" do
+    sign_in_as(user_with_capabilities("manage_agendas"))
+    other = create_dated_agenda!(organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type,
+      starts_at: 1.month.from_now, title: "Other meeting")
+    foreign_section = other.default_agenda_section
+
+    get new_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: { dated_agenda_section_id: foreign_section.id }
+    assert_response :not_found
+
+    assert_no_difference "DatedAgendaItem.count" do
+      post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: {
+        dated_agenda_item: { dated_agenda_section_id: foreign_section.id, title: "Wrong section" }
+      }
+    end
+    assert_response :not_found
+  end
+
+  test "discussion topics require sign in and manage_agendas" do
+    attributes = { dated_agenda_item: { dated_agenda_section_id: @agenda.default_agenda_section.id, title: "Restricted topic" } }
+
+    get new_discussion_admin_dated_agenda_agenda_items_path(@agenda)
+    assert_redirected_to new_session_path
+    assert_no_difference "DatedAgendaItem.count" do
+      post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: attributes
+    end
+    assert_redirected_to new_session_path
+
+    sign_in_as(user_with_capabilities)
+    get new_discussion_admin_dated_agenda_agenda_items_path(@agenda)
+    assert_redirected_to root_path
+    assert_no_difference "DatedAgendaItem.count" do
+      post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: attributes
+    end
+    assert_redirected_to root_path
+  end
+
+  test "approved and published agendas cannot accept discussion topics" do
+    user = user_with_capabilities("manage_agendas")
+    sign_in_as(user)
+    @agenda.approve!(user)
+
+    [ "approved", "published" ].each do |status|
+      @agenda.publish!(user) if status == "published"
+      get new_discussion_admin_dated_agenda_agenda_items_path(@agenda)
+      assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+
+      assert_no_difference "DatedAgendaItem.count" do
+        post create_discussion_admin_dated_agenda_agenda_items_path(@agenda), params: {
+          dated_agenda_item: { dated_agenda_section_id: @agenda.default_agenda_section.id, title: "Blocked topic" }
+        }
+      end
+      assert_redirected_to edit_admin_dated_agenda_path(@agenda)
+      assert_equal "Reopen this agenda before editing items.", flash[:alert]
+
+      get edit_admin_dated_agenda_path(@agenda)
+      assert_select "a.section-add", text: /Add discussion topic/, count: 0
+    end
+  end
+
   test "reorder rewrites item positions for a draft agenda" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     second_entry = @organization.agenda_item_catalog_entries.create!(title: "Commander Report", slug: "commander-report-2", category: "reports", behavior_type: "report_slot", position: 2, active: true)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_30_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -658,7 +658,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_000000) do
     t.index ["reviewed_by_id"], name: "index_minutes_draft_suggestions_on_reviewed_by_id"
     t.index ["source_dated_agenda_item_id"], name: "index_minutes_draft_suggestions_on_source_dated_agenda_item_id"
     t.check_constraint "confidence::text = ANY (ARRAY['high'::character varying::text, 'medium'::character varying::text, 'low'::character varying::text])", name: "minutes_draft_suggestions_confidence_check"
-    t.check_constraint "kind::text = ANY (ARRAY['item_summary'::character varying::text, 'outcome'::character varying::text, 'attendance'::character varying::text, 'additional_item'::character varying::text])", name: "minutes_draft_suggestions_kind_check"
+    t.check_constraint "kind::text = ANY (ARRAY['item_summary'::character varying, 'outcome'::character varying, 'attendance'::character varying, 'additional_item'::character varying, 'endeavor_proposal'::character varying]::text[])", name: "minutes_draft_suggestions_kind_check"
     t.check_constraint "review_state::text = ANY (ARRAY['unreviewed'::character varying::text, 'used'::character varying::text, 'edited'::character varying::text, 'discarded'::character varying::text])", name: "minutes_draft_suggestions_review_state_check"
     t.check_constraint "source_start_line > 0 AND source_end_line >= source_start_line", name: "minutes_draft_suggestions_source_range_check"
   end

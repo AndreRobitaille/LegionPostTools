@@ -1016,6 +1016,18 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .picker-destination { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 20px; padding: 10px 14px; color: var(--color-navy); background: var(--color-paper); border: 1px solid var(--rule); border-left: 3px solid var(--color-gold); border-radius: var(--radius-control); font-size: 16px; }
 .picker-destination span { color: var(--color-muted); font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 
+/* Keep continuing-work identity beside the discussion, separate from its record. */
+.minutes-endeavor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; margin: 16px 0 0; padding: 10px 14px; border-left: 3px solid var(--color-gold); background: var(--color-paper); }
+.minutes-endeavor-actions > span { flex-basis: 100%; font-size: 13px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+.minutes-endeavor-actions a { min-height: 44px; display: inline-flex; align-items: center; }
+.minutes-endeavor-evidence { max-width: 720px; margin: 0 0 20px; padding: 16px; border-left: 3px solid var(--color-gold); background: var(--color-paper); overflow-wrap: anywhere; }
+.minutes-endeavor-evidence h2 { margin: 0 0 10px; font-size: 18px; color: var(--color-navy); }
+.minutes-endeavor-evidence p { font-size: 16px; line-height: 1.5; }
+.minutes-endeavor-existing { margin: 18px 0; font-size: 16px; }
+.minutes-endeavor-existing summary { min-height: 44px; cursor: pointer; color: var(--color-navy); font-weight: 700; }
+.minutes-endeavor-existing ul { margin: 10px 0 0; padding-left: 22px; list-style: disc; }
+.minutes-endeavor-actions .minutes-text-action { font-size: 16px; }
+
 /* Dated agenda management --------------------------------------------------
    The record's state and the actions that change it sit in one bounded block,
    so the officer never reads a status on one side of the screen and hunts for
@@ -1467,6 +1479,20 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .ai-source-evidence summary:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
 .ai-source-evidence pre { max-height: 290px; margin: 0; padding: 14px; overflow: auto; color: #253746; background: #fff; border-top: 1px solid #bfcbd5; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ai-source-evidence > p { margin: 0; padding: 14px; color: var(--color-muted); font-size: 13px; }
+.minutes-endeavor-evidence .ai-source-evidence summary,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-source-evidence summary { font-size: 16px; }
+.minutes-endeavor-evidence .ai-source-evidence pre,
+.minutes-endeavor-evidence .ai-source-evidence > p,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-source-evidence pre,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-source-evidence > p,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-missing-facts { font-size: 14px; }
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-suggestion-heading p,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-review-state,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-suggestion-source-ribbon { font-size: 13px; }
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-suggestion-proposal { font-family: var(--font-sans); }
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-discard-button { font-size: 16px; }
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-suggestion-actions .btn-primary,
+.ai-suggestion-card[data-suggestion-kind="endeavor_proposal"] .ai-suggestion-actions .btn-secondary { min-height: 44px; font-size: 16px; }
 .ai-suggestion-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .ai-suggestion-actions form { display: inline-flex; }
 .ai-suggestion-actions .btn-primary, .ai-suggestion-actions .btn-secondary { min-height: 42px; box-sizing: border-box; padding: 9px 14px; font-size: 14px; }

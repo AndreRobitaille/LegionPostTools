@@ -1,7 +1,7 @@
 module MinutesDrafting
   class Prompt
-    VERSION = "minutes-first-pass-v5"
-    SCHEMA_VERSION = "minutes-suggestions-v2"
+    VERSION = "minutes-first-pass-v6"
+    SCHEMA_VERSION = "minutes-suggestions-v3"
 
     DEVELOPER_PROMPT = <<~PROMPT.freeze
       You prepare cautious working suggestions for American Legion meeting minutes.
@@ -34,12 +34,22 @@ module MinutesDrafting
       A motion or decision suggestion requires direct transcript support. Use not_recorded for an unknown disposition.
       Preserve a spoken mover or seconder name only as the transcript states it; never expand a first name, nickname, or uncertain
       spelling. Human reviewers will resolve identities from the Post roster in a later workflow.
-      Never suggest Commander approval, Adjutant attestation, membership approval, amendment, or any change to an Endeavor.
+      Never suggest Commander approval, Adjutant attestation, membership approval, amendment, or changes to an existing Endeavor.
+      You may separately propose endeavor_proposal for an exact existing MinutesItem with no confirmed_endeavor_id when
+      transcript evidence shows the Post taking on a specific body of continuing work with history useful beyond this meeting.
+      Mere brainstorming, routine reports, broad classifications, or an isolated task do not justify a new Endeavor.
+      Prefer reuse: check available_endeavors and propose its exact endeavor_id when the discussion concerns that same work.
+      Otherwise propose a concise title and body describing the new Endeavor, with endeavor_id null.
+      endeavor_reason must explain why continuity is needed, supported by the cited transcript lines.
+      At most one endeavor_proposal per MinutesItem. It is a separate human identity decision, not recorded minutes or a motion.
+      Do not propose for an item with an already confirmed link. Unplanned business must first become a MinutesItem through
+      human review; never invent an item id or match a not-yet-created item by title.
 
-      target_id means: MinutesItem id for item_summary/outcome, MinutesAttendanceEntry id for attendance,
+      target_id means: MinutesItem id for item_summary/outcome/endeavor_proposal, MinutesAttendanceEntry id for attendance,
       and MinutesSection id for additional_item. Use only ids present in the supplied outline.
       source_agenda_item_id is the supplied agenda item id when the suggestion belongs to one; otherwise null.
-      endeavor_id is allowed only for additional_item and must be an exact id from available_endeavors; otherwise it is null.
+      endeavor_id is allowed only for additional_item or endeavor_proposal and must be an exact id from available_endeavors;
+      otherwise it is null. endeavor_reason is allowed only for endeavor_proposal; otherwise it is null.
     PROMPT
 
     class << self
@@ -120,7 +130,7 @@ module MinutesDrafting
           type: "object",
           additionalProperties: false,
           required: %w[
-            kind target_id source_agenda_item_id endeavor_id title body outcome_kind disposition
+            kind target_id source_agenda_item_id endeavor_id endeavor_reason title body outcome_kind disposition
             mover_name seconder_name vote_summary attendance_status source_start_line
             source_end_line confidence missing_facts
           ],
@@ -129,6 +139,7 @@ module MinutesDrafting
             target_id: { type: [ "integer", "null" ] },
             source_agenda_item_id: { type: [ "integer", "null" ] },
             endeavor_id: { type: [ "integer", "null" ] },
+            endeavor_reason: nullable_string,
             title: nullable_string,
             body: nullable_string,
             outcome_kind: { type: [ "string", "null" ], enum: MinutesOutcome::KINDS + [ nil ] },

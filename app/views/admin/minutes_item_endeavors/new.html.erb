@@ -1,0 +1,74 @@
+<% creating = @mode == "create" %>
+<% heading = creating ? "Create Endeavor from this discussion" : "Link existing Endeavor" %>
+<% content_for :title, heading %>
+<%= link_to "← Minutes workspace", admin_meeting_minutes_path(@meeting), class: "back" %>
+
+<div class="page-lead">
+  <p class="minutes-eyebrow">Continuing Post work<%= " · AI proposal for your review" if @suggestion %></p>
+  <h1 class="page-title"><%= heading %></h1>
+  <p class="page-sub">Choose the continuing work this discussion belongs to. The meeting wording stays as recorded.</p>
+</div>
+<div class="picker-destination"><span>Discussion</span><strong><%= @item.title %></strong></div>
+<p class="page-sub"><%= @meeting.title %></p>
+
+<% if @suggestion %>
+  <section class="minutes-endeavor-evidence">
+    <h2>Why the AI suggested continuing work</h2>
+    <p><%= @suggestion.payload["reason"] %></p>
+    <%= simple_format(@suggestion.missing_facts.join("\n")) if @suggestion.missing_facts.any? %>
+    <details class="ai-source-evidence" open>
+      <summary>Supporting transcript lines <%= @suggestion.source_start_line %>–<%= @suggestion.source_end_line %></summary>
+      <% if (excerpt = @suggestion.source_excerpt) %>
+        <pre><%= excerpt %></pre>
+      <% else %>
+        <p>The restricted transcript has been purged; the cited range remains as provenance.</p>
+      <% end %>
+    </details>
+  </section>
+<% end %>
+
+<div class="panel form-panel">
+  <%= form_with url: admin_meeting_minutes_item_endeavor_path(@meeting, @item), scope: :confirmation, class: "stacked-form" do |form| %>
+    <%= hidden_field_tag :suggestion_id, @suggestion.id if @suggestion %>
+    <%= form.hidden_field :endeavor_action, value: @mode %>
+    <%= form.hidden_field :lock_version, value: @values["lock_version"] %>
+    <% if @form_errors.present? %>
+      <div class="error-summary" role="alert">
+        <h2>Check the Endeavor</h2>
+        <ul><% @form_errors.each do |message| %><li><%= message %></li><% end %></ul>
+      </div>
+    <% end %>
+    <% if creating %>
+      <div class="fl">
+        <%= form.label :title, "Endeavor title" %>
+        <%= form.text_field :title, value: @values["title"], class: "f", required: true %>
+      </div>
+      <div class="fl">
+        <%= form.label :body, "Description" %>
+        <%= form.text_area :body, value: @values["body"], rows: 5, class: "f" %>
+        <span class="fl-help">Describe the continuing work. Keep the meeting's motions and decisions in its minutes.</span>
+      </div>
+      <% if @endeavors.any? %>
+        <details class="minutes-endeavor-existing">
+          <summary>Check existing Endeavors before creating another</summary>
+          <ul><% @endeavors.each do |endeavor| %><li><%= endeavor.title %><%= " (completed)" if endeavor.completed? %></li><% end %></ul>
+        </details>
+      <% end %>
+    <% else %>
+      <div class="fl">
+        <%= form.label :endeavor_id, "Existing Endeavor" %>
+        <%= form.select :endeavor_id, @endeavors.map { |endeavor| [ "#{endeavor.title}#{' (completed)' if endeavor.completed?}", endeavor.id ] },
+              { selected: @values["endeavor_id"], include_blank: "Choose an Endeavor" }, class: "f", required: true %>
+        <span class="fl-help">Link only when this discussion concerns the same continuing Post work.</span>
+      </div>
+    <% end %>
+    <div class="btnrow">
+      <%= form.submit creating ? "Create and link" : "Link Endeavor", class: "btn-primary" %>
+      <% if creating || current_user.can?("manage_agendas") %>
+        <%= link_to creating ? "Link existing instead" : "Create a new Endeavor instead",
+              new_admin_meeting_minutes_item_endeavor_path(@meeting, @item, mode: creating ? "link" : "create", suggestion_id: @suggestion&.id), class: "btn-secondary" %>
+      <% end %>
+      <%= link_to "Cancel", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>

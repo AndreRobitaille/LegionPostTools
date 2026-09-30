@@ -889,6 +889,9 @@ American Legion Meeting and preserves readability for older members.
 - Membership-approved revision items and amendments are authoritative Meeting history.
 - Minutes seeding copies an existing direct `endeavor_id`; it never derives identity.
 - A human may add, remove, or correct an Endeavor link while draft.
+- The minutes workspace also offers human-confirmed creation/linking from an item and
+  source-cited AI identity proposals. Generation changes no identity; confirmation remains
+  a separate decision. See [Minutes Endeavor confirmation](MINUTES_ENDEAVOR_CONFIRMATION.md).
 - The revision freezes the link. Reopening may create a new superseding revision; a
   membership-approved link changes only through an amendment or later Meeting record.
 - Recording a motion, decision, or report never creates an `EndeavorUpdate` or changes the

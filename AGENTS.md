@@ -162,6 +162,7 @@ reset development data. Simplicity guidance does not waive authorization or audi
 - `docs/PUBLIC_PUBLISHING_HANDOFF.md` — consumer contract, synthetic test access, examples, and verification.
 - `docs/WEBSITE_PUBLISHING_API.md` — authenticated editorial API, consent and publishing actions, private portraits, and agent handbook.
 - `docs/CALENDAR_API.md` — private calendar/activity endpoints, field semantics, permission matching, and safe public projection.
+- `docs/DISCUSSION_TOPICS_API.md` — standalone topics, atomic manual Endeavor confirmation, AI proposal evidence/review, permissions, and agent retries.
 - `docs/ENDEAVOR_GOVERNANCE.md` — durable identity and ownership rules for continuing Post work.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/MEMBER_SIGN_IN_GUIDE.md` — plain-language email sign-in instructions for Post members.
@@ -172,6 +173,8 @@ reset development data. Simplicity guidance does not waive authorization or audi
 - `docs/STANDARD_MEMBER_EXPERIENCE.md` — implemented member dashboard, Meeting actions, Endeavor presentation, directory, and Profile treatment.
 - `docs/OFFICER_WORKSPACE_EXPERIENCE.md` — current officer-derived access and scoped officer workspace.
 - `docs/COMMANDER_AGENDA_AND_ROLL_CALL.md` — agenda wording, Commander/Adjutant notes-copy boundary, and dated officer roll call.
+- `docs/AGENDA_DISCUSSION_TOPICS.md` — meeting-specific discussion topics without catalogue or Endeavor creation.
+- `docs/MINUTES_ENDEAVOR_CONFIRMATION.md` — manual and source-cited AI proposals for human-confirmed Endeavor creation/linking during draft minutes review.
 - `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for Minutes.
 - `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — implemented immutable approval, different-person attestation, member presentation, and delegated provenance.

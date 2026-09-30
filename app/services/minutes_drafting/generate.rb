@@ -97,6 +97,10 @@ module MinutesDrafting
       run.with_lock do
         return false unless run.pending?
 
+        unless run.prompt_sha256 == Prompt.sha256 && run.schema_version == Prompt::SCHEMA_VERSION
+          raise MinutesDraftProviders::Error.new(category: "draft_version_changed")
+        end
+
         run.update!(status: "running", started_at: Time.current)
       end
       true
@@ -132,6 +136,12 @@ module MinutesDrafting
 
       targets = targets_for(kind, target_id)
       source_item = source_item_for(attributes["source_agenda_item_id"])
+      if kind == "endeavor_proposal"
+        item = targets.fetch(:minutes_item)
+        raise TypeError if item.endeavor_id.present?
+        raise TypeError if source_item && source_item.id != item.source_dated_agenda_item_id
+        raise TypeError if run.suggestions.exists?(kind: kind, minutes_item: item)
+      end
       endeavor = suggested_endeavor_for(kind, attributes.fetch("endeavor_id"))
       payload = payload_for(kind, attributes, endeavor: endeavor)
 
@@ -150,7 +160,7 @@ module MinutesDrafting
     def targets_for(kind, target_id)
       id = Integer(target_id)
       case kind
-      when "item_summary", "outcome"
+      when "item_summary", "outcome", "endeavor_proposal"
         { minutes_item: minutes.items.find(id) }
       when "attendance"
         { minutes_attendance_entry: minutes.attendance_entries.find(id) }
@@ -190,12 +200,19 @@ module MinutesDrafting
           "endeavor_id" => endeavor&.id,
           "endeavor_title" => endeavor&.title
         }
+      when "endeavor_proposal"
+        {
+          "title" => endeavor&.title || clean_required(attributes["title"], 300),
+          "body" => endeavor ? endeavor.summary.to_s : clean_required(attributes["body"], 4_000),
+          "endeavor_id" => endeavor&.id,
+          "reason" => clean_required(attributes["endeavor_reason"], 2_000)
+        }
       end
     end
 
     def suggested_endeavor_for(kind, id)
       return if id.nil?
-      raise TypeError unless kind == "additional_item"
+      raise TypeError unless kind.in?(%w[additional_item endeavor_proposal])
 
       Prompt.available_endeavors(minutes).find(Integer(id))
     end

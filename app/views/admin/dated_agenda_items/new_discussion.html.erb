@@ -1,0 +1,40 @@
+<% content_for :title, "Add discussion topic to #{@dated_agenda.title}" %>
+<%= link_to "← #{@dated_agenda.title}", edit_admin_dated_agenda_path(@dated_agenda), class: "back" %>
+
+<div class="page-lead">
+  <h1 class="page-title">Add discussion topic</h1>
+  <p class="page-sub">A topic for this meeting. It does not create an Endeavor or catalog item.</p>
+</div>
+
+<div class="picker-destination"><span>Meeting</span><strong><%= @dated_agenda.title %></strong></div>
+
+<div class="panel form-panel">
+  <%= form_with model: @item, url: create_discussion_admin_dated_agenda_agenda_items_path(@dated_agenda), class: "stacked-form" do |form| %>
+    <% if @item.errors.any? %>
+      <div class="error-summary" role="alert">
+        <h2>Check the discussion topic</h2>
+        <ul>
+          <% @item.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <div class="fl">
+      <%= form.label :dated_agenda_section_id, "Agenda section" %>
+      <%= form.collection_select :dated_agenda_section_id, @agenda_sections, :id, :title, {}, class: "f" %>
+      <span class="form-help">The topic will be added at the end of this section.</span>
+    </div>
+    <div class="fl">
+      <%= form.label :title, "Topic title" %>
+      <%= form.text_field :title, class: "f", required: true %>
+    </div>
+    <%= render "admin/shared/agenda_item_document_fields", form: form,
+          body_label: "Discussion details (optional)",
+          body_help: "Describe what the Post should consider at this meeting." %>
+    <div class="btnrow">
+      <%= form.submit "Add discussion topic", class: "btn-primary" %>
+      <%= link_to "Cancel", edit_admin_dated_agenda_path(@dated_agenda), class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>
