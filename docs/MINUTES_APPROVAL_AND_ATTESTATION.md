@@ -73,6 +73,11 @@ ledger so labels, names, and controls remain readable without horizontal scrolli
 - The Adjutant must be a different person from the Commander approver.
 - Attestation never regenerates or copies content.
 - Revision, attestation, and lifecycle-event rows are append-only in Rails and PostgreSQL.
+- Ending a browser session (sign-out, account disablement, or inactivity expiry)
+  detaches its official-action confirmations without deleting them or changing any
+  minutes revision or lifecycle event. Detached in-app confirmations and email
+  reauthentication challenges cannot authorize another action, including when no
+  session is supplied. A later sign-in requires a new confirmation.
 - Member pages call the record **Attested minutes** and **Awaiting membership approval**.
   They do not say membership-approved or official yet.
 - Draft PDFs remain visibly draft. Approved PDFs render the immutable revision as awaiting

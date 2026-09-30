@@ -2,22 +2,24 @@ require "test_helper"
 
 # Base class for browser-driven (system) tests.
 #
-# These run a real headless Chromium against a Puma server Capybara boots on
-# 127.0.0.1 in the TEST environment against the ephemeral test database. That
-# means:
-#   * Nothing binds to the LAN and no production config, DB, or secrets are
-#     touched — this cannot affect production.
-#   * The server runs on localhost, which is a secure context, so passkeys /
-#     WebAuthn would work here if ever needed (unlike http over the LAN IP).
+# These run a real headless Chromium against a Puma server Capybara binds to
+# 0.0.0.0 in the TEST environment against the ephemeral test database. That means:
+#   * No production config, DB, or secrets are touched.
+#   * The browser uses localhost, a secure context for passkeys / WebAuthn.
 #   * Sign-in uses the app's REAL magic-link path (see #system_sign_in) — no
 #     passkey ceremony and no test-only auth backdoor.
 #
 # System tests do NOT run as part of `bin/rails test`; run them explicitly with
-# `bin/rails test:system` (or `bin/rails test:all`).
+# `bin/rails test:system` (or `bin/rails test:all`). CI and bin/ci also run the
+# account-menu tests, including the sign-out workflows, explicitly.
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # One browser at a time. System suites are small, and a single Chromium avoids
   # spawning one instance per CPU core (the parent class enables parallelism).
   parallelize(workers: 1)
+
+  Capybara.server_host = "0.0.0.0"
+  Capybara.app_host = "http://localhost"
+  Capybara.always_include_port = true
 
   # Drive headless Chromium using the browser and driver already installed on
   # the box. Pinning both binaries stops Selenium Manager from reaching out to

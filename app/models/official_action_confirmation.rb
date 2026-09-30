@@ -86,7 +86,7 @@ class OfficialActionConfirmation < ApplicationRecord
     return false if consumed_at.present? || expires_at.past? || self.user != user
     return true if external_written_confirmation? || delegated_agent?
 
-    self.session == session
+    session.present? && self.session == session
   end
 
   def in_app? = confirmation_method == "in_app"

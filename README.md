@@ -89,6 +89,9 @@ Prerequisites:
 - Ruby 4.0.0, or the version in `.ruby-version`.
 - PostgreSQL available locally for Rails development and test databases.
 - libvips for Active Storage image processing. On Omarchy/Arch, install it with `omarchy pkg add libvips`.
+- Chromium or Chrome and a matching ChromeDriver for browser checks. Defaults are
+  `/usr/bin/chromium` and `/usr/bin/chromedriver`; set `CHROMIUM_BIN` and
+  `CHROMEDRIVER_BIN` to use other installed paths.
 
 ```bash
 bundle install
@@ -129,10 +132,16 @@ Run the main checks before claiming work is complete:
 
 ```bash
 bin/rails test
+bin/rails test test/system/account_menu_test.rb
 bin/brakeman
 bin/rubocop
 bin/bundler-audit
 ```
+
+The account-menu browser tests sign in, click **Sign out**, and verify that protected
+pages require sign-in again. They cover ordinary sessions and sessions with pending or
+completed minutes approvals. GitHub CI and `bin/ci` run these checks automatically;
+other browser tests remain available through `bin/rails test:system`.
 
 ## Smoke Test
 

@@ -177,6 +177,35 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_match user.person.full_name, response.body
   end
 
+  test "signing in and then signing out returns to sign-in and ends access to protected pages" do
+    Organization.create!(name: "Test American Legion Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Test", last_name: "Member"), email_address: "member@example.com")
+    magic_link = MagicLink.create_for!(user)
+
+    post magic_link_session_path, params: { token: magic_link.token }
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_response :success
+    assert_select "form[action=?] button", session_path, text: "Sign out"
+    stale_cookie = cookies[:session_id]
+
+    delete session_path, headers: { "Accept" => "text/vnd.turbo-stream.html, text/html" }
+    assert_redirected_to new_session_path
+    follow_redirect!
+    assert_response :success
+    assert_select "h2", text: "Sign in"
+    assert cookies[:session_id].blank?
+
+    get profile_path
+    assert_redirected_to new_session_path
+
+    cookies[:session_id] = stale_cookie
+    get profile_path
+    assert_redirected_to new_session_path
+    assert cookies[:session_id].blank?
+  end
+
   test "magic link consumption is rate limited by requester" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)

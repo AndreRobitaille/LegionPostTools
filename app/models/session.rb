@@ -3,6 +3,7 @@ class Session < ApplicationRecord
 
   belongs_to :user
   has_many :magic_links, dependent: :nullify
+  has_many :official_action_confirmations, dependent: :nullify
 
   def recently_authenticated?
     authenticated_at.present? && authenticated_at >= RECENT_AUTHENTICATION_WINDOW.ago

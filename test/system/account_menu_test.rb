@@ -4,6 +4,8 @@ require "application_system_test_case"
 # request test can't reach, and the phone-width promise that the destinations
 # stay reachable once the tab strip stands down.
 class AccountMenuSystemTest < ApplicationSystemTestCase
+  include ActiveJob::TestHelper
+
   setup do
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
@@ -63,10 +65,38 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
 
   test "signing out from the menu ends the session" do
     visit root_path
-    click_button "Menu"
-    click_button "Sign out"
+    sign_out_and_verify_access_ended
+  end
 
-    assert_selector ".entry-card-title", text: /sign in/i
+  test "signing out with a pending minutes approval ends the session" do
+    begin_minutes_approval
+    sign_out_and_verify_access_ended
+
+    assert_nil @confirmation.reload.session_id
+    assert_predicate @minutes.reload, :draft?
+  end
+
+  test "signing out after completing a minutes approval ends the session and preserves the approval" do
+    begin_minutes_approval
+    perform_enqueued_jobs do
+      click_button "Email me a code and link"
+      assert_field "8-digit confirmation code"
+    end
+    code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
+    assert code
+    fill_in "8-digit confirmation code", with: code
+    click_button "Confirm identity"
+    assert_button "Approve this revision for the Adjutant"
+    click_button "Approve this revision for the Adjutant"
+    assert_text "Exact minutes revision Commander-approved for Adjutant attestation."
+    revision = @minutes.reload.current_revision
+
+    sign_out_and_verify_access_ended
+
+    assert_predicate @minutes.reload, :approved?
+    assert_equal revision, @minutes.current_revision
+    assert_nil @confirmation.reload.session_id
+    assert @confirmation.consumed_at
   end
 
   test "at phone width the tab strip stands down and the menu carries the destinations" do
@@ -83,5 +113,29 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
     assert_link "Your profile"
   ensure
     page.driver.browser.manage.window.resize_to(1400, 1400)
+  end
+
+  private
+
+  def begin_minutes_approval
+    %w[manage_minutes approve_minutes].each { |capability| PermissionGrant.create!(user: @user, capability:) }
+    body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    meeting = create_meeting!(organization: @organization, meeting_body: body, starts_at: 1.day.ago, title: "Test membership meeting")
+    @minutes = MeetingMinutes.create_from_meeting!(meeting:)
+    visit new_admin_meeting_minutes_approval_path(meeting)
+    click_button "Confirm identity to approve for the Adjutant"
+    assert_selector "h1", text: "Confirm your identity"
+    @confirmation = @user.official_action_confirmations.sole
+  end
+
+  def sign_out_and_verify_access_ended
+    click_button "Menu"
+    click_button "Sign out"
+    assert_current_path new_session_path
+    assert_selector ".entry-card-title", text: /sign in/i
+
+    visit profile_path
+    assert_current_path new_session_path
+    assert_no_selector ".app-menu-btn"
   end
 end

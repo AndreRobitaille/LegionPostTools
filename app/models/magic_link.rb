@@ -93,7 +93,7 @@ class MagicLink < ApplicationRecord
       return false if challenge.used_at.present? || challenge.expires_at.past?
       return false if challenge.failed_attempts >= MAX_FAILED_ATTEMPTS
       return false if challenge.user.disabled_at.present?
-      return false if challenge.reauthentication? && challenge.session != session
+      return false if challenge.reauthentication? && (session.blank? || challenge.session != session)
 
       true
     end
