@@ -137,10 +137,22 @@ For Post 165 releases, do not assemble the SSH/Kamal workaround ad hoc and do no
   verifies the running revision and public health, and closes the control master.
 - `bin/release push-deploy` performs the last two operations together.
 
-When the user explicitly authorizes "push and deploy," stage only the intended files,
-commit them, and run `bin/release push-deploy`. Do not ask again merely because Git, SSH,
-Docker, or Kamal needs host access. Destructive production data work still requires its
-own explicit authorization.
+When Andre explicitly asks to push and deploy, stage only the intended files, commit
+them, and run `bin/release push-deploy`. Do not ask again merely because Git, SSH,
+Docker, or Kamal needs host access. Destructive production data work still requires
+Andre's explicit authorization.
+
+## Production and deploys
+
+Deploy only when Andre explicitly asks. A merge to main is not a deploy. Production updates only when Kamal runs.
+
+Follow `docs/DEPLOYMENT.md` exactly. Use `bin/release check` for the preflight and `bin/release push-deploy` to deploy.
+
+Use one persistent control-master connection for the whole operation, including read-only checks. No direct or parallel ssh to the server, and no retry loops. If something fails, stop and report. Wait at least 5 minutes before any single further attempt.
+
+`bin/release check` closes its control master on exit, so any extra Kamal read must run inside that same session.
+
+Do not copy production data (real member data) anywhere without Andre's explicit yes.
 
 ## Documentation Map
 
