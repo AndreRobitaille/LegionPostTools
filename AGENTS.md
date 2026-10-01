@@ -123,6 +123,8 @@ Production is expected to run on a Hetzner Cloud VPS that already hosts another 
 
 Use unique names for Kamal service names, Docker image names, databases, volumes, and other shared infrastructure resources.
 
+The Hetzner VPS throttles repeated SSH connections heavily. Before running Kamal or other SSH-heavy production operations against that server, set up a persistent SSH connection/tunnel/control master and route the work through it. Tear the persistent connection down when the production work is finished. Do not run repeated fresh SSH/Kamal commands directly against the production box.
+
 Codex's restricted command sandbox can expose root-owned host files under `/etc` and `/usr` as `nobody:nobody`. OpenSSH 10.5 rejects that synthetic ownership with `Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf`. For Codex sessions, run SSH, Kamal, and `bin/sync_prod_db` with host access outside the restricted sandbox. Confirm ownership outside the sandbox before diagnosing a host permissions problem, and never `chown` system SSH files based only on their sandbox-visible ownership.
 
 For Post 165 releases, do not assemble the SSH/Kamal workaround ad hoc and do not run
@@ -135,9 +137,10 @@ For Post 165 releases, do not assemble the SSH/Kamal workaround ad hoc and do no
   verifies the running revision and public health, and closes the control master.
 - `bin/release push-deploy` performs the last two operations together.
 
-When Andre explicitly asks to push and deploy, stage only the intended files and commit
-them. Do not ask again merely because Git, SSH, Docker, or Kamal needs host access.
-Destructive production data work still requires Andre's explicit authorization.
+When Andre explicitly asks to push and deploy, stage only the intended files, commit
+them, and run `bin/release push-deploy`. Do not ask again merely because Git, SSH,
+Docker, or Kamal needs host access. Destructive production data work still requires
+Andre's explicit authorization.
 
 ## Production and deploys
 
@@ -145,7 +148,7 @@ Deploy only when Andre explicitly asks. A merge to main is not a deploy. Product
 
 Follow `docs/DEPLOYMENT.md` exactly. Use `bin/release check` for the preflight and `bin/release push-deploy` to deploy.
 
-The production server throttles SSH. Use one persistent control-master connection for the whole operation, including read-only checks. No direct or parallel ssh to the server, and no retry loops. If something fails, stop and report. Wait at least 5 minutes before any single further attempt.
+Use one persistent control-master connection for the whole operation, including read-only checks. No direct or parallel ssh to the server, and no retry loops. If something fails, stop and report. Wait at least 5 minutes before any single further attempt.
 
 `bin/release check` closes its control master on exit, so any extra Kamal read must run inside that same session.
 
