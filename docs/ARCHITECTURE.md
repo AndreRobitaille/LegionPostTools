@@ -72,6 +72,30 @@ The flow is complete end-to-end (registration, sign-in, and passkey management).
 
 Disabled users must not be able to create new sessions through magic links, passkeys, or existing session cookies.
 
+### Returning to sign-in
+
+A browser with a valid sign-in goes directly to the dashboard when it opens a bookmarked
+sign-in page, the code-entry page, or an old sign-in email link. Submitting a stale sign-in
+form also returns to the dashboard without sending another email, consuming a challenge,
+switching accounts, or replacing the session. A person sharing a browser signs out before
+signing in to another account. Expired and disabled sessions still follow the ordinary
+sign-in rules; the 180-day inactivity limit and separate sensitive-action confirmations
+remain in force.
+
+For someone awaiting an email, keep the existing 1919 entry composition: navy hero,
+American Legion emblem, warm cream card, and one prominent code-entry action. Below that
+action, use a quiet rule and one short 16px hint: "No email? Check Spam or Junk." The
+sentence beside the code field asks for the newest email's code. Give "Request another
+email" a compact outlined button shape with 16px text and a 44px minimum touch target.
+Keep it unfilled and below the hint so the full-width, filled navy sign-in button stays
+visually dominant. Keep the same account-private response for known, unknown, and disabled
+addresses. The automatic redirect carries the returning-member experience; avoid adding
+instructions for people who are already signed in.
+
+Functional request and browser tests cover returning through sign-in bookmarks, stale
+forms and email links, preservation of the existing session, and ordinary email/code
+sign-in after signing out. Core sign-in and sign-out browser journeys run in CI.
+
 ## Setup
 
 The first-run setup wizard creates the first organization, first person/user, management permissions, meeting bodies, and the American Legion Post preset.

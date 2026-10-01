@@ -11,7 +11,7 @@ require "test_helper"
 #
 # System tests do NOT run as part of `bin/rails test`; run them explicitly with
 # `bin/rails test:system` (or `bin/rails test:all`). CI and bin/ci also run the
-# account-menu tests, including the sign-out workflows, explicitly.
+# account-menu and sign-in tests, including the sign-out workflows, explicitly.
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # One browser at a time. System suites are small, and a single Chromium avoids
   # spawning one instance per CPU core (the parent class enables parallelism).
@@ -41,8 +41,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   # Sign in through the app's real magic-link flow: mint a link for the user,
   # open it (GET renders the confirmation screen), then click through to POST
-  # and establish the session. No production code is bypassed.
+  # and establish the session in a fresh browser session. No production code is bypassed.
   def system_sign_in(user)
+    Capybara.reset_sessions!
     magic_link = MagicLink.create_for!(user)
     visit magic_link_session_path(token: magic_link.token)
     click_button "Finish signing in"

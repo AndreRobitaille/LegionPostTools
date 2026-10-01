@@ -3,6 +3,7 @@ class SessionsController < ApplicationController
 
   layout "entry", only: %i[new create code magic_link]
   skip_before_action :redirect_to_setup_if_needed, only: %i[new create code magic_link]
+  before_action :redirect_if_already_signed_in, only: %i[new create code magic_link]
 
   # Request throttle is keyed on account + IP so officers sharing one network
   # (e.g. a post hall) don't throttle each other; it still caps one account
@@ -104,6 +105,10 @@ class SessionsController < ApplicationController
   end
 
   private
+
+  def redirect_if_already_signed_in
+    redirect_to root_path, status: :see_other if authenticated?
+  end
 
   def redirect_after_auth_throttle
     destination = action_name == "code" ? code_session_path : new_session_path

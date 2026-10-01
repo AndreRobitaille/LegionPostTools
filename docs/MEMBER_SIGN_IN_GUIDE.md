@@ -28,6 +28,12 @@ login account automatically during a roster import.
 The link and code work once and expire after 15 minutes. Using one makes the other stop
 working. If they expire, return to the sign-in page and request a new email.
 
+## Returning to the Website
+
+In the same browser, you stay signed in unless you sign out, clear cookies, or leave the
+site unused for 180 days. Opening a saved sign-in page takes you straight to your
+dashboard when you are already signed in. On a shared device, sign out when you finish.
+
 ## If the Email Does Not Arrive
 
 First:
@@ -35,6 +41,8 @@ First:
 1. Wait a few minutes.
 2. Check your Spam or Junk folder.
 3. Make sure you entered the email address on your American Legion membership record.
+
+If you request another email, enter the code from the newest one.
 
 For privacy, the website shows the same “check your email” message even when an address
 does not have an enabled login account. If no email arrives, contact your Commander,

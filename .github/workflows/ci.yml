@@ -104,7 +104,7 @@ jobs:
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test
 
-      - name: Test account menu and sign-out workflows in a browser
+      - name: Test sign-in, sign-out, and account menu workflows in a browser
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
@@ -113,4 +113,4 @@ jobs:
           export CHROMEDRIVER_BIN="$CHROMEWEBDRIVER/chromedriver"
           test -x "$CHROMIUM_BIN"
           test -x "$CHROMEDRIVER_BIN"
-          bin/rails test test/system/account_menu_test.rb
+          bin/rails test test/system/account_menu_test.rb test/system/authentication_entry_test.rb

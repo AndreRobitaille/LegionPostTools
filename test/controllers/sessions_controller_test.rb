@@ -1,6 +1,67 @@
 require "test_helper"
 
 class SessionsControllerTest < ActionDispatch::IntegrationTest
+  test "returning through sign-in pages and stale forms preserves an existing sign-in" do
+    Organization.create!(name: "Test American Legion Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Returning", last_name: "Member"), email_address: "returning@example.com")
+    other_user = User.create!(person: Person.create!(first_name: "Other", last_name: "Member"), email_address: "other@example.com")
+    initial_link = MagicLink.create_for!(user)
+    post magic_link_session_path, params: { token: initial_link.token }
+    assert_redirected_to root_path
+    original_cookie = cookies[:session_id]
+    existing_session = user.sessions.sole
+    authenticated_at = existing_session.authenticated_at
+
+    travel 179.days do
+      other_link = MagicLink.create_for!(other_user)
+
+      assert_no_difference [ -> { Session.count }, -> { MagicLink.count } ] do
+        assert_no_emails do
+          get new_session_path
+          assert_redirected_to root_path
+          get code_session_path
+          assert_redirected_to root_path
+          get magic_link_session_path(token: initial_link.token)
+          assert_redirected_to root_path
+
+          post session_path, params: { email_address: other_user.email_address }
+          assert_redirected_to root_path
+          post code_session_path, params: { code: "0000 0000" }
+          assert_redirected_to root_path
+          post magic_link_session_path, params: { token: other_link.token }
+          assert_redirected_to root_path
+        end
+      end
+
+      assert_equal original_cookie, cookies[:session_id]
+      assert_equal authenticated_at, existing_session.reload.authenticated_at
+      assert existing_session.last_seen_at > 1.minute.ago
+      assert_nil other_link.reload.used_at
+      follow_redirect!
+      assert_response :success
+      assert_select ".app-menu-panel", text: /Returning Member/
+    end
+  end
+
+  test "a browser whose sign-in expired can still request a sign-in email" do
+    Organization.create!(name: "Test American Legion Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    user = User.create!(person: Person.create!(first_name: "Returning", last_name: "Member"), email_address: "returning@example.com")
+    expired_session = sign_in_as(user)
+    expired_session.update!(last_seen_at: 181.days.ago)
+
+    get new_session_path
+    assert_response :success
+    assert_select "button", text: "Send my sign-in email"
+    assert_not Session.exists?(expired_session.id)
+
+    assert_emails 1 do
+      post session_path, params: { email_address: user.email_address }
+    end
+    assert_redirected_to code_session_path
+  end
+
   test "login request sends magic link for existing user" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current)

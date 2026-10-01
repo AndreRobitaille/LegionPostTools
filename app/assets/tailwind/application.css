@@ -116,8 +116,10 @@
 .entry-flash-alert { background: #fbeaea; border: 1px solid #e3c3c3; color: var(--color-legionred); }
 .entry-code-field input { text-align: center; font-size: 30px; font-weight: 800; letter-spacing: .12em; font-variant-numeric: tabular-nums; color: var(--color-navy); }
 .entry-check-another { margin: 16px 0 0; text-align: center; font-size: 16px; line-height: 1.45; }
-.entry-check-another a { color: var(--color-navy); }
-.entry-btn:focus-visible, .entry-passkey:focus-visible, .entry-field input:focus-visible,
+.entry-check-another .btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 9px 14px; background: transparent; border-width: 1px; font-weight: 600; }
+.entry-check-another .btn-secondary:hover { background: var(--color-paper); }
+.entry-email-help { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 16px; line-height: 1.55; color: var(--color-ink); text-align: center; }
+.entry-btn:focus-visible, .entry-passkey:focus-visible, .entry-field input:focus-visible, .entry-check-another a:focus-visible,
 .btn-primary:focus-visible, .btn-secondary:focus-visible, .btn-return:focus-visible,
 .btn-confirm:focus-visible, .agent-token-value:focus-visible {
   outline: 3px solid var(--color-gold);

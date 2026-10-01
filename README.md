@@ -132,7 +132,7 @@ Run the main checks before claiming work is complete:
 
 ```bash
 bin/rails test
-bin/rails test test/system/account_menu_test.rb
+bin/rails test test/system/account_menu_test.rb test/system/authentication_entry_test.rb
 bin/brakeman
 bin/rubocop
 bin/bundler-audit
@@ -140,7 +140,9 @@ bin/bundler-audit
 
 The account-menu browser tests sign in, click **Sign out**, and verify that protected
 pages require sign-in again. They cover ordinary sessions and sessions with pending or
-completed minutes approvals. GitHub CI and `bin/ci` run these checks automatically;
+completed minutes approvals. Sign-in browser tests cover returning through bookmarks
+and old email links, plus requesting another email and using its code at phone width.
+GitHub CI and `bin/ci` run these checks automatically;
 other browser tests remain available through `bin/rails test:system`.
 
 ## Smoke Test

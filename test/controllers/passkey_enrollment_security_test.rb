@@ -107,16 +107,22 @@ class PasskeyEnrollmentSecurityTest < ActionDispatch::IntegrationTest
     assert_not session_record.reload.recently_authenticated?
   end
 
-  test "email sign in restores enrollment for a member without an existing passkey" do
-    sign_in_as(@user, authenticated_at: 1.hour.ago)
+  test "email identity confirmation restores enrollment for a member without an existing passkey" do
+    existing_session = sign_in_as(@user, authenticated_at: 1.hour.ago)
     post registration_options_passkeys_path
     assert_response :forbidden
     get response.parsed_body["confirmation_url"]
     assert_response :success
     assert_select ".panel-lead", text: /Before adding a new passkey/
 
-    link = MagicLink.create_for!(@user)
-    post magic_link_session_path(token: link.token)
+    perform_enqueued_jobs { post passkey_enrollment_reauthentication_path }
+    token = ActionMailer::Base.deliveries.last.html_part.body.to_s[/token=([^"&]+)/, 1]
+    assert token
+    assert_no_difference "Session.count" do
+      post magic_link_passkey_enrollment_reauthentication_path, params: { token: token }
+      assert_redirected_to profile_path(anchor: "add-passkey")
+    end
+    assert existing_session.reload.recently_authenticated?
     credential = enrollment_credential
     post registration_passkeys_path, params: { publicKeyCredential: credential }
     assert_response :created

@@ -22,7 +22,7 @@
         <% end %>
 
         <h2 class="entry-card-title">Enter your sign-in code</h2>
-        <p class="entry-lead">Keep this page open. Find the code in the email we sent, then enter it here.</p>
+        <p class="entry-lead">Keep this page open. Enter the code from your newest email.</p>
 
         <%= form_with url: code_session_path, method: :post do |form| %>
           <div class="entry-field entry-code-field">
@@ -38,8 +38,11 @@
           <%= form.button "Finish signing in", class: "entry-btn" %>
         <% end %>
 
-        <p class="entry-reassure">The code works once and expires after 15 minutes.</p>
-        <p class="entry-check-another"><%= link_to "Check another email or request a new code", new_session_path %></p>
+        <p class="entry-reassure">The code expires in 15 minutes.</p>
+
+        <p class="entry-email-help">No email? Check Spam or Junk.</p>
+
+        <p class="entry-check-another"><%= link_to "Request another email", new_session_path, class: "btn-secondary" %></p>
       </div>
     </div>
   </div>
