@@ -88,6 +88,10 @@ for labels; no meaningful text below 13px. Prefer larger type over density.
 
 The developer typically works from a different machine than the one running the app. Bind any development server to `0.0.0.0` (not `127.0.0.1`/`localhost`) so it is reachable off-box. For `bin/rails server`, use `-b 0.0.0.0`. This applies to Tailwind/asset watchers, preview servers, and any tooling that serves over HTTP.
 
+## Cursor Cloud specific instructions
+
+Cloud agents use `.cursor/environment.json`. The image installs the Ruby in `.ruby-version` from a prebuilt Ubuntu binary, Bundler 4.0.3, and a local PostgreSQL 17 cluster. `bash .cursor/install.sh` refreshes gems. `bash .cursor/start.sh` starts PostgreSQL and runs `bin/rails db:prepare` for development and test. `bin/rails test` does not include system tests. When Chrome is present, the image links it to `/usr/bin/chromium` and installs a matching `/usr/bin/chromedriver`. The test suite does not need `RAILS_MASTER_KEY`, OpenAI, or Loops secrets.
+
 ## Verification
 
 Before claiming work is complete, run relevant checks and report exact results.
