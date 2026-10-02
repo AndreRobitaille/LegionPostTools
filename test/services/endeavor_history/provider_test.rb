@@ -25,7 +25,7 @@ class EndeavorHistoryProviderTest < ActiveSupport::TestCase
     assert_equal 4, result["cached_input_tokens"]
     assert_equal 2, result["cache_write_tokens"]
     assert_equal 15, result["reasoning_tokens"]
-    assert_equal "medium", EndeavorHistory::Config.reasoning("summary")
+    assert_equal "high", EndeavorHistory::Config.reasoning("summary")
     assert_includes request[:instructions], "Do not ask questions or request approval"
   end
 
@@ -36,5 +36,23 @@ class EndeavorHistoryProviderTest < ActiveSupport::TestCase
     client.define_singleton_method(:create) { |**_| response }
     error = assert_raises(EndeavorHistory::Error) { EndeavorHistory::Provider.new(client: client).call(stage: "summary", input: {}, schema: EndeavorHistory::Schemas.summary) }
     assert_equal "incomplete", error.category
+  end
+
+  test "Sol writes and checks summaries at high effort while Astra checks full source discovery" do
+    previous = ENV["OPENAI_ENDEAVOR_MODEL"]
+    ENV.delete("OPENAI_ENDEAVOR_MODEL")
+    assert_equal "gpt-6-astra", EndeavorHistory::Config.model("discovery")
+    assert_equal "gpt-6-astra", EndeavorHistory::Config.model("verify_discovery")
+    assert_equal "gpt-6.1-sol", EndeavorHistory::Config.model("summary")
+    assert_equal "gpt-6.1-sol", EndeavorHistory::Config.model("verify_summary")
+    assert_equal "high", EndeavorHistory::Config.reasoning("summary")
+    assert_equal "high", EndeavorHistory::Config.reasoning("verify_summary")
+    ENV["OPENAI_ENDEAVOR_MODEL"] = "gpt-6.1-sol"
+    assert_equal "gpt-6.1-sol", EndeavorHistory::Config.model("discovery")
+    assert_equal "gpt-6.1-sol", EndeavorHistory::Config.signature["models"]["verify_discovery"]
+    ENV["OPENAI_ENDEAVOR_MODEL"] = "gpt-6-astra"
+    assert_equal "medium", EndeavorHistory::Config.reasoning("summary")
+  ensure
+    ENV["OPENAI_ENDEAVOR_MODEL"] = previous
   end
 end

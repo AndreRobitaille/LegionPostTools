@@ -17,7 +17,7 @@ module EndeavorHistory
         editions = EndeavorHistoryEdition.where(endeavor_id: ids).select("DISTINCT ON (endeavor_id) endeavor_id, manifest, created_at").order(:endeavor_id, id: :desc).index_by(&:endeavor_id)
         runs = EndeavorHistoryRun.where(endeavor_id: ids).select("DISTINCT ON (endeavor_id) endeavor_id, status").order(:endeavor_id, id: :desc).index_by(&:endeavor_id)
         guidance = EndeavorHistoryGuidance.where(endeavor_id: ids).group(:endeavor_id).maximum(:id)
-        common = endeavors.any? ? Sources.new(endeavors.first).manifest.slice("revisions", "catalog", "configuration") : {}
+        common = endeavors.any? ? Sources.new(endeavors.first).manifest.slice("revisions", "catalog", "configuration", "quality_policy") : {}
         endeavors.map do |endeavor|
           edition = editions[endeavor.id]
           manifest = common.merge("endeavor" => endeavor.slice(:id, :title, :summary),
@@ -42,7 +42,7 @@ module EndeavorHistory
       return "failed" if run&.status == "failed"
       return "no_minutes" if manifest.fetch("revisions").empty?
       return "not_generated" unless edition
-      edition.manifest == manifest ? "current" : "outdated"
+      Sources.dependencies(edition.manifest) == Sources.dependencies(manifest) ? "current" : "outdated"
     end
   end
 end

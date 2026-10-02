@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_30_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_02_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -273,6 +273,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_000000) do
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_endeavor_history_guidances_on_author_id"
     t.index ["endeavor_id"], name: "index_endeavor_history_guidances_on_endeavor_id"
+  end
+
+  create_table "endeavor_history_results", force: :cascade do |t|
+    t.jsonb "candidate", null: false
+    t.jsonb "configuration", null: false
+    t.datetime "created_at", null: false
+    t.bigint "endeavor_history_run_id", null: false
+    t.bigint "endeavor_id", null: false
+    t.string "fingerprint", null: false
+    t.jsonb "input", null: false
+    t.string "stage", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "verification", null: false
+    t.index ["endeavor_history_run_id"], name: "index_endeavor_history_results_on_endeavor_history_run_id"
+    t.index ["endeavor_id", "stage", "fingerprint"], name: "endeavor_history_result_reuse"
+    t.index ["endeavor_id"], name: "index_endeavor_history_results_on_endeavor_id"
   end
 
   create_table "endeavor_history_runs", force: :cascade do |t|
@@ -1070,6 +1086,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_000000) do
   add_foreign_key "endeavor_history_events", "users", column: "actor_id"
   add_foreign_key "endeavor_history_guidances", "endeavors"
   add_foreign_key "endeavor_history_guidances", "users", column: "author_id"
+  add_foreign_key "endeavor_history_results", "endeavor_history_runs"
+  add_foreign_key "endeavor_history_results", "endeavors"
   add_foreign_key "endeavor_history_runs", "endeavors"
   add_foreign_key "endeavor_history_runs", "users", column: "requested_by_id"
   add_foreign_key "endeavor_source_links", "endeavor_history_editions"

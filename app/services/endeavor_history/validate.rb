@@ -19,6 +19,10 @@ module EndeavorHistory
           references!(fact.fetch("source_ids"), allowed)
           raise Error, "invalid_output" unless %w[report proposal decision commitment uncertainty discrepancy].include?(fact["kind"])
         end
+        title = item["units"].find { |unit| unit["kind"] == "title" }
+        if entry["relevance"] == "related" && title && dated_title?(title["text"]) && facts.none? { |fact| fact["source_ids"].include?(title["id"]) }
+          raise Error.new("coverage", details: { "message" => "Extract the event date in this related heading with a title-unit citation.", "source_ids" => [ title["id"] ] })
+        end
         outcomes = item.fetch("units").select { |unit| unit["kind"] == "outcome" }.map { |unit| unit["id"] }
         assessments = entry.fetch("outcomes")
         raise Error, "coverage" unless assessments.is_a?(Array) && assessments.map { |assessment| assessment["source_id"] }.sort == outcomes.sort
@@ -37,8 +41,9 @@ module EndeavorHistory
       raise Error, "invalid_output"
     end
 
-    def summary!(data, meetings)
-      expected = meetings.select { |meeting| meeting.fetch("facts").any? }
+    def summary!(data, meetings, account_revision_ids: nil)
+      relevant = meetings.select { |meeting| meeting.fetch("facts").any? }
+      expected = relevant.select { |meeting| account_revision_ids.nil? || account_revision_ids.include?(meeting["revision_id"]) }
       actual = data.fetch("meetings")
       raise Error, "coverage" unless actual.is_a?(Array) && actual.map { |entry| entry["revision_id"] } == expected.map { |meeting| meeting["revision_id"] }
       expected.zip(actual).each do |meeting, entry|
@@ -57,7 +62,7 @@ module EndeavorHistory
         used = entry.fetch("claims").flat_map { |claim| claim["fact_ids"] }
         raise Error, "coverage" unless (fact_ids - used).empty?
       end
-      all_ids = expected.flat_map { |meeting| meeting.fetch("facts").map { |fact| fact["id"] } }
+      all_ids = relevant.flat_map { |meeting| meeting.fetch("facts").map { |fact| fact["id"] } }
       claims!(data.fetch("overview"), all_ids)
       raise Error, "coverage" if all_ids.any? && data["overview"].empty?
       data
@@ -92,6 +97,11 @@ module EndeavorHistory
 
     def references!(ids, allowed)
       raise Error, "invalid_citation" unless ids.is_a?(Array) && ids.any? && ids.uniq == ids && (ids - allowed).empty?
+    end
+
+    def dated_title?(title)
+      month = "(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+      title.match?(/\b(?:#{month}\.?\s+\d{1,2}|\d{1,2}\s+#{month})\b/i)
     end
   end
 end

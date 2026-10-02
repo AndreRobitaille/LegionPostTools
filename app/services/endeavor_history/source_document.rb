@@ -1,11 +1,12 @@
 module EndeavorHistory
   class SourceDocument
-    VERSION = "1".freeze
+    VERSION = "2".freeze
     BLOCKS = "p, li, div, h1, h2, h3, h4, blockquote, tr".freeze
     attr_reader :revision
 
-    def initialize(revision)
+    def initialize(revision, version: VERSION)
       @revision = revision
+      @version = version
     end
 
     def items
@@ -15,6 +16,9 @@ module EndeavorHistory
           prefix = "r#{revision.id}:#{key}"
           units = paragraphs(item["body_html"]).each_with_index.map do |text, index|
             { "id" => "#{prefix}:body:#{index}", "kind" => "body", "text" => text }
+          end
+          if @version != "1" && item.fetch("title").strip.present?
+            units << { "id" => "#{prefix}:title", "kind" => "title", "text" => item.fetch("title") }
           end
           item.fetch("outcomes").each_with_index do |outcome, index|
             units << { "id" => "#{prefix}:outcome:#{index}", "kind" => "outcome", "text" => outcome.fetch("text"), "outcome" => outcome }

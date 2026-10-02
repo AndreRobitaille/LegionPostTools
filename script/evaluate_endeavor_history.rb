@@ -3,20 +3,25 @@
 # No database writes: reuse the production extraction/verification methods with file output.
 class EndeavorReasoningEvaluation < EndeavorHistory::Processing
   def initialize(snapshot:, effort:, endeavor_id:, output:)
-    raise ArgumentError, "Use low, medium, or mixed" unless %w[low medium mixed].include?(effort)
+    raise ArgumentError, "Use low, medium, mixed, or baseline" unless %w[low medium mixed baseline].include?(effort)
     raise "Prompt differs from snapshot" unless snapshot.fetch("prompt_digest") == EndeavorHistory::Prompt.digest
     @snapshot = snapshot
     @case = snapshot.fetch("cases").find { |entry| entry.dig("endeavor", "id") == endeavor_id } or raise "Unknown Endeavor"
-    @run = Struct.new(:manifest).new(@case.fetch("manifest"))
+    @run = Struct.new(:id, :manifest).new(-endeavor_id, @case.fetch("manifest"))
     @endeavor = Struct.new(:id).new(endeavor_id)
     @guidance = @case.fetch("guidance")
+    @request = { "refresh" => true }
+    @reuse = Object.new.tap { |store| store.define_singleton_method(:save) { |*_args| nil } }
     @output = output
     @steps = []
     @provider = EndeavorHistory::Provider.new
     @effort = effort
     %w[discovery verify_discovery summary verify_summary].each do |stage|
+      profile = @run.manifest.fetch("configuration")
+      ENV["OPENAI_ENDEAVOR_#{stage.upcase}_MODEL"] ||= profile.dig("models", stage) || profile.fetch("model")
       level = effort
       level = stage.start_with?("verify_") ? "high" : "medium" if effort == "mixed"
+      level = stage == "summary" ? "medium" : "high" if effort == "baseline"
       ENV["OPENAI_ENDEAVOR_#{stage.upcase}_REASONING"] = level
     end
   end
@@ -37,7 +42,13 @@ class EndeavorReasoningEvaluation < EndeavorHistory::Processing
 
   private
 
-  def invoke(stage, input, schema)
+  def generate_verified(stage, input, schema, **_options, &block)
+    super(stage, input, schema, reuse: false, &block)
+  end
+
+  def ensure_current!; end
+
+  def invoke(stage, input, schema, **_options)
     raise EndeavorHistory::Error, "call_budget" if @steps.size >= 16
     raise EndeavorHistory::Error, "input_limit" if JSON.generate(input).bytesize > EndeavorHistory::Config.max_input_bytes
     puts({ event: "call", endeavor: @endeavor.id, effort: @effort, stage: stage }.to_json)
@@ -61,7 +72,7 @@ end
 
 $stdout.sync = true
 snapshot_path, effort, endeavor_id, output = ARGV
-abort "Usage: SNAPSHOT low|medium|mixed ENDEAVOR_ID OUTPUT" unless ARGV.size == 4
+abort "Usage: SNAPSHOT low|medium|mixed|baseline ENDEAVOR_ID OUTPUT" unless ARGV.size == 4
 raise "Output already exists" if File.exist?(output)
 EndeavorReasoningEvaluation.new(snapshot: JSON.parse(File.read(snapshot_path)), effort: effort,
   endeavor_id: Integer(endeavor_id), output: output).call

@@ -8,6 +8,7 @@ module Admin
       @guidance = @endeavor.history_guidances.order(id: :desc).first
       @runs = @endeavor.history_runs.recent.limit(20)
       @editions = @endeavor.history_editions.order(id: :desc).limit(10)
+      @reuses = @endeavor.history_events.where(action: "reused", endeavor_history_run_id: @runs.pluck(:id)).group_by(&:endeavor_history_run_id)
     end
 
     def create
@@ -17,7 +18,6 @@ module Admin
         if meeting && !meeting.minutes&.member_visible?
           raise EndeavorHistory::Error, "no_sources"
         end
-        # A meeting rerun refreshes its complete Endeavor history as well, so the overview stays coherent.
         EndeavorHistory::Processing.request(@endeavor, requester: current_user, force: true, meeting_id: meeting&.id)
       when "guidance", "withdraw", "resume"
         EndeavorHistory::Manage.change(@endeavor, user: current_user, action: params[:operation],

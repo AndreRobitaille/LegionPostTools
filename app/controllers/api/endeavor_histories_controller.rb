@@ -4,10 +4,15 @@ module Api
     before_action :set_endeavor
 
     def show
+      runs = @endeavor.history_runs.recent.limit(20)
+      reuses = @endeavor.history_events.where(action: "reused", endeavor_history_run_id: runs.pluck(:id)).group_by(&:endeavor_history_run_id)
       render json: {
         enabled: EndeavorHistory::Config.enabled?, withdrawn: @endeavor.history_withdrawn?, lock_version: @endeavor.lock_version,
         guidance: @endeavor.history_guidances.order(id: :desc).first&.slice(:id, :body, :created_at),
-        runs: @endeavor.history_runs.recent.limit(20).map { |run| run.slice(:id, :status, :error_category, :manifest, :steps, :created_at, :finished_at) },
+        runs: runs.map do |run|
+          run.slice(:id, :status, :error_category, :manifest, :steps, :created_at, :finished_at).merge(
+            reuses: reuses.fetch(run.id, []).map(&:metadata))
+        end,
         editions: @endeavor.history_editions.order(id: :desc).limit(10).map { |edition| edition.slice(:id, :payload, :sha256, :created_at) }
       }
     end

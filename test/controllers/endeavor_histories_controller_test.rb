@@ -49,6 +49,20 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "history management reports reused work separately from paid attempts" do
+    run = @endeavor.history_runs.create!(manifest: { "revisions" => [] }, fingerprint: "synthetic-reuse", status: "succeeded")
+    metadata = { "stage" => "discovery", "result_id" => 123 }
+    @endeavor.history_events.create!(action: "reused", endeavor_history_run: run, metadata: metadata)
+    sign_in_as(@manager)
+    get api_endeavor_history_path(@endeavor), as: :json
+    assert_response :success
+    assert_empty response.parsed_body["runs"].first["steps"]
+    assert_equal [ metadata ], response.parsed_body["runs"].first["reuses"]
+    get admin_endeavor_history_path(@endeavor)
+    assert_response :success
+    assert_includes response.body, "Reused 1 previously completed step"
+  end
+
   test "unpublished agenda metadata does not appear in member history or API" do
     body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     type = @organization.meeting_types.create!(name: "Meeting", position: 1, active: true)
@@ -182,7 +196,7 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "current", state.call[:status]
     changed_signature = EndeavorHistory::Config.signature.merge("prompt_version" => "future-version")
     with_stubbed_class_method(EndeavorHistory::Config, :signature, -> { changed_signature }) do
-      assert_equal "outdated", state.call[:status]
+      assert_equal "current", state.call[:status]
     end
     @endeavor.update!(summary: "New identity clarification")
     assert_equal "outdated", state.call[:status]

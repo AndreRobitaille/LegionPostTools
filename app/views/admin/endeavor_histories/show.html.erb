@@ -17,7 +17,7 @@
           <%= form_with url: admin_endeavor_history_path(@endeavor), class: "stacked-form" do |form| %>
             <%= hidden_field_tag :operation, "refresh" %>
             <div class="fl"><%= label_tag :meeting_id, "Meeting to revisit (optional)" %><%= select_tag :meeting_id, options_for_select(@sources.revisions.map { |r| ["#{legion_date(Time.iso8601(r.payload['starts_at']))} · #{r.payload['meeting_body_name']}", r.meeting_minutes.meeting_id] }), include_blank: "All meeting records" %></div>
-            <p class="history-note">A meeting rerun also checks the complete history so the overview stays consistent. This starts new AI calls.</p>
+            <p class="history-note">Choose one meeting to revisit its account and update the overview. Other unchanged meeting accounts are retained. Leaving this blank revisits every meeting for this Endeavor. This starts new AI calls.</p>
             <%= form.submit "Refresh this Endeavor", class: "btn-primary", disabled: !EndeavorHistory::Config.enabled? %>
           <% end %>
         <% end %>
@@ -30,6 +30,7 @@
         <details class="history-source">
           <summary>Run <%= run.id %> · <%= run.status.humanize %> · <%= legion_datetime(run.created_at) %></summary>
           <p><%= run.requested_by ? "Requested by #{run.requested_by.person.full_name}" : "Automatic processing" %> · <%= pluralize(run.steps.size, "AI call") %> · <%= number_with_delimiter(run.tokens) %> tokens used or reserved</p>
+          <% if @reuses[run.id].present? %><p>Reused <%= pluralize(@reuses[run.id].size, "previously completed step") %>.</p><% end %>
           <% if run.error_category %><p><%= endeavor_history_error(run.error_category) %></p><% end %>
           <% run.steps.each do |step| %>
             <p><strong><%= step["stage"].humanize %></strong> · <%= step["model"] || run.manifest.dig("configuration", "model") %> · <%= step["reasoning"] %> reasoning</p>

@@ -8,7 +8,7 @@ module EndeavorHistory
       serialized = JSON.generate(input)
       raise Error, "input_limit" if serialized.bytesize > Config.max_input_bytes
       response = client.responses.create(
-        model: Config.model, instructions: Prompt.instructions(stage), input: serialized,
+        model: Config.model(stage), instructions: Prompt.instructions(stage), input: serialized,
         reasoning: { effort: Config.reasoning(stage) },
         text: { format: { type: :json_schema, name: "endeavor_#{stage}", strict: true, schema: schema }, verbosity: :low },
         tools: [], tool_choice: :none, store: false, truncation: :disabled,

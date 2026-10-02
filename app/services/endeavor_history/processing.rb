@@ -3,6 +3,9 @@ module EndeavorHistory
     def self.request(endeavor, requester: nil, force: false, meeting_id: nil)
       raise Error, "disabled" unless Config.enabled?
       raise Error, "forbidden" if requester && !requester.can?("manage_agendas")
+      if meeting_id && !Sources.new(endeavor).revisions.any? { |revision| revision.meeting_minutes.meeting_id == meeting_id }
+        raise Error, "no_sources"
+      end
       run = endeavor.with_lock do
         raise Error, "withdrawn" if endeavor.history_withdrawn?
         existing = endeavor.history_runs.active.first
@@ -10,12 +13,23 @@ module EndeavorHistory
         manifest = Sources.new(endeavor).manifest
         raise Error, "no_sources" if manifest["revisions"].empty?
         fingerprint = Sources.digest(manifest)
-        latest = endeavor.history_runs.where(fingerprint: fingerprint).order(id: :desc).first
-        next latest if latest && !force
+        latest = endeavor.history_runs.order(id: :desc).detect { |candidate| Sources.dependencies(candidate.manifest) == Sources.dependencies(manifest) }
+        if latest && !force && (latest.status == "succeeded" || latest.manifest["configuration"] == manifest["configuration"])
+          next latest
+        end
+        recovery = if force && !requester && latest&.status == "failed"
+          endeavor.history_events.where(endeavor_history_run: latest, action: "requested").last&.metadata
+        end
+        if recovery&.fetch("refresh", false)
+          requester = latest.requested_by
+          meeting_id = recovery["meeting_id"]
+        end
         run = endeavor.history_runs.create!(manifest: manifest, fingerprint: fingerprint, requested_by: requester,
-          agent_access_token_id: Current.agent_access_token&.id)
+          agent_access_token_id: Current.agent_access_token&.id || (recovery&.fetch("refresh", false) ? latest.agent_access_token_id : nil))
+        metadata = { "meeting_id" => meeting_id, "force" => force, "refresh" => force && requester.present? }
+        metadata["refresh_id"] = recovery&.fetch("refresh_id", nil) || run.id if metadata["refresh"]
         endeavor.history_events.create!(action: "requested", actor: requester, endeavor_history_run: run,
-          agent_access_token_id: Current.agent_access_token&.id, metadata: { "meeting_id" => meeting_id, "force" => force })
+          agent_access_token_id: run.agent_access_token_id, metadata: metadata)
         run
       end
       if run.status == "pending"
@@ -29,6 +43,7 @@ module EndeavorHistory
       @run = run
       @endeavor = run.endeavor
       @provider = provider
+      @reuse = Reuse.new(run)
     end
 
     def call
@@ -41,13 +56,9 @@ module EndeavorHistory
       ensure_current!
       documents = Sources.new(@endeavor).documents
       @guidance = @endeavor.history_guidances.find_by(id: @run.manifest["guidance_id"])&.body.to_s
+      @request = @endeavor.history_events.where(endeavor_history_run: @run, action: "requested").last&.metadata || {}
       meetings = documents.map { |document| discover(document) }
-      context = { "endeavor" => @run.manifest["endeavor"], "guidance" => @guidance, "meetings" => meetings }
-      summary = if meetings.any? { |meeting| meeting["facts"].any? }
-        generate_verified("summary", context, Schemas.summary) { |data| Validate.summary!(data, meetings) }
-      else
-        { "overview" => [], "meetings" => [] }
-      end
+      summary = compose(meetings)
       publish!(summary, meetings)
     rescue Error => error
       finish_failure(error.category)
@@ -60,6 +71,14 @@ module EndeavorHistory
     private
 
     def discover(document)
+      unless refresh?(document)
+        legacy = @reuse.legacy_meeting(document)
+        if legacy
+          edition, meeting = legacy
+          record_reuse("discovery", "edition_id" => edition.id, "revision_id" => document["revision_id"])
+          return meeting
+        end
+      end
       items = document.fetch("items")
       results = []
       # Keep source items whole. Oversized single items stop explicitly rather than losing text.
@@ -75,35 +94,92 @@ module EndeavorHistory
       batches.each do |batch|
         source = document.merge("items" => batch, "target_endeavor_id" => @endeavor.id)
         input = { "endeavor" => @run.manifest["endeavor"], "catalog" => @run.manifest["catalog"], "guidance" => @guidance, "source" => source }
+        input["identity_version"] = @run.manifest.slice("guidance_id", "generation")
+        input["refresh_id"] = refresh_id if refresh?(document)
         output = generate_verified("discovery", input, Schemas.discovery) { |data| Validate.discovery!(data, source) }
         results.concat(output.fetch("items"))
       end
       facts = results.flat_map do |entry|
         entry.fetch("facts").each_with_index.map do |fact, index|
-          fact.merge("id" => "r#{document['revision_id']}:#{entry['key']}:fact:#{index}")
+          fact.merge("id" => "e#{@endeavor.id}:r#{document['revision_id']}:#{entry['key']}:fact:#{index}")
         end
       end
       source_ids = facts.flat_map { |fact| fact["source_ids"] }.uniq
       # Preserve the whole associated item as context, but only selected units are featured.
       selected = document["items"].select { |item| item["units"].any? { |unit| source_ids.include?(unit["id"]) } }
-      document.merge("items" => selected, "facts" => facts, "coverage" => results)
+      document.merge("items" => selected, "facts" => facts, "coverage" => results, "normalization_version" => SourceDocument::VERSION)
     end
 
-    def generate_verified(stage, input, schema)
+    def compose(meetings)
+      previous = @endeavor.history_editions.order(id: :desc).detect { |edition| Sources.identity(edition.manifest) == Sources.identity(@run.manifest) }
+      evidence = previous ? previous.payload.fetch("evidence").index_by { |meeting| meeting["revision_id"] } : {}
+      retained = previous ? previous.payload.fetch("meetings").select do |account|
+        meeting = meetings.find { |entry| entry["revision_id"] == account["revision_id"] }
+        old = evidence[account["revision_id"]]
+        meeting && old && meeting["sha256"] == old["sha256"] && meeting["facts"] == old["facts"] && !refresh?(meeting)
+      end : []
+      relevant = ->(entries) { entries.select { |meeting| meeting["facts"].any? }.map { |meeting| meeting.slice("revision_id", "sha256", "facts") } }
+      unchanged = previous && relevant.call(meetings) == relevant.call(previous.payload.fetch("evidence"))
+      if unchanged && !@request["refresh"]
+        record_reuse("summary", "edition_id" => previous.id)
+        return previous.payload.slice("overview", "meetings")
+      end
+      return { "overview" => [], "meetings" => [] } unless meetings.any? { |meeting| meeting["facts"].any? }
+      ids = meetings.select { |meeting| meeting["facts"].any? }.pluck("revision_id") - retained.pluck("revision_id")
+      context = { "endeavor" => @run.manifest["endeavor"], "guidance" => @guidance, "meetings" => meetings, "account_revision_ids" => ids }
+      context["identity_version"] = @run.manifest.slice("guidance_id", "generation")
+      context["refresh_id"] = refresh_id if @request["refresh"]
+      summary = generate_verified("summary", context, Schemas.summary) { |data| Validate.summary!(data, meetings, account_revision_ids: ids) }
+      accounts = (retained + summary.fetch("meetings")).index_by { |account| account["revision_id"] }
+      summary.merge("meetings" => meetings.filter_map { |meeting| accounts[meeting["revision_id"]] })
+    end
+
+    def refresh?(document)
+      @request["refresh"] && (!@request["meeting_id"] || document["meeting_id"] == @request["meeting_id"])
+    end
+
+    def refresh_id = @request["refresh_id"] || @run.id
+
+    def record_reuse(stage, metadata)
+      @endeavor.history_events.create!(action: "reused", endeavor_history_run: @run, metadata: metadata.merge("stage" => stage))
+    end
+
+    def generate_verified(stage, input, schema, reuse: true)
+      if reuse && (result = @reuse.verified(stage, input))
+        yield result.candidate
+        Validate.verification!(result.verification, source_ids(input))
+        record_reuse(stage, "result_id" => result.id)
+        return result.candidate
+      end
       repair = nil
+      if reuse && stage == "discovery" && (previous = @reuse.comparison_candidate(input))
+        yield previous.candidate
+        report = invoke("verify_discovery", input.merge("candidate" => previous.candidate), Schemas.verification)
+        begin
+          Validate.verification!(report, source_ids(input))
+          ensure_current!
+          @reuse.save(stage, input, previous.candidate, report)
+          record_reuse(stage, "result_id" => previous.id, "comparison_rechecked" => true)
+          return previous.candidate
+        rescue Error => error
+          repair = { "category" => error.category, "candidate" => previous.candidate, "verification" => report, "structural_findings" => error.details }
+        end
+      end
       2.times do |attempt|
         request_input = repair ? input.merge("repair_findings" => repair) : input
-        candidate = invoke(stage, request_input, schema)
+        candidate = invoke(stage, request_input, schema, reuse: reuse)
         begin
           yield candidate
           verification_input = input.merge("candidate" => candidate)
-          report = invoke("verify_#{stage}", verification_input, Schemas.verification)
+          report = invoke("verify_#{stage}", verification_input, Schemas.verification, reuse: reuse)
           allowed = source_ids(input)
           Validate.verification!(report, allowed)
+          ensure_current!
+          @reuse.save(stage, input, candidate, report)
           return candidate
         rescue Error => error
           raise if attempt == 1
-          repair = { "category" => error.category, "candidate" => candidate, "verification" => report }
+          repair = { "category" => error.category, "candidate" => candidate, "verification" => report, "structural_findings" => error.details }
         end
       end
     end
@@ -113,10 +189,15 @@ module EndeavorHistory
       documents.flat_map { |document| document.fetch("items").flat_map { |item| item.fetch("units").map { |unit| unit["id"] } } }
     end
 
-    def invoke(stage, input, schema)
+    def invoke(stage, input, schema, reuse: false)
       ensure_current!
       serialized = JSON.generate(input)
       raise Error, "input_limit" if serialized.bytesize > Config.max_input_bytes
+      if reuse && (completed = @reuse.completed_call(stage, input))
+        prior_run, step = completed
+        record_reuse(stage, "run_id" => prior_run.id, "input_sha256" => step["input_sha256"])
+        return step.fetch("data")
+      end
       index = nil
       @endeavor.organization.with_lock do
         @run.reload
@@ -130,7 +211,8 @@ module EndeavorHistory
         raise Error, "daily_budget" if used + reserved > Config.daily_token_budget
         index = @run.steps.length
         @run.update!(steps: @run.steps + [ { "stage" => stage, "input_sha256" => Sources.digest(input),
-          "total_tokens" => reserved, "reserved" => true, "at" => Time.current.iso8601, "reasoning" => Config.reasoning(stage) } ], heartbeat_at: Time.current)
+          "total_tokens" => reserved, "reserved" => true, "at" => Time.current.iso8601, "reasoning" => Config.reasoning(stage),
+          "configuration_sha256" => Sources.digest(Config.stage_signature(stage)), "model" => Config.model(stage) } ], heartbeat_at: Time.current)
       end
       result = @provider.call(stage: stage, input: input, schema: schema)
       @run.with_lock do
