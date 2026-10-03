@@ -53,10 +53,6 @@ Completed for the first production setup:
 - Backup and restore are handled as server-side operations outside the application roadmap.
 - Updated deployment documentation so the same pattern can later be repeated for another hosted American Legion post or unit without creating a SaaS/multi-tenant app.
 
-Still pending before inviting broader member use:
-
-- Verify storage persistence across a container restart after file-upload workflows exist.
-
 ## Completed: Structured Agendas Foundation
 
 With authentication and roster-backed administration in place, build the meeting record core.
@@ -69,10 +65,6 @@ Completed for Structured Agendas foundation:
 - Meeting type templates: seeded PEC Meeting and Membership Meeting, admin-created meeting types, catalog-item picker, template-specific rich text wording overrides, and item ordering/removal.
 - Dated agendas: officer-created agendas for actual meeting dates, copied from meeting type templates, editable before approval/publication, with member read-only and printable HTML views.
 - Structured agenda sections: reusable section chapters in meeting type templates, copied independently into dated agendas, with guided item placement, accessible ordering controls, and section-aware member/print views.
-
-Still pending:
-
-- Later guided workflow to create a new catalog item from the meeting type/template editor and add it directly to that template.
 
 ## Completed: Endeavors Foundation
 
@@ -87,10 +79,6 @@ Still pending:
 
 See `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` for the completed foundation, the minutes
 integration contract, and intentionally deferred Endeavor work.
-
-Still pending:
-
-- Human-confirmed merging or splitting if AI suggestions are added later.
 
 ### Implemented locally: automatic Endeavor history and AI summaries
 
@@ -110,10 +98,7 @@ passed on three Endeavors; production activation remains pending.
 - Keep AI evidence associations separate from the human-defined Endeavor and immutable
   minutes. Include correction handling, complete-history refresh, API parity, and measured
   quality/cost evaluation in implementation.
-- Simple next steps and optional task deadlines are now implemented. Later, explore
-  responsible people, subcommittee membership, and volunteer requests for active Endeavors. Consider an accessible Kanban view
-  only when a concrete workflow benefits from it. Keep coordination separate from the
-  immutable meeting record and preserve history after completion.
+- Simple next steps and optional task deadlines are now implemented.
 
 ## Completed: Member calendar and Endeavor activities
 
@@ -207,9 +192,7 @@ See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`,
 
 Structured minutes, lifecycle-aware PDFs, transcript review, AI runs, background-job
 status, account controls, exact approval, and exact attestation are now in the generated
-handbook. Member distribution begins at attestation. Acceptance, amendments, reopen, and
-their later official-document states remain future work. MCP still waits until
-connector-style onboarding is worth another protocol surface.
+handbook. Member distribution begins at attestation.
 
 ## Completed: Agent Sign-in and Access
 
@@ -351,78 +334,9 @@ audited reopening, and recording membership approval against an exact revision.
   tokens carry the same human capability, may execute the exact explicitly requested act,
   and must preserve idempotency plus agent-token provenance.
 
-### Slice 4: Membership approval, corrections, amendments, and immutability
+The remaining minutes slices (amendments, official delivery, and delegated access) are tracked
+in GitHub Issues.
 
-- Record membership approval at a later Meeting of the same body, with the approving Meeting,
-  actor, time, factual disposition, and source minutes item or motion when available. Do
-  not require a fictitious motion when the body approved the minutes as presented or corrected.
-- Membership-approved minutes are immutable at the database and application layers. There is no
-  administrator bypass and no transition back to draft.
-- Corrections adopted during original membership approval are incorporated directly into
-  the minutes, then approved for attestation and attested again as an exact corrected
-  revision. They are not amendments and do not require another membership vote.
-- Corrections discovered after membership approval become linked amendment or
-  later-meeting records. They never rewrite the membership-approved revision.
-- Present membership-approved minutes as the primary historical document, attested
-  minutes as awaiting membership approval, and the published agenda as a retained
-  secondary document.
+## Open Work
 
-### Slice 5: Official delivery and remaining delegated access
-
-- Promote the existing print-ready draft-minutes document into finalized attested and
-  official PDFs from immutable revisions after the official lifecycle is correct.
-- Add officer action notifications for minutes handoffs, separate from member-facing
-  document distribution:
-  - Commander approval notifies the currently assigned Adjutant that an exact revision is
-    ready to review, reopen for changes, or attest.
-  - Reopening for changes notifies the other responsible officer; subsequent Commander
-    approval sends a fresh Adjutant notification for the new exact revision.
-  - Attestation notifies officers who can record the later membership approval, with an
-    optional configurable reminder after the relevant same-body Meeting has occurred.
-  - Resolve recipients from current dated officer assignments and active, verified login
-    accounts at delivery time. Never hard-code Post 165 people or addresses.
-  - Keep restricted transcript and working-minutes content out of email. Identify the
-    Meeting, explain the requested action in plain language, and link back to the signed-in
-    officer workspace.
-  - Deduplicate by lifecycle transition, revision, recipient, and notification purpose;
-    suppress stale reminders after the record advances or reopens; and expose delivery or
-    retry state through the existing Jobs ledger.
-- Add member-facing email distribution and delivery records after final document
-  generation is stable. Do not treat officer action notifications as distribution of the
-  official record.
-- Draft-minutes, approval, and attestation API/handbook parity are complete. Reopening and
-  membership-approval recording currently require the signed-in website. Add delegated
-  membership-approval and amendment surfaces only with the same exact capability,
-  idempotency, and execution-audit rules.
-
-The guided catalog-item creation improvement, Endeavor merge/split tools, Four Pillars,
-events, assignments, dashboards, reminders, general document archives, and broad AI
-automation do not block these minutes slices.
-
-## Deployment
-
-- Longer-term deployment hardening beyond the Production Readiness Side-Roadmap.
-- Harden Kamal production deployment for repeatable future installs.
-- Expand deployment automation and operational checks for additional American Legion posts or units.
-
-## Security and Account Continuity
-
-- Full session/device management system on Profile: list signed-in browsers/devices,
-  show last seen/browser/IP context, revoke one session, sign out all other
-  sessions, clean up sessions after 180 days of inactivity, revoke sessions on risk
-  events, and later support step-up authentication for sensitive actions.
-
-## Later Possibilities
-
-- Installation settings administration, including a guided time-zone change that previews
-  affected Meeting and historical document times, requires explicit confirmation, and
-  migrates stored timestamps without silently moving their intended local date or clock time.
-- Document archive.
-- Committee tracking.
-- Public calendar synchronization and cache invalidation (member calendar/events are implemented).
-- Lightweight finance records.
-- Officer/member directory.
-- Public read-only API for selected approved records (distinct from the private
-  officer-agent API).
-- Personal access tokens or MCP wrapping that private API, if a future agent
-  cannot use the session-authenticated handbook.
+Open work, priorities, and status live in GitHub Issues: https://github.com/AndreRobitaille/LegionPostTools/issues
