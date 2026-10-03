@@ -149,20 +149,7 @@ updates automatically.
 
 ## Deferred Endeavor work
 
-The following do not block Meeting or Minutes development:
-
-- human-confirmed merge and split workflows;
-- expanded kinds or lifecycle statuses;
-- Four Pillar persistence, classification, and reporting;
-- events, activities, recurrence, calendars, and volunteer scheduling;
-- assignments, tasks, dependencies, budgets, and project boards;
-- general attachments, document archives, and evidence search;
-- dashboards, reminders, analytics, notifications, and automation;
-- public Endeavor pages or public APIs; and
-- automatic AI creation, linking, classification, merge, split, or completion.
-
-Revisit one of these only when a real Post workflow requires it and after the official
-Meeting/Minutes lifecycle is stable.
+Open work, priorities, and status live in GitHub Issues: https://github.com/AndreRobitaille/LegionPostTools/issues (deferred leftovers: #58).
 
 ## Exit criteria before expanding Endeavors
 
