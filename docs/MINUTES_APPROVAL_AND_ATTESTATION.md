@@ -56,6 +56,11 @@ least 13px. At 390px the progression stacks, actions wrap, and the page never sc
 horizontally. Digests and full provenance belong in expandable history, not primary
 instructions.
 
+Member revision wording uses the same Lexxy content styling as the officer view, so
+paragraphs, nested bullets, numbering, emphasis, and links retain their formatting on
+screen and in print. Apply that styling to sanitized immutable HTML; displaying the
+record must never rewrite its text or digest.
+
 ## Integrity and compatibility
 
 - Existing revisions, attestations, and lifecycle events stay immutable in Rails and

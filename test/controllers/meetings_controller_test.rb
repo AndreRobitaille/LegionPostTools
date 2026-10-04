@@ -85,7 +85,11 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
   test "attested revision is member visible while still awaiting membership approval" do
     meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.week.ago, title: "July Membership")
     minutes = MeetingMinutes.create_from_meeting!(meeting:)
-    minutes.sections.first.items.create!(title: "Adjutant report", behavior_type: "report_slot", position: 1, body: "The minutes were read.")
+    minutes.sections.first.items.create!(
+      title: "Adjutant report", behavior_type: "report_slot", position: 1,
+      agenda_body: "<ul><li>Read the minutes.</li></ul>",
+      body: '<p>The minutes were read.</p><ol><li><span class="lexxy-content__bold" onmouseover="alert(1)">Follow-up</span></li></ol><script>alert(1)</script><a href="javascript:alert(1)">Unsafe link</a>'
+    )
     approver = lifecycle_user("Commander", "approve_minutes")
     attester = lifecycle_user("Adjutant", "attest_minutes")
     approval_token, = AgentAccessToken.issue!(user: approver, name: "Approval", expires_in: 1.day)
@@ -103,6 +107,9 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".member-minutes-status", text: /Awaiting meeting approval/
     assert_select ".minutes-endorsements", text: /Commander draft handoff.*Adjutant attestation/m
     assert_select ".minutes-item-title", text: "Adjutant report"
+    assert_select ".minutes-agenda-wording.lexxy-content ul li", text: "Read the minutes."
+    assert_select ".minutes-recorded-wording .lexxy-content ol li .lexxy-content__bold", text: "Follow-up"
+    assert_select ".lexxy-content script, .lexxy-content [onmouseover], .lexxy-content a[href^='javascript:']", count: 0
     assert_no_match(/official minutes/i, response.body)
 
     get meetings_path
