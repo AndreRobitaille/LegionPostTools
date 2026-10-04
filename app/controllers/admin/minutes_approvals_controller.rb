@@ -13,9 +13,9 @@ module Admin
     def create
       confirmation = confirmation_from_params
       if confirmation&.confirmed_at?
-        @minutes.approve_with_confirmation!(confirmation:)
+        notice = confirmation.complete_minutes_action!
         clear_pending_confirmation
-        redirect_to admin_meeting_minutes_path(@meeting), notice: "Exact minutes revision Commander-approved for Adjutant attestation."
+        redirect_to admin_meeting_minutes_path(@meeting), notice:
       else
         confirmation ||= OfficialActionConfirmation.prepare!(
           minutes: @minutes,

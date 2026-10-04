@@ -20,7 +20,7 @@ module MinutesEndeavors
       invalid!("Choose an existing Endeavor.") if mode == "link" && attributes["endeavor_id"].blank?
 
       minutes.with_lock do
-        invalid!("Reopen these minutes before linking an Endeavor.") unless minutes.draft?
+        invalid!("Reopen these minutes before linking an Endeavor.") unless minutes.editable?
         item.lock!
         check_version!
         if mode == "create" && item.endeavor_id.present?

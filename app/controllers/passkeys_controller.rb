@@ -102,15 +102,16 @@ class PasskeysController < ApplicationController
     )
 
     stored_credential.update!(sign_count: credential.sign_count, last_used_at: Time.current)
+    redirect_url = nil
     if reauthenticating?
       Current.session.reauthenticate!
-      confirm_pending_official_action! if session[:reauthentication_purpose] == OfficialActionReauthenticationsController::PURPOSE
+      redirect_url = complete_pending_official_action! if session[:reauthentication_purpose] == OfficialActionReauthenticationsController::PURPOSE
       session.delete(:reauthentication_purpose)
     else
       start_new_session_for(stored_credential.user)
     end
 
-    render json: { status: "authenticated" }
+    render json: { status: "authenticated", redirect_url: }.compact
   rescue WebAuthn::Error
     render json: { error: "invalid passkey authentication" }, status: :unauthorized
   end
@@ -152,12 +153,19 @@ class PasskeysController < ApplicationController
     ])
   end
 
-  def confirm_pending_official_action!
+  def complete_pending_official_action!
     confirmation = current_user.official_action_confirmations.find_by!(
       id: session[OfficialActionReauthenticationsController::PENDING_SESSION_KEY],
       session: Current.session
     )
     confirmation.confirm!(session: Current.session)
+    flash[:notice] = confirmation.complete_minutes_action!
+    admin_meeting_minutes_path(confirmation.meeting_minutes.meeting)
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::StaleObjectError => error
+    flash[:alert] = error.record.errors.full_messages.to_sentence.presence || "The minutes changed. Review them and start the action again."
+    admin_meeting_minutes_path(confirmation.meeting_minutes.meeting)
+  ensure
+    session.delete(OfficialActionReauthenticationsController::PENDING_SESSION_KEY)
   end
 
   def public_key_credential_params

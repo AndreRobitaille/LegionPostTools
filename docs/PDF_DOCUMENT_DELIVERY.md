@@ -17,10 +17,10 @@ approved typography, hierarchy, margins, or content boundaries.
 - **Cmdr Notes PDF** returns the same document shell with private
   Commander cues and roll call. It is available only when the signed-in person currently
   holds a configured Commander or Adjutant assignment; `manage_agendas` alone is not enough.
-- The minutes workspace offers **Open draft PDF**, **Open approved PDF**, or **Open attested
-  PDF** according to lifecycle state. A draft is an officer-only proof from mutable working
-  rows. Approved and attested PDFs render the immutable approved revision; an attested PDF
-  is the member-visible record awaiting acceptance, not an official record.
+- The minutes workspace offers **Open draft PDF**, **Open attested PDF**, or
+  **Open official PDF** according to lifecycle state. A draft is an officer-only proof from mutable working
+  rows, including Adjutant edits after Commander handoff. Attested and official PDFs
+  render the immutable attested revision with the corresponding meeting-approval label.
 - The response uses `Content-Disposition: inline` and a descriptive `.pdf` filename. A
   desktop or mobile browser may display its native PDF viewer, from which the document can
   be printed, downloaded, or shared.

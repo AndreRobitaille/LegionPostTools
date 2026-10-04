@@ -45,7 +45,7 @@ export default class extends Controller {
       const options = await this.#postJSON("/passkeys/authentication_options")
       const assertion = await get({ publicKey: options })
       const res = await this.#postJSON("/passkeys/authentication", { publicKeyCredential: assertion })
-      if (res) window.location.assign(this.redirectValue)
+      if (res) window.location.assign(res.redirect_url || this.redirectValue)
     } catch (error) {
       this.#fail("That didn't work — try the email link instead.")
     }

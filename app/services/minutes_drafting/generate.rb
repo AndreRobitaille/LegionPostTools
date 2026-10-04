@@ -64,7 +64,7 @@ module MinutesDrafting
     def transcript = minutes.meeting.transcript
 
     def validate_source!
-      raise MinutesDraftProviders::Error.new(category: "source_unavailable") unless minutes.draft?
+      raise MinutesDraftProviders::Error.new(category: "source_unavailable") unless minutes.editable?
       raise MinutesDraftProviders::Error.new(category: "source_unavailable") unless transcript&.source_available?
     end
 

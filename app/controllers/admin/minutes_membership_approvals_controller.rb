@@ -13,10 +13,10 @@ module Admin
     def create
       confirmation = confirmation_from_params
       if confirmation&.confirmed_at?
-        approval = @minutes.record_membership_approval_with_confirmation!(confirmation:)
+        notice = confirmation.complete_minutes_action!
         clear_pending_confirmation
         redirect_to admin_meeting_minutes_path(@meeting),
-          notice: "Membership approval recorded: #{approval.disposition_label}."
+          notice:
       else
         action_payload = membership_approval_params.to_h
         validate_action_payload!(action_payload)
@@ -56,7 +56,7 @@ module Admin
     end
 
     def membership_approval_params
-      params.require(:minutes_membership_approval).permit(:approving_meeting_id, :disposition, :factual_note)
+      params.require(:minutes_membership_approval).permit(:approving_meeting_id, :disposition, :factual_note, :corrections_pending)
     end
 
     def validate_action_payload!(payload)
@@ -66,6 +66,9 @@ module Admin
       end
       if payload["disposition"] == "other" && payload["factual_note"].blank?
         raise ArgumentError, "Describe the membership's approval procedure."
+      end
+      if payload["disposition"] == "approved_as_corrected" && ActiveModel::Type::Boolean.new.cast(payload["corrections_pending"]) && payload["factual_note"].blank?
+        raise ArgumentError, "Describe the corrections approved at the meeting."
       end
     rescue ActiveRecord::RecordNotFound, KeyError
       raise ArgumentError, "Choose the later meeting where the membership approved these minutes."

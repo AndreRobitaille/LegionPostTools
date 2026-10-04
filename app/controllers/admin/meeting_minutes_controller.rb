@@ -66,9 +66,10 @@ module Admin
     end
 
     def ensure_draft_minutes
-      return if @minutes.draft?
+      return if @minutes.editable?
 
-      redirect_to admin_meeting_minutes_path(@meeting), alert: "Reopen these minutes before changing the working record."
+      message = @minutes.membership_approved? ? "These official minutes are approved and locked. They cannot be edited." : "Reopen the attested copy before entering corrections."
+      redirect_to admin_meeting_minutes_path(@meeting), alert: message
     end
 
     def minutes_params

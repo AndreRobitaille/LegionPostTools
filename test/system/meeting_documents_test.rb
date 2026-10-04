@@ -21,7 +21,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1000)
     visit meeting_path(meeting)
     assert_selector ".meeting-document-card", count: 2
-    assert_selector ".meeting-document-status", text: "Awaiting membership approval", count: 1
+    assert_selector ".meeting-document-status", text: "Awaiting meeting approval", count: 1
     assert_selector ".meeting-document-open", text: "Open", count: 2
     page.save_screenshot("/tmp/meeting-documents-desktop.png")
     first(".meeting-document-card").send_keys(:tab)

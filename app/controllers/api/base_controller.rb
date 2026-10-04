@@ -324,6 +324,7 @@ module Api
         id: minutes.id,
         meeting_id: minutes.meeting_id,
         status: minutes.status,
+        editable: minutes.editable?,
         title: minutes.title,
         starts_at: minutes.starts_at.iso8601,
         location_name: minutes.location_name,
@@ -350,16 +351,19 @@ module Api
       revision = minutes.current_revision
       {
         status: minutes.status,
-        approval_ready: minutes.draft? ? minutes.approval_ready? : nil,
+        approval_ready: minutes.editable? ? minutes.approval_ready? : nil,
         revision: revision ? revision_payload(revision) : nil,
         membership_approval: minutes.membership_approval ? membership_approval_payload(minutes.membership_approval) : nil,
         member_visible: minutes.member_visible?,
+        pending_correction_approval: minutes.pending_correction_approval&.metadata&.fetch("membership_approval"),
         member_minutes_path: ("/meetings/#{minutes.meeting_id}/minutes" if minutes.member_visible?),
         next_action: minutes_next_action(minutes)
       }
     end
 
     def minutes_next_action(minutes)
+      return "attest" if minutes.editable? && current_user.can?("attest_minutes")
+
       {
         "draft" => "approve",
         "approved" => "attest",
@@ -374,7 +378,7 @@ module Api
         sha256: revision.sha256,
         approved_by: revision.approver_name,
         approver_office: revision.approver_office,
-        approved_at: revision.approved_at.iso8601,
+        approved_at: revision.approved_at&.iso8601,
         attestation: revision.attestation ? attestation_payload(revision.attestation) : nil
       }
     end

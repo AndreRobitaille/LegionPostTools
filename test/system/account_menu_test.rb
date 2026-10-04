@@ -7,6 +7,7 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
   include ActiveJob::TestHelper
 
   setup do
+    page.current_window.resize_to(1400, 1400)
     @organization = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
     person = Person.create!(first_name: "Jane", last_name: "Doe")
@@ -85,10 +86,8 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
     code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
     assert code
     fill_in "8-digit confirmation code", with: code
-    click_button "Confirm identity"
-    assert_button "Approve this revision for the Adjutant"
-    click_button "Approve this revision for the Adjutant"
-    assert_text "Exact minutes revision Commander-approved for Adjutant attestation."
+    click_button "Confirm and complete"
+    assert_text "Draft sent to the Adjutant for review."
     revision = @minutes.reload.current_revision
 
     sign_out_and_verify_access_ended
@@ -123,8 +122,8 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
     meeting = create_meeting!(organization: @organization, meeting_body: body, starts_at: 1.day.ago, title: "Test membership meeting")
     @minutes = MeetingMinutes.create_from_meeting!(meeting:)
     visit new_admin_meeting_minutes_approval_path(meeting)
-    click_button "Confirm identity to approve for the Adjutant"
-    assert_selector "h1", text: "Confirm your identity"
+    click_button "Send to Adjutant"
+    assert_selector "h1", text: "Confirm and complete"
     @confirmation = @user.official_action_confirmations.sole
   end
 

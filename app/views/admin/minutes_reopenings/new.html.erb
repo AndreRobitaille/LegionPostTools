@@ -11,8 +11,8 @@
   <h2>What this does</h2>
   <p>Returns the working record to draft so a correction can be entered. Revision <%= @minutes.current_revision.number %> and its approval history remain preserved.</p>
   <dl>
-    <div><dt>Current state</dt><dd><%= @minutes.attested? ? "Attested and visible to members" : "Commander-approved for attestation" %></dd></div>
-    <div><dt>After reopening</dt><dd>Editable working record; Commander approval and Adjutant attestation must be repeated</dd></div>
+    <div><dt>Current state</dt><dd><%= @minutes.attested? ? "Attested and visible to members" : "Ready for Adjutant review" %></dd></div>
+    <div><dt>After reopening</dt><dd>Editable working record; the Adjutant attests the corrected copy</dd></div>
     <div><dt>Membership action</dt><dd>This does not record or repeat a membership vote</dd></div>
   </dl>
 </section>

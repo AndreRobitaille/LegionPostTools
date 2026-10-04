@@ -57,9 +57,10 @@ module Api
     end
 
     def ensure_draft_minutes
-      return if @minutes.draft?
+      return if @minutes.editable?
 
-      render_error("Only draft minutes can be changed.", status: :unprocessable_entity)
+      message = @minutes.membership_approved? ? "These official minutes are approved and locked. They cannot be edited." : "Reopen the attested copy before entering corrections."
+      render_error(message, status: :unprocessable_entity)
     end
 
     def minutes_params

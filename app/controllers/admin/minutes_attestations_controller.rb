@@ -2,7 +2,7 @@ module Admin
   class MinutesAttestationsController < ApplicationController
     before_action -> { require_capability("attest_minutes") }
     before_action :set_minutes
-    before_action :ensure_approved
+    before_action :ensure_ready_for_attestation
 
     def new
       @confirmation = confirmation_from_params
@@ -13,9 +13,9 @@ module Admin
     def create
       confirmation = confirmation_from_params
       if confirmation&.confirmed_at?
-        @minutes.attest_with_confirmation!(confirmation:)
+        notice = confirmation.complete_minutes_action!
         clear_pending_confirmation
-        redirect_to admin_meeting_minutes_path(@meeting), notice: "Minutes attested and released to members awaiting membership approval."
+        redirect_to admin_meeting_minutes_path(@meeting), notice:
       else
         confirmation ||= OfficialActionConfirmation.prepare!(
           minutes: @minutes,
@@ -38,9 +38,13 @@ module Admin
       @minutes = @meeting.minutes || raise(ActiveRecord::RecordNotFound)
     end
 
-    def ensure_approved
-      return if @minutes.approved?
-      redirect_to admin_meeting_minutes_path(@meeting), alert: "Approve these minutes before attesting them."
+    def ensure_ready_for_attestation
+      unless @minutes.editable?
+        return redirect_to admin_meeting_minutes_path(@meeting), alert: "These minutes are already attested or approved and locked."
+      end
+      return if @minutes.approval_ready?
+
+      redirect_to admin_meeting_minutes_path(@meeting), alert: "Finish attendance and AI review before attesting these minutes."
     end
 
     def confirmation_from_params

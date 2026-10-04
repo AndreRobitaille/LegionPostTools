@@ -27,7 +27,7 @@ class PermissionGrant < ApplicationRecord
     "manage_meeting_bodies" => "Manage meeting types",
     "manage_agendas" => "Prepare agendas",
     "manage_minutes" => "Draft minutes",
-    "approve_minutes" => "Approve minutes as Commander",
+    "approve_minutes" => "Send minutes to Adjutant",
     "attest_minutes" => "Attest minutes as Adjutant",
     "record_minutes_approval" => "Record membership approval of minutes",
     "view_internal_records" => "View internal meeting records"

@@ -106,6 +106,8 @@ module EndeavorHistory
     def self.authority(minutes)
       if minutes.membership_approved?
         "Official minutes"
+      elsif minutes.pending_correction_approval
+        "Approved with corrections — final copy being prepared"
       elsif minutes.reopened? || minutes.approved?
         "Correction in progress — last attested minutes"
       else

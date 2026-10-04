@@ -29,7 +29,7 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_meeting_minutes_path(@meeting)
     follow_redirect!
     assert_response :success
-    assert_select ".minutes-draft-stamp", text: "Draft minutes"
+    assert_select ".minutes-status-card h2", text: "Draft"
     assert_select ".minutes-section h3", text: "Meeting record"
     assert_select "a[href='#{new_admin_meeting_transcript_path(@meeting)}']", text: "Add transcript"
   end
@@ -111,19 +111,19 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/must be in the past/, flash[:alert])
   end
 
-  test "Commander sees the exact-draft approval action and begins one-use confirmation" do
+  test "Commander sees the handoff action and begins one-use confirmation" do
     @manager.permission_grants.create!(capability: "approve_minutes")
     minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
     session_record = sign_in_as(@manager)
 
     get admin_meeting_minutes_path(@meeting)
     assert_response :success
-    assert_select "a[href='#{new_admin_meeting_minutes_approval_path(@meeting)}']", text: "Approve exact draft for Adjutant"
-    assert_select ".minutes-lifecycle-rail", text: /Commander approval for attestation.*Adjutant release.*Membership approval/m
+    assert_select "form[action='#{admin_meeting_minutes_approval_path(@meeting)}'] button", text: "Send to Adjutant"
+    assert_select ".minutes-progress", text: /Draft.*Attested.*Approved and locked/m
 
     get new_admin_meeting_minutes_approval_path(@meeting)
     assert_response :success
-    assert_select "h1", text: "Approve this exact draft for the Adjutant"
+    assert_select "h1", text: "Send this draft to the Adjutant"
 
     assert_difference -> { OfficialActionConfirmation.count }, 1 do
       post admin_meeting_minutes_approval_path(@meeting)
@@ -134,6 +134,41 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert_equal @manager, confirmation.user
     assert_equal session_record, confirmation.session
     assert_equal "approve", confirmation.action
+  end
+
+  test "Adjutant can edit the Commander handoff before attestation" do
+    @manager.permission_grants.create!(capability: "attest_minutes")
+    commander = create_user_with("approve_minutes")
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: commander, action: "approve", evidence_note: "Synthetic handoff."
+    ))
+    sign_in_as(@manager)
+
+    get edit_admin_meeting_minutes_path(@meeting)
+    assert_response :success
+    patch admin_meeting_minutes_path(@meeting), params: { meeting_minutes: { title: "Adjutant reviewed heading", lock_version: minutes.lock_version } }
+    assert_redirected_to admin_meeting_minutes_path(@meeting)
+    assert_equal "Adjutant reviewed heading", minutes.reload.title
+    assert_not_equal minutes.title, minutes.current_revision.payload.fetch("title")
+    get admin_meeting_minutes_path(@meeting)
+    assert_select ".minutes-status-card h2", text: "Ready for Adjutant review"
+    assert_select "button", text: "Attest and share with members"
+    assert_select "button", text: "Send to Adjutant", count: 0
+  end
+
+  test "unresolved attendance is explained rather than hiding the next step" do
+    @manager.permission_grants.create!(capability: "attest_minutes")
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+    minutes.attendance_entries.create!(office_name: "Commander", person_name: "Test Officer", status: "not_recorded", position: 1)
+    sign_in_as(@manager)
+
+    get admin_meeting_minutes_path(@meeting)
+
+    assert_response :success
+    assert_select ".minutes-review-needed", text: /Finish review before attestation.*attendance recorded/m
+    assert_select "a", text: "Record attendance"
+    assert_select "button", text: "Attest and share with members", count: 0
   end
 
   private

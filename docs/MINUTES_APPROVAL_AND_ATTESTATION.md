@@ -1,86 +1,74 @@
-# Minutes Approval and Attestation
+# Minutes Review, Attestation, and Meeting Approval
 
-**Status:** implemented first official minutes handoff, audited correction reopening, and
-membership-approval recording.
+## Product decisions (October 4, 2026)
 
-## Product boundary
+The Adjutant is responsible for the minutes record and electronic attestation. The
+Commander may help create or edit minutes in practice; Commander review is a drafting
+handoff, not a required source of official authority. The relevant Meeting Body (such
+as the PEC or membership) approves its minutes at a later meeting.
 
-This slice gives a Commander and Adjutant a truthful path from editable working minutes
-to a member-visible record awaiting membership approval. It never invents a motion or
-calls the minutes official before the membership action is recorded.
+1. Either officer prepares the working minutes.
+2. A Commander preparing minutes can **Send to Adjutant**. This preserves the handed-off
+   text and marks the working copy **Ready for Adjutant review**. It stays editable.
+3. The Adjutant reviews and edits the working copy, then **Attest and share with members**.
+   Adjutant-prepared minutes go directly to this step. Editing a handed-off draft does
+   not require another Commander approval. Attestation captures the exact current text
+   in an immutable revision; it does not pretend the Commander approved later edits.
+4. Members can read the attested copy. An officer records the real later meeting's
+   approval. **Approved as presented** locks that exact record.
+5. **Approved with corrections** records the decision and corrections to enter, reopens
+   the working copy, and retains the last attested copy for members. Either officer can
+   enter the corrections. The Adjutant then **Confirm corrections and lock minutes**.
+   This attests the corrected text and links the recorded meeting approval to that exact
+   final revision, without a second vote or another approval-recording step.
 
-The sequence is deliberately explicit:
+Corrections that have already been incorporated and attested can still have their
+meeting approval recorded against that exact copy. Approved official minutes never
+reopen; later amendments remain planned.
 
-1. A person with `approve_minutes` approves one exact immutable revision for Adjutant
-   review. The draft becomes read-only and remains officer-only.
-2. A different person with `attest_minutes` attests that exact revision for member review.
-   The revision becomes member-visible as **Awaiting membership approval**.
-3. A Commander or Adjutant with `record_minutes_approval` records what the membership
-   actually did at the later meeting against that exact attested revision.
+## Confirmation behavior
 
-Commander approval and Adjutant attestation are Post website controls. They do not
-replace or impersonate membership approval. If the membership approves minutes as
-corrected, the corrected text goes directly into those minutes, the website handoff is
-repeated for the corrected revision, and the membership action is recorded against that
-exact revision without requiring another membership vote.
+The status-card action opens one consequence and identity-confirmation page. Meeting
+approval first collects the real approving meeting and decision. Identity is confirmed
+by email or passkey. Successful identity confirmation completes the
+specific action and returns to the minutes with the new status. There is no extra
+approval button after authentication. GET requests never execute an official action.
 
-The Commander may perform every ordinary minutes-management task available to the
-Adjutant, including drafting, correcting, reopening, and recording membership approval.
-The one exception is signing/attestation: `attest_minutes` remains an Adjutant capability
-and must be exercised by a different person from the Commander approver.
-
-Every transition records the actor, the person or delegated token that entered the
-record, the time, the prior/resulting state, the exact revision digest, and the
-confirmation method. Normal in-app actions require the actor's own explicit capability
-and an exact confirmation. A bearer token carries its human owner's current capability
-and may execute that same act when the human explicitly asks; the audit record marks the
-delegated-agent execution.
-When an officer has already supplied written confirmation outside the app, an exceptional
-operator recording may name that officer while separately naming the recorder and the
-written-confirmation basis. It must never imply that the officer clicked the website.
+Each confirmation remains one-use, session-bound, short-lived, and bound to the action,
+record lock version, content digest, and supplied meeting/correction details. Changes
+to the text, authority, or record while confirming reject the action. Bearer execution
+retains explicit capabilities, idempotency, and delegated provenance.
 
 ## Visual direction
 
-The subject is a Post's record of proceedings; the audience is a Commander or Adjutant
-who may use the app infrequently; the page's single job is to show what must happen next.
+The audience is infrequent Commander and Adjutant users. Both the Meeting page and
+minutes workspace lead with the same plain status, what that status means, and who acts
+next. A bounded paper card holds the status and its action together. The signature
+element is a three-stage record progression: **Draft → Attested → Approved and locked**.
+A Commander handoff and corrections are explanations within that progression, rather
+than competing kinds of approval.
 
-- **Color:** Legion navy `#0A2240`, deep navy `#081A34`, service gold `#C6A15B`, paper
-  `#FBF7EC`, officer blue `#2F5F87`, and membership-approval green `#3F6B3F`.
-- **Type:** the existing system face for controls and explanations, with Georgia reserved
-  for the document and lifecycle headings.
-- **Layout:** keep the record full-width below a compact four-station lifecycle rail.
-  The current station carries the only strong color; completed stations read like dated
-  endorsements rather than generic progress badges.
-- **Signature element:** an endorsement strip modeled on the approval blocks of an
-  official paper record: actor, office, act, and time remain together.
+Follow The 1919 system: navy #0A2240, gold #C6A15B, paper #FBF7EC, cream #F4EEDD,
+officer blue #2F5F87, and completion green #3F6B3F. Working UI uses system sans; serif is
+reserved for the document. Reuse existing cards, buttons, and shared section headings.
+Body and interactive text are at least 16px; secondary text at least 14px; labels at
+least 13px. At 390px the progression stacks, actions wrap, and the page never scrolls
+horizontally. Digests and full provenance belong in expandable history, not primary
+instructions.
 
-```text
-[ Working draft ]---[ Commander approval ]---[ Adjutant release ]---[ Membership approval ]
-       done                 current                  later                 later
+## Integrity and compatibility
 
-[ exact consequence ]                              [ primary action ]
-```
-
-The rail encodes a real sequence rather than decoration. At 390px it becomes a vertical
-ledger so labels, names, and controls remain readable without horizontal scrolling.
-
-## Integrity rules
-
-- Approval snapshots the current heading, attendance, sections, items, rich text, and
-  outcomes into an immutable `MinutesRevision` with a canonical SHA-256 digest.
-- Approved working rows are read-only. Member pages render the immutable revision, never
-  mutable draft rows.
-- The Adjutant must be a different person from the Commander approver.
-- Attestation never regenerates or copies content.
-- Revision, attestation, and lifecycle-event rows are append-only in Rails and PostgreSQL.
-- Ending a browser session (sign-out, account disablement, or inactivity expiry)
-  detaches its official-action confirmations without deleting them or changing any
-  minutes revision or lifecycle event. Detached in-app confirmations and email
-  reauthentication challenges cannot authorize another action, including when no
-  session is supplied. A later sign-in requires a new confirmation.
-- Member pages call the record **Attested minutes** and **Awaiting membership approval**.
-  They do not say membership-approved or official yet.
-- Draft PDFs remain visibly draft. Approved PDFs render the immutable revision as awaiting
-  attestation; attested PDFs render that same revision as awaiting membership approval.
-  Membership-approved PDFs render that exact revision as official. Amended PDFs belong to
-  a later lifecycle slice.
+- Existing revisions, attestations, and lifecycle events stay immutable in Rails and
+  PostgreSQL. Existing Commander endorsements remain truthful historical evidence.
+- A revision created directly by Adjutant attestation has no Commander endorsement.
+  Nullable Commander fields represent absence, never a simulated approval.
+- The legacy internal approved state means a draft handed to the Adjutant; it is not
+  the meeting body's approval. Editors and draft APIs accept this state until attestation.
+- Member HTML/PDF renders an immutable attested revision. Officer draft previews render
+  current working content, including Adjutant changes after a Commander handoff.
+- A pending correction decision is an immutable lifecycle event recording the approving
+  meeting, disposition, corrections, actor, recorder, confirmation, and original revision.
+  Final attestation creates the final membership-approval row using that decision's
+  provenance, then locks the minutes atomically.
+- Existing membership-approved records and historical meetings remain protected. No
+  production record is approved, attested, corrected, or otherwise changed by this work.

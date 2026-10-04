@@ -152,12 +152,12 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
 
   test "draft mutations reject locked minutes and PDF remains a read-only artifact" do
     minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
-    minutes.update!(status: "approved")
+    minutes.update!(status: "attested")
     sign_in_as(@manager)
 
     post "/api/meetings/#{@meeting.id}/minutes/sections", params: { title: "Late section" }, as: :json
     assert_response :unprocessable_entity
-    assert_match(/draft/i, response.parsed_body["error"])
+    assert_match(/reopen/i, response.parsed_body["error"])
 
     renderer = ->(minutes:) { "%PDF-1.7\n#{minutes.id}" }
     with_stubbed_class_method(MeetingMinutesPdf, :render, renderer) do
@@ -250,6 +250,35 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_equal "record_membership_approval_or_reopen", response.parsed_body.dig("minutes", "lifecycle", "next_action")
     assert_equal attester.person.full_name, response.parsed_body.dig("attestation", "attested_by")
     assert_equal 2, minutes.lifecycle_events.count
+  end
+
+  test "delegated Adjutant can edit a handoff and attest directly with idempotent retries" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
+    approver = create_user("Commander", "approve_minutes")
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: approver, action: "approve", evidence_note: "Synthetic handoff."
+    ))
+    adjutant = create_user("Adjutant", "attest_minutes")
+    adjutant.permission_grants.create!(capability: "manage_minutes")
+    token, plaintext = AgentAccessToken.issue!(user: adjutant, name: "Adjutant agent", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{plaintext}", "Idempotency-Key" => "edit-handed-off-draft" }
+    patch "/api/meetings/#{@meeting.id}/minutes", params: { title: "Reviewed heading", lock_version: minutes.lock_version }, headers:, as: :json
+    assert_response :success
+    assert_equal "attest", response.parsed_body.dig("minutes", "lifecycle", "next_action")
+    assert response.parsed_body.dig("minutes", "editable")
+
+    headers["Idempotency-Key"] = "attest-reviewed-copy"
+    post "/api/meetings/#{@meeting.id}/minutes/attestation", headers:, as: :json
+    assert_response :success
+    assert_nil response.parsed_body.dig("minutes", "lifecycle", "revision", "approved_by")
+    assert_nil response.parsed_body.dig("minutes", "lifecycle", "revision", "approved_at")
+    assert_equal token.id, response.parsed_body.dig("execution", "agent_access_token_id")
+    assert_equal "Reviewed heading", minutes.reload.member_revision.payload.fetch("title")
+    assert_no_difference "MinutesAttestation.count" do
+      post "/api/meetings/#{@meeting.id}/minutes/attestation", headers:, as: :json
+    end
+    assert_response :success
+    assert_equal 2, minutes.reload.revisions.count
   end
 
   private

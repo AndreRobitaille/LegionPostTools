@@ -6,7 +6,7 @@ class OfficialActionReauthenticationsController < ApplicationController
   before_action :require_authentication
   before_action :set_confirmation
 
-  helper_method :confirmation_action_label, :confirmation_return_path
+  helper_method :confirmation_action_label, :confirmation_action_description, :confirmation_return_path
 
   rate_limit to: 5, within: 5.minutes, only: :create,
     name: :official_action_reauthentication_request,
@@ -85,27 +85,48 @@ class OfficialActionReauthenticationsController < ApplicationController
     Current.session.reauthenticate!
     session.delete(:reauthentication_purpose)
     cookies.delete(PENDING_COOKIE)
-    redirect_to confirmation_return_path(@confirmation),
-      notice: "Identity confirmed. Review the exact action once more to complete it."
+    notice = @confirmation.complete_minutes_action!
+    session.delete(PENDING_SESSION_KEY)
+    redirect_to admin_meeting_minutes_path(@confirmation.meeting_minutes.meeting), notice:
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::StaleObjectError => error
+    session.delete(PENDING_SESSION_KEY)
+    redirect_to admin_meeting_minutes_path(@confirmation.meeting_minutes.meeting),
+      alert: error.record.errors.full_messages.to_sentence.presence || "The minutes changed. Review them and start the action again."
   end
 
   def confirmation_return_path(confirmation)
-    meeting = confirmation.meeting_minutes.meeting
-    {
-      "approve" => new_admin_meeting_minutes_approval_path(meeting, confirmation_id: confirmation.id),
-      "attest" => new_admin_meeting_minutes_attestation_path(meeting, confirmation_id: confirmation.id),
-      "reopen" => new_admin_meeting_minutes_reopening_path(meeting, confirmation_id: confirmation.id),
-      "record_membership_approval" => new_admin_meeting_minutes_membership_approval_path(meeting, confirmation_id: confirmation.id)
-    }.fetch(confirmation.action)
+    admin_meeting_minutes_path(confirmation.meeting_minutes.meeting)
   end
 
   def confirmation_action_label(confirmation)
     {
-      "approve" => "Approve for Adjutant attestation",
-      "attest" => "Attest and release to members",
+      "approve" => "Send to Adjutant",
+      "attest" => confirmation.meeting_minutes.pending_correction_approval ? "Confirm corrections and lock minutes" : "Attest and share with members",
       "reopen" => "Reopen for correction",
-      "record_membership_approval" => "Record membership approval"
+      "record_membership_approval" => "Record meeting approval"
     }.fetch(confirmation.action)
+  end
+
+  def confirmation_action_description(confirmation)
+    case confirmation.action
+    when "approve"
+      "Your draft is handed to the Adjutant for review. The Adjutant can edit it before attesting. It stays officer-only."
+    when "attest"
+      if confirmation.meeting_minutes.pending_correction_approval
+        "You confirm that the adopted corrections are in this copy. It becomes the official approved record and can no longer be edited."
+      else
+        "You electronically attest the current copy you reviewed. Members can then read it while it awaits the meeting's approval."
+      end
+    when "reopen"
+      "The working copy becomes editable for corrections. The last attested copy stays available to members."
+    when "record_membership_approval"
+      payload = confirmation.action_payload
+      if payload["disposition"] == "approved_as_corrected" && ActiveModel::Type::Boolean.new.cast(payload["corrections_pending"])
+        "The meeting's decision is recorded. Either officer can enter its corrections, then the Adjutant confirms and locks the final copy."
+      else
+        "The meeting's approval is recorded against this exact attested copy. It becomes official and cannot be edited."
+      end
+    end
   end
 
   def redirect_after_auth_throttle

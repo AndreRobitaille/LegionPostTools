@@ -111,7 +111,7 @@ class Admin::MinutesItemEndeavorsControllerTest < ActionDispatch::IntegrationTes
   end
 
   test "parent draft state is rechecked inside the confirmation service" do
-    [ "approved", "attested", "membership_approved" ].each do |status|
+    [ "attested", "membership_approved" ].each do |status|
       @minutes.update_columns(status: status)
       assert_no_difference "Endeavor.count" do
         assert_raises(ActiveRecord::RecordInvalid) do
@@ -124,7 +124,7 @@ class Admin::MinutesItemEndeavorsControllerTest < ActionDispatch::IntegrationTes
 
   test "locked minutes hide actions and reject direct creation and linking" do
     sign_in_as(@manager)
-    @minutes.update_columns(status: "approved")
+    @minutes.update_columns(status: "attested")
     get admin_meeting_minutes_path(@meeting)
     assert_select ".minutes-endeavor-actions", count: 0
     assert_no_difference "Endeavor.count" do

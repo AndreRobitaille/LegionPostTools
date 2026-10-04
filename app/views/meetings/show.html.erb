@@ -26,7 +26,7 @@
           <% status = "Official record" %>
           <% note = "#{@member_minutes.membership_approval.disposition_label} at #{@member_minutes.membership_approval.approving_meeting.title}." %>
         <% else %>
-          <% status = "Awaiting membership approval" %>
+          <% status = member_minutes_status(@member_minutes) %>
           <% note = "A correction is being prepared. The last attested revision remains available." if @member_minutes.reopened? || @member_minutes.approved? %>
         <% end %>
         <%= render "document_link", title: "Minutes", status: status, note: note, path: meeting_minutes_path(@meeting) %>

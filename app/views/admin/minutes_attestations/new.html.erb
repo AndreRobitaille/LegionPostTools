@@ -1,26 +1,25 @@
-<% content_for :title, "Attest exact minutes" %>
+<% finalizing = @minutes.pending_correction_approval.present? %>
+<% action_label = finalizing ? "Confirm corrections and lock minutes" : "Attest and share with members" %>
+<% content_for :title, action_label %>
 <%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
 
 <div class="page-lead">
   <p class="minutes-eyebrow">Adjutant attestation</p>
-  <h1 class="page-title">Release this revision to members</h1>
+  <h1 class="page-title"><%= action_label %></h1>
   <p class="page-sub"><%= @minutes.title %></p>
 </div>
 
-<section class="official-confirmation-summary official-confirmation-summary--attest">
-  <h2>What this does</h2>
-  <p>Attests that revision <%= @minutes.current_revision.number %> is the minutes record being presented to members. It will appear as awaiting membership approval, not as official.</p>
-  <dl>
-    <div><dt>Commander-approved by</dt><dd><%= @minutes.current_revision.approver_name %>, <%= @minutes.current_revision.approver_office %></dd></div>
-    <div><dt>Revision digest</dt><dd><code><%= @minutes.current_revision.sha256.first(12) %></code></dd></div>
-    <div><dt>Member visibility</dt><dd>Visible after attestation</dd></div>
-  </dl>
+<section class="official-confirmation-summary">
+  <h2><%= finalizing ? "Approve the final corrected copy" : "Confirm the record you reviewed" %></h2>
+  <% if finalizing %>
+    <p>You confirm that the corrections approved at the meeting are incorporated in this copy. It becomes the official approved record and can no longer be edited.</p>
+    <p>The meeting's approval has already been recorded. No second vote is needed.</p>
+  <% else %>
+    <p>You attest that the current text is the minutes record you reviewed. This is your electronic attestation; no handwritten signature is needed.</p>
+    <p>Members can then read this exact copy. It remains awaiting approval at a later meeting.</p>
+  <% end %>
 </section>
 
-<% if @confirmation&.confirmed_at? %>
-  <%= button_to "Attest and release to members", admin_meeting_minutes_attestation_path(@meeting),
-        params: { confirmation_id: @confirmation.id }, class: "btn-confirm" %>
-<% else %>
-  <%= button_to "Confirm identity to attest", admin_meeting_minutes_attestation_path(@meeting),
-        params: ({ confirmation_id: @confirmation.id } if @confirmation), class: "btn-primary" %>
-<% end %>
+<%= button_to action_label, admin_meeting_minutes_attestation_path(@meeting),
+      params: ({ confirmation_id: @confirmation.id } if @confirmation), class: "btn-confirm" %>
+<p class="helper">Confirm your identity next. That completes this action.</p>

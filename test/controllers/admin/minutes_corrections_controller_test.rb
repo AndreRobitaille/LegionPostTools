@@ -61,7 +61,7 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
 
     get admin_meeting_minutes_path(@minutes_meeting)
     assert_response :success
-    assert_select "a", text: "Reopen for correction"
+    assert_select "a", text: "Correct this copy"
 
     get new_admin_meeting_minutes_reopening_path(@minutes_meeting)
     assert_response :success
@@ -72,10 +72,10 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
 
     get new_admin_meeting_minutes_membership_approval_path(@minutes_meeting)
     assert_response :success
-    assert_select "h1", text: "Record the membership's approval"
+    assert_select "h1", text: "Record the meeting's approval"
     approval_date = @approving_meeting.starts_at.to_date.strftime("%d %b %Y").upcase
     assert_select "option", text: "Membership — #{approval_date}"
-    assert_select "label", text: /Approved as corrected/
+    assert_select "label", text: /Approved with corrections/
 
     post admin_meeting_minutes_membership_approval_path(@minutes_meeting), params: {
       minutes_membership_approval: {
@@ -103,9 +103,26 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
     get admin_meeting_minutes_path(@approving_meeting)
 
     assert_response :success
-    assert_select "a", text: "Approve exact draft for Adjutant"
-    assert_select "a", text: "Record membership approval", count: 0
+    assert_select "button", text: "Send to Adjutant"
+    assert_select "a", text: "Record meeting approval", count: 0
     assert_predicate september_minutes, :draft?
+  end
+
+  test "pending corrections require their adopted wording before identity confirmation" do
+    sign_in_as(@commander)
+    assert_no_difference "OfficialActionConfirmation.count" do
+      post admin_meeting_minutes_membership_approval_path(@minutes_meeting), params: {
+        minutes_membership_approval: {
+          approving_meeting_id: @approving_meeting.id,
+          disposition: "approved_as_corrected",
+          corrections_pending: "1"
+        }
+      }
+    end
+    assert_redirected_to new_admin_meeting_minutes_membership_approval_path(@minutes_meeting)
+    assert_equal "Describe the corrections approved at the meeting.", flash[:alert]
+    assert_predicate @minutes.reload, :attested?
+    assert_nil @minutes.pending_correction_approval
   end
 
   private

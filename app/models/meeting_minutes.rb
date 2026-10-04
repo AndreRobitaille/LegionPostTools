@@ -49,7 +49,8 @@ class MeetingMinutes < ApplicationRecord
 
   before_destroy :prevent_membership_approved_mutation, if: :membership_approved?
 
-  after_update_commit :schedule_endeavor_history, if: -> { saved_change_to_status? && attested? }
+  after_update_commit :schedule_endeavor_history,
+    if: -> { saved_change_to_status? && (attested? || (membership_approved? && saved_change_to_current_revision_id?)) }
 
   scope :draft, -> { where(status: "draft") }
 
@@ -90,6 +91,13 @@ class MeetingMinutes < ApplicationRecord
   def attested? = status == "attested"
   def membership_approved? = status == "membership_approved"
   def reopened? = draft? && current_revision.present?
+  def editable? = draft? || approved?
+
+  def pending_correction_approval
+    return if membership_approved?
+
+    lifecycle_events.reverse.detect { |event| event.metadata["membership_approval"].present? }
+  end
 
   def member_revision
     return membership_approval.minutes_revision if membership_approved? && membership_approval
@@ -109,10 +117,8 @@ class MeetingMinutes < ApplicationRecord
 
   def digest_for(action, payload: {})
     case action.to_s
-    when "approve"
+    when "approve", "attest"
       Digest::SHA256.hexdigest(JSON.generate(revision_payload))
-    when "attest"
-      current_revision&.sha256 || "missing-revision"
     when "reopen", "record_membership_approval"
       Digest::SHA256.hexdigest(JSON.generate(
         "revision_sha256" => current_revision&.sha256 || "missing-revision",
@@ -127,7 +133,9 @@ class MeetingMinutes < ApplicationRecord
     confirmation.consume!(user: confirmation.user, session: confirmation.session) do
       with_lock do
         reload
-        require_transition!(confirmation:, action: "approve", from: "draft", capability: "approve_minutes")
+        snapshot = revision_payload
+        sha256 = Digest::SHA256.hexdigest(JSON.generate(snapshot))
+        require_transition!(confirmation:, action: "approve", from: "draft", capability: "approve_minutes", content_digest: sha256)
         unless approval_ready?
           errors.add(:base, "Resolve attendance and the latest AI review before approval.")
           raise ActiveRecord::RecordInvalid, self
@@ -136,8 +144,8 @@ class MeetingMinutes < ApplicationRecord
         now = Time.current
         revision = revisions.create!(
           number: revisions.maximum(:number).to_i + 1,
-          payload: revision_payload,
-          sha256: digest_for("approve"),
+          payload: snapshot,
+          sha256:,
           approved_by: confirmation.user,
           approver_name: confirmation.user.person.full_name,
           approver_office: officer_label(confirmation.user),
@@ -163,14 +171,23 @@ class MeetingMinutes < ApplicationRecord
     confirmation.consume!(user: confirmation.user, session: confirmation.session) do
       with_lock do
         reload
-        require_transition!(confirmation:, action: "attest", from: "approved", capability: "attest_minutes")
-        if current_revision.approved_by.person_id == confirmation.user.person_id
-          errors.add(:base, "The Adjutant attesting minutes must be a different person from the approver.")
+        prior_status = status
+        snapshot = revision_payload
+        sha256 = Digest::SHA256.hexdigest(JSON.generate(snapshot))
+        require_transition!(confirmation:, action: "attest", from: %w[draft approved], capability: "attest_minutes", content_digest: sha256)
+        unless approval_ready?
+          errors.add(:base, "Finish attendance and AI review before attesting these minutes.")
           raise ActiveRecord::RecordInvalid, self
         end
 
         now = Time.current
-        current_revision.create_attestation!(
+        decision = pending_correction_approval
+        revision = if approved? && current_revision.sha256 == sha256
+          current_revision
+        else
+          revisions.create!(number: revisions.maximum(:number).to_i + 1, payload: snapshot, sha256:)
+        end
+        revision.create_attestation!(
           attested_by: confirmation.user,
           recorded_by:,
           official_action_confirmation: confirmation,
@@ -178,16 +195,30 @@ class MeetingMinutes < ApplicationRecord
           attester_office: officer_label(confirmation.user),
           attested_at: now
         )
-        update!(status: "attested")
+        if decision
+          decision_payload = decision.metadata.fetch("membership_approval")
+          create_membership_approval!(
+            membership_approval_attributes(decision_payload,
+              revision:,
+              recorded_by: decision.recorded_by,
+              confirmation: decision.official_action_confirmation,
+              recorded_at: decision.occurred_at).merge(
+                recorder_name: decision_payload.fetch("recorder_name"),
+                recorder_office: decision_payload.fetch("recorder_office")
+              )
+          )
+        end
+        update!(status: decision ? "membership_approved" : "attested", current_revision: revision)
         record_lifecycle_event!(
           revision: current_revision,
           confirmation:,
           actor: confirmation.user,
           recorded_by:,
           event_type: "attested",
-          from_status: "approved",
-          to_status: "attested",
-          occurred_at: now
+          from_status: prior_status,
+          to_status: status,
+          occurred_at: now,
+          metadata: { "membership_approval_decision_event_id" => decision&.id }.compact
         )
       end
     end
@@ -246,22 +277,29 @@ class MeetingMinutes < ApplicationRecord
         )
 
         payload = confirmation.action_payload
-        approving_meeting = organization.meetings.find(payload.fetch("approving_meeting_id"))
-        disposition = payload.fetch("disposition")
-        factual_note = payload["factual_note"].to_s.strip.presence
         now = Time.current
-
-        approval = create_membership_approval!(
-          minutes_revision: current_revision,
-          approving_meeting:,
-          recorded_by:,
-          official_action_confirmation: confirmation,
-          disposition:,
-          factual_note:,
-          recorder_name: recorded_by.person.full_name,
-          recorder_office: officer_label(recorded_by),
-          recorded_at: now
+        approval = MinutesMembershipApproval.new(
+          membership_approval_attributes(payload, revision: current_revision, recorded_by:, confirmation:, recorded_at: now).merge(meeting_minutes_id: id)
         )
+        approval.validate!
+        if payload["disposition"] == "approved_as_corrected" && ActiveModel::Type::Boolean.new.cast(payload["corrections_pending"])
+          if approval.factual_note.blank?
+            errors.add(:base, "Describe the corrections approved at the meeting.")
+            raise ActiveRecord::RecordInvalid, self
+          end
+          update!(status: "draft")
+          record_lifecycle_event!(
+            revision: current_revision, confirmation:, actor: confirmation.user, recorded_by:,
+            event_type: "reopened", from_status: "attested", to_status: "draft", occurred_at: now,
+            metadata: {
+              "reason" => approval.factual_note,
+              "membership_approval" => payload.merge("recorder_name" => approval.recorder_name, "recorder_office" => approval.recorder_office)
+            }
+          )
+          association(:membership_approval).reset
+          next
+        end
+        approval.save!
         update!(status: "membership_approved")
         record_lifecycle_event!(
           revision: current_revision,
@@ -273,8 +311,8 @@ class MeetingMinutes < ApplicationRecord
           to_status: "membership_approved",
           occurred_at: now,
           metadata: {
-            "approving_meeting_id" => approving_meeting.id,
-            "disposition" => disposition
+            "approving_meeting_id" => approval.approving_meeting_id,
+            "disposition" => approval.disposition
           }
         )
         approval
@@ -379,6 +417,20 @@ class MeetingMinutes < ApplicationRecord
 
   private
 
+  def membership_approval_attributes(payload, revision:, recorded_by:, confirmation:, recorded_at:)
+    {
+      minutes_revision: revision,
+      approving_meeting: organization.meetings.find(payload.fetch("approving_meeting_id")),
+      recorded_by:,
+      official_action_confirmation: confirmation,
+      disposition: payload.fetch("disposition"),
+      factual_note: payload["factual_note"].to_s.strip.presence,
+      recorder_name: recorded_by.person.full_name,
+      recorder_office: officer_label(recorded_by),
+      recorded_at:
+    }
+  end
+
   def schedule_endeavor_history
     EndeavorHistoryReconcileJob.perform_later(organization_id) if EndeavorHistory::Config.enabled?
   end
@@ -387,10 +439,11 @@ class MeetingMinutes < ApplicationRecord
     draft_runs.detect(&:succeeded?)
   end
 
-  def require_transition!(confirmation:, action:, from:, capability:)
+  def require_transition!(confirmation:, action:, from:, capability:, content_digest: nil)
+    content_digest ||= digest_for(action, payload: confirmation.action_payload)
     unless status.in?(Array(from)) && confirmation.meeting_minutes_id == id && confirmation.action == action &&
         confirmation.record_lock_version == lock_version &&
-        confirmation.content_digest == digest_for(action, payload: confirmation.action_payload) &&
+        confirmation.content_digest == content_digest &&
         confirmation.user.can?(capability)
       errors.add(:base, "The minutes or authority changed. Start the confirmation again.")
       raise ActiveRecord::RecordInvalid, self

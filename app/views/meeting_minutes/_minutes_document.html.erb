@@ -131,19 +131,19 @@
     <p>Record of authority</p>
     <dl>
       <div><dt>Status</dt><dd><%= presentation.fetch(:authority) %></dd></div>
-      <% if revision %>
-        <div><dt>Approved for attestation</dt><dd><%= revision.approver_name %>, <%= revision.approver_office %> · <%= legion_datetime(revision.approved_at) %></dd></div>
+      <% if !minutes.editable? && revision&.approved_by_id %>
+        <div><dt>Commander draft handoff</dt><dd><%= revision.approver_name %>, <%= revision.approver_office %> · <%= legion_datetime(revision.approved_at) %></dd></div>
       <% end %>
-      <% if attestation %>
+      <% if !minutes.editable? && attestation %>
         <div><dt>Attested</dt><dd><%= attestation.attester_name %>, <%= attestation.attester_office %> · <%= legion_datetime(attestation.attested_at) %></dd></div>
       <% end %>
       <% if membership_approval %>
-        <div><dt>Membership approval</dt><dd><%= membership_approval.disposition_label %> · <%= membership_approval.approving_meeting.title %> · <%= legion_date(membership_approval.approving_meeting.starts_at) %></dd></div>
+        <div><dt>Meeting approval</dt><dd><%= membership_approval.disposition_label %> · <%= membership_approval.approving_meeting.title %> · <%= legion_date(membership_approval.approving_meeting.starts_at) %></dd></div>
       <% elsif minutes.attested? %>
-        <div><dt>Membership approval</dt><dd>Awaiting action at a later <%= payload.fetch("meeting_body_name") %></dd></div>
+        <div><dt>Meeting approval</dt><dd>Awaiting action at a later <%= payload.fetch("meeting_body_name") %> meeting</dd></div>
       <% end %>
-      <div><dt>Source</dt><dd><%= revision ? "Immutable approved revision #{revision.number}" : "Current editable minutes record" %></dd></div>
-      <% if revision %><div><dt>Revision</dt><dd><%= revision.number %> · <%= revision.sha256.first(12) %></dd></div><% end %>
+      <div><dt>Source</dt><dd><%= minutes.editable? ? "Current editable minutes record" : "Immutable revision #{revision.number}" %></dd></div>
+      <% if revision && !minutes.editable? %><div><dt>Revision</dt><dd><%= revision.number %> · <%= revision.sha256.first(12) %></dd></div><% end %>
     </dl>
   </aside>
 

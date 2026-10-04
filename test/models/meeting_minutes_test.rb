@@ -214,21 +214,18 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     assert_equal "external_written_confirmation", minutes.lifecycle_events.last.metadata.fetch("confirmation_method")
   end
 
-  test "approver cannot attest the same revision" do
+  test "attestation authority is sufficient even for an officer who handed off the draft" do
     minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
-    officer = create_officer!("Dual", "Commander", "approve_minutes", "attest_minutes")
+    officer = create_officer!("Dual", "Adjutant", "approve_minutes", "attest_minutes")
     token, = AgentAccessToken.issue!(user: officer, name: "Officer agent", expires_in: 1.day)
     minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: token, action: "approve"))
     confirmation = OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: token, action: "attest")
 
-    error = assert_raises(ActiveRecord::RecordInvalid) do
-      minutes.attest_with_confirmation!(confirmation:)
-    end
+    minutes.attest_with_confirmation!(confirmation:)
 
-    assert_match(/different person/, error.record.errors.full_messages.to_sentence)
-    assert_predicate minutes.reload, :approved?
-    assert_nil minutes.current_revision.attestation
-    assert_nil confirmation.reload.consumed_at
+    assert_predicate minutes.reload, :attested?
+    assert_equal officer, minutes.current_revision.attestation.attested_by
+    assert confirmation.reload.consumed_at
   end
 
   test "attested minutes can be corrected before membership approval without losing history" do
@@ -359,6 +356,106 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     assert_predicate minutes.reload, :attested?
     assert_nil minutes.membership_approval
     assert_nil confirmation.reload.consumed_at
+  end
+
+  test "Adjutant attests a draft directly without an invented Commander endorsement" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: adjutant, action: "attest", evidence_note: "Synthetic direct attestation."
+    ))
+
+    revision = minutes.reload.current_revision
+    assert_predicate minutes, :attested?
+    assert_predicate minutes, :member_visible?
+    assert_nil revision.approved_by_id
+    assert_nil revision.approved_at
+    assert_equal adjutant, revision.attestation.attested_by
+    assert_equal [ "attested" ], minutes.lifecycle_events.pluck(:event_type)
+    assert_not revision.update(payload: { "changed" => true })
+  end
+
+  test "Adjutant edits after Commander handoff and attests the actual finished text" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    item = minutes.sections.first.items.create!(title: "Report", behavior_type: "report_slot", position: 1, body: "Draft wording.")
+    commander = create_officer!("Casey", "Commander", "approve_minutes")
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+    handed_off = minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: commander, action: "approve", evidence_note: "Synthetic handoff."
+    ))
+    assert_predicate minutes.reload, :editable?
+    item.update!(body: "Reviewed and corrected wording.")
+
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: adjutant, action: "attest", evidence_note: "Synthetic attestation."
+    ))
+
+    final_revision = minutes.reload.current_revision
+    assert_equal 2, minutes.revisions.count
+    assert_nil final_revision.approved_by_id
+    assert_nil handed_off.reload.attestation
+    assert_equal "Draft wording.", ActionText::Content.new(handed_off.payload.dig("sections", 0, "items", 0, "body_html")).to_plain_text
+    assert_equal "Reviewed and corrected wording.", ActionText::Content.new(final_revision.payload.dig("sections", 0, "items", 0, "body_html")).to_plain_text
+    assert_equal final_revision, minutes.member_revision
+  end
+
+  test "stale content and missing attestation authority cannot release a draft" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+    confirmation = OfficialActionConfirmation.record_external!(minutes:, user: adjutant, action: "attest", evidence_note: "Synthetic confirmation.")
+    minutes.sections.first.items.create!(title: "Changed", behavior_type: "report_slot", position: 1)
+    assert_raises(ActiveRecord::RecordInvalid) { minutes.attest_with_confirmation!(confirmation:) }
+    assert_nil confirmation.reload.consumed_at
+
+    manager = create_officer!("Casey", "Commander", "manage_minutes")
+    unauthorized = OfficialActionConfirmation.record_external!(minutes:, user: manager, action: "attest", evidence_note: "Synthetic unauthorized attempt.")
+    assert_raises(ActiveRecord::RecordInvalid) { minutes.attest_with_confirmation!(confirmation: unauthorized) }
+    assert_predicate minutes.reload, :draft?
+    assert_empty minutes.revisions
+  end
+
+  test "approval with pending corrections locks only when Adjutant confirms the final text" do
+    minutes = MeetingMinutes.create_from_meeting!(meeting: past_meeting)
+    item = minutes.sections.first.items.create!(title: "Report", behavior_type: "report_slot", position: 1, body: "Twelve families.")
+    commander = create_officer!("Casey", "Commander", "record_minutes_approval")
+    adjutant = create_officer!("Alex", "Adjutant", "attest_minutes")
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: adjutant, action: "attest", evidence_note: "Synthetic first attestation."
+    ))
+    first_revision = minutes.current_revision
+    approving_meeting = create_meeting!(organization: @organization, meeting_body: @meeting_body, starts_at: 1.hour.ago)
+    decision_confirmation = OfficialActionConfirmation.record_external!(
+      minutes:, user: commander, action: "record_membership_approval", evidence_note: "Synthetic meeting decision.",
+      action_payload: { approving_meeting_id: approving_meeting.id, disposition: "approved_as_corrected", corrections_pending: true, factual_note: "Change twelve families to thirteen." }
+    )
+
+    minutes.record_membership_approval_with_confirmation!(confirmation: decision_confirmation)
+
+    assert_predicate minutes.reload, :draft?
+    assert_nil minutes.membership_approval
+    decision = minutes.pending_correction_approval
+    assert decision
+    assert_equal first_revision, minutes.member_revision
+    assert decision_confirmation.reload.consumed_at
+    assert_equal approving_meeting.id, decision.metadata.dig("membership_approval", "approving_meeting_id")
+    item.update!(body: "Thirteen families.")
+    minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes:, user: adjutant, action: "attest", evidence_note: "Synthetic final confirmation."
+    ))
+
+    assert_predicate minutes.reload, :membership_approved?
+    assert_not minutes.editable?
+    assert_nil minutes.pending_correction_approval
+    assert_equal minutes.current_revision, minutes.membership_approval.minutes_revision
+    assert_equal decision_confirmation, minutes.membership_approval.official_action_confirmation
+    assert_equal commander, minutes.membership_approval.recorded_by
+    assert_equal decision.occurred_at, minutes.membership_approval.recorded_at
+    assert_equal approving_meeting, minutes.membership_approval.approving_meeting
+    assert_equal "Thirteen families.", ActionText::Content.new(minutes.member_revision.payload.dig("sections", 0, "items", 0, "body_html")).to_plain_text
+    assert_equal decision.id, minutes.lifecycle_events.last.metadata.fetch("membership_approval_decision_event_id")
+    assert_not decision.update(metadata: {})
+    assert_raises(ActiveRecord::RecordInvalid) { minutes.update!(title: "Changed later") }
   end
 
   private

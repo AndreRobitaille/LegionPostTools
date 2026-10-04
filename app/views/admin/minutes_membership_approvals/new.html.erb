@@ -1,18 +1,18 @@
-<% content_for :title, "Record membership approval" %>
+<% content_for :title, "Record meeting approval" %>
 <%= link_to admin_meeting_minutes_path(@meeting), class: "back" do %>&larr; Minutes workspace<% end %>
 
 <div class="page-lead">
-  <p class="minutes-eyebrow">Membership action</p>
-  <h1 class="page-title">Record the membership's approval</h1>
-  <p class="page-sub"><%= @minutes.title %> &middot; attested revision <%= @minutes.current_revision.number %></p>
+  <p class="minutes-eyebrow">Meeting decision</p>
+  <h1 class="page-title">Record the meeting's approval</h1>
+  <p class="page-sub"><%= @minutes.title %> &middot; <%= @minutes.meeting_body.name %></p>
 </div>
 
 <section class="official-confirmation-summary official-confirmation-summary--membership">
   <h2>What this records</h2>
-  <p>This records what the membership already did at a later meeting. It does not conduct a vote or substitute an officer's approval for the membership's action.</p>
+  <p>This records what the meeting body already did at a later meeting. It does not conduct a vote or substitute an officer's approval for the meeting's decision.</p>
   <dl>
-    <div><dt>Exact revision</dt><dd><%= @minutes.current_revision.number %> · <code><%= @minutes.current_revision.sha256.first(12) %></code></dd></div>
-    <div><dt>After recording</dt><dd>Official membership-approved minutes; no further editing</dd></div>
+    <div><dt>Attested copy</dt><dd><%= @minutes.current_revision.attestation.attester_name %> · <%= legion_datetime(@minutes.current_revision.attestation.attested_at) %></dd></div>
+    <div><dt>After recording</dt><dd>Approval as presented locks the record. Approval with corrections keeps the working copy editable until the Adjutant confirms the final copy.</dd></div>
   </dl>
 </section>
 
@@ -27,24 +27,24 @@
       <% if @approval_attributes["factual_note"].present? %><div><dt>Procedure note</dt><dd><%= @approval_attributes["factual_note"] %></dd></div><% end %>
     </dl>
   </section>
-  <%= button_to "Record membership approval", admin_meeting_minutes_membership_approval_path(@meeting),
+  <%= button_to "Record meeting approval", admin_meeting_minutes_membership_approval_path(@meeting),
         params: { confirmation_id: @confirmation.id }, class: "btn-confirm" %>
 <% else %>
   <%= form_with url: admin_meeting_minutes_membership_approval_path(@meeting), scope: :minutes_membership_approval, class: "stacked-form official-action-form" do |form| %>
     <div class="fl">
-      <%= form.label :approving_meeting_id, "Meeting where the membership approved these minutes" %>
+      <%= form.label :approving_meeting_id, "Meeting where these minutes were approved" %>
       <%= form.collection_select :approving_meeting_id, @eligible_meetings, :id, ->(meeting) { "#{meeting.meeting_body.name} — #{legion_date(meeting.starts_at)}" }, { prompt: "Choose a meeting" }, { class: "f", required: true } %>
     </div>
 
     <fieldset class="transcript-retention minutes-approval-choices">
-      <legend>How did the membership approve them?</legend>
+      <legend>What did the meeting approve?</legend>
       <label class="transcript-choice">
         <%= form.radio_button :disposition, "approved_as_presented", required: true %>
         <span><strong>Approved as presented</strong><small>The attested text required no correction.</small></span>
       </label>
       <label class="transcript-choice">
         <%= form.radio_button :disposition, "approved_as_corrected", required: true %>
-        <span><strong>Approved as corrected</strong><small>The adopted correction is already incorporated into this exact attested revision.</small></span>
+        <span><strong>Approved with corrections</strong><small>Record the adopted corrections below. Enter them in the draft, then the Adjutant confirms and locks the final copy.</small></span>
       </label>
       <label class="transcript-choice">
         <%= form.radio_button :disposition, "approved_by_motion", required: true %>
@@ -56,12 +56,18 @@
       </label>
     </fieldset>
 
+    <label class="transcript-choice">
+      <%= form.check_box :corrections_pending, {}, "0", "1" %>
+      <span><strong>The corrections are already in this attested copy</strong><small>For approval with corrections only: checking this locks the current copy immediately.</small></span>
+    </label>
+
     <div class="fl">
-      <%= form.label :factual_note, "Procedure note (required only for another procedure)" %>
+      <%= form.label :factual_note, "Corrections or procedure note" %>
       <%= form.text_area :factual_note, rows: 3, class: "f" %>
+      <p class="helper">List the corrections adopted, or describe another approval procedure. Leave blank for approval as presented.</p>
     </div>
     <div class="btnrow">
-      <%= form.submit "Continue to identity confirmation", class: "btn-primary" %>
+      <%= form.submit "Record meeting approval", class: "btn-primary" %>
       <%= link_to "Cancel", admin_meeting_minutes_path(@meeting), class: "btn-secondary" %>
     </div>
   <% end %>

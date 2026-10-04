@@ -93,6 +93,31 @@ class OfficialActionConfirmation < ApplicationRecord
   def delegated_agent? = confirmation_method == "delegated_agent"
   def external_written_confirmation? = confirmation_method == "external_written_confirmation"
 
+  def complete_minutes_action!
+    case action
+    when "approve"
+      meeting_minutes.approve_with_confirmation!(confirmation: self)
+      "Draft sent to the Adjutant for review."
+    when "attest"
+      meeting_minutes.attest_with_confirmation!(confirmation: self)
+      if meeting_minutes.membership_approved?
+        "Corrected minutes approved and locked."
+      else
+        "Minutes attested. Members can now read them before meeting approval."
+      end
+    when "reopen"
+      meeting_minutes.reopen_with_confirmation!(confirmation: self)
+      "Minutes reopened for correction."
+    when "record_membership_approval"
+      meeting_minutes.record_membership_approval_with_confirmation!(confirmation: self)
+      if meeting_minutes.pending_correction_approval
+        "Meeting approval recorded. Enter the corrections, then have the Adjutant confirm and lock the final copy."
+      else
+        "Meeting approval recorded. These minutes are approved and locked."
+      end
+    end
+  end
+
   private
 
   def session_belongs_to_user

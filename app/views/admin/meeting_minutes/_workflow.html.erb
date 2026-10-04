@@ -1,0 +1,56 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+<% action = minutes_next_action(minutes) %>
+<section class="card minutes-status-card" aria-label="Minutes status">
+  <% unless compact %><div class="card-head"><span class="card-dia" aria-hidden="true">◆</span><span class="card-head-label">Minutes</span></div><% end %>
+  <div class="minutes-status-content">
+    <div>
+      <h2><%= minutes_workflow_status(minutes) %></h2>
+      <p><%= minutes_workflow_explanation(minutes) %></p>
+      <% if minutes_next_officer(minutes) %><p class="minutes-next-officer"><%= minutes_next_officer(minutes) %></p><% end %>
+    </div>
+    <% if minutes.editable? && !minutes.approval_ready? %>
+      <div class="minutes-review-needed">
+        <strong>Finish review before attestation</strong>
+        <% unresolved = minutes.attendance_entries.count { |entry| entry.status == "not_recorded" } %>
+        <% if unresolved.positive? %>
+          <p><%= pluralize(unresolved, "office") %> still need attendance recorded.
+          <% if current_user.can?("manage_minutes") %><%= link_to "Record attendance", edit_admin_meeting_minutes_attendance_path(minutes.meeting), class: "lnk" %><% end %></p>
+        <% end %>
+        <% run = minutes.draft_runs.detect(&:succeeded?) %>
+        <% if run&.suggestions&.unreviewed&.exists? %>
+          <p>AI suggestions still need a human decision.
+          <% if current_user.can?("manage_minutes") %><%= link_to "Review suggestions", admin_meeting_minutes_draft_run_path(minutes.meeting, run), class: "lnk" %><% end %></p>
+        <% end %>
+      </div>
+    <% end %>
+    <% if (decision = minutes.pending_correction_approval) %>
+      <div class="minutes-adopted-corrections">
+        <strong>Corrections approved at the meeting</strong>
+        <%= simple_format(decision.metadata.fetch("membership_approval").fetch("factual_note")) %>
+      </div>
+    <% end %>
+    <div class="btnrow">
+      <% if action %>
+        <% if action[:method] == :post %>
+          <%= button_to action.fetch(:label), action.fetch(:path), class: "btn-confirm" %>
+        <% else %>
+          <%= link_to action.fetch(:label), action.fetch(:path), class: "btn-confirm" %>
+        <% end %>
+      <% end %>
+      <% if compact %>
+        <%= link_to minutes.editable? ? "Review and edit minutes" : "Open minutes record", admin_meeting_minutes_path(minutes.meeting), class: action ? "btn-secondary" : "btn-primary" %>
+      <% else %>
+        <%= link_to minutes_pdf_action_label(minutes), print_admin_meeting_minutes_path(minutes.meeting), class: "btn-secondary", data: { turbo: false } %>
+        <% if minutes.attested? && current_user.can?("manage_minutes") %><%= link_to "Correct this copy", new_admin_meeting_minutes_reopening_path(minutes.meeting), class: "btn-secondary" %><% end %>
+      <% end %>
+    </div>
+    <% unless compact %>
+      <ol class="minutes-progress" aria-label="Minutes progression">
+        <% step = minutes_progress_step(minutes) %>
+        <% [ "Draft", "Attested", "Approved and locked" ].each_with_index do |label, index| %>
+          <li class="<%= index + 1 <= step ? "is-complete" : "" %>" <%= 'aria-current="step"'.html_safe if index + 1 == step %>><span aria-hidden="true"><%= index + 1 %></span><strong><%= label %></strong></li>
+        <% end %>
+      </ol>
+    <% end %>
+  </div>
+</section>

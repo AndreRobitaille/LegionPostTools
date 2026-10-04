@@ -69,7 +69,7 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".minutes-doc-result", text: "Did not pass"
     assert_select "body", text: /Related continuing work/, count: 0
     assert_select "body", text: /Car & Bike Show 2026/, count: 0
-    assert_select ".minutes-authority-folio", text: /not Commander-approved, attested, or membership-approved/i
+    assert_select ".minutes-authority-folio", text: /not attested or approved by the meeting/i
     assert_select "nav", count: 0
   end
 
@@ -98,16 +98,16 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
 
     assert_response :success
-    assert_select ".minutes-doc-status-label--attested", text: "Attested - awaiting membership approval"
+    assert_select ".minutes-doc-status-label--attested", text: "Attested - awaiting meeting approval"
     assert_select ".agenda-meeting-heading h1", text: "Membership Meeting - Attested minutes"
     assert_select ".minutes-doc-item", text: /Finance report/
     assert_select ".minutes-doc-item", text: /Changed working row after attestation/, count: 0
-    assert_select ".minutes-authority-folio", text: /Attested minutes - awaiting membership approval/
-    assert_select ".minutes-authority-folio", text: /Approved for attestation.*Test Commander/m
+    assert_select ".minutes-authority-folio", text: /Attested minutes - awaiting meeting approval/
+    assert_select ".minutes-authority-folio", text: /Commander draft handoff.*Test Commander/m
     assert_select ".minutes-authority-folio", text: /Attested.*Test Adjutant/m
-    assert_select ".minutes-authority-folio", text: /Membership approval.*Awaiting action at a later Membership/m
-    assert_select ".agenda-doc-footer", text: /Attested - awaiting membership approval/
-    assert_includes response.body, "ATTESTED - AWAITING MEMBERSHIP APPROVAL"
+    assert_select ".minutes-authority-folio", text: /Meeting approval.*Awaiting action at a later Membership/m
+    assert_select ".agenda-doc-footer", text: /Attested - awaiting meeting approval/
+    assert_includes response.body, "ATTESTED - AWAITING MEETING APPROVAL"
   end
 
   test "membership-approved source renders the exact revision as official" do
@@ -136,12 +136,38 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
 
     assert_response :success
-    assert_select ".minutes-doc-status-label--membership_approved", text: "Official - membership approved"
+    assert_select ".minutes-doc-status-label--membership_approved", text: "Official - approved and locked"
     assert_select ".agenda-meeting-heading h1", text: "Membership Meeting - Official minutes"
-    assert_select ".minutes-authority-folio", text: /Official minutes approved by the membership/
-    assert_select ".minutes-authority-folio", text: /Membership approval.*Approved as corrected.*Later Membership Meeting/m
+    assert_select ".minutes-authority-folio", text: /Official minutes approved by the meeting body/
+    assert_select ".minutes-authority-folio", text: /Meeting approval.*Approved as corrected.*Later Membership Meeting/m
     assert_select ".minutes-authority-folio", text: /Revision.*1/m
-    assert_select ".agenda-doc-footer", text: /Official - membership approved/
+    assert_select ".agenda-doc-footer", text: /Official - approved and locked/
+  end
+
+  test "direct Adjutant attestation has no Commander endorsement and pending corrections are labeled truthfully" do
+    adjutant = lifecycle_user("Adjutant", "attest_minutes")
+    @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: adjutant, action: "attest", evidence_note: "Synthetic direct attestation."
+    ))
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
+    assert_response :success
+    assert_select ".minutes-authority-folio", text: /Commander draft handoff/, count: 0
+    assert_select ".minutes-authority-folio", text: /Attested.*Test Adjutant/m
+
+    recorder = lifecycle_user("Commander", "record_minutes_approval")
+    approving_meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.hour.ago)
+    @minutes.record_membership_approval_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: recorder, action: "record_membership_approval", evidence_note: "Synthetic correction decision.",
+      action_payload: { approving_meeting_id: approving_meeting.id, disposition: "approved_as_corrected", corrections_pending: true, factual_note: "Change the balance to $1,235." }
+    ))
+    @item.update!(body: "The balance was $1,235.")
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
+    assert_response :success
+    assert_select ".minutes-doc-status-label", text: "Corrections pending - meeting approval recorded"
+    assert_select ".minutes-doc-item", text: /1,235/
+    assert_select ".minutes-authority-folio", text: /Awaiting Adjutant confirmation/i
+    assert_select ".minutes-authority-folio", text: /Attested.*Test Adjutant/m, count: 0
+    assert_equal "$1,234", @minutes.member_revision.payload.dig("sections", 0, "items", 0, "body_html")[/\$1,234/]
   end
 
   test "source rejects invalid tokens" do

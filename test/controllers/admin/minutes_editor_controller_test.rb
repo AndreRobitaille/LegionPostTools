@@ -262,8 +262,8 @@ class Admin::MinutesEditorControllerTest < ActionDispatch::IntegrationTest
     assert_equal "not_recorded", second.reload.status
   end
 
-  test "non-draft minutes reject every editor surface" do
-    @minutes.update_column(:status, "approved")
+  test "attested minutes reject every editor surface" do
+    @minutes.update_column(:status, "attested")
     sign_in_as(@manager)
 
     get new_admin_meeting_minutes_section_path(@meeting)

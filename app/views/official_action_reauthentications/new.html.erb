@@ -1,16 +1,11 @@
-<% content_for :title, "Confirm this official action" %>
+<% content_for :title, "Confirm and complete the minutes action" %>
 
 <div class="page-lead">
-  <h1 class="page-title">Confirm your identity</h1>
-  <p class="page-sub">This one-use check is tied to the exact minutes revision and action below.</p>
+  <h1 class="page-title">Confirm and complete</h1>
+  <p class="page-sub">Confirm your identity to complete the action below. You will return to the minutes with their updated status.</p>
 </div>
 
-<section class="official-confirmation-summary" aria-labelledby="official-action-heading">
-  <p class="meeting-workflow-kicker">Official minutes action</p>
-  <h2 id="official-action-heading"><%= confirmation_action_label(@confirmation) %></h2>
-  <p><strong><%= @confirmation.meeting_minutes.title %></strong></p>
-  <p>Digest <code><%= @confirmation.content_digest.first(12) %></code> · expires <%= legion_datetime(@confirmation.expires_at) %></p>
-</section>
+<%= render "action_summary", confirmation: @confirmation %>
 
 <section class="profile-section">
   <%= render "shared/section_header", label: "Choose how to confirm" %>
@@ -26,7 +21,7 @@
                   autocomplete: "one-time-code", placeholder: "1234 5678", maxlength: 9,
                   required: true, autofocus: true %>
           </div>
-          <%= form.button "Confirm identity", class: "btn-primary" %>
+          <%= form.button "Confirm and complete", class: "btn-primary" %>
         <% end %>
         <%= button_to "Send a new code and link", official_action_reauthentication_path,
               method: :post, class: "lnk agent-reauth-resend" %>
@@ -40,7 +35,7 @@
     <% if current_user.passkey_credentials.any? %>
       <div class="agent-reauth-passkey" data-controller="passkey" data-passkey-redirect-value="<%= confirmation_return_path(@confirmation) %>">
         <div class="entry-orline">Or use a passkey</div>
-        <button type="button" class="btn-secondary" data-action="passkey#authenticate" data-passkey-target="submit">Confirm with a passkey</button>
+        <button type="button" class="btn-secondary" data-action="passkey#authenticate" data-passkey-target="submit">Confirm and complete with a passkey</button>
         <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
       </div>
     <% end %>

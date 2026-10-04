@@ -1,0 +1,15 @@
+<section class="official-confirmation-summary" aria-labelledby="official-action-heading">
+  <p class="meeting-workflow-kicker">Action to complete</p>
+  <h2 id="official-action-heading"><%= confirmation_action_label(confirmation) %></h2>
+  <p><strong><%= confirmation.meeting_minutes.title %></strong></p>
+  <p><%= confirmation_action_description(confirmation) %></p>
+  <% if confirmation.action == "record_membership_approval" %>
+    <% payload = confirmation.action_payload %>
+    <% approving_meeting = confirmation.meeting_minutes.eligible_membership_approval_meetings.find(payload.fetch("approving_meeting_id")) %>
+    <dl>
+      <div><dt>Approving meeting</dt><dd><%= approving_meeting.title %> · <%= legion_date(approving_meeting.starts_at) %></dd></div>
+      <div><dt>Decision</dt><dd><%= MinutesMembershipApproval.new(disposition: payload.fetch("disposition")).disposition_label %></dd></div>
+      <% if payload["factual_note"].present? %><div><dt>Corrections / note</dt><dd><%= simple_format(payload["factual_note"]) %></dd></div><% end %>
+    </dl>
+  <% end %>
+</section>

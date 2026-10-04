@@ -96,7 +96,7 @@ class ApiMinutesItemEndeavorsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "locked official records reject both confirmation modes" do
-    %w[approved attested membership_approved].each do |status|
+    %w[attested membership_approved].each do |status|
       @minutes.update_columns(status: status)
       [ creation, linking ].each do |payload|
         assert_no_difference "Endeavor.count" do

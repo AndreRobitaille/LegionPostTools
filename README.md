@@ -34,12 +34,12 @@ The current application foundation includes:
 - Private session-or-bearer API parity for ordinary delegated officer/admin work across
   meetings, agendas, accounts, transcripts, structured minutes, lifecycle actions, AI
   review, Jobs, calendar events, and Endeavor tasks/deadline editing.
-- Exact immutable Commander-approved minutes revisions, different-person Adjutant
-  attestation, member-visible minutes awaiting acceptance, and matching signed-in and
+- Optional Commander draft handoff, exact immutable Adjutant-attested revisions,
+  member-visible minutes awaiting meeting approval, and matching signed-in and
   bearer-token actions with audit provenance.
 
-The next core work is membership acceptance, immutable correction history, accepted and
-amended document delivery, and later email distribution.
+Meeting approval and audited corrections are implemented. Later amendments and email
+workflow notifications remain planned.
 
 ## Who This Is For
 
@@ -71,7 +71,7 @@ Most ordinary post members are not expected to log in during early versions. The
   and dated officer roll call.
 - `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for minutes.
-- `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — implemented Commander approval,
+- `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — current Commander handoff,
   Adjutant release, member presentation, and delegated API provenance.
 - `docs/superpowers/specs/2026-08-31-agent-minutes-api-parity-design.md` — delegated
   officer/admin parity for accounts, transcripts, working minutes, AI review, and Jobs.

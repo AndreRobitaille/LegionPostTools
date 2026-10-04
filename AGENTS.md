@@ -41,9 +41,9 @@ The first real installation is Robert E. Burns Post 165 in Two Rivers, Wisconsin
 - Meeting records are the first-class workflow.
 - Authenticity matters more than convenience once records become official.
 - Accepted official minutes are immutable. Later corrections must be later amendments or later meeting records, not edits to accepted minutes.
-- Before membership approval, corrections use audited reopen, Commander approval for
-  attestation, and different-person Adjutant re-attestation. Preserve immutable revisions
-  and events. See `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` for current behavior;
+- Before final approval, corrections use audited reopen and Adjutant attestation of
+  the corrected text. Commander drafting and handoff do not require repeated approval.
+  Preserve immutable revisions and events. See `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` for current behavior;
   later amendments remain planned, not an available editing shortcut.
 - AI may draft, organize, or suggest. Humans approve, attest, accept, and remain the authority.
 - Users may be older or have low computer confidence. Prefer guided, plain workflows over clever interfaces.
@@ -193,7 +193,7 @@ reset development data. Simplicity guidance does not waive authorization or audi
 - `docs/MINUTES_ENDEAVOR_CONFIRMATION.md` — manual and source-cited AI proposals for human-confirmed Endeavor creation/linking during draft minutes review.
 - `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for Minutes.
-- `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — implemented immutable approval, different-person attestation, member presentation, and delegated provenance.
+- `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — current Commander handoff, Adjutant attestation, meeting approval, corrections, and delegated provenance.
 - `docs/DEPLOYMENT.md` — deployment/operator notes.
 - `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` — private JSON + handbook so Grok Bot can operate the app for the signed-in user with that user's current grants.
 - `docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md` — agent parity for dated-agenda items, historical business backfill, roll calls, catalog changes, and destructive boundaries.

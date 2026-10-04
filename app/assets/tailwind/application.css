@@ -1879,8 +1879,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .minutes-lifecycle-step:first-child { border-left: 0; }
 .minutes-lifecycle-step > span { display: flex; align-items: center; justify-content: center; width: 31px; height: 31px; color: #fff; background: #8a949f; border-radius: 50%; font-family: var(--font-serif); font-weight: 700; }
 .minutes-lifecycle-step strong, .minutes-lifecycle-step small { display: block; }
-.minutes-lifecycle-step strong { color: var(--color-navy); font-size: 15px; line-height: 1.25; }
-.minutes-lifecycle-step small { margin-top: 4px; color: var(--color-muted); font-size: 13px; line-height: 1.35; }
+.minutes-lifecycle-step strong { color: var(--color-navy); font-size: 16px; line-height: 1.25; }
+.minutes-lifecycle-step small { margin-top: 4px; color: var(--color-muted); font-size: 14px; line-height: 1.35; }
 .minutes-lifecycle-step.is-complete > span { background: var(--color-green); }
 .minutes-lifecycle-step.is-current { background: #edf4f8; box-shadow: inset 0 -4px 0 var(--color-officer-blue); }
 .minutes-lifecycle-step.is-current > span { background: var(--color-officer-blue); }
@@ -1891,7 +1891,23 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .official-confirmation-summary--attest { border-left-color: var(--color-green); }
 .official-confirmation-summary--reopen { border-left-color: var(--color-legionred); }
 .official-confirmation-summary--membership { border-left-color: var(--color-green); }
-.official-confirmation-summary h2 { margin: 0 0 10px; color: var(--color-navy); font-family: var(--font-serif); font-size: 24px; }
+.minutes-status-card { max-width: var(--w-main); margin-bottom: 24px; }
+.minutes-status-content { padding: 20px 24px; }
+.minutes-status-content h2 { margin: 0 0 10px; color: var(--color-navy); font-family: system-ui, "Segoe UI", Helvetica, Arial; font-size: 24px; line-height: 1.3; }
+.minutes-status-content p { margin: 8px 0; font-size: 16px; line-height: 1.55; }
+.minutes-status-content .btnrow { margin-top: 18px; flex-wrap: wrap; }
+.minutes-next-officer { color: var(--color-officer-blue); font-weight: 600; }
+.minutes-review-needed, .minutes-adopted-corrections { margin-top: 16px; padding: 14px 16px; border-left: 3px solid var(--color-gold); background: var(--color-cream); font-size: 16px; }
+.minutes-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 22px 0 0; padding: 18px 0 0; border-top: 1px solid var(--rule); list-style: none; }
+.minutes-progress li { display: flex; align-items: center; gap: 10px; color: var(--color-muted); font-size: 16px; }
+.minutes-progress li > span { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--rule-strong); border-radius: 50%; font-size: 14px; }
+.minutes-progress li.is-complete { color: var(--color-navy); }
+.minutes-progress li.is-complete > span { color: white; background: var(--color-navy); border-color: var(--color-navy); }
+.minutes-progress li[aria-current="step"] > span { outline: 2px solid var(--color-gold); outline-offset: 3px; }
+.minutes-editor-actions { margin-bottom: 20px; }
+.minutes-correction-ledger summary { cursor: pointer; font-size: 16px; font-weight: 700; color: var(--color-navy); }
+.meeting-minutes-workflow .minutes-status-card { margin-top: 18px; margin-bottom: 0; }
+.official-confirmation-summary h2 { margin: 0 0 10px; color: var(--color-navy); font-family: system-ui, "Segoe UI", Helvetica, Arial; font-size: 24px; }
 .official-confirmation-summary > p { margin: 7px 0; color: #526171; font-size: 16px; line-height: 1.55; }
 .official-confirmation-summary dl { margin: 17px -24px -22px; }
 .official-confirmation-summary dl > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; padding: 12px 24px; border-top: 1px solid var(--rule); }
@@ -1932,6 +1948,11 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .revision-attendance dd { margin: 0; color: #526171; font-size: 14px; }
 
 @media (max-width: 560px) {
+  .minutes-status-content { padding: 18px; }
+  .minutes-status-content h2 { font-size: 22px; }
+  .minutes-status-content .btnrow, .minutes-status-content .btnrow > * { width: 100%; box-sizing: border-box; }
+  .minutes-status-content .btnrow button { width: 100%; }
+  .minutes-progress { grid-template-columns: minmax(0, 1fr); }
   .minutes-lifecycle-rail { grid-template-columns: minmax(0, 1fr); }
   .minutes-lifecycle-step { border-top: 1px solid var(--rule); border-left: 0; }
   .minutes-lifecycle-step:first-child { border-top: 0; }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_02_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -766,10 +766,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_010000) do
   end
 
   create_table "minutes_revisions", force: :cascade do |t|
-    t.datetime "approved_at", null: false
-    t.bigint "approved_by_id", null: false
-    t.string "approver_name", null: false
-    t.string "approver_office", null: false
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.string "approver_name"
+    t.string "approver_office"
     t.datetime "created_at", null: false
     t.bigint "meeting_minutes_id", null: false
     t.integer "number", null: false
@@ -780,6 +780,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_02_010000) do
     t.index ["meeting_minutes_id", "number"], name: "index_minutes_revisions_on_meeting_minutes_id_and_number", unique: true
     t.index ["meeting_minutes_id", "sha256"], name: "index_minutes_revisions_on_meeting_minutes_id_and_sha256"
     t.index ["meeting_minutes_id"], name: "index_minutes_revisions_on_meeting_minutes_id"
+    t.check_constraint "approved_by_id IS NULL AND approver_name IS NULL AND approver_office IS NULL AND approved_at IS NULL OR approved_by_id IS NOT NULL AND approver_name IS NOT NULL AND approver_office IS NOT NULL AND approved_at IS NOT NULL", name: "minutes_revisions_commander_endorsement_check"
     t.check_constraint "number > 0", name: "minutes_revisions_number_check"
   end
 

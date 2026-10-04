@@ -96,18 +96,18 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
 
     get meeting_path(meeting)
     assert_response :success
-    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /Minutes.*Awaiting membership approval.*Open/m
+    assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: /Minutes.*Awaiting meeting approval.*Open/m
 
     get meeting_minutes_path(meeting)
     assert_response :success
-    assert_select ".member-minutes-status", text: /Awaiting membership approval/
-    assert_select ".minutes-endorsements", text: /Commander approval for attestation.*Adjutant attestation/m
+    assert_select ".member-minutes-status", text: /Awaiting meeting approval/
+    assert_select ".minutes-endorsements", text: /Commander draft handoff.*Adjutant attestation/m
     assert_select ".minutes-item-title", text: "Adjutant report"
     assert_no_match(/official minutes/i, response.body)
 
     get meetings_path
     assert_select "a[href='#{meeting_minutes_path(meeting)}']", text: "View minutes"
-    assert_select ".member-meeting-note", text: "Awaiting membership approval"
+    assert_select ".member-meeting-note", text: "Awaiting meeting approval"
     assert_select ".meeting-year .agenda-docket-meta", count: 0
   end
 
@@ -140,7 +140,7 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".minutes-eyebrow", text: "Official minutes"
     assert_select ".member-minutes-status", text: /Approved as corrected.*September Membership/m
-    assert_select ".minutes-endorsements", text: /Membership approval.*Approved as corrected/m
+    assert_select ".minutes-endorsements", text: /Meeting approval.*Approved as corrected/m
   end
 
   private

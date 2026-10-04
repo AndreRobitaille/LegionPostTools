@@ -15,7 +15,7 @@ module Admin
         @minutes.reopen_with_confirmation!(confirmation:)
         clear_pending_confirmation
         redirect_to admin_meeting_minutes_path(@meeting),
-          notice: "Minutes reopened. Correct the working record, then repeat Commander approval and Adjutant attestation."
+          notice: "Minutes reopened. Enter the corrections, then the Adjutant attests the finished copy."
       else
         reason = params.require(:minutes_reopening).fetch(:reason).to_s.strip
         if reason.blank?
@@ -53,7 +53,7 @@ module Admin
       return if @minutes.approved? || @minutes.attested?
 
       redirect_to admin_meeting_minutes_path(@meeting),
-        alert: "Only Commander-approved or attested minutes can be reopened."
+        alert: "Only a draft handed to the Adjutant or an attested copy can be reopened."
     end
 
     def confirmation_from_params
