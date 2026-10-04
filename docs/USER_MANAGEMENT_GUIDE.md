@@ -46,6 +46,13 @@ invalid, shared, or already-used email. The roster import completes, but its res
 the member under problems that need review. Imports never replace an existing login
 email, even when the roster email later changes.
 
+The import result lists who received a new roster record and who received a new sign-in
+account. An existing member can receive their first account on a later import. If a
+previously Deceased record changes to another status, National's new status is applied
+and the result prominently warns you to check it with National. Correct any mistake
+there and import a fresh roster. Deliberately disabled accounts remain off. Older import
+results may lack names because they recorded only counts.
+
 ## Find a Member
 
 1. Sign in and open **People**.

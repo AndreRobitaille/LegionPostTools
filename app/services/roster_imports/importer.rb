@@ -3,7 +3,6 @@ require "uri"
 module RosterImports
   class Importer
     LARGE_REMOVAL_THRESHOLD = 10
-    CREATED_MEMBER_EXAMPLE_LIMIT = 10
     ROSTER_ATTRIBUTES = {
       roster_name: :name,
       roster_post: :post,
@@ -69,6 +68,8 @@ module RosterImports
       problems = row_problems.map { |p| { row: p.row, kind: p.kind, message: p.message } }
       removed_members = []
       created_members = []
+      created_accounts = []
+      status_changes = []
       field_changes = {}
       access_effects = Hash.new(0)
       email_counts = eligible_email_counts(rows)
@@ -89,13 +90,14 @@ module RosterImports
             person.save!
             if was_new
               created += 1
-              if created_members.size < CREATED_MEMBER_EXAMPLE_LIMIT
-                created_members << { name: person.roster_display_name, member_number: person.member_number }
-              end
+              created_members << member_identity(person)
             else
               updated += 1
               returned += 1 if was_returning
               record_field_changes(field_changes, changes)
+              if (status_change = changes[:roster_member_status])
+                status_changes << member_identity(person).merge(from: status_change.first, to: status_change.last)
+              end
             end
           else
             person.update_column(:roster_imported_at, Time.current) if person.persisted?
@@ -105,6 +107,7 @@ module RosterImports
           effect = reconcile_login_access(person, email_counts, problems)
           if effect
             access_effects[effect.to_s] += 1
+            created_accounts << member_identity(person) if effect == :account_created
             if effect == :skipped_last_admin
               problems << { row: nil, kind: "last_admin",
                 message: "#{person.roster_display_name} would lose sign-in by roster status but is the last administrator — sign-in kept on; review manually." }
@@ -147,7 +150,8 @@ module RosterImports
           summary: { rows: rows.size, created: created, updated: updated, unchanged: unchanged,
                      removed: removed, problems: problems, removed_members: removed_members,
                      access_effects: access_effects, field_changes: field_changes,
-                     returned_count: returned, created_members: created_members }
+                     returned_count: returned, created_members: created_members,
+                     created_accounts: created_accounts, status_changes: status_changes }
         )
       end
 
@@ -307,6 +311,10 @@ module RosterImports
 
     def assign_roster_fields(person, row)
       person.assign_attributes(roster_attributes(row))
+    end
+
+    def member_identity(person)
+      { name: person.roster_display_name, member_number: person.member_number }
     end
 
     def roster_attributes(row)

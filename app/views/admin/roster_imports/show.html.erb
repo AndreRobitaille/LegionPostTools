@@ -52,6 +52,26 @@
   </div>
 <% end %>
 
+<% if status == "completed" && @roster_import.deceased_status_reversals.any? %>
+  <%= render "shared/section_panel", label: "Check deceased member status", class: "card--alert" do %>
+    <p>The imported roster changed Deceased to another status. Check the affected records with National.</p>
+    <% @roster_import.deceased_status_reversals.each do |change| %>
+      <div class="item">
+        <% if change["name"].present? %>
+          <%= render "member_identity", member: change %>
+        <% else %>
+          <span class="who"><%= pluralize(change["count"], "member") %></span>
+        <% end %>
+        <div class="fix">National roster status: <b><%= change["from"] %></b> to <b><%= change["to"].presence || "blank" %></b>.</div>
+        <% if change["name"].blank? %>
+          <div class="fix">The affected member's name was not recorded in this import.</div>
+        <% end %>
+      </div>
+    <% end %>
+    <p class="ownernote">The imported status was applied, along with the usual sign-in rules. If this is wrong, correct the record with National and import a fresh roster.</p>
+  <% end %>
+<% end %>
+
 <% unless status == "discarded" %>
   <% if status == "completed" %>
     <div class="sec-head">
@@ -70,13 +90,12 @@
       <%= render "shared/section_panel", label: "Import details" do %>
         <% @roster_import.created_members.each do |member| %>
           <div class="item">
-            <span class="who">New member: <%= member["name"] %></span>
-            <span class="meta">· #<%= member["member_number"] %></span>
+            <%= render "member_identity", member: member, prefix: "New roster record: " %>
           </div>
         <% end %>
         <% unlisted_created_count = @roster_import.created_count - @roster_import.created_members.size %>
         <% if unlisted_created_count.positive? %>
-          <div class="item"><%= pluralize(unlisted_created_count, "additional new member") %></div>
+          <div class="item"><%= pluralize(unlisted_created_count, "additional new member") %> — names were not recorded in this import.</div>
         <% end %>
 
         <% if @roster_import.returned_count.positive? %>
@@ -93,6 +112,14 @@
             <% if details.present? %>
               <div class="fix"><%= details %></div>
             <% end %>
+            <% if field == "roster_member_status" %>
+              <% @roster_import.status_changes.each do |member| %>
+                <div class="fix">
+                  <%= render "member_identity", member: member %>
+                  <div><%= member["from"].presence || "blank" %> to <%= member["to"].presence || "blank" %></div>
+                </div>
+              <% end %>
+            <% end %>
           </div>
         <% end %>
         <% if @roster_import.field_changes.many? %>
@@ -102,21 +129,31 @@
     <% end %>
   <% end %>
 
-  <% effect_lines = [
-       [ "New accounts created and enabled", @roster_import.access_effects["account_created"] ],
-       [ "Turned on by roster status", @roster_import.access_effects["enabled_by_roster_status"] ],
-       [ "Turned off by roster status or removal", @roster_import.access_effects["disabled_by_roster_status"] ],
-       [ "Left off by administrator", @roster_import.access_effects["skipped_manual_disable"] ],
-       [ "Active members missing a roster email", @roster_import.access_effects["account_not_created_missing_email"] ],
-       [ "Active members with an invalid roster email", @roster_import.access_effects["account_not_created_invalid_email"] ],
-       [ "Active members sharing a roster email", @roster_import.access_effects["account_not_created_shared_email"] ],
-       [ "Active members whose roster email is already in use", @roster_import.access_effects["account_not_created_email_in_use"] ],
-       [ "Left on to protect the last administrator", @roster_import.access_effects["skipped_last_admin"] ]
-     ].select { |_label, count| count.to_i.positive? } %>
-  <% if effect_lines.any? %>
+  <% access_labels = {
+       "account_created" => "New accounts created and enabled",
+       "enabled_by_roster_status" => "Turned on by roster status",
+       "disabled_by_roster_status" => "Turned off by roster status or removal",
+       "skipped_manual_disable" => "Left off by administrator",
+       "account_not_created_missing_email" => "Active members missing a roster email",
+       "account_not_created_invalid_email" => "Active members with an invalid roster email",
+       "account_not_created_shared_email" => "Active members sharing a roster email",
+       "account_not_created_email_in_use" => "Active members whose roster email is already in use",
+       "skipped_last_admin" => "Left on to protect the last administrator"
+     }.select { |effect, _label| @roster_import.access_effects[effect].to_i.positive? } %>
+  <% if access_labels.any? %>
     <%= render "shared/section_panel", label: "Sign-in access" do %>
-      <% effect_lines.each do |label, count| %>
+      <% access_labels.each do |effect, label| %>
+        <% count = @roster_import.access_effects[effect].to_i %>
         <div class="item"><%= label %>: <b><%= count %></b></div>
+        <% if effect == "account_created" %>
+          <% @roster_import.created_accounts.each do |member| %>
+            <div class="item"><%= render "member_identity", member: member %></div>
+          <% end %>
+          <% unlisted_account_count = count - @roster_import.created_accounts.size %>
+          <% if unlisted_account_count.positive? %>
+            <p class="ownernote">Names for <%= pluralize(unlisted_account_count, "new account") %> were not recorded in this import.</p>
+          <% end %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>
@@ -138,21 +175,14 @@
   <% if @removed_members.present? %>
     <%= render "shared/section_panel", label: "Removed from the roster — #{@removed_members.size}" do %>
       <% @removed_members.each do |removed| %>
-        <% person = removed["member_number"].present? ? Person.find_by(member_number: removed["member_number"]) : nil %>
         <div class="item">
-          <span class="who"><%= removed["name"] %></span>
-          <% if removed["member_number"].present? %>
-            <span class="meta">· #<%= removed["member_number"] %></span>
-          <% end %>
+          <%= render "member_identity", member: removed %>
           <div class="fix">
             No longer on the National roster.
             <% if pending && removed["would_disable_sign_in"] %>
               Sign-in would be <b>turned off</b>.
             <% elsif status == "completed" && removed["user_disabled"] %>
               Sign-in was <b>turned off</b>.
-            <% end %>
-            <% if person %>
-              <%= link_to "View record", person_path(person), class: "go" %>
             <% end %>
           </div>
         </div>

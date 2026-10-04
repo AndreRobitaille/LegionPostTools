@@ -71,6 +71,21 @@ class RosterImport < ApplicationRecord
     Array(summary&.fetch("created_members", nil))
   end
 
+  def created_accounts
+    Array(summary&.fetch("created_accounts", nil))
+  end
+
+  def status_changes
+    Array(summary&.fetch("status_changes", nil))
+  end
+
+  def deceased_status_reversals
+    changes = status_changes.presence || field_changes.dig("roster_member_status", "transitions") || []
+    changes.select do |change|
+      change["from"].to_s.strip.casecmp?("deceased") && !change["to"].to_s.strip.casecmp?("deceased")
+    end
+  end
+
   def returned_count
     summary&.fetch("returned_count", 0).to_i
   end

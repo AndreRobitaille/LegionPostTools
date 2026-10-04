@@ -62,11 +62,38 @@ The completed-import screen should explain an unexpectedly large updated count w
 - numeric deltas for continuous-years changes,
 - aggregate old-to-new transitions for safe roster categories such as paid-through year, membership type, war era, and member status,
 - how many previously removed members returned to the roster, and
-- a capped set of names and Member IDs for newly created members, with the total count remaining authoritative.
+- names and Member IDs for every newly created roster record, and
+- names and Member IDs for every newly created sign-in account, including accounts for existing members.
 
 Field counts may overlap because one member can change in several fields. The interface must say so plainly.
 
 The change summary is operational evidence, not a second roster archive. Do not copy old or new addresses, phone numbers, or email addresses into the import record. For those fields, retain only the number of members changed. Continue to preserve removed-member details and sign-in effects under their existing safety workflows.
+
+### Status contradictions and named results (October 4, 2026)
+
+National's imported Member Status remains authoritative. If an existing record changes
+from Deceased to another status, apply that value and the normal account-access rules,
+but prominently warn the importer to verify the change with National. Do not hold the
+import or silently preserve a different local membership status. Deliberately disabled
+accounts still remain off, and last-administrator protection still applies.
+
+Persist the affected member's name, Member ID, and old/new status for each status change.
+Distinguish a newly added roster record from a new sign-in account: an existing member
+can receive their first account on a later import. Retain every new member/account name,
+without copying contact values into the summary. Link named entries to their current
+person record when it still exists, while keeping the imported name as historical evidence.
+
+Visual direction: preserve The 1919's bounded cream panels, navy names, gold diamond
+headings, and existing 16px body/14px secondary type. Put a red attention panel directly
+after the completed-import banner for deceased-status contradictions, with a named
+old/new status and a plain instruction to check National. Keep new-account names beside
+the sign-in count. Let identity, Member ID, and record links wrap at narrow widths;
+do not add a dense table or smaller text.
+
+Older summaries may have only aggregate status transitions or account counts. Show the
+warning from that retained evidence and state when names were not recorded; never guess
+the affected person from their current status. Existing capped new-member summaries
+continue to show their retained names and the number not listed.
 
 Imported roster fields are not locally editable. Corrections to membership information should happen through the National Legion system and enter this app through a later import.
 

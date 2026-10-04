@@ -1,0 +1,7 @@
+<span class="who"><%= local_assigns[:prefix] %><%= member["name"] %></span>
+<% if member["member_number"].present? %>
+  <span class="meta">· #<%= member["member_number"] %></span>
+  <% if (person = @people_by_member_number[member["member_number"]]) %>
+    <%= link_to "View record", person_path(person), class: "go" %>
+  <% end %>
+<% end %>

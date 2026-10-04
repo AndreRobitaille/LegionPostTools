@@ -39,6 +39,10 @@ module Admin
       @roster_import = RosterImport.find(params[:id])
       @problems = @roster_import.normalized_problems
       @removed_members = @roster_import.removed_members
+      named_members = @removed_members + @roster_import.created_members +
+        @roster_import.created_accounts + @roster_import.status_changes
+      member_numbers = named_members.filter_map { |member| member["member_number"].presence }.uniq
+      @people_by_member_number = Person.where(member_number: member_numbers).index_by(&:member_number)
       @superseded = @roster_import.status == "pending_confirmation" && @roster_import.superseded?
       # Governance notices (last-admin protection, unsupported status) are shown apart from
       # row-level CSV problems so an important account notice isn't buried among data-entry typos.

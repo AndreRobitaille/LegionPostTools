@@ -32,8 +32,23 @@ class RosterImportTest < ActiveSupport::TestCase
     assert_equal [], blank.removed_members
     assert_equal({}, blank.field_changes)
     assert_equal [], blank.created_members
+    assert_equal [], blank.created_accounts
+    assert_equal [], blank.status_changes
+    assert_equal [], blank.deceased_status_reversals
     assert_equal 0, blank.returned_count
     assert_not blank.detailed_change_summary?
+  end
+
+  test "older imports retain deceased reversal warnings without inventing member identities" do
+    roster_import = RosterImport.new(summary: {
+      field_changes: { roster_member_status: { transitions: [
+        { from: "Deceased", to: "Active", count: 1 },
+        { from: "Active", to: "Deceased", count: 2 },
+        { from: "Deceased", to: " deceased ", count: 1 }
+      ] } }
+    })
+
+    assert_equal [ { "from" => "Deceased", "to" => "Active", "count" => 1 } ], roster_import.deceased_status_reversals
   end
 
   test "history orders newest first" do

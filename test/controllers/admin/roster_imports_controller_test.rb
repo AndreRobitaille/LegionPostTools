@@ -387,7 +387,7 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".card", text: /Import details/
-    assert_select "body", text: /New member: New Member/
+    assert_select "body", text: /New roster record: New Member/
     assert_select "body", text: /1 additional new member/
     assert_select "body", text: /1 member returned to the roster/
     assert_select "body", text: /Continuous years · 3 members/
@@ -396,6 +396,60 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /2 members changed from 2026 to 2027/
     assert_select "body", text: /Roster email · 1 member/
     assert_select "body", text: /One member can appear in more than one line/
+  end
+
+  test "completed show warns about named deceased reversals and identifies new accounts" do
+    prepare_setup_complete_state
+    sign_in_admin
+    person = Person.create!(first_name: "Alex", last_name: "Current Name", member_number: "STATUS1", roster_member_status: "Active")
+    roster_import = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "status.csv",
+      summary: {
+        status_changes: [ { name: "Example, Alex", member_number: "STATUS1", from: "Deceased", to: "Active" } ],
+        created_accounts: [ { name: "Example, Alex", member_number: "STATUS1" } ],
+        access_effects: { account_created: 1 },
+        field_changes: { roster_member_status: { count: 1, transitions: [ { from: "Deceased", to: "Active", count: 1 } ] } }
+      })
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select ".card--alert", text: /Check deceased member status.*Example, Alex.*Deceased.*Active/m
+    assert_select ".card--alert a[href=?]", person_path(person), text: "View record"
+    assert_select ".card", text: /Sign-in access.*New accounts created and enabled: 1.*Example, Alex/m
+    assert_select "body", text: /The imported status was applied/
+    assert_select "body", text: /Current Name/, count: 0
+    assert_select "body", text: /New roster record:/, count: 0
+  end
+
+  test "older completed show warns from aggregate evidence and states missing names" do
+    prepare_setup_complete_state
+    sign_in_admin
+    roster_import = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "older.csv",
+      summary: {
+        access_effects: { account_created: 1 },
+        field_changes: { roster_member_status: { count: 1, transitions: [ { from: "Deceased", to: "Active", count: 1 } ] } }
+      })
+
+    get admin_roster_import_path(roster_import)
+
+    assert_response :success
+    assert_select ".card--alert", text: /Check deceased member status.*1 member.*Deceased.*Active/m
+    assert_select ".card--alert", text: /name was not recorded/
+    assert_select "body", text: /Names for 1 new account were not recorded/
+  end
+
+  test "ordinary members cannot read named roster import results" do
+    prepare_setup_complete_state
+    user = User.create!(person: Person.create!(first_name: "Ordinary", last_name: "Member"), email_address: "ordinary@example.test")
+    sign_in_as(user)
+    roster_import = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "private.csv",
+      summary: { created_accounts: [ { name: "Private Member", member_number: "PRIVATE1" } ], access_effects: { account_created: 1 } })
+
+    get admin_roster_import_path(roster_import)
+
+    assert_redirected_to root_path
+    assert_select "body", text: /Private Member/, count: 0
+    assert_select "body", text: /PRIVATE1/, count: 0
   end
 
   test "pending show does not render the completed-style change tiles and offers a discard" do

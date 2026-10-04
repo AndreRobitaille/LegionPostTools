@@ -13,6 +13,66 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal 2, result.roster_import.access_effects["account_created"]
     assert_equal "completed", result.roster_import.status
     assert_equal [ "Smith, John", "Jones, Mary" ], result.roster_import.reload.created_members.pluck("name")
+    assert_equal result.roster_import.created_members, result.roster_import.created_accounts
+  end
+
+  test "retains every new member and account name beyond ten records" do
+    csv = CSV.generate do |output|
+      output << RosterImports::CsvParser::REQUIRED_HEADERS
+      12.times do |index|
+        output << [ "NEW#{index}", "Member, New #{index}", 165, "Member", "", "", "new#{index}@example.test", "", "", "", 1, 2026, "Active" ]
+      end
+    end
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "new-members.csv").import
+
+    assert result.success?
+    assert_equal 12, result.created_count
+    assert_equal 12, result.roster_import.reload.created_members.size
+    assert_equal result.roster_import.created_members, result.roster_import.created_accounts
+    assert_equal "NEW11", result.roster_import.created_members.last["member_number"]
+    assert_not_includes result.roster_import.summary.to_json, "new11@example.test"
+  end
+
+  test "names an existing member receiving their first account and flags their deceased status reversal" do
+    person = Person.create!(first_name: "Alex", last_name: "Example", member_number: "STATUS1",
+      roster_name: "Example, Alex", roster_member_status: "Deceased", roster_imported_at: 1.day.ago)
+    csv = CSV.generate do |output|
+      output << RosterImports::CsvParser::REQUIRED_HEADERS
+      output << [ "STATUS1", "Example, Alex", 165, "Member", "", "", "alex@example.test", "", "", "", 1, 2026, "Active" ]
+    end
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "status-change.csv").import
+
+    assert result.success?
+    assert_equal "Active", person.reload.roster_member_status
+    assert_nil person.user.disabled_at
+    assert_equal 0, result.created_count
+    assert_equal [], result.roster_import.created_members
+    assert_equal [ { "name" => "Example, Alex", "member_number" => "STATUS1" } ], result.roster_import.created_accounts
+    assert_equal [ { "name" => "Example, Alex", "member_number" => "STATUS1", "from" => "Deceased", "to" => "Active" } ],
+      result.roster_import.reload.status_changes
+    assert_equal result.roster_import.status_changes, result.roster_import.deceased_status_reversals
+  end
+
+  test "deceased status reversal preserves an administrator's deliberate sign-in disable" do
+    person = Person.create!(first_name: "Alex", last_name: "Example", member_number: "STATUS2",
+      roster_member_status: " Deceased ", roster_imported_at: 1.day.ago)
+    user = User.create!(person: person, email_address: "disabled-status@example.test", disabled_at: 1.day.ago,
+      disabled_reason: "manual", login_access_override: true)
+    csv = CSV.generate do |output|
+      output << RosterImports::CsvParser::REQUIRED_HEADERS
+      output << [ "STATUS2", "Example, Alex", 165, "Member", "", "", "alex@example.test", "", "", "", 1, 2026, "Grace" ]
+    end
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "manual-disable.csv").import
+
+    assert result.success?
+    assert_equal "Grace", person.reload.roster_member_status
+    assert user.reload.manually_disabled?
+    assert_equal 1, result.roster_import.deceased_status_reversals.size
+    assert_empty result.roster_import.created_accounts
+    assert_equal 1, result.roster_import.access_effects["skipped_manual_disable"]
   end
 
   test "reimport updates roster fields without changing user login email" do
