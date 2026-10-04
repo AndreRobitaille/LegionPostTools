@@ -1,0 +1,13 @@
+<div class="member-minutes-status<%= " member-minutes-status--final" if minutes.membership_approved? %><%= " member-minutes-status--revision" if minutes.reopened? || minutes.approved? %>">
+  <p class="minutes-eyebrow"><%= minutes.membership_approved? ? "Official minutes" : "Attested minutes" %></p>
+  <strong><%= member_minutes_status(minutes) %></strong>
+  <% if minutes.membership_approved? %>
+    <p>Approved by <%= revision.payload.fetch("meeting_body_name") %> at <%= membership_approval.approving_meeting.title %> on <%= legion_date(membership_approval.approving_meeting.starts_at) %>. This is the final, locked record.</p>
+  <% elsif minutes.pending_correction_approval %>
+    <p>This is the last attested copy. The Adjutant will confirm the corrected final copy before it is locked.</p>
+  <% elsif minutes.reopened? || minutes.approved? %>
+    <p>This is the last attested copy. Officers are preparing a corrected copy for the website.</p>
+  <% else %>
+    <p>Members can review this attested copy before <%= revision.payload.fetch("meeting_body_name") %> approves it at a later meeting.</p>
+  <% end %>
+</div>

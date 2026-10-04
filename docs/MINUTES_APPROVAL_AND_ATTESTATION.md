@@ -61,6 +61,11 @@ paragraphs, nested bullets, numbering, emphasis, and links retain their formatti
 screen and in print. Apply that styling to sanitized immutable HTML; displaying the
 record must never rewrite its text or digest.
 
+The member HTML document uses the agenda's paper layout, a compact approval status,
+and electronic attestation with expandable record details. All recorded business and
+attendance remain visible. See `MEMBER_MEETING_DOCUMENTS.md` for its design and the
+member-only boundary; administrative workspaces and PDF documents retain their layout.
+
 ## Integrity and compatibility
 
 - Existing revisions, attestations, and lifecycle events stay immutable in Rails and

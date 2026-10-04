@@ -1,0 +1,63 @@
+/* The member reading routes opt in; officer workspaces and PDFs do not. */
+.member-meeting-document .member-minutes-status { display: block; max-width: none; margin: 0 0 20px; padding: 0; color: var(--color-navy); background: transparent; border: 0; border-radius: 0; }
+.member-meeting-document .member-minutes-status strong { display: block; font-size: 16px; line-height: 1.45; }
+.member-meeting-document .member-minutes-status p { margin: 5px 0 0; font-size: 14px; line-height: 1.55; }
+.member-meeting-document .member-minutes-status .minutes-eyebrow { margin: 0 0 5px; font-size: 13px; }
+.member-meeting-document .member-minutes-status--final { color: #2f5334; }
+.member-meeting-document .minutes-recorded-wording { margin: 12px 0 0; padding: 0; border: 0; }
+.member-meeting-document .member-document-label { margin: 0 0 6px; color: var(--color-officer-blue); font-size: 13px; font-weight: 800; letter-spacing: .08em; line-height: 1.4; text-transform: uppercase; }
+.member-meeting-document .member-minutes-attestation { margin-top: 18px; padding-top: 16px; border-top: 2px solid var(--color-gold); }
+.member-meeting-document .member-minutes-attestation > p:not(.member-document-label) { margin: 0; color: var(--color-ink); font-size: 16px; line-height: 1.6; }
+.member-meeting-document .member-minutes-provenance { margin-top: 10px; color: var(--color-muted); }
+.member-meeting-document .member-minutes-provenance summary { min-height: 44px; padding: 10px 0; color: var(--color-navy); cursor: pointer; font-size: 16px; font-weight: 700; line-height: 1.5; }
+.member-meeting-document .member-minutes-provenance summary:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 3px; }
+.member-meeting-document .member-minutes-provenance dl { margin: 0 0 12px; }
+.member-meeting-document .member-minutes-provenance dl > div { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--rule-soft); }
+.member-meeting-document .member-minutes-provenance dt { color: var(--color-muted); font-size: 14px; font-weight: 700; }
+.member-meeting-document .member-minutes-provenance dd { margin: 0; color: var(--color-ink); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.member-meeting-document .member-minutes-provenance code { font-size: 13px; }
+.member-meeting-document .agenda-item-body :where(ul, ol) { margin-inline-start: 0; padding-inline-start: 1.5em; }
+.member-meeting-document .agenda-item-body li.lexxy-nested-listitem { list-style-type: none; }
+
+@media screen {
+  .member-meeting-document .agenda-org-locality,
+  .member-meeting-document .agenda-meeting-location-address,
+  .member-meeting-document .agenda-meeting-when,
+  .member-meeting-document .agenda-doc-footer { font-size: 14px; }
+  .member-meeting-document .agenda-meeting-location-label { font-size: 13px; }
+  .member-meeting-document .agenda-meeting-location-name { font-size: 16px; }
+  .member-meeting-document .agenda-doc-footer { overflow-wrap: anywhere; }
+  .member-meeting-document .agenda-doc-footer a { font-size: 16px; }
+  .member-meeting-document .agenda-meeting-when { flex-wrap: wrap; }
+  .member-meeting-document .agenda-item-title { font-size: 16px; }
+  .member-meeting-document .agenda-item-body,
+  .member-meeting-document .agenda-item-summary,
+  .member-meeting-document .agenda-chapter-empty { font-size: 16px; line-height: 1.5; }
+  .member-meeting-document .agenda-item-body h5,
+  .member-meeting-document .agenda-item-body h6 { font-size: 16px; }
+  .member-meeting-document .minutes-doc-attendance table { table-layout: fixed; font-size: 16px; line-height: 1.45; overflow-wrap: anywhere; }
+  .member-meeting-document .minutes-doc-attendance thead th { font-size: 13px; }
+  .member-meeting-document .minutes-doc-outcome { margin-top: 14px; padding: 12px 14px; }
+  .member-meeting-document .minutes-doc-outcome-head,
+  .member-meeting-document .minutes-doc-outcome-facts dt { font-size: 13px; }
+  .member-meeting-document .minutes-doc-outcome-text,
+  .member-meeting-document .minutes-doc-outcome-facts dd { font-size: 16px; line-height: 1.55; overflow-wrap: anywhere; }
+}
+
+@media screen and (max-width: 560px) {
+  .member-meeting-document .minutes-doc-attendance th:first-child { width: 37%; }
+  .member-meeting-document .minutes-doc-attendance th:last-child { width: 29%; }
+  .member-meeting-document .minutes-doc-outcome-facts { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  .member-meeting-document .minutes-doc-outcome-facts > div { padding: 0; border-left: 0; }
+  .member-meeting-document .minutes-doc-outcome-facts .minutes-doc-outcome-note { display: block; }
+  .member-meeting-document .member-minutes-provenance dl > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+
+@media print {
+  .member-meeting-document .member-minutes-status { margin-bottom: 10pt; }
+  .member-meeting-document .member-minutes-status p,
+  .member-meeting-document .member-minutes-attestation > p:not(.member-document-label) { font-size: 10pt; }
+  .member-meeting-document .member-minutes-attestation { break-inside: avoid; }
+  .member-meeting-document .member-minutes-provenance summary { display: none; }
+  .member-meeting-document .member-minutes-provenance::details-content { content-visibility: visible; }
+}

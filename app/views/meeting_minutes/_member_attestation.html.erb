@@ -1,0 +1,19 @@
+<section class="member-minutes-attestation" aria-label="Electronic attestation and record details">
+  <p class="member-document-label">Electronic attestation</p>
+  <p>Attested by <strong><%= revision.attestation.attester_name %></strong>, <%= revision.attestation.attester_office %>, on <%= legion_datetime(revision.attestation.attested_at) %>.</p>
+  <details class="member-minutes-provenance">
+    <summary>Record details</summary>
+    <dl>
+      <div><dt>Revision</dt><dd><%= revision.number %> · <code><%= revision.sha256.first(12) %></code></dd></div>
+      <% if revision.approved_by_id %>
+        <div><dt>Commander draft handoff</dt><dd><%= revision.approver_name %>, <%= revision.approver_office %> · <%= legion_datetime(revision.approved_at) %></dd></div>
+      <% end %>
+      <div><dt>Adjutant attestation</dt><dd><%= revision.attestation.attester_name %>, <%= revision.attestation.attester_office %> · <%= legion_datetime(revision.attestation.attested_at) %></dd></div>
+      <% if membership_approval %>
+        <div><dt>Meeting approval</dt><dd><%= membership_approval.disposition_label %> · <%= membership_approval.approving_meeting.title %> · <%= legion_date(membership_approval.approving_meeting.starts_at) %></dd></div>
+        <div><dt>Approval recorded by</dt><dd><%= membership_approval.recorder_name %>, <%= membership_approval.recorder_office %></dd></div>
+        <% if membership_approval.factual_note.present? %><div><dt>Approval note</dt><dd><%= membership_approval.factual_note %></dd></div><% end %>
+      <% end %>
+    </dl>
+  </details>
+</section>

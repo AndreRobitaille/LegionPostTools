@@ -103,7 +103,7 @@ class MeetingMinutes < ApplicationRecord
     return membership_approval.minutes_revision if membership_approved? && membership_approval
     return current_revision if attested? && current_revision&.attestation
 
-    revisions.joins(:attestation).order(number: :desc).first
+    revisions.joins(:attestation).reorder(number: :desc).first
   end
 
   def member_visible?

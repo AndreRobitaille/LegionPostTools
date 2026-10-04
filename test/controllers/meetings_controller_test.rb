@@ -105,7 +105,9 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     get meeting_minutes_path(meeting)
     assert_response :success
     assert_select ".member-minutes-status", text: /Awaiting meeting approval/
-    assert_select ".minutes-endorsements", text: /Commander draft handoff.*Adjutant attestation/m
+    assert_select ".member-meeting-document article.agenda-doc", count: 1
+    assert_select ".member-minutes-provenance", text: /Commander draft handoff.*Adjutant attestation/m
+    assert_select ".member-minutes-attestation > p", text: /Attested by Test Adjutant/
     assert_select ".minutes-item-title", text: "Adjutant report"
     assert_select ".minutes-agenda-wording.lexxy-content ul li", text: "Read the minutes."
     assert_select ".minutes-recorded-wording .lexxy-content ol li .lexxy-content__bold", text: "Follow-up"
@@ -147,7 +149,70 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".minutes-eyebrow", text: "Official minutes"
     assert_select ".member-minutes-status", text: /Approved as corrected.*September Membership/m
-    assert_select ".minutes-endorsements", text: /Meeting approval.*Approved as corrected/m
+    assert_select ".member-minutes-provenance", text: /Meeting approval.*Approved as corrected/m
+  end
+
+  test "member paper always uses the attested snapshot while working corrections change" do
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, meeting_type: @type, starts_at: 1.month.ago, title: "Attested meeting title", location_name: "Recorded Hall")
+    later_meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.day.ago, title: "Later Membership")
+    minutes = MeetingMinutes.create_from_meeting!(meeting:)
+    item = minutes.sections.first.items.create!(title: "Community breakfast", behavior_type: "business_item", position: 1, body: "Twelve volunteers attended.")
+    motion = item.outcomes.create!(kind: "motion", text: "Hold a community breakfast.", disposition: "adopted", mover_name: "Alex Member", seconder_name: "Pat Member", vote_summary: "Passed unanimously.", position: 1)
+    item.outcomes.create!(kind: "decision", text: "Check the available supplies.", disposition: "no_vote", mover_name: "Morgan Member", seconder_name: "Taylor Member", position: 2)
+    attendance = minutes.attendance_entries.create!(office_name: "Adjutant", person_name: "Recorded Officer", status: "present", position: 1)
+    commander = lifecycle_user("Commander", "approve_minutes")
+    commander.permission_grants.create!(capability: "manage_minutes")
+    commander.permission_grants.create!(capability: "record_minutes_approval")
+    adjutant = lifecycle_user("Adjutant", "attest_minutes")
+    commander_token, = AgentAccessToken.issue!(user: commander, name: "Test Commander", expires_in: 1.day)
+    adjutant_token, = AgentAccessToken.issue!(user: adjutant, name: "Test Adjutant", expires_in: 1.day)
+    attest = -> { minutes.reload.attest_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: adjutant_token, action: "attest")) }
+    attest.call
+    first_revision = minutes.current_revision
+    sign_in_as(@user)
+
+    minutes.reopen_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: commander_token, action: "reopen", action_payload: { reason: "Correct the volunteer count." }))
+    minutes.update!(title: "Working meeting title", location_name: "Working Hall")
+    item.update!(body: "Thirteen volunteers attended.")
+    motion.update!(text: "Working motion text.")
+    attendance.update!(person_name: "Working Officer")
+    minutes.reload
+    minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: commander_token, action: "approve"))
+
+    get meeting_minutes_path(meeting)
+
+    assert_response :success
+    assert_select "h1", text: "Attested meeting title"
+    assert_select ".agenda-meeting-location-name", text: "Recorded Hall"
+    assert_select ".member-minutes-status", text: /Correction in progress.*last attested copy/m
+    assert_select ".minutes-recorded-wording", text: /Twelve volunteers attended/
+    assert_select ".minutes-doc-outcome-text", text: "Hold a community breakfast."
+    assert_select ".minutes-doc-outcome-facts", text: /Alex Member.*Pat Member.*Passed.*Passed unanimously/m
+    assert_select ".minutes-doc-outcome-facts", text: /Morgan Member.*Taylor Member.*No vote/m
+    assert_select ".minutes-doc-attendance tbody", text: /Recorded Officer.*Present/m
+    assert_select ".member-minutes-provenance code", text: first_revision.sha256.first(12)
+    assert_no_match(/Working meeting title|Working Hall|Working motion text|Working Officer|Thirteen volunteers/, response.body)
+    assert_equal first_revision.sha256, first_revision.reload.sha256
+
+    attest.call
+    second_revision = minutes.current_revision
+    minutes.record_membership_approval_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: commander_token, action: "record_membership_approval", action_payload: { approving_meeting_id: later_meeting.id, disposition: "approved_as_corrected", corrections_pending: true, factual_note: "Correct the final volunteer count." }))
+    item.update!(body: "Fourteen volunteers attended.")
+
+    get meeting_minutes_path(meeting)
+
+    assert_select ".member-minutes-status", text: /Approved with corrections.*final copy being prepared.*last attested copy/m
+    assert_select ".minutes-recorded-wording", text: /Thirteen volunteers attended/
+    assert_select ".member-minutes-provenance code", text: second_revision.sha256.first(12)
+    assert_no_match(/Fourteen volunteers/, response.body)
+    assert_select ".member-minutes-provenance", text: /Meeting approval/, count: 0
+
+    attest.call
+    get meeting_minutes_path(meeting)
+
+    assert_select ".member-minutes-status--final", text: /Approved as corrected.*final, locked record/m
+    assert_select ".minutes-recorded-wording", text: /Fourteen volunteers attended/
+    assert_select ".member-minutes-provenance", text: /Later Membership.*Approval recorded by.*Test Commander/m
   end
 
   private

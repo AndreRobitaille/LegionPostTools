@@ -33,6 +33,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     get dated_agenda_path(@published)
 
     assert_response :success
+    assert_select ".member-meeting-document article.agenda-doc", count: 1
     assert_select "article.agenda-doc .agenda-masthead h1", text: "Membership Meeting — Agenda"
     assert_select ".agenda-meeting-location-name", text: "Saved Hall"
     assert_select ".agenda-meeting-location-address", text: /123 Main Street/
