@@ -95,6 +95,24 @@ class PdfResourceSecurityTest < ApplicationSystemTestCase
     pdf = MeetingMinutesPdf.render(minutes: @minutes, base_url:)
     assert pdf.start_with?("%PDF")
     save_pdf("minutes", pdf)
+
+    adjutant = User.create!(person: Person.create!(first_name: "Test", last_name: "Adjutant"), email_address: "member-pdf-adjutant@example.test")
+    %w[attest_minutes manage_minutes].each { |capability| adjutant.permission_grants.create!(capability:) }
+    @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: adjutant, action: "attest", evidence_note: "Synthetic attestation."
+    ))
+    revision = @minutes.member_revision
+    @minutes.reopen_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: adjutant, action: "reopen", action_payload: { reason: "Correct the report." }, evidence_note: "Synthetic reopen."
+    ))
+    @minutes.items.first.update!(body: "Private working correction.")
+    pdf = MeetingMinutesPdf.render(minutes: @minutes, revision:, base_url:)
+    assert pdf.start_with?("%PDF")
+    save_pdf("member-minutes", pdf)
+    visit meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes, revision:))
+    assert_selector ".minutes-recorded-wording", text: "The report was received."
+    assert_no_text "Private working correction."
+    assert_selector ".pdf-omitted-media", text: "Image omitted from PDF: Service chart"
     assert @requests.empty?, "Native PDF renderer contacted an embedded resource"
   end
 

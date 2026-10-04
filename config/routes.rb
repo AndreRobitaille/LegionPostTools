@@ -55,7 +55,9 @@ Rails.application.routes.draw do
   resources :calendar_events, only: %i[show new create edit update destroy]
 
   resources :meetings, only: %i[index show] do
-    resource :minutes, only: :show, controller: "meeting_minutes"
+    resource :minutes, only: :show, controller: "meeting_minutes" do
+      get :print
+    end
   end
   resources :endeavors, except: %i[destroy] do
     get :source, to: "endeavor_sources#show", on: :member

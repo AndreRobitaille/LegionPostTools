@@ -1,23 +1,10 @@
 <% content_for :title, "#{member_minutes_status(@minutes)} - #{@revision.payload.fetch('title')}" %>
-<% payload = @revision.payload %>
-<% document_body = capture do %>
-  <%= render "member_status", minutes: @minutes, revision: @revision, membership_approval: @membership_approval %>
-  <%= render "revision", revision: @revision %>
-  <%= render "member_attestation", revision: @revision, membership_approval: @membership_approval %>
-<% end %>
-
 <div class="member-meeting-document">
   <nav class="agenda-page-actions" aria-label="Minutes actions">
     <%= link_to meeting_path(@meeting), class: "agenda-back-link" do %><span aria-hidden="true">&larr;</span> Meeting record<% end %>
+    <%= link_to "Open minutes PDF", print_meeting_minutes_path(@meeting), class: "btn-secondary agenda-print-link", data: { turbo: false } %>
   </nav>
 
-  <%= render "dated_agendas/agenda_document",
-    dated_agenda: nil,
-    organization: @meeting.organization,
-    document_label: "Minutes",
-    document_title: payload.fetch("title"),
-    document_starts_at: Time.zone.parse(payload.fetch("starts_at")),
-    location_name: payload["location_name"],
-    location_address: payload["location_address"],
-    document_body: %>
+  <%= render "member_document", minutes: @minutes, revision: @revision,
+    membership_approval: @membership_approval, organization: @meeting.organization %>
 </div>

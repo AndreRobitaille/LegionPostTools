@@ -142,6 +142,11 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".minutes-authority-folio", text: /Meeting approval.*Approved as corrected.*Later Membership Meeting/m
     assert_select ".minutes-authority-folio", text: /Revision.*1/m
     assert_select ".agenda-doc-footer", text: /Official - approved and locked/
+
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes, revision: @minutes.member_revision))
+    assert_response :success
+    assert_select ".member-minutes-status--final", text: /Approved as corrected.*final, locked record/m
+    assert_select ".member-minutes-provenance", text: /Meeting approval.*Later Membership Meeting/m
   end
 
   test "direct Adjutant attestation has no Commander endorsement and pending corrections are labeled truthfully" do
@@ -168,6 +173,86 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".minutes-authority-folio", text: /Awaiting Adjutant confirmation/i
     assert_select ".minutes-authority-folio", text: /Attested.*Test Adjutant/m, count: 0
     assert_equal "$1,234", @minutes.member_revision.payload.dig("sections", 0, "items", 0, "body_html")[/\$1,234/]
+
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes, revision: @minutes.member_revision))
+    assert_response :success
+    assert_select ".member-minutes-status", text: /Approved with corrections.*last attested copy/m
+    assert_select ".minutes-recorded-wording", text: /1,234/
+    assert_no_match(/1,235/, response.body)
+  end
+
+  test "member source prints the immutable snapshot while officer corrections remain private" do
+    @item.update!(body: '<p>The balance was $1,234.</p><img src="http://127.0.0.1:9999/private" alt="Report chart">')
+    attest_minutes!
+    revision = @minutes.member_revision
+    token = MeetingMinutesPdf.source_token(minutes: @minutes, revision:)
+    assert_equal({ "organization_id" => @organization.id, "meeting_minutes_id" => @minutes.id, "member_revision_id" => revision.id }, MeetingMinutesPdf.verify_source_token!(token))
+    original_payload = revision.payload.deep_dup
+    original_digest = revision.sha256
+    commander = revision.approved_by
+    commander.permission_grants.create!(capability: "manage_minutes")
+    @minutes.reopen_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: commander, action: "reopen", action_payload: { reason: "Correct the balance." }, evidence_note: "Synthetic reopen."
+    ))
+    @minutes.update!(title: "Private working title", location_name: "Private working location")
+    @item.update!(body: "Private correction: $9,999.")
+
+    get meeting_minutes_pdf_source_path(token:)
+
+    assert_response :success
+    assert_select "body.print-body .member-meeting-document article.agenda-doc", count: 1
+    assert_select ".agenda-meeting-heading h1", text: original_payload.fetch("title")
+    assert_select ".minutes-recorded-wording", text: /1,234/
+    assert_select ".member-minutes-status", text: /Correction in progress.*last attested copy/m
+    assert_select ".member-minutes-provenance code", text: original_digest.first(12)
+    assert_select ".pdf-omitted-media", text: "Image omitted from PDF: Report chart"
+    assert_select ".minutes-recorded-wording img", count: 0
+    assert_select "nav", count: 0
+    assert_no_match(/Private working|Private correction|9,999/, response.body)
+    assert_includes response.headers.fetch("Content-Security-Policy"), "default-src 'none'"
+    assert_equal original_payload, revision.reload.payload
+    assert_equal original_digest, revision.sha256
+  end
+
+  test "member source rejects handed-off or superseded revisions even with a valid signature" do
+    attest_minutes!
+    attester = @minutes.current_revision.attestation.attested_by
+    first_token = MeetingMinutesPdf.source_token(minutes: @minutes, revision: @minutes.member_revision)
+    commander = @minutes.current_revision.approved_by
+    commander.permission_grants.create!(capability: "manage_minutes")
+    @minutes.reopen_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: commander, action: "reopen", action_payload: { reason: "Correct the balance." }, evidence_note: "Synthetic reopen."
+    ))
+    @item.update!(body: "The balance was $1,235.")
+    @minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: commander, action: "approve", evidence_note: "Synthetic handoff."
+    ))
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes, revision: @minutes.current_revision))
+    assert_response :not_found
+    get meeting_minutes_pdf_source_path(token: first_token)
+    assert_response :success
+
+    @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: attester, action: "attest", evidence_note: "Synthetic correction attestation."
+    ))
+    get meeting_minutes_pdf_source_path(token: first_token)
+    assert_response :not_found
+  end
+
+  test "member source rejects unrelated revisions non-loopback access and expired tokens" do
+    attest_minutes!
+    other_meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 2.days.ago)
+    other_minutes = MeetingMinutes.create_from_meeting!(meeting: other_meeting)
+    get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: other_minutes, revision: @minutes.member_revision))
+    assert_response :not_found
+
+    token = MeetingMinutesPdf.source_token(minutes: @minutes, revision: @minutes.member_revision)
+    get meeting_minutes_pdf_source_path(token:), headers: { "REMOTE_ADDR" => "203.0.113.9" }
+    assert_response :not_found
+    travel 2.minutes do
+      get meeting_minutes_pdf_source_path(token:)
+      assert_response :not_found
+    end
   end
 
   test "source rejects invalid tokens" do

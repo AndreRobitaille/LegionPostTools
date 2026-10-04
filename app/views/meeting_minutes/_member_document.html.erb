@@ -1,0 +1,16 @@
+<% payload = revision.payload %>
+<% document_body = capture do %>
+  <%= render "meeting_minutes/member_status", minutes:, revision:, membership_approval: %>
+  <%= render "meeting_minutes/revision", revision: %>
+  <%= render "meeting_minutes/member_attestation", revision:, membership_approval: %>
+<% end %>
+
+<%= render "dated_agendas/agenda_document",
+  dated_agenda: nil,
+  organization:,
+  document_label: "Minutes",
+  document_title: payload.fetch("title"),
+  document_starts_at: Time.zone.parse(payload.fetch("starts_at")),
+  location_name: payload["location_name"],
+  location_address: payload["location_address"],
+  document_body: %>

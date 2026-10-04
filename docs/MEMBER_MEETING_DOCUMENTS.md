@@ -4,8 +4,8 @@
 
 Members read the published agenda and attested minutes as a consistent family of
 American Legion meeting documents. Use the existing agenda's quiet paper layout for
-both. This change affects the member HTML routes only; administrative workspaces,
-officer previews, PDF documents, record content, and approval workflows retain their
+both. Member HTML and its PDF copy share this document; administrative workspaces,
+officer previews and PDFs, record content, and approval workflows retain their
 existing behavior.
 
 An agenda retains its ordered sections, item titles, eligible wording, and summary
@@ -43,6 +43,20 @@ attestation closes the record; expandable record details retain historical Comma
 handoff, revision/digest, and approval provenance.
 Approval information is a quiet text block in the document, not a large colored panel.
 
+The member minutes page offers **Open minutes PDF**, in the same action bar as the
+agenda PDF. Its authenticated endpoint selects the member-visible attested revision;
+the short-lived loopback rendering token fixes that revision and rejects drafts,
+other records, and superseded revisions. Reopened or pending corrections still print
+the last attested copy with the same truthful status shown on the member web page.
+Final approved minutes print the locked approved revision. Reuse the member document
+under the existing print layout and PDF resource policy; preserve the officer PDF route.
+
+Below the Recorded minutes label, a simple 3px officer-blue line and modest left
+padding distinguish the recorded narrative from agenda wording, matching the supplied
+PDF example. Meeting document cards give only the Open label and arrow a subtle
+blue/gold text glow on hover and keyboard focus. Keep their existing focus outline,
+readable navy text, and stable layout; neither the label nor arrow is underlined.
+
 Member reading text is at least 16px, secondary text at least 14px, and labels at
 least 13px. At 390px the letterhead and outcome facts stack, attendance wraps,
 controls retain usable targets, and the page does not scroll horizontally. Preserve
@@ -57,3 +71,5 @@ private agenda notes. Verify full recorded outcomes and attendance, safe HTML, a
 revision digest preservation. Review real browser renders at desktop and 390px,
 including nested lists, long motion text, keyboard access to record details, and
 print styling. Compare administrative rendering before and after the member changes.
+Verify member PDF authentication, inline delivery, error recovery, revision selection
+during corrections, token scope, and real Chromium output without embedded resource loads.

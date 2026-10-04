@@ -33,11 +33,15 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_selector ".meeting-document-status", text: "Awaiting meeting approval", count: 1
     assert_selector ".meeting-document-open", text: "Open", count: 2
     page.save_screenshot("/tmp/meeting-documents-desktop.png")
+    first(".meeting-document-card").hover
+    assert page.evaluate_script("Array.from(document.querySelectorAll('.meeting-document-card:hover .meeting-document-open, .meeting-document-card:hover .meeting-document-open > span')).every(node => getComputedStyle(node).textDecorationLine === 'none' && getComputedStyle(node).textShadow !== 'none')")
+    page.save_screenshot("/tmp/meeting-documents-hover-desktop.png")
     first(".meeting-document-card").send_keys(:tab)
     assert_selector ".meeting-document-card:focus"
     first(".meeting-document-card").click
     assert_current_path meeting_minutes_path(meeting)
     assert_selector ".member-meeting-document article.agenda-doc", count: 1
+    assert_selector "a.agenda-print-link", text: "Open minutes PDF"
     assert_selector ".minutes-doc-outcome-text", text: /Hold a community breakfast/
     assert_selector ".minutes-doc-outcome-facts", text: /Alex Member.*Pat Member.*Passed.*Passed unanimously/mi
     assert_selector ".minutes-doc-attendance tbody", text: /Robin Member.*Excused/m
@@ -64,6 +68,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_document_readability
     save_document_screenshot("/tmp/member-agenda-paper-mobile.png")
     visit meeting_minutes_path(meeting)
+    assert_selector "a.agenda-print-link", text: "Open minutes PDF"
     assert_document_readability
     assert_equal 1, page.evaluate_script("getComputedStyle(document.querySelector('.minutes-doc-outcome-facts')).gridTemplateColumns.split(' ').length")
     save_document_screenshot("/tmp/member-minutes-paper-mobile.png")
@@ -134,6 +139,9 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert page.evaluate_script("Array.from(document.querySelectorAll('.agenda-item-body, .agenda-item-summary, .minutes-doc-outcome-text, .minutes-doc-attendance tbody th, .minutes-doc-attendance tbody td')).every(node => parseFloat(getComputedStyle(node).fontSize) >= 16)")
     assert page.evaluate_script("Array.from(document.querySelectorAll('.agenda-org-locality, .agenda-meeting-when, .agenda-meeting-location-address, .agenda-doc-footer')).every(node => parseFloat(getComputedStyle(node).fontSize) >= 14)")
     assert_operator page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.agenda-meeting-location-label')).fontSize)"), :>=, 13
+    if has_selector?(".minutes-recorded-wording")
+      assert_operator page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.minutes-recorded-wording > .agenda-item-body')).borderLeftWidth)"), :>, 0
+    end
   end
 
   def save_document_screenshot(path)

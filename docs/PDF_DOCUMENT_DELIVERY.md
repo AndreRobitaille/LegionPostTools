@@ -14,6 +14,11 @@ approved typography, hierarchy, margins, or content boundaries.
 ## User Experience
 
 - **Open agenda PDF** returns the member-safe agenda as `application/pdf`.
+- **Open minutes PDF** on the member minutes page prints the same member-visible
+  attested or final approved revision as the web document. Working corrections stay
+  officer-only. The signed rendering token fixes the member revision; the loopback
+  source rejects a token whose revision is no longer member-visible. Its layout and
+  record details reuse the member document described in `MEMBER_MEETING_DOCUMENTS.md`.
 - **Cmdr Notes PDF** returns the same document shell with private
   Commander cues and roll call. It is available only when the signed-in person currently
   holds a configured Commander or Adjutant assignment; `manage_agendas` alone is not enough.
@@ -57,7 +62,8 @@ temporary files.
   not infer authority from a position's display name.
 - The officer minutes route permits `manage_minutes`, `approve_minutes`, `attest_minutes`,
   or `view_internal_records`. Member access remains limited to attested or later records
-  through the member route.
+  through the authenticated member HTML and PDF routes, including the last attested
+  copy while corrections are prepared. A member PDF never uses mutable working rows.
 - The HTML rendering source accepts only loopback requests and a valid expiring signature.
 - Rendering tokens are filtered from logs, expire after one minute, and cannot select a
   different organization, agenda, or document variant.

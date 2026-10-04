@@ -20,7 +20,15 @@ class MeetingMinutesPdfSourcesController < ApplicationController
 
     response.headers["Cache-Control"] = "private, no-store"
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
-    render "meeting_minutes/print", layout: "print"
+    if payload.key?("member_revision_id")
+      @revision = @minutes.member_revision
+      raise ActiveRecord::RecordNotFound unless @revision&.attestation && @revision.id == payload.fetch("member_revision_id")
+
+      @membership_approval = @minutes.membership_approval
+      render "meeting_minutes/member_print", layout: "print"
+    else
+      render "meeting_minutes/print", layout: "print"
+    end
   rescue ActionController::ParameterMissing,
          ActiveRecord::RecordNotFound,
          ActiveSupport::MessageVerifier::InvalidSignature,

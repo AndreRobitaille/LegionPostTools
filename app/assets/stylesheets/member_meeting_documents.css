@@ -1,10 +1,11 @@
-/* The member reading routes opt in; officer workspaces and PDFs do not. */
+/* Member reading routes and their PDF copy opt in; officer workspaces do not. */
 .member-meeting-document .member-minutes-status { display: block; max-width: none; margin: 0 0 20px; padding: 0; color: var(--color-navy); background: transparent; border: 0; border-radius: 0; }
 .member-meeting-document .member-minutes-status strong { display: block; font-size: 16px; line-height: 1.45; }
 .member-meeting-document .member-minutes-status p { margin: 5px 0 0; font-size: 14px; line-height: 1.55; }
 .member-meeting-document .member-minutes-status .minutes-eyebrow { margin: 0 0 5px; font-size: 13px; }
 .member-meeting-document .member-minutes-status--final { color: #2f5334; }
 .member-meeting-document .minutes-recorded-wording { margin: 12px 0 0; padding: 0; border: 0; }
+.member-meeting-document .minutes-recorded-wording > .agenda-item-body { margin-top: 5px; padding: 4px 0 3px 12px; border-left: 3px solid var(--color-officer-blue); }
 .member-meeting-document .member-document-label { margin: 0 0 6px; color: var(--color-officer-blue); font-size: 13px; font-weight: 800; letter-spacing: .08em; line-height: 1.4; text-transform: uppercase; }
 .member-meeting-document .member-minutes-attestation { margin-top: 18px; padding-top: 16px; border-top: 2px solid var(--color-gold); }
 .member-meeting-document .member-minutes-attestation > p:not(.member-document-label) { margin: 0; color: var(--color-ink); font-size: 16px; line-height: 1.6; }

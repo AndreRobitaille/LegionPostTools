@@ -1,0 +1,5 @@
+<% content_for :title, "#{member_minutes_status(@minutes)} - #{@revision.payload.fetch('title')}" %>
+<div class="member-meeting-document">
+  <%= render "meeting_minutes/member_document", minutes: @minutes, revision: @revision,
+    membership_approval: @membership_approval, organization: @organization %>
+</div>
