@@ -58,7 +58,7 @@ class DatedAgendaPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "private, no-store", response.headers["Cache-Control"]
     assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
     assert_select "body.print-body"
-    assert_select ".agenda-masthead h1", text: "Membership Meeting — Agenda"
+    assert_select ".agenda-masthead h1", text: "#{@agenda.title} — Agenda"
     assert_select "img.agenda-emblem[alt='']"
     assert_select ".agenda-meeting-location", text: /Manitowoc Rifle and Pistol Club.*7227 Sandy Hill Lane/m
     assert_select "ol.agenda-chapter-items > li.agenda-item", minimum: 1
@@ -73,10 +73,22 @@ class DatedAgendaPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     get dated_agenda_pdf_source_path(token: token_for("officer_notes"))
 
     assert_response :success
-    assert_select ".agenda-meeting-heading h1", text: "Membership Meeting — Commander & Adjutant notes copy"
+    assert_select ".agenda-meeting-heading h1", text: "#{@agenda.title} — Commander & Adjutant notes copy"
     assert_select ".commander-cue", text: /Call each officer/
     assert_select ".roll-call-table", text: /Commander.*Pat Commander/m
     assert_select "body", text: /Member wording withheld/, count: 0
+  end
+
+  test "both PDF variants retain the saved title after the template is renamed" do
+    @meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
+
+    { "agenda" => "Agenda", "officer_notes" => "Commander & Adjutant notes copy" }.each do |variant, label|
+      get dated_agenda_pdf_source_path(token: token_for(variant))
+
+      assert_response :success
+      assert_select ".agenda-meeting-heading h1", text: "#{@agenda.title} — #{label}"
+      assert_select "article.agenda-doc", text: /Renamed Template/, count: 0
+    end
   end
 
   test "source restricts resource requests and marks embedded images without editing their source" do

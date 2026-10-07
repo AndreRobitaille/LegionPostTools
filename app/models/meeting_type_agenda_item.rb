@@ -5,6 +5,7 @@ class MeetingTypeAgendaItem < ApplicationRecord
     foreign_key: :meeting_type_agenda_section_id,
     inverse_of: :agenda_items
   belongs_to :agenda_item_catalog_entry
+  has_many :dated_agenda_items, dependent: :nullify
   has_rich_text :body
   has_rich_text :commander_notes
 

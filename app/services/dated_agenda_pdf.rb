@@ -14,7 +14,7 @@ class DatedAgendaPdf
     def filename(dated_agenda:, variant:)
       validate_variant!(variant)
       document_kind = variant == "officer_notes" ? "commander-adjutant-notes" : "agenda"
-      meeting_name = dated_agenda.meeting_type.slug.presence || dated_agenda.meeting_type.name.parameterize
+      meeting_name = dated_agenda.title.parameterize.presence || "meeting"
 
       "#{meeting_name}-#{dated_agenda.starts_at.to_date.iso8601}-#{document_kind}.pdf"
     end

@@ -177,6 +177,73 @@ class Admin::MeetingTypeAgendaItemsControllerTest < ActionDispatch::IntegrationT
     assert_equal "Item removed from the agenda.", flash[:notice]
   end
 
+  test "remove preserves items already copied into draft approved and published agendas" do
+    user = user_with_capabilities("manage_agendas")
+    sign_in_as(user)
+    item = @meeting_type.meeting_type_agenda_items.create!(
+      agenda_item_catalog_entry: @catalog_entry,
+      position: 1,
+      title: "Local opening",
+      summary: "Local instructions",
+      body: "<p>Keep this meeting's wording.</p>",
+      commander_notes: "Keep this meeting's private cues.",
+      show_wording_on_agenda: false,
+      show_wording_in_minutes: false,
+      source_key: "local-opening",
+      source_label: "Local template"
+    )
+    meeting_body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    agendas = DatedAgenda::STATUSES.map.with_index do |status, index|
+      agenda = create_dated_agenda_from_template!(
+        organization: @organization,
+        meeting_body: meeting_body,
+        meeting_type: @meeting_type,
+        starts_at: Time.zone.local(2026, 10, 7 + index, 19, 0)
+      )
+      agenda.approve!(user) unless status == "draft"
+      agenda.publish!(user) if status == "published"
+      agenda
+    end
+    snapshots = agendas.map do |agenda|
+      copied_item = agenda.dated_agenda_items.sole
+      [
+        agenda,
+        agenda.attributes,
+        copied_item,
+        copied_item.attributes.merge(
+          "meeting_type_agenda_item_id" => nil,
+          "lock_version" => copied_item.lock_version + 1
+        ),
+        copied_item.body.to_s,
+        copied_item.commander_notes.to_s
+      ]
+    end
+
+    assert_difference -> { @meeting_type.meeting_type_agenda_items.count }, -1 do
+      assert_no_difference -> { DatedAgendaItem.count } do
+        delete admin_meeting_type_agenda_item_path(@meeting_type, item)
+      end
+    end
+
+    assert_redirected_to edit_admin_meeting_type_path(@meeting_type)
+    assert_equal "Item removed from the agenda.", flash[:notice]
+    assert @organization.agenda_item_catalog_entries.exists?(@catalog_entry.id)
+    snapshots.each do |agenda, agenda_attributes, copied_item, item_attributes, body, commander_notes|
+      assert_equal agenda_attributes, agenda.reload.attributes
+      assert_nil copied_item.reload.meeting_type_agenda_item_id
+      assert_equal item_attributes, copied_item.attributes
+      assert_equal body, copied_item.body.to_s
+      assert_equal commander_notes, copied_item.commander_notes.to_s
+    end
+    future_agenda = create_dated_agenda_from_template!(
+      organization: @organization,
+      meeting_body: meeting_body,
+      meeting_type: @meeting_type,
+      starts_at: Time.zone.local(2026, 10, 10, 19, 0)
+    )
+    assert_empty future_agenda.dated_agenda_items
+  end
+
   test "reorder persists the new item order" do
     sign_in_as(user_with_capabilities("manage_agendas"))
     entry2 = @organization.agenda_item_catalog_entries.create!(title: "Second", category: "opening_ceremony", behavior_type: "scripted_ceremony", position: 3, active: true)

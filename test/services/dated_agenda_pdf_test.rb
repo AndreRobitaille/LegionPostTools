@@ -15,8 +15,16 @@ class DatedAgendaPdfTest < ActiveSupport::TestCase
   end
 
   test "builds descriptive filenames for both document variants" do
-    assert_equal "membership-meeting-2026-07-07-agenda.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "agenda")
-    assert_equal "membership-meeting-2026-07-07-commander-adjutant-notes.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "officer_notes")
+    assert_equal "membership-meeting-july-7-2026-2026-07-07-agenda.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "agenda")
+    assert_equal "membership-meeting-july-7-2026-2026-07-07-commander-adjutant-notes.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "officer_notes")
+  end
+
+  test "filenames use the saved agenda title after the template is renamed" do
+    @agenda.update!(title: "Recorded July Meeting")
+    @agenda.meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
+
+    assert_equal "recorded-july-meeting-2026-07-07-agenda.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "agenda")
+    assert_equal "recorded-july-meeting-2026-07-07-commander-adjutant-notes.pdf", DatedAgendaPdf.filename(dated_agenda: @agenda, variant: "officer_notes")
   end
 
   test "signed source token fixes the organization agenda and variant" do

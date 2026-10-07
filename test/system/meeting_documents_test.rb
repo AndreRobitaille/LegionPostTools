@@ -25,6 +25,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     token, = AgentAccessToken.issue!(user: commander, name: "Test approval", expires_in: 1.day)
     minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: token, action: "approve"))
     minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(minutes:, user: adjutant, action: "attest", evidence_note: "Test written attestation."), recorded_by: commander)
+    type.update!(name: "Renamed Template", slug: "renamed-template")
     member = User.create!(person: Person.create!(first_name: "General", last_name: "Member"), email_address: "documents-member@example.com")
     system_sign_in(member)
     page.current_window.resize_to(1400, 1000)
@@ -40,6 +41,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_selector ".meeting-document-card:focus"
     first(".meeting-document-card").click
     assert_current_path meeting_minutes_path(meeting)
+    assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting"
     assert_selector ".member-meeting-document article.agenda-doc", count: 1
     assert_selector "a.agenda-print-link", text: "Open minutes PDF"
     assert_selector ".minutes-doc-outcome-text", text: /Hold a community breakfast/
@@ -54,6 +56,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     summary.send_keys(:space)
     assert_no_selector ".member-minutes-provenance[open]"
     visit dated_agenda_path(agenda)
+    assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting — Agenda"
     assert_selector ".agenda-item-body", text: /Discuss plans for a community breakfast/
     assert_selector ".agenda-item-summary", text: "Review membership and welcome new members."
     assert_no_text "Private meeting instructions."
@@ -65,9 +68,11 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     page.save_screenshot("/tmp/meeting-documents-mobile.png")
     find(".meeting-document-card", text: "Agenda").click
     assert_current_path dated_agenda_path(agenda)
+    assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting — Agenda"
     assert_document_readability
     save_document_screenshot("/tmp/member-agenda-paper-mobile.png")
     visit meeting_minutes_path(meeting)
+    assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting"
     assert_selector "a.agenda-print-link", text: "Open minutes PDF"
     assert_document_readability
     assert_equal 1, page.evaluate_script("getComputedStyle(document.querySelector('.minutes-doc-outcome-facts')).gridTemplateColumns.split(' ').length")

@@ -43,7 +43,7 @@
 
     <div class="agenda-meeting-heading">
       <p class="minutes-doc-status-label minutes-doc-status-label--<%= minutes.status %>"><%= presentation.fetch(:status) %></p>
-      <h1><%= minutes.meeting_type&.name || payload.fetch("meeting_body_name") %> - <%= presentation.fetch(:kind) %></h1>
+      <h1><%= payload.fetch("title") %> - <%= presentation.fetch(:kind) %></h1>
       <p class="agenda-meeting-when">
         <% document_starts_at = Time.zone.parse(payload.fetch("starts_at")) %>
         <time datetime="<%= document_starts_at.to_date.iso8601 %>"><%= legion_date(document_starts_at) %></time>

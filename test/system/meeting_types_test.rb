@@ -57,6 +57,36 @@ class MeetingTypesSystemTest < ApplicationSystemTestCase
     assert_not MeetingType.exists?(custom.id)
   end
 
+  test "removing a template item after confirming preserves a published agenda" do
+    pec = pec_meeting
+    item = pec.meeting_type_agenda_items.ordered.first
+    meeting_body = @organization.meeting_bodies.create!(name: "Executive Committee", slug: "executive-committee")
+    agenda = create_dated_agenda_from_template!(
+      organization: @organization,
+      meeting_body: meeting_body,
+      meeting_type: pec,
+      starts_at: Time.zone.local(2026, 10, 6, 19, 0)
+    )
+    copied_item = agenda.dated_agenda_items.find_by!(meeting_type_agenda_item: item)
+    original_title = copied_item.title
+    agenda.approve!(@user)
+    agenda.publish!(@user)
+    visit edit_admin_meeting_type_path(pec)
+
+    accept_confirm do
+      within ".agenda-item-row[data-reorder-id='#{item.id}']" do
+        find("button.row-del").click
+      end
+    end
+
+    assert_text "Item removed from the agenda."
+    assert_no_selector ".agenda-item-row[data-reorder-id='#{item.id}']"
+    assert_not MeetingTypeAgendaItem.exists?(item.id)
+    assert_nil copied_item.reload.meeting_type_agenda_item_id
+    assert_equal original_title, copied_item.title
+    assert_predicate agenda.reload, :published?
+  end
+
   test "drag-reordering agenda items auto-saves the new order" do
     pec = pec_meeting
     visit edit_admin_meeting_type_path(pec)

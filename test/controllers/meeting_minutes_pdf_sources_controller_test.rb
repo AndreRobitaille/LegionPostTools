@@ -41,6 +41,7 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "source is a chrome-free draft document with minutes content" do
+    @minutes.meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
     get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
 
     assert_response :success
@@ -94,6 +95,7 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
   test "attested source renders the immutable revision with truthful authority on every page" do
     attest_minutes!
     @item.update_column(:title, "Changed working row after attestation")
+    @minutes.meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
 
     get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
 
@@ -132,6 +134,10 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
         evidence_note: "Commander recorded the membership action."
       )
     )
+    revision = @minutes.current_revision
+    original_payload = revision.payload.deep_dup
+    original_digest = revision.sha256
+    @minutes.meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
 
     get meeting_minutes_pdf_source_path(token: MeetingMinutesPdf.source_token(minutes: @minutes))
 
@@ -147,6 +153,8 @@ class MeetingMinutesPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".member-minutes-status--final", text: /Approved as corrected.*final, locked record/m
     assert_select ".member-minutes-provenance", text: /Meeting approval.*Later Membership Meeting/m
+    assert_equal original_payload, revision.reload.payload
+    assert_equal original_digest, revision.sha256
   end
 
   test "direct Adjutant attestation has no Commander endorsement and pending corrections are labeled truthfully" do

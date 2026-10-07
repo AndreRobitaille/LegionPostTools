@@ -11,6 +11,7 @@ class MeetingMinutesPdf
     end
 
     def filename(minutes:, revision: nil)
+      revision ||= minutes.current_revision unless minutes.editable?
       if revision
         payload = revision.payload
         meeting_name = payload.fetch("title").parameterize.presence || payload.fetch("meeting_body_name").parameterize
@@ -18,9 +19,7 @@ class MeetingMinutesPdf
         return "#{meeting_name}-#{Time.zone.parse(payload.fetch('starts_at')).to_date.iso8601}-#{document_suffix}.pdf"
       end
 
-      meeting_name = minutes.meeting_type&.slug.presence ||
-        minutes.meeting_type&.name&.parameterize.presence ||
-        minutes.meeting_body.name.parameterize
+      meeting_name = minutes.title.parameterize.presence || "meeting"
 
       document_suffix = {
         "draft" => "draft-minutes",

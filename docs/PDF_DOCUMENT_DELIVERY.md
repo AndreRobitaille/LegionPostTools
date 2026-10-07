@@ -34,6 +34,25 @@ approved typography, hierarchy, margins, or content boundaries.
 - A generation failure returns the user to the relevant agenda or minutes record with plain
   guidance to try again; no partially generated file is sent.
 
+## Saved document titles
+
+Creating a dated agenda copies the template's sections, items, wording, and document
+controls into meeting-owned records. Starting minutes copies the dated agenda into
+independent minutes records. Source IDs identify where a copy originated; editing the
+catalog or template must never update either document's saved content.
+
+Document headings and PDF filenames use the saved agenda or minutes title, rather than
+the current meeting-type name or slug. Attested and official minutes use the title in
+the immutable revision selected for that document. This also applies when a template is
+renamed after the document was created. Existing saved titles remain authoritative;
+do not rewrite historical records or infer an earlier template name from today's name.
+
+Visual direction: retain The 1919 letterhead, serif document heading, navy/gold rules,
+status labels, date line, and existing desktop/narrow layouts. Display the saved title
+in the existing heading so longer meeting-specific titles wrap naturally. Verify
+desktop and 390px agendas/minutes after a template rename, and cover member and officer
+PDF variants with regression checks.
+
 ## Rendering Architecture
 
 The application uses headless Chromium because the approved document was designed and

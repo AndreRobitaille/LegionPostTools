@@ -1,6 +1,6 @@
 <% commander_copy = local_assigns.fetch(:commander_copy, false) %>
 <% document_label = local_assigns.fetch(:document_label, "Agenda") %>
-<% document_title = local_assigns.fetch(:document_title) { "#{dated_agenda.meeting_type.name} — #{document_label}" } %>
+<% document_title = local_assigns.fetch(:document_title) { "#{dated_agenda.title} — #{document_label}" } %>
 <% document_starts_at = local_assigns.fetch(:document_starts_at) { dated_agenda.starts_at } %>
 <% location_name = local_assigns.fetch(:location_name) { dated_agenda.location_name } %>
 <% location_address = local_assigns.fetch(:location_address) { dated_agenda.location_address } %>

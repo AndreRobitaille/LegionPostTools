@@ -71,6 +71,49 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     assert_equal "Treasurer reported a balance.", report.reload.agenda_body.to_plain_text.squish
   end
 
+  test "catalog and template changes leave copied agenda and minutes content independent" do
+    catalog_entry = @organization.agenda_item_catalog_entries.create!(
+      title: "Original report", category: "reports", behavior_type: "report_slot",
+      position: 1, summary: "Original summary", body: "Original wording",
+      commander_notes: "Original private cue"
+    )
+    template_item = MeetingTypeAgendaItem.create_from_catalog_entry!(catalog_entry, position: 1, meeting_type: @meeting_type)
+    agenda = create_dated_agenda_from_template!(
+      organization: @organization, meeting_body: @meeting_body, meeting_type: @meeting_type, starts_at: 1.day.ago
+    )
+    copied_item = agenda.dated_agenda_items.sole
+
+    catalog_entry.update!(title: "Changed catalog", body: "Changed catalog wording", behavior_type: "business_item")
+    template_item.update!(title: "Changed template", summary: "Changed summary", body: "Changed template wording", commander_notes: "Changed private cue")
+    @meeting_type.default_agenda_section.update!(title: "Changed template section")
+    @meeting_type.update!(name: "Changed meeting type")
+
+    assert_equal "Membership Meeting", agenda.reload.title
+    assert_equal "Order of Business", agenda.dated_agenda_sections.sole.title
+    assert_equal "Original report", copied_item.reload.title
+    assert_equal "Original summary", copied_item.summary
+    assert_equal "report_slot", copied_item.behavior_type
+    assert_equal "Original wording", copied_item.body.to_plain_text.squish
+    assert_equal "Original private cue", copied_item.commander_notes.to_plain_text.squish
+
+    minutes = MeetingMinutes.create_from_meeting!(meeting: agenda.meeting)
+    minutes_item = minutes.items.sole
+    original_payload = minutes.revision_payload.deep_dup
+    assert_equal "Membership Meeting", minutes.title
+    assert_equal "Order of Business", minutes.sections.sole.title
+    assert_equal "Original report", minutes_item.title
+    assert_equal "report_slot", minutes_item.behavior_type
+    assert_equal "Original wording", minutes_item.agenda_body.to_plain_text.squish
+
+    copied_item.update!(title: "Agenda correction", body: "Agenda wording changed later")
+    template_item.destroy!
+
+    assert_nil copied_item.reload.meeting_type_agenda_item_id
+    assert_equal original_payload, minutes.reload.revision_payload
+    assert_equal copied_item.id, minutes_item.reload.source_dated_agenda_item_id
+    assert_equal "Original wording", minutes_item.agenda_body.to_plain_text.squish
+  end
+
   test "draft agenda supplies structure but meeting supplies the heading" do
     agenda = build_agenda_with_sources
     agenda.update!(title: "Unapproved agenda title", location_name: "Unapproved place")

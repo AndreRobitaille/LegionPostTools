@@ -34,7 +34,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".member-meeting-document article.agenda-doc", count: 1
-    assert_select "article.agenda-doc .agenda-masthead h1", text: "Membership Meeting — Agenda"
+    assert_select "article.agenda-doc .agenda-masthead h1", text: "Published Agenda — Agenda"
     assert_select ".agenda-meeting-location-name", text: "Saved Hall"
     assert_select ".agenda-meeting-location-address", text: /123 Main Street/
     assert_select "a.agenda-back-link[href='#{meeting_path(@published.meeting)}']", text: /Meeting record/
@@ -48,6 +48,17 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     get print_dated_agenda_path(@draft)
     assert_response :not_found
+  end
+
+  test "published agenda title stays independent after its template is renamed" do
+    @type.update!(name: "Renamed Template", slug: "renamed-template")
+    sign_in_as(@user)
+
+    get dated_agenda_path(@published)
+
+    assert_response :success
+    assert_select ".agenda-meeting-heading h1", text: "Published Agenda — Agenda"
+    assert_select "article.agenda-doc", text: /Renamed Template/, count: 0
   end
 
   test "print returns the published member agenda as an inline PDF" do

@@ -39,6 +39,25 @@ class MeetingMinutesPdfTest < ActiveSupport::TestCase
     )
   end
 
+  test "draft filename uses the saved minutes title after the template is renamed" do
+    @minutes.update!(title: "Recorded July Meeting")
+    @minutes.meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
+
+    assert_equal "recorded-july-meeting-2026-07-07-draft-minutes.pdf", MeetingMinutesPdf.filename(minutes: @minutes)
+  end
+
+  test "attested filename uses the immutable revision title" do
+    adjutant = User.create!(person: Person.create!(first_name: "Test", last_name: "Adjutant"), email_address: "filename-adjutant@example.com")
+    adjutant.permission_grants.create!(capability: "attest_minutes")
+    @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: adjutant, action: "attest", evidence_note: "Synthetic filename attestation."
+    ))
+    @minutes.update_column(:title, "Changed working title")
+    @minutes.meeting_type.update!(name: "Renamed Template", slug: "renamed-template")
+
+    assert_equal "membership-meeting-2026-07-07-attested-minutes.pdf", MeetingMinutesPdf.filename(minutes: @minutes)
+  end
+
   test "signed source token fixes the organization and minutes record" do
     token = MeetingMinutesPdf.source_token(minutes: @minutes)
 

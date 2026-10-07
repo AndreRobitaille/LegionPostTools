@@ -108,6 +108,9 @@ Meeting records are the core product direction.
 
 - `MeetingBody` represents recurring groups such as Post Executive Committee or Membership Meeting.
 - Agenda templates and dated agendas contain structured sections, with agenda items scoped and ordered inside each section.
+- Removing a meeting-type template item clears the optional template source link on
+  existing dated agenda items. Their copied content, section, order, catalog link, and
+  the agenda's approval/publication state stay intact; future agendas omit the removed item.
 - Agenda items are structured records, not one large freeform document.
 - Rich text belongs inside structured records for notes, bullets, ceremony text, and printable context.
 - `Endeavor` is the durable identity for coherent Post work such as a Car Show, Buddy
