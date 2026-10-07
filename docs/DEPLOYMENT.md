@@ -83,12 +83,14 @@ secret, but use only one deliberate source.
 Optional clear tuning values are `OPENAI_MINUTES_MODEL` (default `gpt-6-astra`),
 `OPENAI_MINUTES_REASONING_EFFORT` (default `high`),
 `OPENAI_MINUTES_TEXT_VERBOSITY` (default `medium`), and
-`OPENAI_MINUTES_TIMEOUT_SECONDS` (default `360`). Do not lower the model merely to reduce
-cost without evaluating representative Post transcripts.
+`OPENAI_MINUTES_TIMEOUT_SECONDS` (default `60` per HTTP request). The separate
+`MINUTES_DRAFT_GENERATION_TIMEOUT_SECONDS` (default `1800`) bounds the whole generation.
+Do not lower the model merely to reduce cost without evaluating representative Post
+transcripts.
 
 For Astra, use supported reasoning (`low` or higher), not `none` or `minimal`.
-The provider uses Responses with no tools, strict JSON output, and `store: false`;
-do not add sampling/logprob parameters. Existing model overrides remain intentional
+The provider uses Responses background mode with no tools, strict JSON output, and
+`store: false`; do not add sampling/logprob parameters. Existing model overrides remain intentional
 installation choices. See `docs/AGENT_ENVIRONMENT.md` for migration verification limits.
 
 AI drafting runs through Solid Queue and may take several minutes. Production must keep a
@@ -97,6 +99,18 @@ or a separately configured worker). After deployment, use **Administration -> Jo
 `GET /api/jobs` with an authorized account to verify worker heartbeat, queue depth, and
 durable run state. Retrying a failed minutes run creates a linked attempt; discarding only
 removes it from the attention list and does not erase history.
+
+Minutes generation records OpenAI's response ID immediately, then polls that same response
+in short jobs ten seconds apart. SDK retries are disabled; an interrupted status check
+may retry retrieval within the generation deadline, but never submits a replacement
+generation. A lost initial submission response still fails explicitly, because its remote
+outcome is unknown. No migration or new worker service is required.
+
+`store: false` does not imply zero retention: OpenAI temporarily stores background response
+data for polling (roughly ten minutes), and ordinary abuse-monitoring controls may still
+apply. Live background-mode acceptance remains unverified until an authorized generation.
+See [the generation design](MINUTES_DRAFT_BACKGROUND_GENERATION.md) and
+[OpenAI background mode](https://developers.openai.com/api/docs/guides/background).
 
 For Post 165, `DB_HOST` should point at the Kamal Postgres accessory hostname on the Docker network.
 

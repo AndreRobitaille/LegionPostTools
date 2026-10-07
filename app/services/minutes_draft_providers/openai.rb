@@ -3,7 +3,7 @@ module MinutesDraftProviders
     MODEL = ENV.fetch("OPENAI_MINUTES_MODEL", "gpt-6-astra")
     REASONING_EFFORT = ENV.fetch("OPENAI_MINUTES_REASONING_EFFORT", "high")
     TEXT_VERBOSITY = ENV.fetch("OPENAI_MINUTES_TEXT_VERBOSITY", "medium")
-    TIMEOUT_SECONDS = Integer(ENV.fetch("OPENAI_MINUTES_TIMEOUT_SECONDS", "360"))
+    TIMEOUT_SECONDS = Integer(ENV.fetch("OPENAI_MINUTES_TIMEOUT_SECONDS", "60"))
     PROVIDER = "openai"
 
     def initialize(client: nil)
@@ -11,32 +11,63 @@ module MinutesDraftProviders
     end
 
     def draft(input:, schema:, safety_identifier:)
-      response = client.responses.create(
-        model: MODEL,
-        instructions: MinutesDrafting::Prompt::DEVELOPER_PROMPT,
-        input: input,
-        reasoning: { effort: REASONING_EFFORT },
-        text: {
-          format: {
-            type: :json_schema,
-            name: "minutes_draft_suggestions",
-            strict: true,
-            schema: schema
+      with_provider_errors do
+        response = client.responses.create(
+          model: MODEL,
+          instructions: MinutesDrafting::Prompt::DEVELOPER_PROMPT,
+          input: input,
+          reasoning: { effort: REASONING_EFFORT },
+          text: {
+            format: {
+              type: :json_schema,
+              name: "minutes_draft_suggestions",
+              strict: true,
+              schema: schema
+            },
+            verbosity: TEXT_VERBOSITY.to_sym
           },
-          verbosity: TEXT_VERBOSITY.to_sym
-        },
-        tools: [],
-        tool_choice: :none,
-        store: false,
-        truncation: :disabled,
-        max_output_tokens: 20_000,
-        safety_identifier: safety_identifier
-      )
+          tools: [],
+          tool_choice: :none,
+          background: true,
+          store: false,
+          truncation: :disabled,
+          max_output_tokens: 20_000,
+          safety_identifier: safety_identifier
+        )
+        result_for(response)
+      end
+    end
 
-      raise Error.new(category: "incomplete", request_id: response._request_id) unless response.status == :completed
+    def retrieve(response_id:)
+      with_provider_errors do
+        response = client.responses.retrieve(response_id)
+        unless response.id == response_id
+          raise Error.new(category: "invalid_output", request_id: response._request_id, response_id: response_id)
+        end
+
+        result_for(response)
+      end
+    end
+
+    def cancel(response_id:)
+      with_provider_errors { client.responses.cancel(response_id) }
+    end
+
+    private
+
+    def result_for(response)
+      raise Error.new(category: "invalid_output", request_id: response._request_id) if response.id.blank?
+
+      if response.status.in?([ :queued, :in_progress ])
+        return Pending.new(provider_response_id: response.id, provider_request_id: response._request_id)
+      end
+
+      unless response.status == :completed
+        raise Error.new(category: "incomplete", request_id: response._request_id, response_id: response.id)
+      end
 
       content = response.output_text
-      raise Error.new(category: "refusal", request_id: response._request_id) if content.blank?
+      raise Error.new(category: "refusal", request_id: response._request_id, response_id: response.id) if content.blank?
 
       usage = response.usage
       Result.new(
@@ -50,9 +81,17 @@ module MinutesDraftProviders
         total_tokens: usage&.total_tokens
       )
     rescue JSON::ParserError, OpenAI::Errors::ConversionError
-      raise Error.new(category: "invalid_output", request_id: response&._request_id)
+      raise Error.new(category: "invalid_output", request_id: response._request_id, response_id: response.id)
+    end
+
+    def with_provider_errors
+      yield
+    rescue OpenAI::Errors::ConversionError
+      raise Error.new(category: "invalid_output")
     rescue OpenAI::Errors::APITimeoutError => error
-      raise Error.new(category: "timeout", request_id: error.request_id)
+      raise Error.new(category: "timeout", request_id: error.request_id, retryable: true)
+    rescue OpenAI::Errors::APIConnectionError, OpenAI::Errors::InternalServerError => error
+      raise Error.new(category: "provider_error", request_id: error.request_id, retryable: true)
     rescue OpenAI::Errors::RateLimitError => error
       raise Error.new(category: "rate_limit", request_id: error.request_id)
     rescue OpenAI::Errors::AuthenticationError, OpenAI::Errors::PermissionDeniedError => error
@@ -61,14 +100,12 @@ module MinutesDraftProviders
       raise Error.new(category: "provider_error", request_id: error.request_id)
     end
 
-    private
-
     def client
       @client ||= begin
         token = Rails.application.credentials.openai_access_token.presence || ENV["OPENAI_ACCESS_TOKEN"].presence || ENV["OPENAI_API_KEY"].presence
         raise Error.new(category: "configuration") if token.blank?
 
-        OpenAI::Client.new(api_key: token, log_level: :off, max_retries: 1, timeout: TIMEOUT_SECONDS)
+        OpenAI::Client.new(api_key: token, log_level: :off, max_retries: 0, timeout: TIMEOUT_SECONDS)
       end
     end
   end

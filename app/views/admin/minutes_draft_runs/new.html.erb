@@ -13,7 +13,7 @@
     <h2 id="ai-draft-what-heading">OpenAI prepares suggestions. You remain the recorder.</h2>
     <ol>
       <li>The app sends this Meeting's structured agenda, relevant Endeavor titles and summaries, and restricted transcript to OpenAI.</li>
-      <li>GPT-5.6 Sol proposes source-linked wording, outcomes, attendance, or unplanned business.</li>
+      <li>OpenAI proposes source-linked wording, outcomes, attendance, or unplanned business.</li>
       <li>You check each proposal against the transcript and choose <strong>Use</strong>, <strong>Edit</strong>, or <strong>Discard</strong>.</li>
     </ol>
     <p class="ai-draft-no-bulk"><strong>There is no accept-all action.</strong> Unknown speakers, names, movers, seconds, and votes must remain unknown unless the source supports them.</p>
@@ -25,14 +25,14 @@
     <dl>
       <div><dt>Size</dt><dd><%= number_to_human_size(@transcript.byte_size) %></dd></div>
       <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after membership approval" : "Retain restricted" %></dd></div>
-      <div><dt>Model</dt><dd>GPT-5.6 Sol &middot; high reasoning</dd></div>
+      <div><dt>Model</dt><dd><%= MinutesDraftProviders::Openai::MODEL %> &middot; <%= MinutesDraftProviders::Openai::REASONING_EFFORT %> reasoning</dd></div>
     </dl>
   </aside>
 </div>
 
 <div class="ai-provider-note">
   <strong>External processing disclosure</strong>
-  <p>The agenda, relevant Endeavor summaries, and transcript will be sent to the OpenAI API for this draft request with provider storage disabled. OpenAI may still retain API content temporarily for abuse monitoring unless this API project has approved different data controls. The app keeps the transcript under the retention choice shown above.</p>
+  <p>The agenda, relevant Endeavor summaries, and transcript will be sent to the OpenAI API for this draft request. OpenAI temporarily stores the response so the app can check progress. Long-term response storage is disabled, but OpenAI may also retain API content for abuse monitoring unless this API project has approved different data controls. The app keeps the transcript under the retention choice shown above.</p>
 </div>
 
 <%= form_with url: admin_meeting_minutes_draft_runs_path(@meeting), class: "ai-draft-start-form" do |form| %>

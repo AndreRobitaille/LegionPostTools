@@ -28,14 +28,20 @@ No new framework conventions or mandatory simplification pass were introduced.
 
 The minutes provider now defaults to `gpt-6-astra`. `OPENAI_MINUTES_MODEL` still overrides
 the default; historical run records and historical-model fixtures remain unchanged.
-High reasoning, medium verbosity, the 360-second timeout, output cap, and credential
-resolution are preserved. No fallback router exists in this provider.
+High reasoning, medium verbosity, output cap, and credential resolution are preserved.
+The September model migration retained a 360-second synchronous-request timeout.
+The October 7 reliability change uses background generation with a 60-second HTTP limit,
+a separate 30-minute generation deadline, and no SDK retries. Polls retrieve the recorded
+response rather than submitting another generation. No fallback router exists in this
+provider. See `docs/MINUTES_DRAFT_BACKGROUND_GENERATION.md`.
 
-The existing Responses request already uses strict structured output, no tools, and
+The Responses request uses strict structured output, no tools, `background: true`, and
 `store: false`, with no sampling, logprob, or old cache-retention parameters. It needs
 no endpoint migration. The installed OpenAI Ruby SDK 0.83.0 accepts arbitrary model
 strings. Preserve the versioned minutes prompt and its evidence, privacy, source-ID,
 and human-review requirements; developer-agent autonomy is not drafting authority.
+Background response data is temporarily retained to support polling even with
+`store: false`; this does not promise zero retention.
 
 For future configuration changes, Astra does not support `none`/`minimal` reasoning;
 use `low` or a supported higher effort. Tool calling requires Responses. Do not add

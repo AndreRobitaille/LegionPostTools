@@ -40,6 +40,8 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Create the first pass"
     assert_select ".ai-provider-note", text: /sent to the OpenAI API/
+    assert_select ".ai-provider-note", text: /temporarily stores the response so the app can check progress/
+    assert_select ".ai-draft-source-ticket", text: /#{Regexp.escape(MinutesDraftProviders::Openai::MODEL)}.*#{Regexp.escape(MinutesDraftProviders::Openai::REASONING_EFFORT)} reasoning/
     assert_select ".ai-draft-disclosure-main", text: /Endeavor titles and summaries/
     assert_select "input[type='submit'][value='Send transcript and create draft']"
     assert_select ".ai-draft-no-bulk", text: /no accept-all action/i

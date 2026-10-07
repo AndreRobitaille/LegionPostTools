@@ -913,11 +913,20 @@ review rather than forced into a misleading destination.
 Use strict Structured Outputs rather than asking the model to imitate JSON in prose. Do
 not enable web search, file search, code execution, or other tools. Do not let the model
 read the current Post roster to infer speakers or attendance. The initial request is
-stateless with `store: false` and runs in Solid Queue rather than inside the initiating
-web request. Creating a run returns the Adjutant immediately to an authenticated
+submitted with `background: true` and `store: false` through Solid Queue rather than
+inside the initiating web request. Creating a run returns the Adjutant immediately to an authenticated
 draft-dispatch page. That page monitors the durable `pending`, `running`, `succeeded`,
 and `failed` states and moves to the existing review ledger when the run finishes. The
 Adjutant may safely leave and return while OpenAI is working.
+
+The run saves OpenAI's response ID immediately after submission. Short jobs retrieve that
+same response every ten seconds while it is queued or in progress. Each HTTP request has
+a default 60-second timeout; the complete generation has a separate default 30-minute
+deadline. SDK retries are disabled. Transient polling failures can retry retrieval, while
+an unknown submission outcome fails without silently starting another paid generation.
+Duplicate completions cannot create another suggestion set. Transcript digest and draft
+editability are rechecked before staging results. See
+`docs/MINUTES_DRAFT_BACKGROUND_GENERATION.md` for the failure and recovery boundaries.
 
 The waiting interface follows the established **The 1919** document system. Its single
 job is to make the handoff legible to a low-confidence computer user: request received,
@@ -994,9 +1003,10 @@ truncation. The first implementation fails clearly rather than silently dropping
 transcript content. Evidence-preserving chunk/merge drafting may be added after a real
 oversized transcript establishes the need.
 
-OpenAI API data is not used to train models by default. `store: false` avoids Responses API
-application-state storage, but ordinary abuse-monitoring retention may still apply. The UI
-and deployment documentation must preserve that distinction and must not promise zero
+OpenAI API data is not used to train models by default. `store: false` avoids long-term
+Responses API application-state storage, but background mode temporarily stores response
+data to support polling (roughly ten minutes). Ordinary abuse-monitoring retention may
+also apply. The UI and deployment documentation must preserve that distinction and must not promise zero
 retention unless the configured API project has approved controls.
 
 ## Private API and Agent Handbook

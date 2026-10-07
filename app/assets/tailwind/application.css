@@ -1385,15 +1385,15 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .ai-draft-disclosure-main li::marker { color: var(--color-gold-ink); font-weight: 900; }
 .ai-draft-no-bulk { margin: 0; padding: 14px 16px; color: #4c4027; background: #f7efdc; border-left: 4px solid var(--color-gold-ink); font-size: 14px; line-height: 1.5; }
 .ai-draft-source-ticket { padding: 22px; color: #eaf0f7; background: var(--color-navy); border-top: 4px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 10px 24px rgba(10,34,64,.16); }
-.ai-draft-source-ticket > span { color: var(--color-gold-hi); font-size: 11px; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+.ai-draft-source-ticket > span { color: var(--color-gold-hi); font-size: 13px; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
 .ai-draft-source-ticket h2 { margin: 7px 0 15px; color: #fff; font-family: var(--font-serif); font-size: 23px; }
 .ai-draft-source-ticket dl { margin: 0; }
 .ai-draft-source-ticket dl > div { padding: 11px 0; border-top: 1px solid rgba(230,205,139,.3); }
-.ai-draft-source-ticket dt { color: #aebdcc; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.ai-draft-source-ticket dd { margin: 4px 0 0; color: #fff; font-size: 14px; line-height: 1.4; }
+.ai-draft-source-ticket dt { color: #aebdcc; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.ai-draft-source-ticket dd { margin: 4px 0 0; color: #fff; font-size: 16px; line-height: 1.4; }
 .ai-provider-note { max-width: var(--w-main); box-sizing: border-box; margin-top: 20px; padding: 17px 19px; color: #314252; background: #edf4f8; border: 1px solid #bdceda; border-left: 4px solid var(--color-officer-blue); border-radius: var(--radius-control); }
 .ai-provider-note strong { color: var(--color-navy); }
-.ai-provider-note p { margin: 6px 0 0; font-size: 14px; line-height: 1.5; }
+.ai-provider-note p { margin: 6px 0 0; font-size: 16px; line-height: 1.5; }
 .ai-draft-start-form { display: flex; align-items: center; gap: 12px; max-width: var(--w-main); margin-top: 20px; }
 .ai-draft-dispatch { max-width: 760px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 4px solid var(--color-navy); border-radius: var(--radius-card); box-shadow: 0 12px 30px rgba(27,34,43,.09); }
 .ai-draft-dispatch-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 23px 25px 18px; background: var(--color-ivory); border-bottom: 1px solid var(--rule-strong); }

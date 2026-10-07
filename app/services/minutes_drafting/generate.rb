@@ -1,5 +1,7 @@
 module MinutesDrafting
   class Generate
+    GENERATION_TIMEOUT_SECONDS = Integer(ENV.fetch("MINUTES_DRAFT_GENERATION_TIMEOUT_SECONDS", "1800"))
+
     DraftFailed = Class.new(StandardError) do
       attr_reader :run
 
@@ -35,26 +37,43 @@ module MinutesDrafting
     end
 
     def call(run: nil)
+      if run
+        run.reload
+        minutes.reload
+      end
+      return run if run && !run.pending? && !run.running?
+      raise MinutesDraftProviders::Error.new(category: "timeout") if deadline_exceeded?(run)
+
       validate_source!
       source_document = SourceDocument.new(transcript.source_text)
       validate_run_source!(run) if run
       run ||= create_run!(source_document)
       return run unless begin_run!(run)
 
-      result = provider.draft(
-        input: Prompt.input(minutes:, source_document:),
-        schema: Prompt.schema,
-        safety_identifier: Digest::SHA256.hexdigest("legion-minutes-user:#{requester.id}")
-      )
+      result = if run.provider_response_id.present?
+        provider.retrieve(response_id: run.provider_response_id)
+      else
+        provider.draft(
+          input: Prompt.input(minutes:, source_document:),
+          schema: Prompt.schema,
+          safety_identifier: Digest::SHA256.hexdigest("legion-minutes-user:#{requester.id}")
+        )
+      end
+      persist_provider_reference!(run, result)
+      raise MinutesDraftProviders::Error.new(category: "timeout") if deadline_exceeded?(run)
 
-      persist_result!(run, result, source_document)
+      persist_result!(run, result, source_document) unless result.is_a?(MinutesDraftProviders::Pending)
       run
     rescue MinutesDraftProviders::Error => error
-      fail_run!(run, category: error.category, request_id: error.request_id)
+      return run if retry_poll?(run, error)
+
+      fail_run!(run, category: error.category,
+        request_id: error.request_id.presence || result&.provider_request_id,
+        response_id: error.response_id.presence || result&.provider_response_id)
     rescue MeetingTranscript::SourcePurgedError, ArgumentError
-      fail_run!(run, category: "source_unavailable")
+      fail_run!(run, category: "source_unavailable", request_id: result&.provider_request_id, response_id: result&.provider_response_id)
     rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound, KeyError, TypeError, RangeError
-      fail_run!(run, category: "invalid_output")
+      fail_run!(run, category: "invalid_output", request_id: result&.provider_request_id, response_id: result&.provider_response_id)
     end
 
     private
@@ -95,34 +114,51 @@ module MinutesDrafting
 
     def begin_run!(run)
       run.with_lock do
-        return false unless run.pending?
+        return false unless run.pending? || (run.running? && run.provider_response_id.present?)
 
         unless run.prompt_sha256 == Prompt.sha256 && run.schema_version == Prompt::SCHEMA_VERSION
           raise MinutesDraftProviders::Error.new(category: "draft_version_changed")
         end
 
-        run.update!(status: "running", started_at: Time.current)
+        run.update!(status: "running", started_at: Time.current) if run.pending?
       end
       true
+    end
+
+    def persist_provider_reference!(run, result)
+      run.with_lock do
+        return unless run.running?
+
+        run.update!(
+          provider_response_id: result.provider_response_id,
+          provider_request_id: result.provider_request_id.presence || run.provider_request_id
+        )
+      end
     end
 
     def persist_result!(run, result, source_document)
       suggestions = result.data.fetch("suggestions")
       raise TypeError unless suggestions.is_a?(Array)
 
-      MinutesDraftRun.transaction do
-        suggestions.each { |attributes| persist_suggestion!(run, attributes, source_document) }
-        run.update!(
-          status: "succeeded",
-          provider_response_id: result.provider_response_id,
-          provider_request_id: result.provider_request_id,
-          model: result.model,
-          input_tokens: result.input_tokens,
-          output_tokens: result.output_tokens,
-          reasoning_tokens: result.reasoning_tokens,
-          total_tokens: result.total_tokens,
-          completed_at: Time.current
-        )
+      minutes.with_lock do
+        run.with_lock do
+          return unless run.running?
+
+          validate_source!
+          validate_run_source!(run)
+          suggestions.each { |attributes| persist_suggestion!(run, attributes, source_document) }
+          run.update!(
+            status: "succeeded",
+            provider_response_id: result.provider_response_id,
+            provider_request_id: result.provider_request_id,
+            model: result.model,
+            input_tokens: result.input_tokens,
+            output_tokens: result.output_tokens,
+            reasoning_tokens: result.reasoning_tokens,
+            total_tokens: result.total_tokens,
+            completed_at: Time.current
+          )
+        end
       end
     end
 
@@ -243,14 +279,36 @@ module MinutesDrafting
       value.to_s.in?(allowed) ? value.to_s : raise(TypeError)
     end
 
-    def fail_run!(run, category:, request_id: nil)
-      run&.update_columns(
-        status: "failed",
-        error_category: category,
-        provider_request_id: request_id,
-        completed_at: Time.current,
-        updated_at: Time.current
-      )
+    def deadline_exceeded?(run)
+      run&.started_at && run.started_at <= GENERATION_TIMEOUT_SECONDS.seconds.ago
+    end
+
+    def retry_poll?(run, error)
+      run&.running? && run.provider_response_id.present? && error.retryable? && !deadline_exceeded?(run)
+    end
+
+    def cancel_response(run)
+      return unless run&.running? && run.provider_response_id.present?
+
+      provider.cancel(response_id: run.provider_response_id)
+    rescue MinutesDraftProviders::Error
+      # Cancellation is best effort; preserve the original safe failure and response ID.
+    end
+
+    def fail_run!(run, category:, request_id: nil, response_id: nil)
+      cancel_response(run) if category.in?(%w[timeout source_unavailable draft_version_changed])
+      run&.with_lock do
+        return run unless run.pending? || run.running?
+
+        run.update_columns(
+          status: "failed",
+          error_category: category,
+          provider_request_id: request_id.presence || run.provider_request_id,
+          provider_response_id: response_id.presence || run.provider_response_id,
+          completed_at: Time.current,
+          updated_at: Time.current
+        )
+      end
       raise DraftFailed, run
     end
   end

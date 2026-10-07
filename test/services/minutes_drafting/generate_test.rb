@@ -5,6 +5,44 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     def draft(**) = result
   end
 
+  class BackgroundProvider
+    attr_reader :submissions, :retrieved_ids, :cancelled_ids
+    attr_accessor :before_retrieve, :cancel_error
+
+    def initialize(*results)
+      @results = results
+      @submissions = 0
+      @retrieved_ids = []
+      @cancelled_ids = []
+    end
+
+    def draft(**)
+      @submissions += 1
+      next_result
+    end
+
+    def retrieve(response_id:)
+      @retrieved_ids << response_id
+      before_retrieve&.call
+      next_result
+    end
+
+    def cancel(response_id:)
+      @cancelled_ids << response_id
+      raise cancel_error if cancel_error
+    end
+
+    private
+
+    def next_result
+      result = @results.shift
+      raise result if result.is_a?(Exception)
+      raise "No synthetic response remains" unless result
+
+      result
+    end
+  end
+
   setup do
     @organization = Organization.create!(
       name: "Robert E. Burns Post 165",
@@ -357,7 +395,222 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     assert_nil @section.items.reload.last.endeavor
   end
 
+  test "persists the background identifier and polls one generation until suggestions are ready" do
+    provider = BackgroundProvider.new(pending_result, pending_result, provider_result([ suggestion("item_summary", @item.id, body: "Members discussed the project.") ]))
+    run = MinutesDrafting::Generate.prepare(minutes: @minutes, requester: @requester)
+
+    assert_no_changes -> { @item.reload.body.to_plain_text } do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+      assert_predicate run.reload, :running?
+      assert_equal "resp_test", run.provider_response_id
+      assert_equal "req_submitted", run.provider_request_id
+      assert_empty run.suggestions
+      started_at = run.started_at
+
+      travel 7.minutes do
+        MinutesDrafting::Generate.call(run: run, provider: provider)
+        assert_predicate run.reload, :running?
+        assert_equal started_at, run.started_at
+        MinutesDrafting::Generate.call(run: run, provider: provider)
+      end
+    end
+
+    assert_predicate run.reload, :succeeded?
+    assert_equal 1, provider.submissions
+    assert_equal [ "resp_test", "resp_test" ], provider.retrieved_ids
+    assert_equal 1, run.suggestions.count
+    assert_equal "not_recorded", @attendance.reload.status
+    assert_empty @item.outcomes
+  end
+
+  test "a retrieval timeout leaves the known generation running and the next poll can finish it" do
+    timeout = MinutesDraftProviders::Error.new(category: "timeout", retryable: true)
+    provider = BackgroundProvider.new(pending_result, timeout, provider_result([]))
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+
+    MinutesDrafting::Generate.call(run: run, provider: provider)
+    assert_predicate run.reload, :running?
+    assert_equal "resp_test", run.provider_response_id
+    assert_equal "req_submitted", run.provider_request_id
+    assert_nil run.error_category
+
+    MinutesDrafting::Generate.call(run: run, provider: provider)
+    assert_predicate run.reload, :succeeded?
+    assert_equal 1, provider.submissions
+    assert_empty provider.cancelled_ids
+  end
+
+  test "an initial timeout fails once without submitting a replacement generation" do
+    provider = BackgroundProvider.new(MinutesDraftProviders::Error.new(category: "timeout", retryable: true))
+    error = assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    end
+
+    assert_predicate error.run.reload, :failed?
+    assert_equal "timeout", error.run.error_category
+    assert_equal 1, provider.submissions
+    assert_nil error.run.provider_response_id
+  end
+
+  test "the overall deadline cancels the existing response and retains its provenance" do
+    provider = BackgroundProvider.new(pending_result)
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    provider.cancel_error = MinutesDraftProviders::Error.new(category: "provider_error")
+
+    travel (MinutesDrafting::Generate::GENERATION_TIMEOUT_SECONDS + 1).seconds do
+      assert_raises(MinutesDrafting::Generate::DraftFailed) do
+        MinutesDrafting::Generate.call(run: run, provider: provider)
+      end
+    end
+
+    assert_predicate run.reload, :failed?
+    assert_equal "timeout", run.error_category
+    assert_equal "resp_test", run.provider_response_id
+    assert_equal "req_submitted", run.provider_request_id
+    assert_equal [ "resp_test" ], provider.cancelled_ids
+    assert_empty provider.retrieved_ids
+    assert_equal 1, provider.submissions
+    assert_empty run.suggestions
+  end
+
+  test "terminal retrieval errors keep the original identifiers without resubmitting" do
+    provider = BackgroundProvider.new(pending_result, MinutesDraftProviders::Error.new(category: "configuration"))
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+
+    assert_predicate run.reload, :failed?
+    assert_equal "configuration", run.error_category
+    assert_equal "resp_test", run.provider_response_id
+    assert_equal "req_submitted", run.provider_request_id
+    assert_equal 1, provider.submissions
+  end
+
+  test "a poll finishing after the overall deadline fails without staging its result" do
+    provider = BackgroundProvider.new(pending_result, provider_result([ suggestion("item_summary", @item.id, body: "Late result.") ]))
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    provider.before_retrieve = -> { travel (MinutesDrafting::Generate::GENERATION_TIMEOUT_SECONDS + 1).seconds }
+
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+
+    assert_equal "timeout", run.reload.error_category
+    assert_equal "resp_test", run.provider_response_id
+    assert_equal "req_test", run.provider_request_id
+    assert_empty run.suggestions
+    assert_equal 1, provider.submissions
+  end
+
+  test "a completed response rejected by local validation still records its provider identifiers" do
+    result = provider_result([ suggestion("item_summary", -1, body: "Unknown target.") ])
+    error = assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: FakeProvider.new(result))
+    end
+
+    assert_equal "invalid_output", error.run.reload.error_category
+    assert_equal "resp_test", error.run.provider_response_id
+    assert_equal "req_test", error.run.provider_request_id
+    assert_empty error.run.suggestions
+  end
+
+  test "a delayed submission reply retains and cancels its known response when the deadline has elapsed" do
+    reply = pending_result
+    provider = Object.new
+    cancellations = []
+    delay = -> { travel (MinutesDrafting::Generate::GENERATION_TIMEOUT_SECONDS + 1).seconds }
+    provider.define_singleton_method(:draft) do |**|
+      delay.call
+      reply
+    end
+    provider.define_singleton_method(:cancel) { |response_id:| cancellations << response_id }
+
+    error = assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    end
+
+    assert_equal "timeout", error.run.reload.error_category
+    assert_equal "resp_test", error.run.provider_response_id
+    assert_equal "req_submitted", error.run.provider_request_id
+    assert_equal [ "resp_test" ], cancellations
+  end
+
+  test "a running attempt with an unknown response ID never resubmits" do
+    run = MinutesDrafting::Generate.prepare(minutes: @minutes, requester: @requester)
+    run.update!(status: "running", started_at: Time.current)
+    provider = BackgroundProvider.new
+
+    MinutesDrafting::Generate.call(run: run, provider: provider)
+
+    assert_predicate run.reload, :running?
+    assert_equal 0, provider.submissions
+    assert_empty provider.retrieved_ids
+  end
+
+  test "source changes while awaiting OpenAI cancel the known response before retrieval" do
+    provider = BackgroundProvider.new(pending_result)
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    @transcript.update!(sha256_digest: "a" * 64)
+
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+
+    assert_equal "source_unavailable", run.reload.error_category
+    assert_equal [ "resp_test" ], provider.cancelled_ids
+    assert_empty provider.retrieved_ids
+    assert_empty run.suggestions
+  end
+
+  test "source changes during retrieval prevent completed output from being staged" do
+    provider = BackgroundProvider.new(pending_result, provider_result([ suggestion("item_summary", @item.id, body: "Changed source.") ]))
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    provider.before_retrieve = -> { @transcript.update!(sha256_digest: "a" * 64) }
+
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+
+    assert_equal "source_unavailable", run.reload.error_category
+    assert_empty run.suggestions
+    assert_empty @item.reload.body.to_plain_text
+  end
+
+  test "released minutes prevent a completed background result from being staged" do
+    provider = BackgroundProvider.new(pending_result, provider_result([]))
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    provider.before_retrieve = -> { @minutes.update_columns(status: "attested") }
+
+    assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+
+    assert_equal "source_unavailable", run.reload.error_category
+    assert_empty run.suggestions
+  end
+
+  test "duplicate completion cannot stage suggestions for a terminal run" do
+    provider = BackgroundProvider.new(pending_result, provider_result([ suggestion("item_summary", @item.id, body: "Duplicate.") ]))
+    run = MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    provider.before_retrieve = -> { run.update!(status: "succeeded", completed_at: Time.current) }
+
+    assert_no_difference "MinutesDraftSuggestion.count" do
+      MinutesDrafting::Generate.call(run: run, provider: provider)
+    end
+    assert_predicate run.reload, :succeeded?
+
+    MinutesDrafting::Generate.call(run: run, provider: provider)
+    assert_equal [ "resp_test" ], provider.retrieved_ids
+    assert_equal 1, provider.submissions
+  end
+
   private
+
+  def pending_result
+    MinutesDraftProviders::Pending.new(provider_response_id: "resp_test", provider_request_id: "req_submitted")
+  end
 
   def provider_result(suggestions)
     MinutesDraftProviders::Result.new(
