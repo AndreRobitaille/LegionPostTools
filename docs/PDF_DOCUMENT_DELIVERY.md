@@ -143,3 +143,18 @@ Georgia narrative, system-sans labels, Letter pagination and authority folio. An
 image is indicated inline as “Image omitted from PDF: description” (or “Image omitted from
 PDF” without alt text), using readable secondary text, not a broken-image icon or a large
 warning panel. Verify desktop and 390px source layouts and real generated Letter PDFs.
+
+## Calendar handout delivery
+
+The calendar's Print PDF action reuses `BrowserPdfRenderer` and `PdfResourcePolicy`.
+Authenticated members receive a private, no-store inline PDF containing the landscape
+Letter month overview followed by the portrait Letter detailed schedule, with a
+quarter-inch inset on every page. The source token binds the organization, month,
+calendar view and event-type selection; unsigned query parameters cannot change them.
+The loopback source uses the same member-readable calendar templates without a session
+or JavaScript. Public preview retains its restricted event projection. Calendar PDFs
+do not include Endeavor narrative, officer notes, agendas, or minutes.
+
+This fixes page dimensions before the PDF reaches the user's browser, avoiding mixed
+orientation and margin overrides in HTML print dialogs. The screen view and selected
+filters remain intact. See `CALENDAR.md` for the low-ink handout design and pagination.

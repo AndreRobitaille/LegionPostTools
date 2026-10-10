@@ -11,7 +11,7 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "calendar and events require sign in" do
-    [ calendar_path, manage_calendar_path, calendar_event_path(@event), new_calendar_event_path ].each do |path|
+    [ calendar_path, print_calendar_path, manage_calendar_path, calendar_event_path(@event), new_calendar_event_path ].each do |path|
       get path
       assert_redirected_to new_session_path
     end
@@ -28,7 +28,7 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_select ".nav-tab--active", text: "Calendar"
     assert_select "a[href*='/calendar/manage']", count: 0
     assert_select ".calendar-grid th", count: 7
-    assert_select "button.calendar-print[data-action=?]", "calendar#print", text: "Print"
+    assert_select "a.calendar-print[target='_blank'][data-turbo='false']", text: "Print PDF"
     assert_select "nav.calendar-month-navigation .calendar-print", count: 0
     assert_select ".calendar-print-heading .calendar-print-post", text: "Example Post", count: 2
     assert_select ".calendar-print-heading time", text: "September 2026", count: 2
@@ -46,6 +46,56 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_select ".calendar-event-time", count: 0
     assert_no_match(/Date only/, response.body)
     assert_select "a[href=?]", edit_calendar_event_path(@event), count: 0
+  end
+
+  test "members receive a private inline PDF of the selected month view and event types" do
+    sign_in_as(@member)
+    rendered = {}
+    render_pdf = lambda do |organization:, month:|
+      rendered.merge!(organization: organization, month: month)
+      "%PDF-calendar"
+    end
+    with_stubbed_class_method(CalendarPdf, :render, render_pdf) do
+      get print_calendar_path(start_date: "2026-09-15", view: "public", categories: %w[honor_guard public_event])
+    end
+
+    assert_response :success
+    assert_equal @organization, rendered.fetch(:organization)
+    month = rendered.fetch(:month)
+    assert_equal Date.new(2026, 9, 1), month.date
+    assert_equal "public", month.view
+    assert_equal [ "honor_guard", "public_event" ], month.categories
+    assert_equal "application/pdf", response.media_type
+    assert_equal "%PDF-calendar", response.body
+    assert_includes response.headers["Content-Disposition"], "inline"
+    assert_includes response.headers["Content-Disposition"], "calendar-2026-09-public.pdf"
+    assert_includes response.headers["Cache-Control"], "no-store"
+  end
+
+  test "PDF requests preserve an explicitly empty category selection" do
+    sign_in_as(@member)
+    rendered_categories = []
+    with_stubbed_class_method(CalendarPdf, :render, ->(organization:, month:) { rendered_categories << month.categories; "%PDF-empty" }) do
+      get print_calendar_path(start_date: "2026-09-01", categories: [ "" ])
+    end
+    assert_response :success
+    assert_equal [ [] ], rendered_categories
+  end
+
+  test "PDF generation errors return to the selected calendar with guidance" do
+    sign_in_as(@member)
+    with_stubbed_class_method(CalendarPdf, :render, ->(**) { raise CalendarPdf::GenerationError, "Renderer unavailable" }) do
+      get print_calendar_path(start_date: "2026-09-01", view: "deadlines", categories: [ "" ], display: "schedule")
+    end
+    assert_redirected_to calendar_path(start_date: "2026-09-01", view: "deadlines", categories: [ "" ], display: "schedule")
+    assert_equal "The calendar PDF could not be created. Try again.", flash[:alert]
+  end
+
+  test "PDF requests reject invalid month values before rendering" do
+    sign_in_as(@member)
+    get print_calendar_path(start_date: "2201-01-01")
+    assert_redirected_to calendar_path
+    assert_equal "Choose a valid calendar month between 1900 and 2200.", flash[:alert]
   end
 
   test "members and agenda delegates cannot mutate calendar events" do
@@ -233,7 +283,7 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", calendar_event_path(@event), minimum: 1
     assert_select "a[href=?]", calendar_event_path(volunteer), minimum: 1
     assert_select ".calendar-grid-event[href=?]:not([hidden])", meeting_path(meeting), count: 0
-    assert_select ".calendar-month-heading a[href*='honor_guard']", count: 3
+    assert_select ".calendar-month-heading a[href*='honor_guard']", count: 4
     get calendar_path, params: { start_date: "2026-09-01", categories: [ "" ] }
     assert_select ".calendar-grid-event:not([hidden])", count: 0
     get calendar_path(start_date: "2026-09-01")

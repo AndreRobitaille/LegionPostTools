@@ -12,6 +12,20 @@ class CalendarController < ApplicationController
     render :show unless performed?
   end
 
+  def print
+    load_month
+    return if performed?
+
+    pdf = CalendarPdf.render(organization: @organization, month: @month)
+    send_data pdf, filename: CalendarPdf.filename(month: @month), type: "application/pdf", disposition: "inline"
+    no_store
+  rescue CalendarPdf::GenerationError => error
+    Rails.logger.error("Calendar PDF generation failed: #{error.message}")
+    redirect_to calendar_path(start_date: @month.date, view: @month.view,
+      categories: @month.categories.presence || [ "" ], display: params[:display]),
+      alert: "The calendar PDF could not be created. Try again."
+  end
+
   private
 
   def load_month

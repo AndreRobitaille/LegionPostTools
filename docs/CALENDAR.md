@@ -67,11 +67,23 @@ ordinary links. Management uses the same schedule with adjacent edit actions and
 Members only/Public labels. Event forms use existing large controls, plain labels, and
 visible errors. Keyboard focus and print output must remain usable.
 
-Printed copies use one browser print dialog for a complete monthly handout: the landscape
+Print PDF opens one finished monthly handout in the browser's PDF viewer: the landscape
 Letter month overview comes first, followed by the portrait Letter detailed schedule on
-a new page. Both sections print regardless of the selected screen view or phone width.
-Save as PDF produces one document containing both sections. Event-type filters apply to
-both; printing and cancelling print preserve the screen view and filters.
+a new page. Both sections appear regardless of the selected screen view or phone width.
+Event-type filters and the attendance/planning/public-preview selection apply to both;
+opening the PDF preserves the screen view and filters. Keep the existing compact printer
+control, label it Print PDF, and explain that it includes both sections. Retain the
+approved low-ink presentation. Native browser printing remains a fallback.
+
+Delivery resilience (10 October 2026): Safari's print dialog can keep every HTML page
+portrait, while Brave's margin choices can override CSS page margins. Generate the PDF
+using the existing bounded Chromium renderer so each page's size and inset are fixed
+before either browser opens it. Reuse the shared calendar templates and private PDF
+resource policy; the authenticated member action signs the organization, month, view,
+and selected categories into a one-minute loopback rendering token. The source requires
+that token and a local request, works without JavaScript or a member session, and never
+includes officer controls or internal record text. PDF and source responses are private
+and no-store. Rendering failures return to the selected calendar with plain retry guidance.
 
 Print visual direction (10 October 2026): retain The 1919's restrained system sans and
 tracked section labels, with white paper (#FFFFFF), black text (#000000), secondary gray
@@ -84,6 +96,15 @@ the event count, the current-day circle, and the printed-on date: the handout re
 the entire month, not the day it was opened. Do not put footer ink outside the printable
 area. Each page has a quarter-inch margin on all four sides, including schedule
 continuation pages.
+
+Margin resilience: reserve the quarter-inch inset as padding on the printed application
+content and repeat that padding on every page fragment. Named pages use zero outer
+margin so the default PDF has exactly one inset. A browser's non-default print-margin
+setting can override CSS page margins; keeping the inset inside the content prevents
+Brave's zero-margin printing from placing text against the paper edge. Preserve the
+existing low-ink typography, landscape/portrait sections, and screen spacing.
+The print regression test uses Poppler's `pdftotext` (installed in CI) to verify text
+coordinates on every page, including continuation pages after a margin override.
 
 The month grid uses 11pt regular event titles, 14px start times and dates, and weekday
 labels of at least 13px. Dates and weekdays carry the emphasis, with dates aligned to
@@ -115,6 +136,18 @@ descriptions retained every paragraph and their final instruction. Rendered PDFs
 desktop/phone screens were visually reviewed. Focused RuboCop, JavaScript syntax, and
 the Tailwind build passed. This validation used synthetic data; paid AI generation was
 not used.
+
+Follow-up print-delivery validation on 10 October 2026: the full Rails suite passed
+1,190 tests / 8,881 assertions and the full browser suite passed 63 tests / 997
+assertions. A real authenticated PDF download preserved live filter choices and the
+phone's selected view. Generated PDFs contained landscape month pages followed by
+portrait schedule pages; text coordinates stayed within the quarter-inch inset on
+every page, including long-description continuations. Native browser print also kept
+its inset after a zero-margin override. Desktop, 390px and 320px screens and rendered
+PDF pages were reviewed. RuboCop passed across 489 files; Brakeman reported no warnings,
+and dependency/importmap audits, JavaScript syntax, CI YAML parsing and Tailwind build
+passed. Safari was not available for a native browser test; PDF page dimensions were
+verified directly. These checks used synthetic test records.
 
 Use simple_calendar as a small rendering helper, with application-owned templates and
 styles. Its documentation supports custom attributes, multi-day events, and Turbo frames:

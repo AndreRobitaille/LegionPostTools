@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   get "internal/dated-agenda-pdf-source", to: "dated_agenda_pdf_sources#show", as: :dated_agenda_pdf_source
   get "internal/meeting-minutes-pdf-source", to: "meeting_minutes_pdf_sources#show", as: :meeting_minutes_pdf_source
+  get "internal/calendar-pdf-source", to: "calendar_pdf_sources#show", as: :calendar_pdf_source
 
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
@@ -51,6 +52,7 @@ Rails.application.routes.draw do
   end
   resources :people, only: %i[index show]
   get "calendar", to: "calendar#show", as: :calendar
+  get "calendar/print", to: "calendar#print", as: :print_calendar
   get "calendar/manage", to: "calendar#manage", as: :manage_calendar
   resources :calendar_events, only: %i[show new create edit update destroy]
 

@@ -1,5 +1,7 @@
 require "application_system_test_case"
 require "base64"
+require "open3"
+require "net/http"
 
 class CalendarPrintTest < ApplicationSystemTestCase
   LONG_TITLE = "Joint picnic planning meeting with the Auxiliary for the park shelter reservation and setup crew".freeze
@@ -62,13 +64,12 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_selector ".nav-bar"
     assert_selector ".calendar-filters"
     assert_selector ".calendar-footer"
-    assert_button "Print"
+    assert_link "Print PDF"
     assert_selector ".calendar-grid-event", text: LONG_TITLE
     assert_no_selector ".calendar-block-location", text: LONG_LOCATION
     capture_system_screenshot("calendar-screen-month")
-    page.execute_script("window.__printCalls = 0; window.print = () => { window.__printCalls += 1 }")
-    click_button "Print"
-    assert_equal 1, page.evaluate_script("window.__printCalls")
+    assert_equal "_blank", find_link("Print PDF")["target"]
+    assert_equal "false", find_link("Print PDF")["data-turbo"]
 
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     assert_selector ".calendar-print-heading", text: "Robert E. Burns American Legion Post 165"
@@ -77,7 +78,7 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_no_selector ".nav-bar"
     assert_no_selector ".calendar-filters"
     assert_no_selector ".calendar-footer"
-    assert_no_selector "button", text: "Print"
+    assert_no_selector ".calendar-print"
     assert_selector ".calendar-schedule"
     assert_selector ".calendar-grid-event", text: LONG_TITLE
     assert_no_selector ".calendar-block-location"
@@ -162,6 +163,50 @@ class CalendarPrintTest < ApplicationSystemTestCase
     save_print_preview("calendar-print-schedule")
   end
 
+  test "Print PDF delivers one finished document with fixed orientations margins and selected events" do
+    original_port = ENV["PDF_RENDER_PORT"]
+    system_sign_in(@member)
+    page.current_window.resize_to(390, 844)
+    visit calendar_path(start_date: "2026-09-01", display: "schedule")
+    click_button "Clear"
+    check "Planning meetings"
+    assert_selector ".calendar-schedule-event", text: LONG_TITLE
+    assert_no_selector ".calendar-schedule-event", text: "Community breakfast"
+    uri = URI(find_link("Print PDF")["href"])
+    assert_equal "/calendar/print", uri.path
+    assert_equal [ "planning_meeting" ], URI.decode_www_form(uri.query).select { |key, _| key == "categories[]" }.map(&:last)
+    assert_equal "schedule", URI.decode_www_form(uri.query).to_h["display"]
+    cookie = page.driver.browser.manage.all_cookies.map { |item| "#{item[:name]}=#{item[:value]}" }.join("; ")
+    ENV["PDF_RENDER_PORT"] = uri.port.to_s
+    result = Net::HTTP.start(uri.host, uri.port) { |http| http.get(uri.request_uri, { "Cookie" => cookie }) }
+    assert_equal "200", result.code
+    assert_equal "application/pdf", result["Content-Type"]
+    assert_includes result["Content-Disposition"], "inline"
+    assert_includes result["Cache-Control"], "no-store"
+    pdf = result.body
+    assert pdf.start_with?("%PDF")
+    save_pdf("calendar-delivered-pdf", pdf)
+    assert_pdf_orientations(pdf)
+    text = assert_pdf_printable_margins(pdf, minimum_pages: 2)
+    assert_match(/#{Regexp.escape(LONG_TITLE)}/, text)
+    assert_match(/Setup volunteers should meet at the north entrance/, text)
+    assert_no_match(/Community breakfast/, text)
+    assert_selector ".calendar-workspace[data-calendar-display-value='schedule']"
+    assert_checked_field "Planning meetings"
+    capture_system_screenshot("calendar-pdf-phone-control")
+
+    # The actual server renderer must repeat the inset on schedule continuation pages.
+    @organization.calendar_events.find_by!(title: LONG_TITLE).update!(description: long_description)
+    month = CalendarMonth.new(organization: @organization, date: Date.new(2026, 9, 1))
+    pdf = CalendarPdf.render(organization: @organization, month: month, base_url: "#{uri.scheme}://#{uri.host}:#{uri.port}")
+    assert_pdf_orientations(pdf)
+    text = assert_pdf_printable_margins(pdf)
+    assert_match(/Final instruction: Return the checklist to the Adjutant\./, text)
+    save_pdf("calendar-delivered-continuation-pages", pdf)
+  ensure
+    ENV["PDF_RENDER_PORT"] = original_port
+  end
+
   test "a six-week month prints on one landscape page followed by the portrait schedule" do
     zone = @organization.calendar_time_zone
     [
@@ -198,6 +243,8 @@ class CalendarPrintTest < ApplicationSystemTestCase
       page.current_window.resize_to(width, 844)
       assert_no_selector ".calendar-grid"
       assert_selector ".calendar-schedule-event", text: LONG_TITLE
+      assert_link "Print PDF"
+      assert page.evaluate_script("document.documentElement.scrollWidth <= innerWidth")
       capture_system_screenshot("calendar-screen-phone-#{width}")
 
       # Page.printToPDF uses the actual paper width, rather than merely
@@ -266,6 +313,25 @@ class CalendarPrintTest < ApplicationSystemTestCase
     end
   end
 
+  test "print content keeps quarter-inch margins when the browser overrides page margins" do
+    @organization.calendar_events.find_by!(title: LONG_TITLE).update!(description: long_description)
+    system_sign_in(@member)
+    visit calendar_path(start_date: "2026-09-01")
+    screen_padding = find(".app-main").style("padding")
+
+    # Non-default Chromium print settings ignore author page margins. Simulate
+    # that override; CDP's printToPDF keeps CSS margins even with zero options.
+    page.execute_script("document.head.insertAdjacentHTML('beforeend', '<style>@page calendar-month { margin: 0; } @page calendar-list { margin: 0; }</style>')")
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+    pdf = printed_pdf
+    assert_pdf_printable_margins(pdf)
+    save_print_preview("calendar-print-margin-override")
+
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
+    assert_equal screen_padding, find(".app-main").style("padding")
+    assert_selector ".calendar-grid"
+  end
+
   test "an empty selection prints one month page and an empty schedule without a trailing page" do
     system_sign_in(@member)
     visit calendar_path(start_date: "2026-09-01", categories: [ "" ])
@@ -315,8 +381,7 @@ class CalendarPrintTest < ApplicationSystemTestCase
   end
 
   test "long schedule descriptions continue onto later pages without clipping" do
-    description = ((1..30).map { |number| "Preparation step #{number}: Review the volunteer assignments, confirm the supplies, and check the meeting room and park shelter arrangements." } + [ "Final instruction: Return the checklist to the Adjutant." ]).join("\n\n")
-    @organization.calendar_events.find_by!(title: LONG_TITLE).update!(description: description)
+    @organization.calendar_events.find_by!(title: LONG_TITLE).update!(description: long_description)
     system_sign_in(@member)
     visit calendar_path(start_date: "2026-09-01", display: "schedule", categories: [ "planning_meeting" ])
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
@@ -350,21 +415,65 @@ class CalendarPrintTest < ApplicationSystemTestCase
 
   private
 
+  def long_description
+    paragraphs = (1..30).map do |number|
+      "Preparation step #{number}: Review the volunteer assignments, confirm the supplies, and check the meeting room and park shelter arrangements."
+    end
+    (paragraphs + [ "Final instruction: Return the checklist to the Adjutant." ]).join("\n\n")
+  end
+
   def printed_pdf
     Base64.decode64(page.driver.browser.execute_cdp("Page.printToPDF", printBackground: false, preferCSSPageSize: true, displayHeaderFooter: false).fetch("data"))
   end
 
   def save_print_preview(name)
+    save_pdf(name, printed_pdf)
+  end
+
+  def save_pdf(name, pdf)
     return if ENV["SYSTEM_TEST_CAPTURE_DIR"].blank?
 
     directory = Rails.root.join(ENV.fetch("SYSTEM_TEST_CAPTURE_DIR"))
     FileUtils.mkdir_p(directory)
-    File.binwrite(directory.join("#{name}.pdf"), printed_pdf)
+    File.binwrite(directory.join("#{name}.pdf"), pdf)
   end
 
   def printed_page_sizes
-    printed_pdf.scan(/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/).map do |width, height|
+    pdf_page_sizes(printed_pdf)
+  end
+
+  def pdf_page_sizes(pdf)
+    pdf.scan(/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/).map do |width, height|
       [ width.to_f.round, height.to_f.round ]
+    end
+  end
+
+  def assert_pdf_orientations(pdf)
+    sections = pdf_page_sizes(pdf).chunk(&:itself).map(&:first)
+    assert_equal [ [ 792, 612 ], [ 612, 792 ] ], sections, "landscape month pages must precede portrait schedule pages"
+  end
+
+  def assert_pdf_printable_margins(pdf, minimum_pages: 3)
+    Tempfile.create([ "calendar-print", ".pdf" ]) do |file|
+      file.binmode
+      file.write(pdf)
+      file.flush
+      text, status = Open3.capture2("pdftotext", "-bbox-layout", file.path, "-")
+      assert status.success?, "pdftotext must extract the printed page geometry"
+      pages = Nokogiri::XML(text).remove_namespaces!.xpath("//page")
+      assert_operator pages.size, :>=, minimum_pages, "verify both sections and expected continuation pages"
+      pages.each_with_index do |page, index|
+        width = page["width"].to_f
+        height = page["height"].to_f
+        words = page.xpath(".//word")
+        assert_not_empty words, "printed page #{index + 1} must contain text"
+        outside = words.reject do |word|
+          word["xMin"].to_f >= 17.5 && word["yMin"].to_f >= 17.5 &&
+            word["xMax"].to_f <= width - 17.5 && word["yMax"].to_f <= height - 17.5
+        end
+        assert_empty outside.map(&:text), "printed page #{index + 1} must keep text inside the quarter-inch inset"
+      end
+      pages.map { |page| page.xpath(".//word").map(&:text).join(" ") }.join("\n")
     end
   end
 end

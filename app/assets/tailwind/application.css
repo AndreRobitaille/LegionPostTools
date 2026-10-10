@@ -2375,7 +2375,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) { .calendar-grid-event { transition: none; } }
 @page calendar-month {
   size: letter landscape;
-  margin: 0.25in;
+  margin: 0;
 
   @bottom-left { content: ""; border-top: none; padding: 0; }
   @bottom-center { content: ""; border-top: none; padding: 0; }
@@ -2383,7 +2383,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 }
 @page calendar-list {
   size: letter portrait;
-  margin: 0.25in;
+  margin: 0;
 
   @bottom-left { content: ""; border-top: none; padding: 0; }
   @bottom-center { content: ""; border-top: none; padding: 0; }
@@ -2393,7 +2393,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   body:has(.calendar-workspace) { page: calendar-month; }
   .calendar-month { page: calendar-month; }
   .calendar-schedule { page: calendar-list; break-before: page; }
-  .app-main:has(.calendar-workspace) { max-width: none; width: auto; margin: 0; padding: 0; }
+  /* Repeat the printable inset even when the browser overrides page margins. */
+  .app-main:has(.calendar-workspace) { max-width: none; width: auto; margin: 0; padding: 0.25in; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   .app-header, .nav-bar, .app-flash,
   .calendar-sidebar, .calendar-page-header, .calendar-month-heading, .calendar-context-note,
   .calendar-footer, .calendar-empty, .calendar-schedule-action, .calendar-create-actions { display: none !important; }
