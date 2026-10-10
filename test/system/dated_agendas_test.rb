@@ -295,6 +295,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     @agenda.approve!(@user)
     @agenda.publish!(@user)
 
+    page.current_window.resize_to(1400, 1400)
     visit root_path
     click_link "Meetings"
 
