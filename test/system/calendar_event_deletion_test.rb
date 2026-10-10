@@ -14,7 +14,7 @@ class CalendarEventDeletionSystemTest < ApplicationSystemTestCase
       click_button "Delete event"
       assert_selector "dialog[open]", text: event.title
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-      page.save_screenshot("/tmp/calendar-delete-#{width}.png")
+      capture_system_screenshot("calendar-delete-#{width}")
       within "dialog[open]" do
         click_button "Cancel"
       end

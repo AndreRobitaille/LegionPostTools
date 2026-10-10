@@ -13,6 +13,18 @@ class MeetingMinutesTest < ActiveSupport::TestCase
     @meeting_type = @organization.meeting_types.create!(name: "Membership Meeting", position: 1, active: true)
   end
 
+  test "keeps legacy JSON fingerprints for official minutes actions" do
+    # Captured with JSON 2.21.2 before the dependency upgrade. These bytes form
+    # official-record hashes and must survive serializer updates.
+    payload = JSON.parse(file_fixture("minutes_revision_json_2_21_2.json").read)
+    minutes = MeetingMinutes.new
+    minutes.define_singleton_method(:revision_payload) { payload }
+    legacy_digest = "9218eb0a2e0f539476ea36e3c594ee824c27a24432f45b09d7e71629bd8a73e7"
+
+    assert_equal legacy_digest, minutes.digest_for("approve")
+    assert_equal legacy_digest, minutes.digest_for("attest")
+  end
+
   test "creates a structured draft from a past meeting without an agenda" do
     meeting = create_meeting!(
       organization: @organization,

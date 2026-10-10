@@ -30,7 +30,7 @@ class MinutesBackgroundDraftingTest < ApplicationSystemTestCase
       assert_operator page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.ai-draft-source-ticket dt')).fontSize)"), :>=, 13
       assert_button "Send transcript and create draft"
       assert_link "Continue manually"
-      page.save_screenshot("/tmp/minutes-background-disclosure-#{label}.png")
+      capture_system_screenshot("minutes-background-disclosure-#{label}")
     end
   ensure
     page.current_window.resize_to(1400, 1400)

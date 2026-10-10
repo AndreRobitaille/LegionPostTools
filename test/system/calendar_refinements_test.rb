@@ -26,7 +26,7 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     visit manage_calendar_path(start_date: "2026-09-01")
     assert_selector ".calendar-grid th:first-child", text: "SUN"
     assert_selector ".calendar-grid th:last-child", text: "SAT"
-    page.save_screenshot("/tmp/calendar-refinements-desktop.png")
+    capture_system_screenshot("calendar-refinements-desktop")
     uncheck "Member Meeting"
     uncheck "Officer Meeting"
     uncheck "Other activities"
@@ -40,9 +40,9 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     assert_no_selector ".calendar-grid"
     assert_selector ".calendar-row", text: "Honor Guard practice"
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-    page.save_screenshot("/tmp/calendar-refinements-mobile.png")
+    capture_system_screenshot("calendar-refinements-mobile")
     page.execute_script("document.querySelector('.calendar-schedule').scrollIntoView()")
-    page.save_screenshot("/tmp/calendar-refinements-mobile-schedule.png")
+    capture_system_screenshot("calendar-refinements-mobile-schedule")
     click_link "+ Add event"
     fill_in "Event name", with: "Morning volunteer setup"
     select "Planning meetings", from: "Calendar event type"
@@ -50,11 +50,11 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     fill_in "calendar_event_starts_at_time", with: "800"
     find("#calendar_event_starts_at_time").send_keys(:tab)
     assert_field "calendar_event_starts_at_time", with: "08:00"
-    page.save_screenshot("/tmp/calendar-refinements-form.png")
+    capture_system_screenshot("calendar-refinements-form")
     click_button "Add event"
     assert_selector "h1", text: "Morning volunteer setup"
     assert_text "08:00"
-    page.save_screenshot("/tmp/calendar-redesign-event-detail.png")
+    capture_system_screenshot("calendar-redesign-event-detail")
   end
 
   test "member discovers events and filters Honor Guard with visible controls" do
@@ -77,7 +77,7 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     block = find(".calendar-grid-event", text: "Festival planning meeting")
     assert_equal "none", block.style("text-decoration-line")["text-decoration-line"]
     assert_not_equal "rgba(0, 0, 0, 0)", block.style("background-color")["background-color"]
-    page.save_screenshot("/tmp/calendar-redesign-member-desktop.png")
+    capture_system_screenshot("calendar-redesign-member-desktop")
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     assert_selector ".calendar-schedule-event", text: "Officers planning"
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
@@ -95,10 +95,10 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     assert_selector "#category_honor_guard:focus"
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-    page.save_screenshot("/tmp/calendar-redesign-honor-guard-mobile.png")
+    capture_system_screenshot("calendar-redesign-honor-guard-mobile")
     click_button "All types"
     assert_selector ".calendar-schedule-event", text: "Festival planning meeting"
-    page.save_screenshot("/tmp/calendar-redesign-member-mobile.png")
+    capture_system_screenshot("calendar-redesign-member-mobile")
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     assert_no_selector ".calendar-filters"
     assert_selector ".calendar-schedule-event", text: "Officers planning"
@@ -116,18 +116,18 @@ Setup begins before the doors open; see the organizer for details.")
     assert_selector ".calendar-event-heading .calendar-event-type", text: /Other activities/i
     assert_selector ".calendar-event-timezone", text: "America/Chicago"
     assert_no_link "Edit event"
-    page.save_screenshot("/tmp/calendar-detail-neutral-desktop.png")
+    capture_system_screenshot("calendar-detail-neutral-desktop")
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-    page.save_screenshot("/tmp/calendar-detail-neutral-mobile.png")
+    capture_system_screenshot("calendar-detail-neutral-mobile")
     visit calendar_event_path(@organization.calendar_events.find_by!(calendar_category: "honor_guard"))
     assert_selector ".calendar-event-type", text: /Honor Guard/i
-    page.save_screenshot("/tmp/calendar-detail-honor-guard-mobile.png")
+    capture_system_screenshot("calendar-detail-honor-guard-mobile")
     visit calendar_event_path(@organization.calendar_events.find_by!(title: "Post picnic"))
     assert_selector ".calendar-event-type", text: /Public events/i
     assert_no_selector ".calendar-event-timezone"
     assert_no_text "America/Chicago"
     assert_no_text "Date only"
-    page.save_screenshot("/tmp/calendar-detail-date-only-mobile.png")
+    capture_system_screenshot("calendar-detail-date-only-mobile")
   end
 end

@@ -18,8 +18,8 @@ if [ "$actual" != "$expected" ]; then
   exit 1
 fi
 
-bundle _4.0.3_ config set --global path "${HOME}/.bundle/vendor"
-bundle _4.0.3_ config set --global jobs "$(nproc)"
-bundle _4.0.3_ check || bundle _4.0.3_ install
+bundle _4.0.22_ config set --global path "${HOME}/.bundle/vendor"
+bundle _4.0.22_ config set --global jobs "$(nproc)"
+bundle _4.0.22_ check || bundle _4.0.22_ install
 
 bash .cursor/setup-chromedriver.sh

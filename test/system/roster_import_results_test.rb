@@ -30,9 +30,9 @@ class RosterImportResultsSystemTest < ApplicationSystemTestCase
       page.current_window.resize_to(width, height)
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth"), "Overflow at #{width}px"
       page.execute_script("window.scrollTo(0, 0)")
-      page.save_screenshot(Rails.root.join("tmp/screenshots/roster-results-#{width}.png"))
+      capture_system_screenshot("roster-results-#{width}")
       page.execute_script("arguments[0].scrollIntoView({block: 'start'})", find(".card", text: /Sign-in access/i))
-      page.save_screenshot(Rails.root.join("tmp/screenshots/roster-accounts-#{width}.png"))
+      capture_system_screenshot("roster-accounts-#{width}")
     end
   ensure
     page.current_window.resize_to(1400, 1400)

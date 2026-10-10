@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # System packages for the Cloud Agent image: prebuilt Ruby matching .ruby-version,
-# Bundler 4.0.3, and a local PostgreSQL 17 cluster. Idempotent. Safe to re-run
+# Bundler 4.0.22, and a local PostgreSQL 17 cluster. Idempotent. Safe to re-run
 # on Ubuntu 24.04 as root or as the ubuntu user with passwordless sudo.
 set -euo pipefail
 
@@ -27,7 +27,7 @@ elif [ -n "$RUBY_VERSION_FILE" ]; then
   ruby_version="$(tr -d '[:space:]' < "$RUBY_VERSION_FILE")"
   ruby_version="${ruby_version#ruby-}"
 else
-  ruby_version="4.0.0"
+  ruby_version="4.0.7"
 fi
 
 # ruby-builder bakes this GitHub Actions toolcache path into RUNPATH and shebangs.
@@ -91,9 +91,9 @@ for cmd in ruby gem bundle bundler irb rake; do
   fi
 done
 
-if ! "${ruby_prefix}/bin/gem" list -i bundler -v 4.0.3 >/dev/null 2>&1; then
-  echo "==> Bundler 4.0.3"
-  as_root "${ruby_prefix}/bin/gem" install bundler -v 4.0.3 --no-document
+if ! "${ruby_prefix}/bin/gem" list -i bundler -v 4.0.22 >/dev/null 2>&1; then
+  echo "==> Bundler 4.0.22"
+  as_root "${ruby_prefix}/bin/gem" install bundler -v 4.0.22 --no-document
 fi
 as_root ln -sfn "${ruby_prefix}/bin/bundle" /usr/local/bin/bundle
 as_root ln -sfn "${ruby_prefix}/bin/bundler" /usr/local/bin/bundler

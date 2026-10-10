@@ -49,7 +49,7 @@ class WebsiteAccessTokensSystemTest < ApplicationSystemTestCase
     [ [ 1400, 1400 ], [ 390, 844 ] ].each do |width, height|
       page.current_window.resize_to(width, height)
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth"), "Overflow on #{name} at #{width}px"
-      page.save_screenshot(Rails.root.join("tmp/screenshots/website-#{name}-#{width}.png"))
+      capture_system_screenshot("website-#{name}-#{width}")
     end
   end
 end

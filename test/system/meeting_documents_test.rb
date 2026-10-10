@@ -33,10 +33,10 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_selector ".meeting-document-card", count: 2
     assert_selector ".meeting-document-status", text: "Awaiting meeting approval", count: 1
     assert_selector ".meeting-document-open", text: "Open", count: 2
-    page.save_screenshot("/tmp/meeting-documents-desktop.png")
+    capture_system_screenshot("meeting-documents-desktop")
     first(".meeting-document-card").hover
     assert page.evaluate_script("Array.from(document.querySelectorAll('.meeting-document-card:hover .meeting-document-open, .meeting-document-card:hover .meeting-document-open > span')).every(node => getComputedStyle(node).textDecorationLine === 'none' && getComputedStyle(node).textShadow !== 'none')")
-    page.save_screenshot("/tmp/meeting-documents-hover-desktop.png")
+    capture_system_screenshot("meeting-documents-hover-desktop")
     first(".meeting-document-card").send_keys(:tab)
     assert_selector ".meeting-document-card:focus"
     first(".meeting-document-card").click
@@ -65,7 +65,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     visit meeting_path(meeting)
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-    page.save_screenshot("/tmp/meeting-documents-mobile.png")
+    capture_system_screenshot("meeting-documents-mobile")
     find(".meeting-document-card", text: "Agenda").click
     assert_current_path dated_agenda_path(agenda)
     assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting — Agenda"
@@ -114,7 +114,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_equal "decimal", admin_styles.fetch("numbers")
     assert_equal "none", admin_styles.fetch("nestingMarker")
     page.execute_script("document.querySelector('.minutes-item-title').scrollIntoView({ block: 'start' })")
-    page.save_screenshot("/tmp/minutes-format-admin-desktop.png")
+    capture_system_screenshot("minutes-format-admin-desktop")
     member = User.create!(person: Person.create!(first_name: "General", last_name: "Member"), email_address: "formatting-member@example.com")
     system_sign_in(member)
 
@@ -126,7 +126,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
       assert_equal "disc", page.evaluate_script("getComputedStyle(document.querySelector('.minutes-agenda-wording ul')).listStyleType")
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
       page.execute_script("document.querySelector('.minutes-item-title').scrollIntoView({ block: 'start' })")
-      page.save_screenshot("/tmp/minutes-format-member-#{label}.png")
+      capture_system_screenshot("minutes-format-member-#{label}")
     end
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     assert_equal admin_styles.merge("nestedBullets" => "circle"), rich_text_styles

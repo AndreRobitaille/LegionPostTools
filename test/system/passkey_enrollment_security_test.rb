@@ -42,7 +42,7 @@ class PasskeyEnrollmentSecuritySystemTest < ApplicationSystemTestCase
       assert_button "Cancel and return to Profile"
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
       assert_operator page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.page-lead .panel-lead')).fontSize)"), :>=, 16
-      page.save_screenshot(Rails.root.join("tmp", "passkey-confirmation-#{width}.png"))
+      capture_system_screenshot("passkey-confirmation-#{width}")
 
       perform_enqueued_jobs do
         click_button "Email me a code and link"
@@ -58,7 +58,7 @@ class PasskeyEnrollmentSecuritySystemTest < ApplicationSystemTestCase
       assert_field "new-passkey-nickname", with: "Kitchen iPad #{width}"
       assert_button "Continue adding your passkey"
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-      page.save_screenshot(Rails.root.join("tmp", "passkey-continue-#{width}.png"))
+      capture_system_screenshot("passkey-continue-#{width}")
 
       click_button "Continue adding your passkey"
       assert_button "Add a passkey"
