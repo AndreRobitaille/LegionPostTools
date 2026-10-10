@@ -9,15 +9,6 @@ module CalendarHelper
     CalendarCategories::LABELS.except(*(@month.view == "deadlines" ? [] : [ "deadline" ]))
   end
 
-  def calendar_print_filter_summary
-    labels = calendar_filter_labels
-    selected = labels.keys.select { |key| @month.categories.include?(key) }
-    return if selected.size == labels.size
-
-    names = selected.empty? ? "no event types" : labels.values_at(*selected).join(", ")
-    "Showing: #{names}"
-  end
-
   def calendar_printed_on
     legion_date(Time.current.in_time_zone(@organization.calendar_time_zone))
   end
@@ -33,12 +24,14 @@ module CalendarHelper
     calendar_event_path(entry, preview: @month&.public_preview? ? "public" : nil)
   end
 
-  def calendar_entry_time(entry)
+  def calendar_entry_time(entry, include_end: true)
     return "Due date · not a scheduled event" if entry.is_a?(CalendarDeadline)
     return nil if entry.is_a?(CalendarEvent) && entry.all_day?
 
     zone = entry.organization.calendar_time_zone
     starts_at = entry.starts_at.in_time_zone(zone)
+    return starts_at.strftime("%H:%M") unless include_end
+
     ends_at = entry.is_a?(CalendarEvent) ? entry.ends_at&.in_time_zone(zone) : nil
     if ends_at && starts_at.to_date != ends_at.to_date
       return "#{starts_at.strftime('%d %b, %H:%M')} – #{ends_at.strftime('%d %b, %H:%M')}"

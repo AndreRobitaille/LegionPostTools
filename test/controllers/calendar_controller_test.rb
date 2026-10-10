@@ -151,14 +151,34 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "print names a partial event-type selection and omits it when every type is shown" do
+  test "print omits the event-type summary while retaining selected filters" do
     sign_in_as(@member)
     get calendar_path(start_date: "2026-09-01", categories: %w[honor_guard member_meeting])
-    assert_select ".calendar-print-filters", text: "Showing: Member Meeting, Honor Guard"
+    assert_select ".calendar-print-filters", count: 0
+    assert_select ".calendar-grid-event:not([hidden])", count: 0
     get calendar_path(start_date: "2026-09-01")
-    assert_select ".calendar-print-filters[hidden]"
+    assert_select ".calendar-print-filters", count: 0
+    assert_select ".calendar-grid-event:not([hidden])", count: 1
     get calendar_path(start_date: "2026-09-01", categories: [ "" ])
-    assert_select ".calendar-print-filters", text: "Showing: no event types"
+    assert_select ".calendar-print-filters", count: 0
+    assert_select ".calendar-grid-event:not([hidden])", count: 0
+  end
+
+  test "printed schedule descriptions stay plain text and meeting addresses stay out of public preview" do
+    @event.update!(description: "Bring <em>two trays</em>.\nUse the side entrance.\n\n<script>alert('test')</script>", visibility: "public")
+    body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
+    meeting = create_meeting!(organization: @organization, meeting_body: body, starts_at: @event.starts_at,
+      title: "Membership meeting", location_address: "400 Legion Park Road")
+    sign_in_as(@member)
+    get calendar_path(start_date: "2026-09-01", display: "schedule")
+    assert_select ".calendar-print-description p", count: 2
+    assert_select ".calendar-print-description", text: /Bring <em>two trays<\/em>\./
+    assert_select ".calendar-print-description em, .calendar-print-description script", count: 0
+    assert_select ".calendar-print-description br", count: 1
+    assert_select ".calendar-print-address", text: ", #{meeting.location_address}"
+    get calendar_path(start_date: "2026-09-01", view: "public")
+    assert_select ".calendar-print-description", text: /Use the side entrance\./
+    assert_select ".calendar-print-address", count: 0
   end
 
   test "invalid calendar month redirects safely" do

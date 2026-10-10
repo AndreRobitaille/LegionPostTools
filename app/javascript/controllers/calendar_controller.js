@@ -1,10 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["category", "entry", "day", "empty", "count", "navigation", "enhancement", "monthButton", "scheduleButton", "displayField", "printFilters"]
+  static targets = ["category", "entry", "day", "empty", "count", "navigation", "enhancement", "monthButton", "scheduleButton", "displayField"]
   static values = { display: String }
 
   connect() {
+    this.printing = false
     this.enhancementTargets.forEach(element => element.hidden = false)
     this.applyFilters()
     this.updateDisplay()
@@ -29,7 +30,24 @@ export default class extends Controller {
   showSchedule() { this.setDisplay("schedule") }
 
   print() {
+    this.updatePrintDisplay()
     window.print()
+  }
+
+  updatePrintDisplay() {
+    // Print media measures paper width; keep the layout captured on screen.
+    if (this.printing) return
+
+    this.element.dataset.calendarPrintDisplay = window.matchMedia("(max-width: 560px)").matches ? "schedule" : this.displayValue
+  }
+
+  preparePrint() {
+    this.printing = true
+  }
+
+  finishPrint() {
+    this.printing = false
+    this.updatePrintDisplay()
   }
 
   setDisplay(display) {
@@ -42,6 +60,7 @@ export default class extends Controller {
     this.monthButtonTarget.setAttribute("aria-pressed", this.displayValue === "month")
     this.scheduleButtonTarget.setAttribute("aria-pressed", this.displayValue === "schedule")
     this.displayFieldTarget.value = this.displayValue
+    this.updatePrintDisplay()
   }
 
   applyFilters() {
@@ -55,22 +74,6 @@ export default class extends Controller {
     })
     this.emptyTarget.hidden = count > 0
     this.countTarget.textContent = `${count} ${count === 1 ? "event" : "events"} this month`
-    this.updatePrintFilters()
-  }
-
-  updatePrintFilters() {
-    if (!this.hasPrintFiltersTarget) return
-
-    const selected = this.categoryTargets.filter(input => input.checked)
-    if (selected.length === this.categoryTargets.length) {
-      this.printFiltersTarget.hidden = true
-      this.printFiltersTarget.textContent = ""
-      return
-    }
-
-    const names = selected.map(input => input.closest("label").querySelector("span").textContent.trim())
-    this.printFiltersTarget.hidden = false
-    this.printFiltersTarget.textContent = `Showing: ${names.length ? names.join(", ") : "no event types"}`
   }
 
   updateLocation() {
