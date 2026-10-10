@@ -55,7 +55,7 @@ class CalendarPrintTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1000)
   end
 
-  test "prints the selected month and schedule with readable details" do
+  test "prints the month and detailed schedule together with the selected filters" do
     system_sign_in(@member)
     visit calendar_path(start_date: "2026-09-01")
     assert_selector ".app-header"
@@ -78,10 +78,10 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_no_selector ".calendar-filters"
     assert_no_selector ".calendar-footer"
     assert_no_selector "button", text: "Print"
-    assert_no_selector ".calendar-schedule"
+    assert_selector ".calendar-schedule"
     assert_selector ".calendar-grid-event", text: LONG_TITLE
     assert_no_selector ".calendar-block-location"
-    assert_no_selector ".calendar-print-description"
+    assert_no_selector ".calendar-grid .calendar-print-description"
     assert_no_selector ".calendar-block-time"
     assert_selector ".calendar-block-print-time", exact_text: "18:00"
     assert_no_selector ".calendar-block-print-time", text: "19:30"
@@ -100,12 +100,12 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_equal "400", outside.style("font-weight")["font-weight"]
     cancelled = find(".calendar-grid-event", text: "Color guard exhibition")
     assert_equal "line-through", cancelled.find(".calendar-block-title").style("text-decoration-line")["text-decoration-line"]
-    assert_equal "dashed", cancelled.style("border-top-style")["border-top-style"]
+    assert_equal "0px", event.style("border-left-width")["border-left-width"]
     assert_selector ".calendar-grid-status", text: "Cancelled"
     assert_no_selector ".calendar-print-filters"
-    assert_match(/\d{2} [A-Z]{3} \d{4}/, page.evaluate_script("getComputedStyle(document.documentElement).getPropertyValue('--calendar-printed-on')"))
-    assert_match(/792(?:\.0)? 612(?:\.0)?/, printed_media_box)
-    save_print_preview("calendar-print-month")
+    assert_equal [ 792, 612 ], printed_page_sizes.first
+    assert_equal [ 612, 792 ], printed_page_sizes.last
+    save_print_preview("calendar-month-and-schedule")
 
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
     uncheck "Officer Meeting"
@@ -116,6 +116,7 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_selector ".calendar-grid-event", text: "Color guard exhibition"
     assert_selector ".calendar-grid .next-month .calendar-day-number", text: "1"
     assert_no_selector ".calendar-grid-event", text: "Community breakfast"
+    assert_no_selector ".calendar-schedule-event", text: "Community breakfast"
     grid = find(".calendar-grid")
     assert_equal "border-box", grid.style("box-sizing")["box-sizing"]
     assert_not grid.evaluate_script("this.getBoundingClientRect().right > this.parentElement.getBoundingClientRect().right + 0.75 || this.getBoundingClientRect().left < this.parentElement.getBoundingClientRect().left - 0.75")
@@ -133,7 +134,7 @@ class CalendarPrintTest < ApplicationSystemTestCase
 
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     assert_selector ".calendar-print-heading", text: "September 2026"
-    assert_no_selector ".calendar-grid"
+    assert_selector ".calendar-grid"
     assert_no_selector ".calendar-filters"
     assert_no_selector ".calendar-schedule-action"
     assert_selector ".calendar-schedule-event", text: LONG_TITLE
@@ -155,12 +156,13 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_not schedule_title.evaluate_script("this.scrollHeight > this.clientHeight + 1")
     assert_equal "line-through", find(".calendar-schedule-event h4", text: "Color guard exhibition").style("text-decoration-line")["text-decoration-line"]
     assert_no_selector ".calendar-print-filters"
-    assert_includes find(".calendar-date-group", match: :first).style("border-bottom-color")["border-bottom-color"], "187, 187, 187"
+    assert_equal "0px", detailed_event.style("border-left-width")["border-left-width"]
+    assert_no_selector ".calendar-schedule-event svg"
     capture_system_screenshot("calendar-print-schedule")
     save_print_preview("calendar-print-schedule")
   end
 
-  test "a six-week month prints on one landscape page" do
+  test "a six-week month prints on one landscape page followed by the portrait schedule" do
     zone = @organization.calendar_time_zone
     [
       [ 1, "May membership meeting and scholarship report" ],
@@ -181,13 +183,12 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_selector ".calendar-grid tbody tr", count: 6
     assert_selector ".calendar-grid .next-month .calendar-day-number", text: "1"
     assert_no_selector ".calendar-block-location"
-    assert_no_selector ".calendar-print-description"
+    assert_no_selector ".calendar-grid .calendar-print-description"
     save_print_preview("calendar-print-may-2027")
-    assert_equal 1, printed_page_count
-    assert_match(/792(?:\.0)? 612(?:\.0)?/, printed_media_box)
+    assert_equal [ [ 792, 612 ], [ 612, 792 ] ], printed_page_sizes
   end
 
-  test "printing the phone schedule uses portrait pages without changing the selected view" do
+  test "printing from a phone includes both layouts without changing the selected view" do
     system_sign_in(@member)
     visit calendar_path(start_date: "2026-09-01")
     uncheck "Other activities"
@@ -195,7 +196,6 @@ class CalendarPrintTest < ApplicationSystemTestCase
 
     [ 390, 320 ].each do |width|
       page.current_window.resize_to(width, 844)
-      assert_selector ".calendar-workspace[data-calendar-print-display='schedule']"
       assert_no_selector ".calendar-grid"
       assert_selector ".calendar-schedule-event", text: LONG_TITLE
       capture_system_screenshot("calendar-screen-phone-#{width}")
@@ -205,9 +205,13 @@ class CalendarPrintTest < ApplicationSystemTestCase
       page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
       assert_no_selector ".app-header"
       assert_no_selector ".calendar-filters"
-      assert_no_selector ".calendar-grid"
+      assert_selector ".calendar-grid"
       assert_selector ".calendar-schedule-event", text: LONG_TITLE
-      assert_match(/612(?:\.0)? 792(?:\.0)?/, printed_media_box)
+      sizes = printed_page_sizes
+      assert_equal [ 792, 612 ], sizes.first
+      first_schedule_page = sizes.index([ 612, 792 ])
+      assert first_schedule_page, "the month must be followed by a portrait schedule"
+      assert sizes.drop(first_schedule_page).all? { |size| size == [ 612, 792 ] }
       save_print_preview("calendar-print-phone-#{width}")
       assert_no_selector ".calendar-print-filters"
       assert_selector ".calendar-print-description", text: "Bring the current setup checklist."
@@ -220,24 +224,58 @@ class CalendarPrintTest < ApplicationSystemTestCase
     end
 
     page.current_window.resize_to(1400, 1000)
-    assert_selector ".calendar-workspace[data-calendar-print-display='month']"
     assert_selector ".calendar-grid"
     assert_no_selector ".calendar-schedule"
   end
 
-  test "the browser print transition keeps the captured layout until printing ends" do
+  test "printing and cancelling preserve either selected screen view and its filters" do
     system_sign_in(@member)
-    page.current_window.resize_to(390, 844)
     visit calendar_path(start_date: "2026-09-01")
-    assert_selector ".calendar-workspace[data-calendar-print-display='schedule']"
+    uncheck "Other activities"
 
-    page.execute_script("window.dispatchEvent(new Event('beforeprint'))")
-    page.current_window.resize_to(1400, 1000)
-    assert_selector ".calendar-workspace[data-calendar-print-display='schedule']"
-    page.execute_script("window.dispatchEvent(new Event('afterprint'))")
-    assert_selector ".calendar-workspace[data-calendar-print-display='month']"
-    assert_selector ".calendar-workspace[data-calendar-display-value='month']"
-    assert_selector ".calendar-grid"
+    %w[Month Schedule].each do |view|
+      click_button view
+      screen_url = page.current_url
+      page.execute_script("window.dispatchEvent(new Event('beforeprint'))")
+      page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+      assert_selector ".calendar-grid"
+      assert_selector ".calendar-schedule"
+      page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
+      page.execute_script("window.dispatchEvent(new Event('afterprint'))")
+
+      assert_equal screen_url, page.current_url
+      assert_selector ".calendar-workspace[data-calendar-display-value='#{view.downcase}']"
+      assert_selector "button[aria-pressed='true']", text: view
+      assert_unchecked_field "Other activities"
+      assert_no_selector(view == "Month" ? ".calendar-schedule" : ".calendar-grid")
+    end
+  end
+
+  test "printed dates do not highlight the current day" do
+    travel_to(@organization.calendar_time_zone.local(2026, 9, 8, 12)) do
+      system_sign_in(@member)
+      visit calendar_path(start_date: "2026-09-01")
+      today = find(".calendar-grid [aria-current='date'] .calendar-day-number")
+      assert_equal "50%", today.style("border-radius")["border-radius"]
+      page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+      ordinary_day = find(".calendar-grid td:not(.today):not(.prev-month):not(.next-month) .calendar-day-number", match: :first)
+      properties = %w[background-color border-width border-radius color font-weight]
+      assert_equal ordinary_day.style(*properties), today.style(*properties)
+      assert_equal "0px", today.style("border-width")["border-width"]
+      save_print_preview("calendar-print-without-today-marker")
+    end
+  end
+
+  test "an empty selection prints one month page and an empty schedule without a trailing page" do
+    system_sign_in(@member)
+    visit calendar_path(start_date: "2026-09-01", categories: [ "" ])
+    assert_text "No events to show"
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+    assert_selector ".calendar-print-empty", text: "No events to show for this month."
+    assert_no_selector ".calendar-grid-event"
+    assert_no_selector ".calendar-schedule-event"
+    assert_equal [ [ 792, 612 ], [ 612, 792 ] ], printed_page_sizes
+    save_print_preview("calendar-print-empty")
   end
 
   test "crowded days continue onto additional pages without shrinking the chosen print size" do
@@ -253,13 +291,14 @@ class CalendarPrintTest < ApplicationSystemTestCase
     visit calendar_path(start_date: "2026-09-01")
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     assert_selector ".calendar-grid-event", text: "Activity 12: #{LONG_TITLE}"
-    assert_no_selector ".calendar-schedule"
+    assert_selector ".calendar-schedule"
     titles = all(".calendar-block-title")
     assert titles.all? { |title| title.style("font-size")["font-size"].to_f >= 14.5 }
     assert titles.none? { |title| title.evaluate_script("this.scrollHeight > this.clientHeight + 1 || this.scrollWidth > this.clientWidth + 1") }
     assert_equal "table-header-group", find(".calendar-grid thead").style("display")["display"]
-    assert_operator printed_page_count, :>, 1
-    assert_match(/792(?:\.0)? 612(?:\.0)?/, printed_media_box)
+    sizes = printed_page_sizes
+    assert_operator sizes.count([ 792, 612 ]), :>, 1
+    assert_equal [ 612, 792 ], sizes.last
     save_print_preview("calendar-print-crowded")
   end
 
@@ -283,11 +322,30 @@ class CalendarPrintTest < ApplicationSystemTestCase
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     event = find(".calendar-schedule-event", text: LONG_TITLE)
     assert_equal "auto", event.style("break-inside")["break-inside"]
+    assert_equal "8", event.find(".calendar-print-event-date strong").text
+    within find(".calendar-schedule-event", text: "Festival planning meeting") do
+      assert_no_selector ".calendar-print-event-date"
+    end
     assert_selector ".calendar-print-description", text: "Preparation step 1:"
     assert_selector ".calendar-print-description", text: "Final instruction: Return the checklist to the Adjutant."
     assert_equal 31, event.all(".calendar-print-description p").size
-    assert_operator printed_page_count, :>, 1
+    schedule_pages = printed_page_sizes.count([ 612, 792 ])
+    assert_operator schedule_pages, :>, 1
+    assert_operator schedule_pages, :<=, 3, "the continued description should not create a heading-only page"
     save_print_preview("calendar-print-long-description")
+  end
+
+  test "one long paragraph flows across pages without forcing a heading-only sheet" do
+    description = (1..30).map { |number| "Preparation step #{number}: Review the volunteer assignments, confirm the supplies, and check the meeting room and park shelter arrangements." }.join(" ")
+    description += " Final instruction: Return the checklist to the Adjutant."
+    @organization.calendar_events.find_by!(title: LONG_TITLE).update!(description: description)
+    system_sign_in(@member)
+    visit calendar_path(start_date: "2026-09-01", display: "schedule", categories: [ "planning_meeting" ])
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+    event = find(".calendar-schedule-event", text: LONG_TITLE)
+    assert_equal description, event.find(".calendar-print-description p").text
+    assert_operator printed_page_sizes.count([ 612, 792 ]), :<=, 3
+    save_print_preview("calendar-print-long-paragraph")
   end
 
   private
@@ -304,11 +362,9 @@ class CalendarPrintTest < ApplicationSystemTestCase
     File.binwrite(directory.join("#{name}.pdf"), printed_pdf)
   end
 
-  def printed_page_count
-    printed_pdf.scan(%r{/Type\s*/Page(?!s)}).size
-  end
-
-  def printed_media_box
-    printed_pdf[/MediaBox\s*\[\s*[^\]]+\]/]
+  def printed_page_sizes
+    printed_pdf.scan(/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/).map do |width, height|
+      [ width.to_f.round, height.to_f.round ]
+    end
   end
 end

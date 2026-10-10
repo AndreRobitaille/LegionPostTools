@@ -9,12 +9,16 @@ module CalendarHelper
     CalendarCategories::LABELS.except(*(@month.view == "deadlines" ? [] : [ "deadline" ]))
   end
 
-  def calendar_printed_on
-    legion_date(Time.current.in_time_zone(@organization.calendar_time_zone))
-  end
-
   def calendar_entry_hidden?(entry)
     !@month.categories.include?(CalendarCategories.for(entry))
+  end
+
+  def calendar_print_description_parts(entry)
+    return [ nil, nil ] unless entry.is_a?(CalendarEvent) && entry.description.present?
+
+    opening, continuation = entry.description.gsub(/\r\n?/, "\n").split(/\n\n+/, 2)
+    # Keep a short opening beside the title; longer paragraphs flow below it.
+    opening.length <= 500 ? [ opening, continuation ] : [ nil, entry.description ]
   end
 
   def calendar_entry_path(entry)

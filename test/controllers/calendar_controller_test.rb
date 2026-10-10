@@ -30,8 +30,10 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_select ".calendar-grid th", count: 7
     assert_select "button.calendar-print[data-action=?]", "calendar#print", text: "Print"
     assert_select "nav.calendar-month-navigation .calendar-print", count: 0
-    assert_select ".calendar-print-heading .calendar-print-post", text: "Example Post"
-    assert_select ".calendar-print-heading time", text: "September 2026"
+    assert_select ".calendar-print-heading .calendar-print-post", text: "Example Post", count: 2
+    assert_select ".calendar-print-heading time", text: "September 2026", count: 2
+    assert_select ".calendar-month .calendar-print-section", text: "Month overview"
+    assert_select ".calendar-schedule .calendar-print-section", text: "Detailed schedule"
     get calendar_event_path(@event)
     assert_response :success
     assert_select "h1", text: "Community breakfast"

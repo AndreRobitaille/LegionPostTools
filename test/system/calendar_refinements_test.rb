@@ -82,7 +82,7 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     assert_selector ".calendar-print-heading", text: "Example Post"
     assert_selector ".calendar-print-heading", text: "September 2026"
     assert_selector ".calendar-grid-event", text: "Officers planning"
-    assert_no_selector ".calendar-schedule"
+    assert_selector ".calendar-schedule"
     assert_no_selector ".app-header"
     assert_no_selector ".calendar-filters"
     assert_no_selector ".calendar-footer"

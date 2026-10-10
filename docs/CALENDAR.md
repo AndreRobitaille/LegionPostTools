@@ -67,43 +67,54 @@ ordinary links. Management uses the same schedule with adjacent edit actions and
 Members only/Public labels. Event forms use existing large controls, plain labels, and
 visible errors. Keyboard focus and print output must remain usable.
 
-Printed copies use the browser print dialog. The Print control sits beside the month
-navigation, with its own icon and spacing, and does not restyle the grid, filters, or
-schedule. Print styles hide the site header, navigation, filters, buttons, and the
-on-screen event count. They add a plain heading with the Post's saved name and the month
-already on the page, without an event-type summary. Filters still control which events
-print. Days outside the month print in gray. Cancelled events keep the Cancelled
-label, with a dashed box and a line through the title. A printed date and page number use
-the same system sans type as the handout. The month grid's border sits inside the printable
-width. Dated rows in the printed schedule are separated by a light gray rule.
+Printed copies use one browser print dialog for a complete monthly handout: the landscape
+Letter month overview comes first, followed by the portrait Letter detailed schedule on
+a new page. Both sections print regardless of the selected screen view or phone width.
+Save as PDF produces one document containing both sections. Event-type filters apply to
+both; printing and cancelling print preserve the screen view and filters.
 
-Print design: a black-on-white Post activities handout. The month grid uses 11pt
-regular-weight event titles for a lighter, more compact overview; its dates and weekday
-headings remain bold. Times, locations, and footers use 14px, and weekday labels are at
-least 13px. The detailed schedule retains its larger titles and 16px descriptions.
-Keep the familiar seven-day month structure on landscape letter paper. The grid can fit
-on one sheet, including a lightly populated six-week month; crowded weeks continue onto
-additional numbered sheets with repeated weekday headings. A short hint in the desktop
-month view recommends choosing Schedule for a busy month's handout. Readability and
-complete event titles take precedence over fitting every month onto one page. The month
-grid is a concise overview: event title, start time, and cancellation status. Locations,
-end times, and descriptions belong in the schedule. Titles wrap without clipping or
-shrinking to fit.
+Print visual direction (10 October 2026): retain The 1919's restrained system sans and
+tracked section labels, with white paper (#FFFFFF), black text (#000000), secondary gray
+(#555555), light rules (#B5B5B5), and quieter event separators (#D0D0D0). A clearly sized
+month heading and aligned date columns provide the hierarchy. Replace event boxes and
+heavy side bars with spacing and fine horizontal rules; omit activity icons and filled
+areas. This reduces ink while keeping cancellation labels and struck-through titles
+unambiguous. Both sections identify the Post and month. Hide application chrome, controls,
+the event count, the current-day circle, and the printed-on date: the handout represents
+the entire month, not the day it was opened. Do not put footer ink outside the printable
+area. Each page has a quarter-inch margin on all four sides, including schedule
+continuation pages.
 
-The schedule uses portrait letter pages when it is the view on screen, including on a
-phone where the grid is not shown. Capture that effective screen layout before printing
-and retain it through the browser's print-media transition; paper width must not choose
-the layout. This applies to the Print button and the browser's own print command. Printing
-and cancelling print leave the screen layout and filters unchanged. The printed schedule
-is the detailed handout: full titles, time ranges, locations (including a meeting's saved
-street address), and each CalendarEvent's complete plain-text description at 16px. Each
-printed event uses two columns: event type, title, and time on the left; location and
-description on the right. A narrow date column groups the day's events. Use compact padding
-and separators while retaining readable type, and let entries without location or
-description use the full width. Keep the screen's existing stacked event cards. Preserve
-paragraphs and line breaks, and leave missing details blank. Long descriptions continue
-onto later pages without clipping. Use the existing member-readable event fields; do not
-include parent Endeavor text, agendas, minutes, or internal notes.
+The month grid uses 11pt regular event titles, 14px start times and dates, and weekday
+labels of at least 13px. Dates and weekdays carry the emphasis, with dates aligned to
+the corner of each cell. Days outside the month use gray text. Give the weeks a consistent
+baseline height suited to the month's week count. A lightly populated six-week month
+fits one landscape page; crowded weeks can continue onto more pages with repeated weekday
+headings. Complete titles and readable type take precedence over a fixed page count.
+Locations, end times, and descriptions belong in the detailed schedule.
+
+The schedule retains 18px titles and 16px descriptions. Each event uses two columns:
+event type, title, and time range on the left; location and description on the right.
+A narrow date column groups the day's events. Use light date-group and event separators,
+and let entries without location or description use the full width. The schedule includes
+a meeting's saved street address and each CalendarEvent's complete plain-text description.
+Preserve paragraphs and line breaks, and leave missing details blank. Keep a short opening
+paragraph beside the title and location; longer openings and remaining paragraphs flow
+below that heading in the detail column. This keeps the heading with the start of the
+description without forcing a nearly empty page for a long entry. Long descriptions
+continue onto later pages without clipping or overlapping the next event. Use existing
+member-readable fields; do not include parent Endeavor text, agendas, minutes, or internal
+notes. Screen event cards keep the established responsive presentation.
+
+Local print validation on 10 October 2026 used synthetic records in an isolated test
+database: 31 calendar controller and browser tests / 450 assertions passed. Desktop,
+390px, and 320px checks covered both sections, selected filters, unchanged screen state,
+six-week months, crowded days, complete addresses, and long descriptions. All 50 pages
+across 11 generated PDFs were checked for text inside the quarter-inch margins; long
+descriptions retained every paragraph and their final instruction. Rendered PDFs and
+desktop/phone screens were visually reviewed. Focused RuboCop, JavaScript syntax, and
+the Tailwind build passed. This validation used synthetic data; paid AI generation was
+not used.
 
 Use simple_calendar as a small rendering helper, with application-owned templates and
 styles. Its documentation supports custom attributes, multi-day events, and Turbo frames:

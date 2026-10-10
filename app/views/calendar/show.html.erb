@@ -1,8 +1,6 @@
 <% content_for :title, "Calendar" %>
 <% display = params[:display] == "schedule" ? "schedule" : "month" %>
-<div class="calendar-workspace" data-controller="calendar"
-     data-calendar-display-value="<%= display %>" data-calendar-print-display="<%= display %>"
-     data-action="resize@window->calendar#updatePrintDisplay beforeprint@window->calendar#preparePrint afterprint@window->calendar#finishPrint">
+<div class="calendar-workspace" data-controller="calendar" data-calendar-display-value="<%= display %>">
   <% if @managing || current_user.can_manage_calendar? %>
     <header class="calendar-page-header">
       <% if @managing %>
@@ -69,6 +67,7 @@
         <% end %>
       <% end %>
       <section class="calendar-schedule" aria-label="Schedule for <%= @month.date.strftime('%B') %>">
+        <%= render "calendar/print_heading", date: @month.date, section: "Detailed schedule" %>
         <% @month.scheduled_days(filtered: false).each do |day, entries| %>
           <section class="calendar-date-group" aria-label="<%= legion_date(day) %>" data-calendar-target="day" <%= 'hidden' if entries.all? { |entry| calendar_entry_hidden?(entry) } %>>
             <h3 class="calendar-date"><span><%= day.strftime("%a") %></span><strong><%= day.day %></strong><span class="calendar-date-month"><%= day.strftime("%b") %></span></h3>
@@ -76,9 +75,11 @@
               <% entries.each do |entry| %>
                 <article class="calendar-row calendar-category--<%= CalendarCategories.for(entry) %>" data-calendar-target="entry" data-category="<%= CalendarCategories.for(entry) %>" <%= 'hidden' if calendar_entry_hidden?(entry) %>>
                   <%= link_to calendar_entry_path(entry), class: "calendar-schedule-event" do %>
+                    <span class="calendar-print-event-date"><span><%= day.strftime("%a") %></span><strong><%= day.day %></strong></span>
                     <div class="calendar-schedule-copy">
                       <% time = entry.is_a?(CalendarEvent) && entry.all_day? ? nil : calendar_entry_time(entry) %>
                       <% location = calendar_entry_location(entry) %>
+                      <% opening_description, continued_description = calendar_print_description_parts(entry) %>
                       <div class="calendar-schedule-identity">
                         <div class="calendar-schedule-kind"><%= render "shared/activity_icon", kind: CalendarCategories.for(entry) %><span><%= CalendarCategories::LABELS.fetch(CalendarCategories.for(entry)) %></span></div>
                         <% if entry.respond_to?(:cancelled?) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
@@ -90,12 +91,15 @@
                           <% if location.present? %>
                             <p class="calendar-event-place"><%= render "shared/activity_icon", kind: "location" %><span><%= location %><% if entry.is_a?(Meeting) && entry.location_address.present? %><span class="calendar-print-address">, <%= entry.location_address %></span><% end %></span></p>
                           <% end %>
-                          <% if entry.is_a?(CalendarEvent) && entry.description.present? %>
-                            <div class="calendar-print-description"><%= simple_format(h(entry.description)) %></div>
+                          <% if opening_description.present? %>
+                            <div class="calendar-print-description"><%= simple_format(h(opening_description)) %></div>
                           <% end %>
                         </div>
                       <% end %>
                     </div>
+                    <% if continued_description.present? %>
+                      <div class="calendar-print-description"><%= simple_format(h(continued_description)) %></div>
+                    <% end %>
                     <span class="calendar-schedule-action">Details <span aria-hidden="true">→</span></span>
                   <% end %>
                 </article>
@@ -103,6 +107,7 @@
             </div>
           </section>
         <% end %>
+        <p class="calendar-print-empty">No events to show for this month.</p>
       </section>
       <div class="calendar-empty" data-calendar-target="empty" <%= 'hidden' if @month.scheduled_days.any? %>>
         <h3>No events to show</h3><p>Choose more event types or try another month.</p>
