@@ -28,6 +28,9 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_select ".nav-tab--active", text: "Calendar"
     assert_select "a[href*='/calendar/manage']", count: 0
     assert_select ".calendar-grid th", count: 7
+    assert_select "button.calendar-print[data-action=?]", "calendar#print", text: "Print"
+    assert_select ".calendar-print-heading .calendar-print-post", text: "Example Post"
+    assert_select ".calendar-print-heading time", text: "September 2026"
     get calendar_event_path(@event)
     assert_response :success
     assert_select "h1", text: "Community breakfast"

@@ -79,7 +79,13 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     assert_not_equal "rgba(0, 0, 0, 0)", block.style("background-color")["background-color"]
     capture_system_screenshot("calendar-redesign-member-desktop")
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
-    assert_selector ".calendar-schedule-event", text: "Officers planning"
+    assert_selector ".calendar-print-heading", text: "Example Post"
+    assert_selector ".calendar-print-heading", text: "September 2026"
+    assert_selector ".calendar-grid-event", text: "Officers planning"
+    assert_no_selector ".calendar-schedule"
+    assert_no_selector ".app-header"
+    assert_no_selector ".calendar-filters"
+    assert_no_selector ".calendar-footer"
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
     click_button "Schedule"
     assert_selector ".calendar-schedule-event", text: "Membership Meeting"

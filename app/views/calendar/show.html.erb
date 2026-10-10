@@ -61,6 +61,7 @@
             <% if entry.respond_to?(:cancelled?) && entry.cancelled? %><span class="calendar-grid-status">Cancelled</span><% end %>
             <span class="calendar-block-title"><%= calendar_entry_title(entry) %></span>
             <% if (time = calendar_entry_time(entry)).present? %><span class="calendar-block-time"><%= time %></span><% end %>
+            <% if (location = calendar_entry_location(entry)).present? %><span class="calendar-block-location"><%= location %></span><% end %>
           <% end %>
         <% end %>
       <% end %>

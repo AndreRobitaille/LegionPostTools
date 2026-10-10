@@ -67,6 +67,16 @@ ordinary links. Management uses the same schedule with adjacent edit actions and
 Members only/Public labels. Event forms use existing large controls, plain labels, and
 visible errors. Keyboard focus and print output must remain usable.
 
+Printed copies use the browser print dialog. A Print control sits with the month
+navigation and does not restyle the grid, filters, or schedule. Print styles hide the
+site header, navigation, filters, buttons, and the on-screen event count. They add a
+plain heading with the Post's saved name and the month already on the page. The month
+grid prints in black on white, on one landscape letter page. Titles, times, and the
+locations already stored on those events wrap instead of being clipped. The schedule
+prints as that same list
+when it is the view on screen, including on a phone where the grid is not shown.
+Nothing beyond the events already rendered is added.
+
 Use simple_calendar as a small rendering helper, with application-owned templates and
 styles. Its documentation supports custom attributes, multi-day events, and Turbo frames:
 https://github.com/excid3/simple_calendar. Business rules and authorization stay in Rails

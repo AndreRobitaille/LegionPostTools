@@ -28,6 +28,10 @@ export default class extends Controller {
   showMonth() { this.setDisplay("month") }
   showSchedule() { this.setDisplay("schedule") }
 
+  print() {
+    window.print()
+  }
+
   setDisplay(display) {
     this.displayValue = display
     this.updateDisplay()

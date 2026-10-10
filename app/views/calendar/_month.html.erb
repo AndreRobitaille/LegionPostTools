@@ -1,4 +1,8 @@
 <div class="calendar-month">
+  <div class="calendar-print-heading">
+    <p class="calendar-print-post"><%= @organization.name %></p>
+    <p class="calendar-print-month"><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></p>
+  </div>
   <div class="calendar-month-heading">
     <div class="calendar-month-identity">
       <h2><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></h2>
@@ -6,6 +10,7 @@
         <%= link_to "‹", calendar.url_for_previous_view, class: "calendar-arrow", aria: { label: "Previous month" }, data: { calendar_target: "navigation" } %>
         <%= link_to "›", calendar.url_for_next_view, class: "calendar-arrow", aria: { label: "Next month" }, data: { calendar_target: "navigation" } %>
         <%= link_to "Today", calendar.url_for_today_view, class: "calendar-today", data: { calendar_target: "navigation" } %>
+        <button type="button" class="calendar-print" data-action="calendar#print">Print</button>
       </nav>
     </div>
     <div class="calendar-display-switch" aria-label="Calendar layout" data-calendar-target="enhancement" hidden>
