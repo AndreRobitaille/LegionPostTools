@@ -2377,7 +2377,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   margin: 0.32in 0.38in 0.42in;
 
   @bottom-left { content: ""; border-top: none; padding: 0; }
-  @bottom-center { content: "Printed " var(--calendar-printed-on); border-top: none; padding-top: 4pt; color: #333; font: 8pt/1.2 Arial, sans-serif; }
+  @bottom-center { content: "Printed " var(--calendar-printed-on); border-top: none; padding-top: 4pt; color: #333; font-size: 8pt; line-height: 1.2; font-family: system-ui, Helvetica, Arial, sans-serif; }
   @bottom-right { content: ""; border-top: none; padding: 0; }
 }
 @page calendar-list {
@@ -2385,7 +2385,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   margin: 0.6in;
 
   @bottom-left { content: ""; border-top: none; padding: 0; }
-  @bottom-center { content: "Printed " var(--calendar-printed-on); border-top: none; padding-top: 4pt; color: #333; font: 8pt/1.2 Arial, sans-serif; }
+  @bottom-center { content: "Printed " var(--calendar-printed-on); border-top: none; padding-top: 4pt; color: #333; font-size: 8pt; line-height: 1.2; font-family: system-ui, Helvetica, Arial, sans-serif; }
   @bottom-right { content: ""; border-top: none; padding: 0; }
 }
 @media print {
@@ -2405,11 +2405,13 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .calendar-workspace[data-calendar-display-value="month"] .calendar-schedule,
   .calendar-workspace[data-calendar-display-value="schedule"] .calendar-grid { display: none !important; }
   .calendar-workspace[data-calendar-display-value="month"] .calendar-month { display: flex; flex-direction: column; min-height: 7.55in; }
-  .calendar-workspace[data-calendar-display-value="month"] .calendar-grid { display: table !important; flex: 1 1 auto; width: 100%; background: #fff; border: 0.75pt solid #000; border-collapse: collapse; }
+  .calendar-workspace[data-calendar-display-value="month"] .calendar-grid { display: table !important; flex: 1 1 auto; box-sizing: border-box; width: calc(100% - 2px); max-width: 100%; min-width: 0; background: #fff; border: 0.75pt solid #000; border-collapse: separate; border-spacing: 0; }
   .calendar-grid th, .calendar-grid td, .calendar-grid-event, .calendar-grid-status,
   .calendar-block-title, .calendar-block-time, .calendar-block-location { color: #000 !important; }
-  .calendar-grid th { padding: 2pt 1pt; border-bottom: 1pt solid #000; background: #fff; font-size: 8pt; letter-spacing: .04em; }
-  .calendar-grid td { height: auto; padding: 2pt 2pt 1pt; border: 0.6pt solid #000; background: #fff !important; }
+  .calendar-grid th { padding: 2pt 1pt; border: 0; border-right: 0.6pt solid #000; border-bottom: 1pt solid #000; background: #fff; font-size: 8pt; letter-spacing: .04em; }
+  .calendar-grid td { height: auto; padding: 2pt 2pt 1pt; border: 0; border-right: 0.6pt solid #000; border-bottom: 0.6pt solid #000; background: #fff !important; }
+  .calendar-grid th:last-child, .calendar-grid td:last-child { border-right: 0; }
+  .calendar-grid tr:last-child td { border-bottom: 0; }
   .calendar-grid .prev-month, .calendar-grid .next-month { background: #fff !important; }
   .calendar-day-number { width: auto; height: auto; margin: 0 0 1pt auto; color: #000 !important; font-size: 8pt; font-weight: 700; }
   .calendar-grid .prev-month .calendar-day-number, .calendar-grid .next-month .calendar-day-number { color: #767676 !important; font-weight: 400; }
@@ -2425,7 +2427,8 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .calendar-schedule-event, .calendar-schedule-event h4, .calendar-schedule-event p, .calendar-schedule-kind, .calendar-date, .calendar-date span, .calendar-date strong { color: #000 !important; }
   .calendar-schedule-event { background: #fff !important; border: 0.75pt solid #000; border-left-width: 2.5pt; border-radius: 0; box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
   .calendar-schedule-event h4, .calendar-event-place span { overflow-wrap: break-word; }
-  .calendar-date-group { break-inside: auto; }
+  .calendar-date-group { break-inside: auto; border-bottom: 1px solid #bbb; }
+  .calendar-date::after { background: #bbb; }
 }
 @media print and (max-width: 560px) {
   body:has(.calendar-workspace[data-calendar-display-value]) { page: calendar-list; }

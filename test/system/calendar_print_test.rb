@@ -104,6 +104,9 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_selector ".calendar-grid-event", text: "Color guard exhibition"
     assert_selector ".calendar-grid .next-month .calendar-day-number", text: "1"
     assert_no_selector ".calendar-grid-event", text: "Community breakfast"
+    grid = find(".calendar-grid")
+    assert_equal "border-box", grid.style("box-sizing")["box-sizing"]
+    assert_not grid.evaluate_script("this.getBoundingClientRect().right > this.parentElement.getBoundingClientRect().right + 0.75 || this.getBoundingClientRect().left < this.parentElement.getBoundingClientRect().left - 0.75")
     save_print_preview("calendar-print-filtered")
     assert_equal 1, printed_page_count
 
@@ -127,6 +130,7 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_not schedule_title.evaluate_script("this.scrollHeight > this.clientHeight + 1")
     assert_equal "line-through", find(".calendar-schedule-event h4", text: "Color guard exhibition").style("text-decoration-line")["text-decoration-line"]
     assert_selector ".calendar-print-filters", text: "Showing: Member Meeting, Planning meetings, Honor Guard"
+    assert_includes find(".calendar-date-group", match: :first).style("border-bottom-color")["border-bottom-color"], "187, 187, 187"
     capture_system_screenshot("calendar-print-schedule")
     save_print_preview("calendar-print-schedule")
   end

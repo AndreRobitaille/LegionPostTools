@@ -73,8 +73,10 @@ schedule. Print styles hide the site header, navigation, filters, buttons, and t
 on-screen event count. They add a plain heading with the Post's saved name and the month
 already on the page. If some event types are unchecked, that heading says which types
 are showing. Days outside the month print in gray. Cancelled events keep the Cancelled
-label, with a dashed box and a line through the title. A small printed date replaces the
-empty rule at the bottom of the page. The month grid prints in black on white on one
+label, with a dashed box and a line through the title. A small printed date, in the same type as the page, replaces the
+empty rule at the bottom of the page. The month grid's border sits inside the printable
+width. Dated rows in the printed schedule are separated by a light gray rule. The month
+grid prints in black on white on one
 landscape letter page. Titles, times, and the locations already stored on those events
 wrap instead of being clipped. The schedule prints as that same list when it is the view
 on screen, including on a phone where the grid is not shown. Nothing beyond the events
