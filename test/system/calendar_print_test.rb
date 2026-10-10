@@ -83,9 +83,29 @@ class CalendarPrintTest < ApplicationSystemTestCase
     event = find(".calendar-grid-event", text: LONG_TITLE)
     assert_includes event.style("color")["color"], "0, 0, 0"
     assert_includes event.style("background-color")["background-color"], "255, 255, 255"
-    capture_system_screenshot("calendar-print-month")
+    outside = find(".calendar-grid .next-month .calendar-day-number", match: :first)
+    assert_includes outside.style("color")["color"], "118, 118, 118"
+    assert_equal "400", outside.style("font-weight")["font-weight"]
+    cancelled = find(".calendar-grid-event", text: "Color guard exhibition")
+    assert_equal "line-through", cancelled.find(".calendar-block-title").style("text-decoration-line")["text-decoration-line"]
+    assert_equal "dashed", cancelled.style("border-top-style")["border-top-style"]
+    assert_selector ".calendar-grid-status", text: "Cancelled"
+    assert_no_selector ".calendar-print-filters"
+    assert_match(/\d{2} [A-Z]{3} \d{4}/, page.evaluate_script("getComputedStyle(document.documentElement).getPropertyValue('--calendar-printed-on')"))
     assert_equal 1, printed_page_count
     assert_match(/792(?:\.0)? 612(?:\.0)?/, printed_media_box)
+
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
+    uncheck "Officer Meeting"
+    uncheck "Public events"
+    uncheck "Other activities"
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+    assert_selector ".calendar-print-filters", text: "Showing: Member Meeting, Planning meetings, Honor Guard"
+    assert_selector ".calendar-grid-event", text: "Color guard exhibition"
+    assert_selector ".calendar-grid .next-month .calendar-day-number", text: "1"
+    assert_no_selector ".calendar-grid-event", text: "Community breakfast"
+    save_print_preview("calendar-print-filtered")
+    assert_equal 1, printed_page_count
 
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
     assert_selector ".app-header"
@@ -105,23 +125,33 @@ class CalendarPrintTest < ApplicationSystemTestCase
     assert_selector ".calendar-event-place", text: LONG_LOCATION
     schedule_title = find(".calendar-schedule-event h4", text: LONG_TITLE)
     assert_not schedule_title.evaluate_script("this.scrollHeight > this.clientHeight + 1")
+    assert_equal "line-through", find(".calendar-schedule-event h4", text: "Color guard exhibition").style("text-decoration-line")["text-decoration-line"]
+    assert_selector ".calendar-print-filters", text: "Showing: Member Meeting, Planning meetings, Honor Guard"
     capture_system_screenshot("calendar-print-schedule")
+    save_print_preview("calendar-print-schedule")
   end
 
   test "a six-week month prints on one landscape page" do
     zone = @organization.calendar_time_zone
-    [ 2, 8, 14, 21, 28 ].each do |day|
+    [
+      [ 1, "May membership meeting and scholarship report" ],
+      [ 8, "Honor Guard memorial detail" ],
+      [ 15, "Planning meeting for the Memorial Day program at the park" ],
+      [ 22, "Officers roundtable" ],
+      [ 29, "Community breakfast" ]
+    ].each do |day, title|
       @organization.calendar_events.create!(
-        title: "August planning session for Post programs and the family picnic",
-        calendar_category: "planning_meeting", location: "Post home meeting room",
-        starts_at: zone.local(2026, 8, day, 18), created_by: @member, updated_by: @member
+        title: title, calendar_category: "other", location: "Post home",
+        starts_at: zone.local(2027, 5, day, 18), created_by: @member, updated_by: @member
       )
     end
     system_sign_in(@member)
-    visit calendar_path(start_date: "2026-08-01")
+    visit calendar_path(start_date: "2027-05-01")
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
-    assert_selector ".calendar-print-heading", text: "August 2026"
-    assert_selector ".calendar-grid"
+    assert_selector ".calendar-print-heading", text: "May 2027"
+    assert_selector ".calendar-grid tbody tr", count: 6
+    assert_selector ".calendar-grid .next-month .calendar-day-number", text: "1"
+    save_print_preview("calendar-print-may-2027")
     assert_equal 1, printed_page_count
     assert_match(/792(?:\.0)? 612(?:\.0)?/, printed_media_box)
   end
@@ -129,7 +159,13 @@ class CalendarPrintTest < ApplicationSystemTestCase
   private
 
   def printed_pdf
-    @printed_pdf ||= Base64.decode64(page.driver.browser.execute_cdp("Page.printToPDF", printBackground: false, preferCSSPageSize: true, displayHeaderFooter: false).fetch("data"))
+    Base64.decode64(page.driver.browser.execute_cdp("Page.printToPDF", printBackground: false, preferCSSPageSize: true, displayHeaderFooter: false).fetch("data"))
+  end
+
+  def save_print_preview(name)
+    return if ENV["SYSTEM_TEST_CAPTURE_DIR"].blank?
+
+    File.binwrite(Rails.root.join(ENV["SYSTEM_TEST_CAPTURE_DIR"], "#{name}.pdf"), printed_pdf)
   end
 
   def printed_page_count

@@ -9,6 +9,19 @@ module CalendarHelper
     CalendarCategories::LABELS.except(*(@month.view == "deadlines" ? [] : [ "deadline" ]))
   end
 
+  def calendar_print_filter_summary
+    labels = calendar_filter_labels
+    selected = labels.keys.select { |key| @month.categories.include?(key) }
+    return if selected.size == labels.size
+
+    names = selected.empty? ? "no event types" : labels.values_at(*selected).join(", ")
+    "Showing: #{names}"
+  end
+
+  def calendar_printed_on
+    legion_date(Time.current.in_time_zone(@organization.calendar_time_zone))
+  end
+
   def calendar_entry_hidden?(entry)
     !@month.categories.include?(CalendarCategories.for(entry))
   end

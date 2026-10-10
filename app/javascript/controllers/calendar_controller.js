@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["category", "entry", "day", "empty", "count", "navigation", "enhancement", "monthButton", "scheduleButton", "displayField"]
+  static targets = ["category", "entry", "day", "empty", "count", "navigation", "enhancement", "monthButton", "scheduleButton", "displayField", "printFilters"]
   static values = { display: String }
 
   connect() {
@@ -55,6 +55,22 @@ export default class extends Controller {
     })
     this.emptyTarget.hidden = count > 0
     this.countTarget.textContent = `${count} ${count === 1 ? "event" : "events"} this month`
+    this.updatePrintFilters()
+  }
+
+  updatePrintFilters() {
+    if (!this.hasPrintFiltersTarget) return
+
+    const selected = this.categoryTargets.filter(input => input.checked)
+    if (selected.length === this.categoryTargets.length) {
+      this.printFiltersTarget.hidden = true
+      this.printFiltersTarget.textContent = ""
+      return
+    }
+
+    const names = selected.map(input => input.closest("label").querySelector("span").textContent.trim())
+    this.printFiltersTarget.hidden = false
+    this.printFiltersTarget.textContent = `Showing: ${names.length ? names.join(", ") : "no event types"}`
   }
 
   updateLocation() {

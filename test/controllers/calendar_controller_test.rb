@@ -29,6 +29,7 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href*='/calendar/manage']", count: 0
     assert_select ".calendar-grid th", count: 7
     assert_select "button.calendar-print[data-action=?]", "calendar#print", text: "Print"
+    assert_select "nav.calendar-month-navigation .calendar-print", count: 0
     assert_select ".calendar-print-heading .calendar-print-post", text: "Example Post"
     assert_select ".calendar-print-heading time", text: "September 2026"
     get calendar_event_path(@event)
@@ -148,6 +149,16 @@ class CalendarControllerTest < ActionDispatch::IntegrationTest
       post calendar_events_path, params: { calendar_event: event_params.merge(endeavor_id: endeavor.id) }
     end
     assert_response :unprocessable_entity
+  end
+
+  test "print names a partial event-type selection and omits it when every type is shown" do
+    sign_in_as(@member)
+    get calendar_path(start_date: "2026-09-01", categories: %w[honor_guard member_meeting])
+    assert_select ".calendar-print-filters", text: "Showing: Member Meeting, Honor Guard"
+    get calendar_path(start_date: "2026-09-01")
+    assert_select ".calendar-print-filters[hidden]"
+    get calendar_path(start_date: "2026-09-01", categories: [ "" ])
+    assert_select ".calendar-print-filters", text: "Showing: no event types"
   end
 
   test "invalid calendar month redirects safely" do

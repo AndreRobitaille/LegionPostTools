@@ -1,17 +1,26 @@
+<% content_for :head do %>
+  <style>:root { --calendar-printed-on: "<%= calendar_printed_on %>"; }</style>
+<% end %>
 <div class="calendar-month">
   <div class="calendar-print-heading">
     <p class="calendar-print-post"><%= @organization.name %></p>
     <p class="calendar-print-month"><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></p>
+    <p class="calendar-print-filters" data-calendar-target="printFilters" <%= "hidden" unless calendar_print_filter_summary %>><%= calendar_print_filter_summary %></p>
   </div>
   <div class="calendar-month-heading">
     <div class="calendar-month-identity">
       <h2><time datetime="<%= start_date.strftime('%Y-%m') %>"><%= start_date.strftime("%B %Y") %></time></h2>
-      <nav class="calendar-month-navigation" aria-label="Calendar month">
-        <%= link_to "‹", calendar.url_for_previous_view, class: "calendar-arrow", aria: { label: "Previous month" }, data: { calendar_target: "navigation" } %>
-        <%= link_to "›", calendar.url_for_next_view, class: "calendar-arrow", aria: { label: "Next month" }, data: { calendar_target: "navigation" } %>
-        <%= link_to "Today", calendar.url_for_today_view, class: "calendar-today", data: { calendar_target: "navigation" } %>
-        <button type="button" class="calendar-print" data-action="calendar#print">Print</button>
-      </nav>
+      <div class="calendar-month-controls">
+        <nav class="calendar-month-navigation" aria-label="Calendar month">
+          <%= link_to "‹", calendar.url_for_previous_view, class: "calendar-arrow", aria: { label: "Previous month" }, data: { calendar_target: "navigation" } %>
+          <%= link_to "›", calendar.url_for_next_view, class: "calendar-arrow", aria: { label: "Next month" }, data: { calendar_target: "navigation" } %>
+          <%= link_to "Today", calendar.url_for_today_view, class: "calendar-today", data: { calendar_target: "navigation" } %>
+        </nav>
+        <button type="button" class="calendar-print" data-action="calendar#print">
+          <svg class="calendar-print-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 8V3h10v5"/><path d="M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/></svg>
+          Print
+        </button>
+      </div>
     </div>
     <div class="calendar-display-switch" aria-label="Calendar layout" data-calendar-target="enhancement" hidden>
       <button type="button" data-action="calendar#showMonth" data-calendar-target="monthButton" aria-pressed="true">Month</button>
