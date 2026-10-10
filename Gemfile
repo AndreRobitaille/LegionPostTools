@@ -43,12 +43,12 @@ gem "image_processing", "~> 2.2"
 gem "ruby-vips", require: false
 
 # Modern Action Text rich-text editor (replaces the default Trix editor)
-gem "lexxy", "~> 1.0.0"
+gem "lexxy", "~> 1.0.1"
 gem "csv"
 gem "webauthn"
 
 # Official OpenAI SDK for the transcript-assisted minutes drafting boundary.
-gem "openai", "~> 0.101.0"
+gem "openai", "~> 0.103.0"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

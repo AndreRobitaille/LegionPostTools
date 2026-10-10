@@ -31,10 +31,10 @@ class MinutesEndeavorConfirmationTest < ApplicationSystemTestCase
     assert_field "Endeavor title", with: @item.title
     assert_field "Description", with: @item.body.to_plain_text
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-    page.save_screenshot("/tmp/minutes-endeavor-manual-desktop.png")
+    capture_system_screenshot("minutes-endeavor-manual-desktop")
     page.current_window.resize_to(390, 1200)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-    page.save_screenshot("/tmp/minutes-endeavor-manual-mobile.png")
+    capture_system_screenshot("minutes-endeavor-manual-mobile")
     find("input[name='confirmation[title]']").click
     find("input[name='confirmation[title]']").send_keys(:tab)
     assert_equal "confirmation_body", page.evaluate_script("document.activeElement.id")
@@ -49,7 +49,7 @@ class MinutesEndeavorConfirmationTest < ApplicationSystemTestCase
     assert_no_link "Create Endeavor from this discussion"
     assert_link "Change Endeavor link"
     page.current_window.resize_to(390, 2400)
-    page.save_screenshot("/tmp/minutes-endeavor-workspace-mobile.png")
+    capture_system_screenshot("minutes-endeavor-workspace-mobile")
   ensure
     page.current_window.resize_to(1400, 1400)
   end
@@ -63,16 +63,16 @@ class MinutesEndeavorConfirmationTest < ApplicationSystemTestCase
     assert_text "Continuing planning and volunteer recruitment."
     assert_link "Review and create"
     assert_no_button "Use suggestion"
-    page.save_screenshot("/tmp/minutes-endeavor-ai-desktop.png")
+    capture_system_screenshot("minutes-endeavor-ai-desktop")
     page.current_window.resize_to(390, 1200)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-    page.save_screenshot("/tmp/minutes-endeavor-ai-review-mobile.png")
+    capture_system_screenshot("minutes-endeavor-ai-review-mobile")
     click_link "Edit proposal"
     assert_selector ".minutes-endeavor-evidence", text: /Post agreed to organize a breakfast/
     assert_field "Endeavor title", with: "Community breakfast"
     page.current_window.resize_to(390, 1800)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-    page.save_screenshot("/tmp/minutes-endeavor-ai-mobile.png")
+    capture_system_screenshot("minutes-endeavor-ai-mobile")
     fill_in "Endeavor title", with: "Community Breakfast Program"
     fill_in "Description", with: "Plan recurring breakfasts and volunteer recruitment."
     click_button "Create and link"

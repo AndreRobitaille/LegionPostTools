@@ -28,7 +28,7 @@ class TimeZoneConfigurationTest < ActiveSupport::TestCase
   def boot_time_zone(value)
     Open3.capture3(
       { "APP_TIME_ZONE" => value, "RAILS_ENV" => "test" },
-      "bin/rails", "runner", "print Time.zone.tzinfo.name",
+      RbConfig.ruby, "bin/rails", "runner", "print Time.zone.tzinfo.name",
       chdir: Rails.root.to_s
     )
   end

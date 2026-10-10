@@ -30,17 +30,17 @@ class WebsiteCalendarSystemTest < ApplicationSystemTestCase
     assert_text "Synthetic community supper"
     assert_text "1 shown; 0 hidden"
     assert_no_horizontal_overflow
-    page.save_screenshot(Rails.root.join("tmp/website-calendar-desktop.png"))
+    capture_system_screenshot("website-calendar-desktop")
     page.driver.browser.manage.window.resize_to(390, 844)
     assert_no_horizontal_overflow
     page.execute_script("document.querySelector('.website-calendar-preview').scrollIntoView({block: 'start'})")
-    page.save_screenshot(Rails.root.join("tmp/website-calendar-mobile.png"))
+    capture_system_screenshot("website-calendar-mobile")
     click_button "Activate calendar listings"
     assert_text "Website calendar defaults saved."
     visit edit_calendar_event_path(CalendarEvent.find_by!(title: "Synthetic community supper"))
     assert_no_horizontal_overflow
     page.execute_script("document.querySelector('.website-calendar-fields').scrollIntoView({block: 'start'})")
-    page.save_screenshot(Rails.root.join("tmp/website-calendar-event-mobile.png"))
+    capture_system_screenshot("website-calendar-event-mobile")
     select "Hide", from: "Public website"
     click_button "Save event"
     assert_text "Calendar event saved."
@@ -51,7 +51,7 @@ class WebsiteCalendarSystemTest < ApplicationSystemTestCase
     select "Member Meeting", from: "Calendar event type"
     fill_in "Public description (optional)", with: "Monthly membership meeting."
     assert_no_horizontal_overflow
-    page.save_screenshot(Rails.root.join("tmp/website-calendar-meeting-mobile.png"))
+    capture_system_screenshot("website-calendar-meeting-mobile")
     click_button "Create meeting"
     assert_text "Meeting created."
     assert_text "Shown"

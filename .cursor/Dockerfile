@@ -7,7 +7,7 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
-    PATH="/opt/hostedtoolcache/Ruby/4.0.0/x64/bin:/usr/local/bin:${PATH}"
+    PATH="/opt/hostedtoolcache/Ruby/4.0.7/x64/bin:/usr/local/bin:${PATH}"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl sudo \
@@ -19,7 +19,7 @@ RUN apt-get update \
 # RUBY_VERSION must match .ruby-version. The repository is not in the image,
 # so the script cannot read that file during the image build.
 COPY setup-system.sh /tmp/setup-system.sh
-RUN RUBY_VERSION=4.0.0 bash /tmp/setup-system.sh && rm /tmp/setup-system.sh
+RUN RUBY_VERSION=4.0.7 bash /tmp/setup-system.sh && rm /tmp/setup-system.sh
 
 USER ubuntu
 WORKDIR /workspace

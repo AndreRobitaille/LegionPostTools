@@ -10,8 +10,8 @@ require "test_helper"
 #     passkey ceremony and no test-only auth backdoor.
 #
 # System tests do NOT run as part of `bin/rails test`; run them explicitly with
-# `bin/rails test:system` (or `bin/rails test:all`). CI and bin/ci also run the
-# account-menu and sign-in tests, including the sign-out workflows, explicitly.
+# `bin/rails test:system` (or `bin/rails test:all`). CI and bin/ci run the full
+# system suite after the ordinary Rails tests.
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # One browser at a time. System suites are small, and a single Chromium avoids
   # spawning one instance per CPU core (the parent class enables parallelism).
@@ -38,6 +38,16 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   driven_by :headless_chromium
+
+  # Optional images for manual visual review. Rails still captures failures
+  # automatically, independently of this setting.
+  def capture_system_screenshot(name)
+    return if ENV["SYSTEM_TEST_CAPTURE_DIR"].blank?
+
+    directory = Rails.root.join(ENV.fetch("SYSTEM_TEST_CAPTURE_DIR"))
+    FileUtils.mkdir_p(directory)
+    page.save_screenshot(directory.join("#{name}.png"))
+  end
 
   # Sign in through the app's real magic-link flow: mint a link for the user,
   # open it (GET renders the confirmation screen), then click through to POST

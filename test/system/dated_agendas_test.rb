@@ -61,7 +61,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_selector ".picker-destination strong", text: @agenda.title
     assert_select "Agenda section", selected: "New Business"
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-    page.save_screenshot("/tmp/agenda-discussion-desktop.png")
+    capture_system_screenshot("agenda-discussion-desktop")
 
     fill_in "Topic title", with: "Consider a community breakfast"
     find("lexxy-editor[name='dated_agenda_item[body]'] [contenteditable='true']").send_keys("Discuss interest and possible dates.")
@@ -69,12 +69,12 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
 
     page.current_window.resize_to(390, 844)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
-    page.save_screenshot("/tmp/agenda-discussion-mobile.png")
+    capture_system_screenshot("agenda-discussion-mobile")
     find("input[name='dated_agenda_item[title]']").click
     find("input[name='dated_agenda_item[title]']").send_keys(:tab)
     assert page.evaluate_script("document.activeElement.closest('lexxy-editor') !== null"), "keyboard navigation should reach the details editor"
     page.current_window.resize_to(390, 2400)
-    page.save_screenshot("/tmp/agenda-discussion-mobile-notes.png")
+    capture_system_screenshot("agenda-discussion-mobile-notes")
     page.current_window.resize_to(390, 844)
 
     assert_no_difference [ "AgendaItemCatalogEntry.count", "Endeavor.count" ] do
@@ -90,7 +90,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     assert_equal 1, item.position
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
     page.current_window.resize_to(390, 2400)
-    page.save_screenshot("/tmp/agenda-discussion-mobile-section.png")
+    capture_system_screenshot("agenda-discussion-mobile-section")
     page.current_window.resize_to(390, 844)
 
     @agenda.approve!(@user)

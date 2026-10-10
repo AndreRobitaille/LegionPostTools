@@ -37,7 +37,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
     assert_predicate @minutes.reload, :member_visible?
     assert_nil @minutes.current_revision.approved_by_id
-    page.save_screenshot("/tmp/minutes-attested-desktop.png")
+    capture_system_screenshot("minutes-attested-desktop")
 
     click_link "Record meeting approval"
     select "PEC — #{legion_date_for_test(@approving_meeting.starts_at)}", from: "Meeting where these minutes were approved"
@@ -51,7 +51,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
     assert_equal 1, page.evaluate_script("getComputedStyle(document.querySelector('.minutes-progress')).gridTemplateColumns.split(' ').length")
-    page.save_screenshot("/tmp/minutes-corrections-mobile.png")
+    capture_system_screenshot("minutes-corrections-mobile")
 
     click_link "Edit heading"
     fill_in "Document title", with: "Corrected PEC Meeting"
@@ -64,7 +64,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     assert_predicate @minutes.reload, :membership_approved?
     assert_equal @approving_meeting, @minutes.membership_approval.approving_meeting
     assert_equal "Corrected PEC Meeting", @minutes.member_revision.payload.fetch("title")
-    page.save_screenshot("/tmp/minutes-approved-mobile.png")
+    capture_system_screenshot("minutes-approved-mobile")
     visit admin_meeting_path(@meeting)
     assert_selector ".minutes-status-card h2", text: "Approved and locked"
     assert_no_link "Record meeting approval"
@@ -77,10 +77,10 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     visit admin_meeting_minutes_path(@meeting)
     assert_selector ".minutes-status-card h2", text: "Draft", exact_text: true
     assert_no_button "Send to Adjutant"
-    page.save_screenshot("/tmp/minutes-draft-desktop.png")
+    capture_system_screenshot("minutes-draft-desktop")
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-    page.save_screenshot("/tmp/minutes-draft-mobile.png")
+    capture_system_screenshot("minutes-draft-mobile")
     click_button "Attest and share with members"
     confirm_by_email(via_link: true)
     assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
@@ -111,7 +111,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
       fill_in "8-digit confirmation code", with: code
     end
     width = page.evaluate_script("window.innerWidth") > 560 ? "desktop" : "mobile"
-    page.save_screenshot("/tmp/minutes-confirmation-#{width}.png")
+    capture_system_screenshot("minutes-confirmation-#{width}")
     click_button "Confirm and complete"
     assert_current_path admin_meeting_minutes_path(@meeting)
   end

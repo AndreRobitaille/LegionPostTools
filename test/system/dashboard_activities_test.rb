@@ -27,12 +27,12 @@ class DashboardActivitiesTest < ApplicationSystemTestCase
       assert_selector ".dashboard-activity", count: 3
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
       assert page.evaluate_script("document.querySelector('.dashboard-activities').getBoundingClientRect().top > document.querySelectorAll('.member-meeting-card')[1].getBoundingClientRect().bottom")
-      page.save_screenshot("/tmp/dashboard-activities-#{name}.png")
+      capture_system_screenshot("dashboard-activities-#{name}")
       find(".member-dashboard-all-meetings", text: "Browse all meetings").send_keys(:tab)
       assert_selector ".dashboard-activity:focus-visible"
       focused_outline = page.evaluate_script("getComputedStyle(document.activeElement).outlineStyle")
       assert_equal "solid", focused_outline
-      page.save_screenshot("/tmp/dashboard-activities-#{name}-focus.png")
+      capture_system_screenshot("dashboard-activities-#{name}-focus")
       first(".dashboard-activity").click
       assert_current_path calendar_event_path(event)
     end

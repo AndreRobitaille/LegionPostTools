@@ -86,7 +86,7 @@ Most ordinary post members are not expected to log in during early versions. The
 
 Prerequisites:
 
-- Ruby 4.0.0, or the version in `.ruby-version`.
+- Ruby 4.0.7, or the version in `.ruby-version`.
 - PostgreSQL available locally for Rails development and test databases.
 - libvips for Active Storage image processing. On Omarchy/Arch, install it with `omarchy pkg add libvips`.
 - Chromium or Chrome and a matching ChromeDriver for browser checks. Defaults are
@@ -132,7 +132,7 @@ Run the main checks before claiming work is complete:
 
 ```bash
 bin/rails test
-bin/rails test test/system/account_menu_test.rb test/system/authentication_entry_test.rb
+bin/rails test:system
 bin/brakeman
 bin/rubocop
 bin/bundler-audit
@@ -142,8 +142,20 @@ The account-menu browser tests sign in, click **Sign out**, and verify that prot
 pages require sign-in again. They cover ordinary sessions and sessions with pending or
 completed minutes approvals. Sign-in browser tests cover returning through bookmarks
 and old email links, plus requesting another email and using its code at phone width.
-GitHub CI and `bin/ci` run these checks automatically;
-other browser tests remain available through `bin/rails test:system`.
+GitHub CI and `bin/ci` run the full browser suite after the ordinary Rails tests.
+This also covers meeting records, agenda editing, calendars, publishing, and roster
+workflows. Rails automatically saves screenshots of browser failures.
+
+Routine screenshots for manual visual review are opt-in:
+
+```bash
+SYSTEM_TEST_CAPTURE_DIR=tmp/visual-review bin/rails test:system
+```
+
+The capture directory can be relative to the repository or absolute. PDF security
+tests also support `PDF_SECURITY_CAPTURE_DIR` for their screenshots and generated PDFs.
+Provider contract tests use the real OpenAI SDK with an offline HTTP transport;
+they require no API key and make no paid requests.
 
 ## Smoke Test
 
