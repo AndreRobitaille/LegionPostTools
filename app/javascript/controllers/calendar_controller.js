@@ -5,6 +5,7 @@ export default class extends Controller {
   static values = { display: String }
 
   connect() {
+    this.printing = false
     this.enhancementTargets.forEach(element => element.hidden = false)
     this.applyFilters()
     this.updateDisplay()
@@ -28,6 +29,27 @@ export default class extends Controller {
   showMonth() { this.setDisplay("month") }
   showSchedule() { this.setDisplay("schedule") }
 
+  print() {
+    this.updatePrintDisplay()
+    window.print()
+  }
+
+  updatePrintDisplay() {
+    // Print media measures paper width; keep the layout captured on screen.
+    if (this.printing) return
+
+    this.element.dataset.calendarPrintDisplay = window.matchMedia("(max-width: 560px)").matches ? "schedule" : this.displayValue
+  }
+
+  preparePrint() {
+    this.printing = true
+  }
+
+  finishPrint() {
+    this.printing = false
+    this.updatePrintDisplay()
+  }
+
   setDisplay(display) {
     this.displayValue = display
     this.updateDisplay()
@@ -38,6 +60,7 @@ export default class extends Controller {
     this.monthButtonTarget.setAttribute("aria-pressed", this.displayValue === "month")
     this.scheduleButtonTarget.setAttribute("aria-pressed", this.displayValue === "schedule")
     this.displayFieldTarget.value = this.displayValue
+    this.updatePrintDisplay()
   }
 
   applyFilters() {
