@@ -353,6 +353,19 @@ full exact selection. Stored credential attributes stay unchanged. Omitting only
 application clipboard write preserves its success label yet fails both byte assertions;
 finally restores exact JS. Browser permissions reset in nested ensure; no stubbed
 clipboard, broad rescue, skip or consolidation. See [design and evidence](TOKEN_CLIPBOARD_REVIEW.md).
+
+## Optional passkey invitation continuity (#117)
+
+Keep the existing Dashboard positive dismissal detector and anonymous request component.
+The former now proves a visible invitation and unchanged nonempty person/account/grant/
+passkey/session graph, later own Profile/home and a distinct fresh authenticated session.
+The new real-browser journey supplies actual email sign-in, dismissal, Profile/home,
+sign-out/protected refusal and fresh invitation while other-person sessions remain.
+All twenty Dashboard and six Profile cases remain; AuthenticationEntry and AccountMenu
+retain distinct real authentication/keyboard/official-confirmation contracts. Omitting
+only the dismissal flag fails the retained card-absence assertion; exact controller
+restored. Frozen test clocks avoid legitimate last_seen touches, without app changes.
+See [design and evidence](PASSKEY_INVITATION_REVIEW.md); no safe consolidation established.
 ## Roster email identity and offline audience boundaries (#108/#109)
 
 Existing five email-review requests keep every old assertion and now inspect independently

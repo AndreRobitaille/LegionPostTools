@@ -755,6 +755,17 @@ reproduction required; no visual-floor pass claimed. #79/PR#98 still require the
 recovery-start decision and actual scheduling/deletion. Main integration/final suites/CI
 remain required before merge. No production, member-data copy, deployment or provider call.
 
+## Optional passkey invitation saved-state and browser proof (#117)
+
+Whole twenty Dashboard, one anonymous invite and six Profile cases stay; strengthen the
+existing positive dismissal test and add actual browser continuity. Nonempty foreign
+identity/grant/passkey/session graph remains; real sign-out refuses later Profile and
+fresh magic-link sign-in reoffers the optional invitation. Original flag omission fails
+retained card absence1/9/1 seed44205; finally restores controller86d54e2d9f25941ab875c5fa1c7fcf523f9ea328ecfc2a07d1fbffc0a147f5b7.
+Final frozen-clock focus27/151 seed23307,2.00s then browser1/33 seed17331,4.07s clean.
+Desktop1400/390 visible/dismissed/fresh screenshots inspected. No app, enrollment or
+session policy change. Main integration/final committed serial suites/security/exact
+candidate/main CI remain required; no safe test removal/consolidation established.
 ## Roster identity and offline audience coverage (#108/#109)
 
 Combined scoped coverage-only candidate integrates main55e091f (PR#118). No application
@@ -875,6 +886,17 @@ Clipboard PR#127 exact candidate7930c76/all-four CI38120823673 passes PG17.11
 ordinary1292/11778 then72/1518. Normal merge2b9bf51 has identical tree; actual-main
 CI38121399155 remains pending. Integrate it here without changing any original
 source-input assertions. Qualify this final committed Unicode candidate serially.
+
+Invitation integration retains both evidence sections and all distinct browser rows.
+Calendar main42a3154 CI38117583145 and roster main15ce51b CI38118516754 pass all four
+jobs; the latter PG17.11 ordinary1290/11644 then71/1365. Bounded #108/#109 completed,
+previous failed55e091f run retained. Final invitation candidate qualification/CI required.
+
+Invitation integrates current actual-main e53238f/all-four CI38122104236: PG17.11
+ordinary1293/11869 then73/1544. Preserve newer source review and earlier invitation
+proofs, including distinct transcript/invitation inventory rows and original source pins.
+#124/#121/#105 now complete; #117 remains pending final committed qualification/CI.
+Queue#128 and minutes source review remain separate unmerged work. No production.
 
 
 ## Durable initial/retry queue rejection (#128)
