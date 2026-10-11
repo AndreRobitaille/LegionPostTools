@@ -3,7 +3,7 @@ module Api
     before_action :prevent_private_data_caching
 
     def index
-      today = Date.current
+      today = Organization.current_local_date
       scope = Person.directory_visible
         .joins(position_assignments: :position_title)
         .includes(position_assignments: :position_title)

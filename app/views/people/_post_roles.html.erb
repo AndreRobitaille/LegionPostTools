@@ -23,7 +23,7 @@
         <% if @can_manage && assignment.ends_on.blank? %>
           <div class="role-actions">
             <%= button_to "End role", admin_person_position_assignment_path(@person, assignment), method: :patch,
-                  params: { position_assignment: { ends_on: Date.current } }, class: "lnk warnlnk", form: { class: "inline" } %>
+                  params: { position_assignment: { ends_on: Organization.current_local_date } }, class: "lnk warnlnk", form: { class: "inline" } %>
           </div>
         <% end %>
       </div>

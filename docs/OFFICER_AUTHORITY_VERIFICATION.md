@@ -51,7 +51,9 @@ Restored focused contracts pass 26 / 444 / 0 (seed 64008, 5.81s).
 
 Configured-office browser flow plus subsequent expiry/refusal/member navigation passes
 3 / 131 / 0 at desktop/390px, with all original lifecycle/PDF assertions retained.
-The wider Post/server date boundary is separately pending in #93. No current production
+The wider Post/server date boundary was initially pending in #93; Andre chose the saved
+Post-local date on October 11. Its implementation/evidence is tracked in
+[Post-local authority](OFFICER_AUTHORITY_LOCAL_DATE.md). No current production
 officeholder/grant conclusion follows from these synthetic fixtures. Full final-candidate
 serial suites and exact-SHA/actual-main CI remain required before merge; see the
 [review ledger](testing/OVERNIGHT_REVIEW_2026-10-10.md).

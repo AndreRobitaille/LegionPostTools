@@ -62,7 +62,7 @@ class User < ApplicationRecord
     capabilities.any? { |capability| can?(capability) }
   end
 
-  def position_capability_sources(on: Date.current)
+  def position_capability_sources(on: Organization.current_local_date)
     PositionCapabilityGrant
       .joins(position_title: :position_assignments)
       .where(position_assignments: { person_id: person_id })
@@ -76,15 +76,15 @@ class User < ApplicationRecord
       end
   end
 
-  def can_manage_calendar?(on: Date.current)
+  def can_manage_calendar?(on: Organization.current_local_date)
     can?("manage_settings") || private_agenda_notes_access?(on:)
   end
 
-  def private_agenda_notes_access?(on: Date.current)
+  def private_agenda_notes_access?(on: Organization.current_local_date)
     position_capability_sources(on:).keys.intersect?(PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES)
   end
 
-  def full_membership_access?(on: Date.current)
+  def full_membership_access?(on: Organization.current_local_date)
     return true if can?("manage_people")
 
     person.position_assignments

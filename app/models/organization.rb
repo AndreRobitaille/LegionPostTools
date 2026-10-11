@@ -25,7 +25,11 @@ class Organization < ApplicationRecord
   end
 
   def calendar_time_zone
-    ActiveSupport::TimeZone[timezone.to_s] || Time.zone
+    ActiveSupport::TimeZone[timezone.to_s] || Time.find_zone!(Rails.application.config.time_zone)
+  end
+
+  def self.current_local_date
+    (first&.calendar_time_zone || Time.find_zone!(Rails.application.config.time_zone)).today
   end
 
   private

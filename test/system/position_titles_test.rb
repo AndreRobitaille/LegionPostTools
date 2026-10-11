@@ -20,6 +20,34 @@ class PositionTitlesSystemTest < ApplicationSystemTestCase
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = @original_detailed_exceptions
   end
 
+  test "End role uses the saved Post date through real controls on desktop and phone" do
+    admin = User.find_by!(email_address: "position-admin@example.test")
+    [
+      [ "America/Chicago", Time.utc(2026, 11, 13, 5, 59), Date.new(2026, 11, 12), "12 NOV 2026", 1400 ],
+      [ "Asia/Tokyo", Time.utc(2026, 11, 12, 15), Date.new(2026, 11, 13), "13 NOV 2026", 390 ]
+    ].each do |zone, instant, expected_date, visible_date, width|
+      travel_to instant
+      @organization.update!(timezone: zone)
+      person = Person.create!(first_name: "Synthetic", last_name: "Local Officer #{width}")
+      assignment = @own.position_assignments.create!(person:, starts_on: Date.new(2026, 1, 1))
+      system_sign_in(admin)
+      page.current_window.resize_to(width, 1000)
+      visit person_path(person)
+      click_button "End role"
+      assert_no_button "End role"
+      assert_current_path person_path(person)
+      assert_equal expected_date, assignment.reload.ends_on
+      assert_selector ".rd", text: visible_date
+      assert_selector ".office", text: /Configured Historian/i
+      assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+      page.execute_script("arguments[0].scrollIntoView({block: 'center'})", find(".role"))
+      capture_system_screenshot("end-role-local-date-#{width}")
+    end
+  ensure
+    travel_back
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "foreign position submission preserves saved authority and own controls still work" do
     [ [ 1400, 1400 ], [ 390, 844 ] ].each do |width, height|
       page.current_window.resize_to(width, height)
