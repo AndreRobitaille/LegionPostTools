@@ -88,7 +88,8 @@ CREATE FUNCTION public.protect_completed_endeavor_history_run() RETURNS trigger
 BEGIN
   IF TG_OP = 'DELETE' OR OLD.status IN ('succeeded', 'failed', 'superseded') OR
      NEW.manifest IS DISTINCT FROM OLD.manifest OR NEW.fingerprint IS DISTINCT FROM OLD.fingerprint OR
-     NEW.endeavor_id IS DISTINCT FROM OLD.endeavor_id OR NEW.requested_by_id IS DISTINCT FROM OLD.requested_by_id THEN
+     NEW.endeavor_id IS DISTINCT FROM OLD.endeavor_id OR NEW.requested_by_id IS DISTINCT FROM OLD.requested_by_id
+     OR NEW.agent_access_token_id IS DISTINCT FROM OLD.agent_access_token_id THEN
     RAISE EXCEPTION 'endeavor history run inputs and completed results are immutable';
   END IF;
   RETURN NEW;
@@ -5933,6 +5934,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261011020000'),
 ('20261011010000'),
 ('20261004010000'),
 ('20261002010000'),

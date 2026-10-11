@@ -51,7 +51,7 @@ inventory and legitimate draft update. No guard mocks or test-only installation.
 refusal requires the immutability message and unchanged persisted attributes; unrelated
 FK errors fail. Original preparation: eleven failures; fresh faithful SQL load: all
 twelve tests / 45 assertions pass. All existing component/request/browser tests retained.
-Endeavor triggers are inventoried here; their behavior remains a separate review slice.
+Endeavor triggers are inventoried here; behavioral review follows below under #88/#95.
 
 ## Speculative response during identity confirmation (#89)
 
@@ -134,6 +134,29 @@ exactly; no test removal or production/live publisher handback claim.
 
 See [design and evidence](../API_GUIDANCE_AUTHORITY_VERIFICATION.md) for focused counts,
 restoration hashes and distinction from the wider deferred #84 review.
+
+## Endeavor history SQL preservation and delegated worker provenance (#88/#95)
+
+`EndeavorHistoryDatabaseGuardsTest`: direct SQL update/delete across guidance, events,
+editions, source links and results; active run input identity/deletion, token removal or
+addition to system runs; all succeeded/failed/superseded states; legitimate progress and
+completion with preserved inputs. Each refusal compares persisted attributes before
+requiring PG::RaiseException and the exact guard message. Minimal valid relational
+fixtures use actual attestation and resolving source keys; they do not validate AI output.
+
+Original active-token changes alter saved pending/running rows. The narrow migration
+adds recorded token identity to the existing function, retaining every prior condition.
+Its normal down/up restores respectively the previous/full repaired definition, and
+fresh SQL load passes all 33 Endeavor/official guard cases. Disabling the edition trigger
+within one test transaction changes a saved payload and fails preservation; rollback
+and exact test-file restoration re-enable all guards.
+
+Retain all existing `EndeavorHistoryTest` source/citation/coverage, publish/withdraw,
+immutable callback, source change, limits, budget, reuse, policy-version and interrupted
+recovery variants. Strengthen the existing recovery test with original token/event
+provenance and add actual queued-token revocation refusal before the offline provider
+is called. This is distinct from direct SQL protection. See
+[design/evidence](../ENDEAVOR_HISTORY_DATABASE_GUARDS.md); no production/paid-provider claim.
 
 Existing calendar, minutes-item Endeavor and attestation retry tests retain every prior
 assertion and add lost-authority content/record/receipt checks and permitted restored
