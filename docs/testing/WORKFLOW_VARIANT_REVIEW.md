@@ -236,3 +236,23 @@ assumptions failed and are documented; exception details are restored and :rescu
 policy is retained. No new inline Turbo error behavior is claimed. See
 [scope and source review](POSITION_TITLE_UPDATE_SCOPE.md) for distinct retained officer,
 account and permission components; serial last-admin tests are not concurrency proof.
+
+
+## Passkey cryptographic refusal and later recovery (#104)
+
+Retain every option/verification-argument, disabled/unknown, rate-limit, own/foreign
+credential, enrollment freshness/session/purpose and reauthentication assertion.
+Strengthen generic refusals with unchanged stored credential/session graph before status.
+New `real passkey authentication rejects unverified or wrong challenge assertions and
+recovers` registers a real FakeClient key, starts fresh cookie-free browsers, submits
+missing-verification and signed wrong-challenge assertions, preserves saved state and
+then proves new verified owner sessions/counter/use timestamps plus later Profile access.
+Relaxed authentication verification fails stored metadata; exact source restoration
+returns focused checks to green. No cryptography/policy change or test deletion.
+
+All eleven neighboring auth files are source/assertion reviewed with their distinct
+failure modes and limitations in [passkey review](PASSKEY_REFUSAL_REVIEW.md). Actual
+phone sign-in/sign-out, continued enrollment with virtual authenticator and token
+reveal/back/revoke journeys are separately executed; neither source review nor a test
+count establishes external delivery or clipboard content. Official-action confirmation
+and invitation files remain outside this bounded full-file review.
