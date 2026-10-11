@@ -1101,3 +1101,12 @@ in [DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md](DATED_AGENDA_WORKSPACE_SOURCE_REVIE
 Vacuous-selector/direct fixture/partial graph/prefix-only PDF limits remain explicit;
 no app/test edit or safe consolidation. Combined source slices81files/625cases; four
 large API components still have scoped review. #84 stays open; no production or paid AI.
+
+Four remaining previously scoped API files /82 exact cases were completely read at95a38a3,
+including fixtures/helpers/assertions. Exact pins and per-component saved/subsequent
+limits in [DELEGATED_COMPONENT_SOURCE_REVIEW.md](DELEGATED_COMPONENT_SOURCE_REVIEW.md).
+Retain finite receipts/current authority, structured local history, calendar dates and
+actual editorial audit/consumer bytes. #139 scopes the misleading eight-action retry
+name and retained detector; no source-only runtime or safe deletion claim. Combined
+source-only slices85files/707cases; all179 current inventory rows have bounded reviewed
+entries. New prepared runtime work and unresolved #79/#93 still remain; #84 stays open.

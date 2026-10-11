@@ -589,3 +589,14 @@ protected deletion and native parsed member HTML/bearer PDF content at desktop/n
 [located outcomes and limits](DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md) preserve concrete
 source/action outcomes versus prefix-only PDF, partial graphs, vacuous Array.every and
 fixture-coupled styling. Keep every assertion; no safe consolidation or blanket fault proof.
+
+## Whole remaining delegated API component source slice (#84)
+
+Four complete files /82 exact cases at95a38a3 retain scoped private data, exact real
+bearer identity/receipt lifetimes, local agenda lineage/order/roll-call, calendar public
+projection/date/management and actual editorial portrait/audit/public consumer removal.
+[Exact names/lines/blobs](DELEGATED_COMPONENT_SOURCE_CASES.md),
+[located outcomes and limits](DELEGATED_COMPONENT_SOURCE_REVIEW.md) distinguish partial
+saved graphs, direct settings fixtures, application-coupled allowlists and the original
+eight-mutation retry title (#139). Every assertion remains; no universal fault/safe
+consolidation/live-policy proof follows from source reading.
