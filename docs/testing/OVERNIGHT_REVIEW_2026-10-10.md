@@ -826,3 +826,16 @@ then71/1365, no failures/errors/skips. This completes the bounded #108/#109 crit
 the prior failed main55e091f run remains preserved. Privacy integrationc653d70 retains
 both ledger sections and unique inventory rows. Qualify this final committed privacy
 candidate serially; #79 timing/purge decisions remain open and PR#98 stays draft.
+
+
+## Twelve-file minutes source/assertion review
+
+Whole12 files/78 exact pinned cases at5c54e39 retain snapshot/digest, editor,
+correction, individual AI review/attendance, manual ledger/retry, source numbering/
+prompt, worker chain and distinct real approval/disclosure browser contracts. Reviewed
+assertions and concrete limits are documented; no code/test edit, new fault or deletion.
+Actual-main5c54e39/all-four CI38120256442 executes unchanged ordinary1292/11778 then
+system72/1506 on PG17.11, separate from blanket defect detection. #128 records the
+locked Active Job false-result discrepancy in initial HTML/API enqueue before routed
+reproduction/smallest repair. Remaining API/Generate/confirmation variants are still
+scoped, #93/#79 remain unresolved. Inventory Deferred rows stay open with priorities.

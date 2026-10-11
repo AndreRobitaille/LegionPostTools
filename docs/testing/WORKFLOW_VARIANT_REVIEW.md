@@ -378,3 +378,18 @@ case with its reviewed assertions. Actual-main15ce51b all-four CI executes those
 that unchanged-suite execution does not demonstrate a representative fault for every
 assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault evidence;
 #115/#117 and #93 decisions remain open. No safe test consolidation was established.
+
+
+## Whole-source minutes editing, review and worker variants
+
+Twelve files/78 exact cases are separately indexed in
+[the pinned minutes case index](MINUTES_SOURCE_CASES.md) and mapped in
+[the source review](MINUTES_REVIEW_SOURCE_REVIEW.md): structured snapshot/digest/
+validation, manual editor mutations, individual suggestions and attendance, correction
+requests, optional handoff/attestation/locking, durable ledger/retry, numbered source/
+prompt instructions and offline background job chain. Actual-main5c54e39/all-four CI
+executes unchanged cases; source assertions and runtime/fault detection stay separate.
+Real approval browser and disclosure-only browser keep independent purposes. #128
+tracks initial rejected-enqueue mismatch before repair; #93/#79 decisions remain open.
+The every-editor test covers two surfaces, and a named same-body test only rejects a
+future meeting here. No blanket matrix, redundant-test or provider acceptance claim.
