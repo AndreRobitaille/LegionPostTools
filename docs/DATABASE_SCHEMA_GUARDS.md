@@ -30,7 +30,7 @@ No production operation or dependency upgrade is authorized by this design.
 Focused component tests must distinguish actual guard exceptions from unrelated foreign
 key failures. Test direct update/delete attempts inside savepoints, assert the guard's
 specific refusal and unchanged records, and retain valid draft-write behavior. Inspect
-all eleven expected custom triggers as a preparation inventory, separately from tests
+the expected custom triggers as a preparation inventory, separately from tests
 proving their behavioral rules. Existing model, request and real browser tests remain.
 
 Prove tests fail on the original schema-loaded database, then pass with the faithful
@@ -43,6 +43,10 @@ assertions to restore a passing suite.
 This establishes local/CI schema fidelity. It does not inspect, alter or prove the
 currently deployed database's state. #80's new occurrence-context safeguard must use
 this faithful schema path before claiming database protection.
+
+The #86 baseline inventory contains eleven triggers. #80 adds the occurrence-mutation
+guard and finalization parent-row lock, raising the current expected inventory to thirteen.
+Their behavioral proof is documented in [Final Meeting context](FINAL_MEETING_CONTEXT.md).
 
 The initial CI baseline ran PostgreSQL 18.6 and already used libpq 18.6; local checks
 also run on 18.6. Repository deployment and Cloud development configuration use 17,
