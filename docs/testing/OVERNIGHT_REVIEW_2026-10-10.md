@@ -500,3 +500,40 @@ Existing recovery now retains original token/run/event identity; a real revoked-
 request fails before the offline provider, preserving source rows and publishing nothing.
 Changed three Ruby files lint clean; diff checks pass. Full committed serial suites,
 security, exact-SHA CI and actual-main verification remain required before merge.
+
+API actual-main CI 38108959812 passes all four jobs for `08a7094`, with PG17.11
+ordinary 1260 / 11151 / 0 and system 66 / 1187 / 0; #81's completion comment records
+all four bounded acceptance criteria and distinct wider/live-publisher limits.
+
+Final Endeavor candidate `2e81fc1`: ordinary 1282 / 11350 / 0 (seed 8610, 103.22s),
+then qualifying serial system 66 / 1187 / 0 (seed 1423, 162.21s). RuboCop 502 files
+clean; Brakeman zero errors/warnings; both audits clean. Exact-SHA CI 38109379381 passes
+all four jobs with matching PG17.11 counts. Fresh review confirms token assignment only
+at creation/recovery, nil system input and retained progress/terminal/source guards.
+PR #100 merged as `4d7f67f22d6ccb076e991f9c877c910f425014af`, exact candidate tree;
+actual-main CI 38109687314 passes all four jobs with the same actual counts. #88/#95
+completion comments distinguish direct SQL evidence from ordinary API/production claims.
+
+## Configuration, shell and strict receipt cutoff review (#96)
+
+Design: `docs/testing/CONFIGURATION_AND_SHELL_REVIEW.md`. Retain all configuration,
+filter, timezone, asset, entry/navigation and account-menu contracts; their distinct
+parsing, process, content, selector and actual-browser failure modes justify no deletion
+or consolidation. Strengthen the existing production refusal for every required key,
+clear inherited dummy-build mode, check supplied identities/host, and add an exact frozen
+thirty-day retained receipt to the original real cleanup job scenario.
+
+Original new-worktree request slice lacked built Tailwind assets (29 / 44 / 17 asset
+errors). Build existing assets, retaining assertions; corrected 29 / 135 / 0.
+Queue-requirement fault: 1 / 7 / one failure, with earlier primary/cache variants passing.
+Inclusive cleanup fault: 1 / 4 / one failure on the deleted boundary row. Exact original
+config/model hashes restored; no source fault remains. Restored 29 / 135 / 0 (seed43826,
+4.88s), then integrated verified main `4d7f67f`: focused 29 / 135 / 0 (seed51930,
+6.07s). Two changed Ruby files lint clean; diff checks pass. Hashes/logs and the initial
+local-draft-before-tracking sequencing exception are recorded in the design/#96.
+
+All eight reviewed file inventory entries now describe actual assertion/runner limits;
+remaining files stay deferred. #99 separately reproduces/documents finite cached retry
+behavior; cleanup is not a hard API expiry timer or infinite once-only guarantee.
+This committed slice still needs final serial suites, security, exact-SHA CI and
+actual-main verification before completion. #84 remains open.
