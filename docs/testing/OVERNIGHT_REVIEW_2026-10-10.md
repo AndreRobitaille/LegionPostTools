@@ -754,3 +754,25 @@ Existing smaller transcript typography is separately linked #120 with rendered-s
 reproduction required; no visual-floor pass claimed. #79/PR#98 still require the unresolved
 recovery-start decision and actual scheduling/deletion. Main integration/final suites/CI
 remain required before merge. No production, member-data copy, deployment or provider call.
+## Native calendar browser navigation and retained publication components (#105)
+
+PR #118 candidatea8989831 passed exact CI38115989210, PostgreSQL17.11 ordinary1289/11583
+then browser69/1259. Normal merge produced main55e091f. Actual-main38116220723 passed
+ordinary but browser69/1243 had one Chrome154 inspector error in the unchanged calendar
+journey. No failed-job retry; #102 remains open and further independent code merges held.
+Exact artifact shows expected desktop preview; native form posts to a distinct preview
+path. Add one exact-path assertion after that click, retaining every old assertion. This
+is bounded navigation evidence, not a precise Chrome-cause diagnosis or a changed app flow.
+
+Whole six request/nine policy cases reviewed with explicit privacy/authority/token/ETag/
+official-document distinctions and limitations; focus15/97 seed59451 clean. Browser1/21
+seed54187 clean, desktop/narrow actual screenshots inspected. Wrong redirect fault1/4/
+1 failure seed25561 at new path assertion; finally restores exact controller SHA256
+f91f243e6e6eb0f33f56f6bec8cdb5f783e501b60a7186f57f7102210ea375f5.
+Final committed serial suites/security/exact candidate and actual-main CI remain required.
+No production operations, provider calls, dependency upgrades or exception suppression.
+
+Integrate calendar merge42a3154 after exact candidate24769f2/all-four CI38117274225
+passes PG17.11 ordinary1289/11583 then69/1260. Preserve both evidence sections and
+all privacy tests; original source/API/provider fault-target bytes remain unchanged.
+Actual-main38117583145 and this candidate's final qualification remain pending.

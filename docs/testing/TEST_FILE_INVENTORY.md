@@ -87,7 +87,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/sessions_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All 17 sign-in/refusal/consumption/stale-cookie/sign-out variants reviewed and retained; later protected denial differs from helper setup; #104 |
 | `test/controllers/setup_controller_test.rb` | controllers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/controllers/website_access_authentication_test.rb` | controllers | Publication / #60–#62, #81 | P0 | All five matrices reviewed/retained: credentials/methods/Post scope/HEAD/conditional/revocation; actual anonymous-content fault detected/restored |
-| `test/controllers/website_calendar_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/website_calendar_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Whole six authority/HTML signed activation/API replay audit/conflict/feed privacy ETag/meeting notice/CSRF cases reviewed and retained; invalid-CSRF-token and whole-graph denial limits explicit under #105 |
 | `test/controllers/website_publishing_admin_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/helpers/legion_format_helper_test.rb` | helpers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/helpers/navigation_helper_test.rb` | helpers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
@@ -128,7 +128,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/session_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three actual session destruction/official lineage/confirmation detachment cases reviewed and retained; #104 |
 | `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | All thirty identity/email/manual/position/roster/last-admin cases reviewed and retained; real overlapping mutation proof separately #112, explicit email metadata gap #108 |
 | `test/models/website_access_token_test.rb` | models | Publication / #60–#62, #81 | P0 | Three digest/refusal/throttle, fixed Post authority and overlapping replacement contracts reviewed/retained; distinct from personal delegation |
-| `test/models/website_calendar_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/website_calendar_test.rb` | models | Publication / #60–#62, #81 | P0 | Whole nine explicit-type/override/privacy/schedule/approved-document/all-day/signed preview expiry-authority-scope/legacy migration cases reviewed and retained under #105; no consolidation |
 | `test/models/website_publication_concurrency_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/website_publication_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/agenda_item_catalog_seeder_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -173,7 +173,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/pdf_resource_security_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/roster_import_results_test.rb` | system | Member / navigation / roster | P1 | Old names/accounts/deceased-warning/result-link/layout journey retained; new actual empty upload/refusal/Import another roster/valid recovery at desktop-narrow layouts; #111 |
 | `test/system/website_access_tokens_test.rb` | system | Publication / #60–#62, #81 | P0 | Full source retained; real native path/create/reveal-once/back/revoke/desktop-narrow checks, wrong-redirect detection; clipboard contents not tested; recurring CI inspector error bounded under #105 |
-| `test/system/website_calendar_test.rb` | system | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/system/website_calendar_test.rb` | system | Publication / #60–#62, #81 | P0 | Whole real native preview/create/activate/hide/meeting attendance/no-agenda desktop-phone journey retained; exact path wait catches wrong redirect, restored controller verified under #105; precise inspector cause unverified |
 | `test/system/website_publishing_test.rb` | system | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/views/date_field_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/views/member_row_test.rb` | views | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |

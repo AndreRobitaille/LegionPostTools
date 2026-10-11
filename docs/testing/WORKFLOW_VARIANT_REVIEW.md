@@ -219,6 +219,17 @@ five website credential management/identity/foreign-scope/CSRF request scenarios
 three model digest/authority/replacement contracts; their distinct failure modes remain.
 See [review and limits](WEBSITE_TOKEN_BROWSER_RELIABILITY.md).
 
+The later actual-main38116220723 fails with the same inspector symptom in the unchanged
+website-calendar native preview journey. Add its explicit preview-path assertion before
+replacement-DOM queries; retain every old create/listing/attendance/no-agenda/desktop-phone
+assertion. Wrong redirect fails at the path assertion, exact controller restored. Whole
+six request and nine policy cases retain signed activation, current authority, replay/audit,
+tampering/expiration/source changes/cross-Post scope, ETag/privacy, schedule versus approved
+document protection and legacy migration contracts. Focus15/97 and browser1/21 pass.
+CSRF invalid-token and incomplete whole-graph denial limits stay explicit; no clipboard
+claim, safe consolidation or precise Chrome cause is established. See
+[calendar review](WEBSITE_CALENDAR_BROWSER_RELIABILITY.md).
+
 
 ## Configured Post title update (#107)
 
