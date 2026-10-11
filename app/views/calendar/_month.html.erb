@@ -21,7 +21,7 @@
     </div>
     <p class="calendar-print-hint" data-calendar-target="enhancement" hidden>PDF includes the month and detailed schedule.</p>
   </div>
-  <table class="calendar-grid" aria-label="<%= start_date.strftime('%B %Y') %> calendar" style="--calendar-week-count: <%= date_range.size / 7 %>">
+  <table class="calendar-grid" aria-label="<%= start_date.strftime('%B %Y') %> calendar">
     <thead><tr><% date_range.first(7).each do |day| %><th scope="col"><%= day.strftime("%a") %></th><% end %></tr></thead>
     <tbody>
       <% date_range.each_slice(7) do |week| %>

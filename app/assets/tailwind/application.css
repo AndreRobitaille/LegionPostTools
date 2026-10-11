@@ -2400,21 +2400,22 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .calendar-footer, .calendar-empty, .calendar-schedule-action, .calendar-create-actions { display: none !important; }
   .calendar-workspace { margin: 0; }
   .calendar-layout { display: block; }
-  .calendar-print-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 0 0 10pt; padding-bottom: 6pt; color: #000; border-bottom: 0.6pt solid #b5b5b5; }
+  .calendar-print-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; margin: 0 0 10pt; padding-bottom: 6pt; color: #000; border-bottom: 0.6pt solid #b5b5b5; }
   .calendar-print-post, .calendar-print-month, .calendar-print-section { margin: 0; color: #000; line-height: 1.25; }
   .calendar-print-post { font-size: 16px; font-weight: 500; }
-  .calendar-print-month { margin-top: 3pt; font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+  .calendar-print-month { flex-shrink: 0; font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
   .calendar-print-section { flex-shrink: 0; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; }
   .calendar-print-empty { display: block; font-size: 16px; }
   .calendar-schedule:has(.calendar-date-group:not([hidden])) .calendar-print-empty { display: none; }
   .calendar-workspace[data-calendar-display-value] .calendar-schedule { display: block !important; }
-  .calendar-workspace[data-calendar-display-value] .calendar-grid { display: table !important; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; background: #fff; border: 0.5pt solid #b5b5b5; border-collapse: separate; border-spacing: 0; }
+  /* Size the whole grid so busy weeks can borrow space from quieter weeks. */
+  .calendar-workspace[data-calendar-display-value] .calendar-grid { display: table !important; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; height: 7.25in; background: #fff; border: 0.5pt solid #b5b5b5; border-collapse: separate; border-spacing: 0; }
   .calendar-grid th, .calendar-grid td, .calendar-grid-event, .calendar-grid-status,
   .calendar-block-title, .calendar-block-print-time { color: #000 !important; }
   .calendar-grid thead { display: table-header-group; }
   .calendar-grid tr { break-inside: avoid; }
   .calendar-grid th { padding: 5pt 2pt; border: 0; border-right: 0.5pt solid #b5b5b5; border-bottom: 0.5pt solid #b5b5b5; background: #fff; font-size: 13px; line-height: 1.2; letter-spacing: .1em; }
-  .calendar-grid td { height: calc(6.1in / var(--calendar-week-count)); padding: 4pt; border: 0; border-right: 0.5pt solid #b5b5b5; border-bottom: 0.5pt solid #b5b5b5; background: #fff !important; }
+  .calendar-grid td { height: auto; padding: 4pt; border: 0; border-right: 0.5pt solid #b5b5b5; border-bottom: 0.5pt solid #b5b5b5; background: #fff !important; }
   .calendar-grid th:last-child, .calendar-grid td:last-child { border-right: 0; }
   .calendar-grid tr:last-child td { border-bottom: 0; }
   .calendar-grid .prev-month, .calendar-grid .next-month { background: #fff !important; }

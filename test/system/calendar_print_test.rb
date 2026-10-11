@@ -207,6 +207,41 @@ class CalendarPrintTest < ApplicationSystemTestCase
     ENV["PDF_RENDER_PORT"] = original_port
   end
 
+  test "a five-week month with two busy weekends fits one landscape page with a single-line heading" do
+    zone = @organization.calendar_time_zone
+    [
+      [ 6, "Membership meeting", 18, false ],
+      [ 10, "Community fundraiser planning meeting", 9, false ],
+      [ 10, "District motorcycle riders meeting", 11, false ],
+      [ 12, "County veterans council meeting", 18, false ],
+      [ 24, "Veterans community fundraiser", 8, false ],
+      [ 25, "District volunteer training prize drawing", 0, true ],
+      [ 25, "District fall conference", 8, false ],
+      [ 27, "Veterans flight welcome home", 7, false ]
+    ].each do |day, title, hour, all_day|
+      @organization.calendar_events.create!(
+        title: title, calendar_category: "other", all_day: all_day,
+        starts_at: zone.local(2026, 10, day, hour), created_by: @member, updated_by: @member
+      )
+    end
+    system_sign_in(@member)
+    visit calendar_path(start_date: "2026-10-01")
+    uri = URI(current_url)
+    month = CalendarMonth.new(organization: @organization, date: Date.new(2026, 10, 1))
+    pdf = CalendarPdf.render(organization: @organization, month: month, base_url: "#{uri.scheme}://#{uri.host}:#{uri.port}")
+    assert_equal [ [ 792, 612 ], [ 612, 792 ] ], pdf_page_sizes(pdf)
+    text = assert_pdf_printable_margins(pdf, minimum_pages: 2)
+    assert_match(/Veterans flight welcome home/, text.lines.first)
+    assert_match(/\b31\b/, text.lines.first)
+    save_pdf("calendar-five-week-one-page", pdf)
+
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+    header = find(".calendar-month .calendar-print-heading")
+    bottom_edges = header.evaluate_script("[...this.children].map(element => element.getBoundingClientRect().bottom)")
+    assert_operator bottom_edges.max - bottom_edges.min, :<, 8, "Post, month and section label should share one baseline"
+    assert_operator header.evaluate_script("this.getBoundingClientRect().height"), :<, 50
+  end
+
   test "a six-week month prints on one landscape page followed by the portrait schedule" do
     zone = @organization.calendar_time_zone
     [

@@ -108,11 +108,15 @@ coordinates on every page, including continuation pages after a margin override.
 
 The month grid uses 11pt regular event titles, 14px start times and dates, and weekday
 labels of at least 13px. Dates and weekdays carry the emphasis, with dates aligned to
-the corner of each cell. Days outside the month use gray text. Give the weeks a consistent
-baseline height suited to the month's week count. A lightly populated six-week month
-fits one landscape page; crowded weeks can continue onto more pages with repeated weekday
-headings. Complete titles and readable type take precedence over a fixed page count.
-Locations, end times, and descriptions belong in the detailed schedule.
+the corner of each cell. Days outside the month use gray text. Keep the Post name, month,
+and section label on one baseline, with the month providing the emphasis. Reserve one
+landscape page for the overview: size the table as a whole and let busy weeks borrow
+space from quieter weeks rather than imposing a large minimum height on every row.
+Ordinary five- and six-week months must fit that page, including days with several
+wrapped titles. Unusually crowded days can still continue with repeated weekday headings
+when their complete titles cannot fit at the approved readable size. Locations, end
+times, and descriptions belong in the detailed schedule. Retain the quarter-inch inset,
+light rules, and existing screen presentation.
 
 The schedule retains 18px titles and 16px descriptions. Each event uses two columns:
 event type, title, and time range on the left; location and description on the right.
@@ -148,6 +152,15 @@ PDF pages were reviewed. RuboCop passed across 489 files; Brakeman reported no w
 and dependency/importmap audits, JavaScript syntax, CI YAML parsing and Tailwind build
 passed. Safari was not available for a native browser test; PDF page dimensions were
 verified directly. These checks used synthetic test records.
+
+One-page overview follow-up on 10 October 2026: a synthetic five-week October with
+two busy weekends reproduced the extra landscape page before the fix. The finished
+PDF now has one landscape month page and one portrait schedule page, including the
+last week's events and October 31 on the first page. After rebuilding Tailwind, 34
+calendar controller/service tests / 286 assertions and 17 calendar browser tests /
+387 assertions passed. All 66 pages across 15 generated PDFs kept their text inside
+the quarter-inch inset. Rendered five- and six-week PDFs, the detailed schedule, and
+desktop/320px/390px screens were reviewed; focused RuboCop and diff checks passed.
 
 Use simple_calendar as a small rendering helper, with application-owned templates and
 styles. Its documentation supports custom attributes, multi-day events, and Turbo frames:
