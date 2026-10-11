@@ -167,7 +167,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
   def assert_final_pdf
     previous_port = ENV["PDF_RENDER_PORT"]
     ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
-    encoded = page.evaluate_async_script(<<~JS, print_meeting_minutes_path(@meeting))
+    encoded = evaluate_pdf_async_script(<<~JS, print_meeting_minutes_path(@meeting))
       const [url, done] = arguments;
       fetch(url).then(response => {
         if (!response.ok || !response.headers.get('content-type').includes('application/pdf')) throw new Error('Expected a readable minutes PDF');

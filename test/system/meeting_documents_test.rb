@@ -228,7 +228,7 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
   def member_pdf_text(path, headers: {})
     previous_port = ENV["PDF_RENDER_PORT"]
     ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
-    result = page.evaluate_async_script(<<~JAVASCRIPT, path, headers)
+    result = evaluate_pdf_async_script(<<~JAVASCRIPT, path, headers)
       const done = arguments[arguments.length - 1];
       fetch(arguments[0], { credentials: "same-origin", headers: arguments[1] }).then(async response => {
         const bytes = new Uint8Array(await response.arrayBuffer());
