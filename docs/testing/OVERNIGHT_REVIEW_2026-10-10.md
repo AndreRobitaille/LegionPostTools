@@ -537,3 +537,26 @@ remaining files stay deferred. #99 separately reproduces/documents finite cached
 behavior; cleanup is not a hard API expiry timer or infinite once-only guarantee.
 This committed slice still needs final serial suites, security, exact-SHA CI and
 actual-main verification before completion. #84 remains open.
+
+
+## Repeated website-token inspector error and native navigation (#105)
+
+Main configuration CI38110689517 passes all four jobs on `b852211`, actual PG17.11
+1283 / 11367 / 0 ordinary then 66 / 1187 / 0 system; #96 completion comment records it.
+Finite retry candidate `ab4e4f4` passes local ordinary 1283 / 11409 / 0 (seed18274,
+107.75s), then serial system 66 / 1187 / 0 (seed23237, 162.04s); lint502/security clean.
+Its CI38110781740 ordinary count matches; browser 66 / 1174 / 0 failures / 1 inspector
+error in the unchanged website-token creation journey. This repeats the earlier Chrome154
+node/document error, so PR #103 stays draft and no green-seeking rerun is performed.
+
+#105 design: `WEBSITE_TOKEN_BROWSER_RELIABILITY.md`. Expected creation-page failure
+screenshot reviewed; native creation deliberately bypasses Turbo. Add meaningful exact
+path assertion after real POST and before DOM query, preserving every old assertion;
+rename the journey to actual viewed-once evidence, not untested clipboard contents.
+No driver rescue/retry/sleep or application change. Exact Chrome154 version unavailable
+in official testing manifest; local152 proof is distinguished from pending exact CI.
+Focused request/model20 / 181 / 0; website/personal real browser2 / 37 / 0. Created/list
+1400/390px screenshots inspected. Controlled wrong redirect fails new native-path outcome
+1 / 8 / one failure; controller restored exactly (hash in design). The race explanation
+remains inference; later full suites and CI are needed before merge, and future recurrence
+must not be hidden by broad error suppression.
