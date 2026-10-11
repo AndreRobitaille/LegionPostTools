@@ -634,3 +634,21 @@ Receipt actual-main CI38112280346 now passes all four jobs on `66e8c8a`, matchin
 PG17.11 ordinary 1283 / 11409 / 0 then system 66 / 1188 / 0. #99 completion comment
 records exact local/candidate/main evidence and remaining #84/#105 limits; #99 closed
 only after this verification. No release or production action.
+
+
+## Position-scope actual-main completion and passkey refusal slice
+
+PR #110 merged as `a88f11e2c2c3da16e7f8e44a563ff9f1a3d25c63`, exact reviewed
+candidate tree. Actual-main CI38112918755 passes all four jobs, PostgreSQL17.11 ordinary
+1284 / 11422 / 0 then system67 / 1219 / 0. #107 closed only after that verification
+(comment6105643999); simultaneous final-administrator removal remains open #112.
+
+#104 retains all old authentication assertions and strengthens generic refused saved
+state plus real signed authentication refusal/recovery from fresh cookie-free browsers.
+Integrated neighboring auth76 / 801 / 0 (seed21487); verification fault1 / 4 / one
+saved-metadata failure (seed53734), exact SHA restored; clean passkey25 / 230 / 0
+(seed64993). Existing real browser4 / 102 / 0 (seed36848) on preceding main66e8c8a;
+1400/390 continued-enrollment images inspected, readable/no overflow. No runtime auth
+change, test consolidation or deletion. All eleven distinct neighboring files reviewed
+and retained; source and execution limits in PASSKEY_REFUSAL_REVIEW. Final committed
+serial suites/security and candidate/main CI remain required before merge.

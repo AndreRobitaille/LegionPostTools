@@ -219,12 +219,14 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
   test "disabled user cannot authenticate with passkey" do
     person = Person.create!(first_name: "Jane", last_name: "Doe")
     user = User.create!(person: person, email_address: "jane@example.com", email_verified_at: Time.current, disabled_at: Time.current)
-    PasskeyCredential.create!(
+    stored_credential = PasskeyCredential.create!(
       user: user,
       external_id: "credential-id",
       public_key: "public-key",
       sign_count: 1
     )
+    original_credential = stored_credential.attributes
+    original_sessions = Session.order(:id).map(&:attributes)
 
     credential = Struct.new(:id) do
       def verify(*)
@@ -240,6 +242,8 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     begin
       post authentication_passkeys_path, params: { publicKeyCredential: { id: "credential-id" } }
 
+      assert_equal original_credential, stored_credential.reload.attributes
+      assert_equal original_sessions, Session.order(:id).map(&:attributes)
       assert_response :unauthorized
       assert_equal({ "error" => "invalid passkey authentication" }, JSON.parse(response.body))
     ensure
@@ -248,6 +252,8 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "unknown passkey credential ids return generic unauthorized response" do
+    original_credentials = PasskeyCredential.order(:id).map(&:attributes)
+    original_sessions = Session.order(:id).map(&:attributes)
     credential = Struct.new(:id).new("missing-credential")
 
     original = WebAuthn::Credential.method(:from_get)
@@ -258,6 +264,8 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     begin
       post authentication_passkeys_path, params: { publicKeyCredential: { id: "missing-credential" } }
 
+      assert_equal original_credentials, PasskeyCredential.order(:id).map(&:attributes)
+      assert_equal original_sessions, Session.order(:id).map(&:attributes)
       assert_response :unauthorized
       assert_equal({ "error" => "invalid passkey authentication" }, JSON.parse(response.body))
     ensure
