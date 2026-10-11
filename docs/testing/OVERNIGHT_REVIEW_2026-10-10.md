@@ -809,3 +809,9 @@ passes1290/11644 then71/1365, merged as15ce51b with identical tree. Actual-main
 CI38118516754 remains pending; #108/#109 stay open. Integrate that roster merge here,
 preserving both evidence sections and all three new browser inventory rows; no app fault
 remains. Final privacy candidate qualification/CI still required. No production operation.
+
+Roster actual-main15ce51b/all-four CI38118516754 passes PG17.11 ordinary1290/11644
+then71/1365, no failures/errors/skips. This completes the bounded #108/#109 criteria;
+the prior failed main55e091f run remains preserved. Privacy integrationc653d70 retains
+both ledger sections and unique inventory rows. Qualify this final committed privacy
+candidate serially; #79 timing/purge decisions remain open and PR#98 stays draft.
