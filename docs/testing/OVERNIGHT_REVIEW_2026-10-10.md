@@ -854,3 +854,19 @@ Integrate all three here, preserve both histories and unique inventory rows. Fin
 clipboard serial qualification/exact candidate/main CI still required; #121/#105 open.
 New source-input#124 independently reproduces valid uploaded UTF-8 read failure and
 coupled limit expectation; its work remains isolated/unmerged. No production operation.
+
+
+## Durable initial/retry queue rejection (#128)
+
+After fixing the new graph helper's nonexistent outcomes association, all four original
+HTML/API request paths error on false.successfully_enqueued?:4/0/4 seed57679. Temporary
+rethrowing diagnostic4/0/4 seed7811 inspects actual new pending/nil-category/no-completion
+rows, zero suggestions and unchanged source/minutes/prior attempts; exact support restored.
+Three existing job && guards now use the established failed-run helpers. Proper nil
+assertion corrects Minitest-only fixture failure; full request/job focus39/453 seed8253
+passes, lint8 clean. Real existing disclosure plus new recovery/authority-loss browser
+2/72 seed53472 pass. Four1400/390 failure/queued captures inspected; failure body16px,
+no overflow. #130 records smaller queued status/support/body type, keeping typography
+separate. Whole9 original draft API cases source-reviewed and retained with exact pins.
+Final committed serial suites/security/main integration/exact and actual-main CI pending.
+No production, paid provider call, source deletion or official-record application.

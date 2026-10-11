@@ -388,3 +388,17 @@ case with its reviewed assertions. Actual-main15ce51b all-four CI executes those
 that unchanged-suite execution does not demonstrate a representative fault for every
 assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault evidence;
 #115/#117 and #93 decisions remain open. No safe test consolidation was established.
+
+
+## Rejected initial minutes enqueue and recovery (#128)
+
+Actual Active Job before_enqueue abort reaches all four routed create/retry paths.
+Original false-result method errors leave pending runs/nil failure metadata while source,
+manual minutes and earlier run rows remain intact. Three existing guard corrections
+record durable failed queue_error/completion without a broad rescue. Four new request
+variants read saved identity/link/graph before response, then restore actual enqueue and
+retain both failures. Real browser checks existing failure/manual escape, rejected retry,
+restored queued state, grant-loss status/protected denial and later own Profile. Whole9
+original draft API cases are retained/indexed with distinct direct state/single-attendance
+limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
+and actual provider acceptance are separate. No test deletion, app authority or policy change.
