@@ -1084,3 +1084,12 @@ retain both evidence histories and each current inventory row. Final committed t
 candidate now includes six font values and actual no-JavaScript restoration, so repeat
 serial full ordinary/system suites, applicable lint/security and new exact-SHA CI. Earlier
 failed CI38123404349 stays recorded; no blind retry, skip or production operation.
+
+Seven additional complete Meeting/member/template-management files /66 exact cases
+were read at verified actual main95a38a3. Exact pins and saved/visible/subsequent limits
+in [MEETING_OCCURRENCE_SOURCE_REVIEW.md](MEETING_OCCURRENCE_SOURCE_REVIEW.md). Keep real
+attestation/correction/member rich paper, private API echoes, guided occurrence and
+native template controls distinct from partial graph/fake renderer/direct confirmation
+fixtures. All assertions remain, no source-only runtime/safe deletion claim. Combined
+source-only slices now76 complete files /564 indexed cases; still-scoped files and
+linked gaps remain. #84 stays open; no production or paid AI.

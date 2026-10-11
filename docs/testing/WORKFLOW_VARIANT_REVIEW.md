@@ -569,3 +569,13 @@ the existing readable-String assertion1/64/1 with a temporary message result, th
 exact scripts restore. Clean neighbors16/437 and final approval3/133 retain actual
 PDF/refusal/private resource boundaries. [Evidence](PDF_BROWSER_WAIT_CONTRACT.md).
 No general timeout increase, retries, skips, app or authority changes.
+
+## Whole Meeting occurrence/member/template-management source slice (#84)
+
+Seven complete files /66 exact cases at95a38a3 retain durable Meeting/body venue
+snapshots, honest member agenda/minutes states, actual rich immutable correction
+presentation and scoped private API echoes, guided officer occurrence and real native
+Turbo/template controls. [Exact names/lines/blobs](MEETING_OCCURRENCE_SOURCE_CASES.md),
+[located outcomes and limits](MEETING_OCCURRENCE_SOURCE_REVIEW.md) preserve distinct
+real attestation/content proof versus fake renderer, direct confirmation, partial denial
+graph and relative-order tests. All kept; no safe consolidation or universal fault proof.
