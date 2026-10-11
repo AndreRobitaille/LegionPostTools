@@ -46,4 +46,10 @@ this faithful schema path before claiming database protection.
 
 CI baseline actually ran PostgreSQL 18.6 and already used libpq 18.6. Pin the service major to 18 and explicitly install client 18 for SQL dump/load; this preserves the observed major rather than upgrading dependencies. Standard Rails PostgreSQL dump output is retained; Rails 8.1 strips dump header/restriction meta commands. No custom dump flags or guard installers are added.
 
+The first candidate CI failed during package setup: libpq 18 was preinstalled, but
+the runner's enabled apt sources could not locate client 18. Configure PostgreSQL's
+[official signed Ubuntu repository](https://www.postgresql.org/download/linux/ubuntu/)
+for the runner's actual distribution before installing the client. This affects CI
+only and requires a successful new candidate run; no production package operation.
+
 The first migration-built test comparison also failed because Rails test schema maintenance reloaded the Ruby schema (schema SHA metadata was absent), dropping its eleven triggers before tests ran. This reinforces the need to repair the real preparation path rather than inject guards only in test setup.

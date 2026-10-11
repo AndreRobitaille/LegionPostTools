@@ -187,3 +187,11 @@ serial focused run precedes the commit, and both full suites will run serially o
 committed candidate. YAML parses, RuboCop 491 files / 0 offenses, Brakeman 0 errors and
 warnings. The SQL dump contains only schema definitions and migration version inserts,
 not copied member rows. No experimental application fault or trigger installer remains.
+
+Candidate `868df1801e73fdb1956d355ec07ec60b4ceebb7f` was pushed as draft PR #87.
+CI run 38103140298 passed all scans/lint but failed before tests: Ubuntu apt could not
+locate `postgresql-client-18`, despite the previous runner's preinstalled libpq 18.6.
+Added PostgreSQL's official HTTPS key and signed distro-specific apt source to CI
+package setup. This failing run cannot qualify a merge; the new revision requires
+successful exact-SHA CI and serial local final suites. No CI bypass or dependency
+upgrade was used to suppress the failure.
