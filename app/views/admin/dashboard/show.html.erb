@@ -1,159 +1,73 @@
 <% technical_admin = current_user.can?("manage_settings") %>
+<% groups = admin_workspace_groups %>
+<% columns = groups.group_by { |group| group[:column] } %>
 <% content_for :title, admin_area_name %>
 
-<div class="page-lead">
-  <h1 class="page-title"><%= admin_area_name %></h1>
-  <p class="page-sub"><%= technical_admin ? "Everything that keeps the post’s tools running." : "Tools for your assigned Post duties." %></p>
-</div>
+<div class="admin-workspace">
+  <div class="page-lead">
+    <h1 class="page-title"><%= admin_area_name %></h1>
+    <p class="page-sub">Choose the work you need to do for your Post.</p>
+  </div>
 
-<% unless technical_admin %>
-  <% role_summary = current_user.person.active_role_labels.to_sentence.presence || "Assigned Post duties" %>
-  <aside class="officer-workspace-context" aria-label="Officer access boundary">
-    <p><span>Scoped officer access</span> <%= role_summary %></p>
-    <strong>Tools are available for your assigned Post duties.</strong>
-    <small>Account, permission, and system settings remain with application administrators.</small>
-  </aside>
-<% end %>
+  <% unless technical_admin %>
+    <% role_summary = current_user.person.active_role_labels.to_sentence.presence %>
+    <aside class="officer-workspace-context" aria-label="Officer access boundary">
+      <p><span>Scoped officer access</span><% if role_summary %> <%= role_summary %><% end %></p>
+      <small>Account and system settings remain with application administrators.</small>
+    </aside>
+  <% end %>
 
-<% show_roster = technical_admin %>
-<% show_agendas = current_user.can?("manage_agendas") %>
-<% show_meeting_records = show_agendas || current_user.can?("manage_minutes") || current_user.can?("view_internal_records") %>
-<% show_positions = technical_admin %>
-<% show_admins = technical_admin %>
-
-<% if show_roster || show_meeting_records %>
-  <section class="hub-sec">
-    <h2 class="hub-sec-h"><%= technical_admin ? "Meetings & Roster" : "Meeting work" %></h2>
-    <p class="hub-sec-n"><%= technical_admin ? "Keep the membership current and preserve each meeting’s records." : "Prepare agendas, preserve minutes, and check record-processing work." %></p>
-    <div class="hub-tiles <%= "hub-tiles--officer" unless technical_admin %>">
-      <div class="tile">
-        <div class="tile-ic" aria-hidden="true">⚙️</div>
-        <p class="tile-t">Background Jobs</p>
-        <p class="tile-d">Check work that continues after you leave a page, including AI minutes drafts.</p>
-        <div class="tile-actions">
-          <%= link_to "Open job history →", admin_jobs_path, class: "tile-act" %>
-        </div>
-      </div>
-      <% if show_agendas %>
-        <div class="tile">
-          <div class="tile-ic" aria-hidden="true">◆</div>
-          <p class="tile-t">Manage Endeavors</p>
-          <p class="tile-d">Check meeting-history updates and find Endeavors that need attention.</p>
-          <div class="tile-actions"><%= link_to "Manage Endeavors →", admin_endeavors_path, class: "tile-act" %></div>
-        </div>
-      <% end %>
-      <% if show_roster %>
-        <div class="tile<%= " tile--due" if @roster_stale %>">
-          <div class="tile-ic" aria-hidden="true">📇</div>
-          <% if @roster_stale %>
-            <span class="tile-status"><span class="dot" aria-hidden="true"></span><%= @latest_roster_import ? "Import due" : "Not imported" %></span>
-          <% else %>
-            <span class="tile-status ok"><span class="dot" aria-hidden="true"></span>Current</span>
-          <% end %>
-          <p class="tile-t">Roster</p>
-          <p class="tile-d">
+  <% if technical_admin && @roster_stale %>
+    <section class="workspace-attention" aria-labelledby="workspace-attention-heading">
+      <%= render "shared/section_header", label: "Needs attention", heading_tag: :h2, heading_id: "workspace-attention-heading" %>
+      <div class="workspace-attention-content">
+        <div>
+          <h3><%= @latest_roster_import ? "Roster import is due" : "Import your first roster" %></h3>
+          <p>
             <% if @latest_roster_import %>
-              Last imported <%= legion_date(@latest_roster_import.imported_at) %>.
+              Last imported <%= legion_date(@latest_roster_import.imported_at) %>. Bring your membership information up to date.
             <% else %>
-              No roster has been imported yet.
-            <% end %>
-            <% if @roster_stale %>
-              Upload the latest National roster to bring the post current.
+              Upload the National roster to bring your Post's membership information into the tools.
             <% end %>
           </p>
-          <div class="tile-actions">
-            <%= link_to "Import roster", new_admin_roster_import_path, class: "tile-btn" %>
-            <%= link_to "Sync email audience →", new_admin_loops_roster_sync_path, class: "tile-act" %>
-            <%= link_to "View imports →", admin_roster_imports_path, class: "tile-act" %>
-          </div>
         </div>
-      <% end %>
+        <%= link_to "Import roster", new_admin_roster_import_path, class: "btn-primary" %>
+      </div>
+    </section>
+  <% end %>
 
-      <% if show_agendas %>
-        <div class="tile">
-          <div class="tile-ic" aria-hidden="true">📋</div>
-          <p class="tile-t">Agenda Catalog</p>
-          <p class="tile-d">Standard agenda building blocks your post reuses across meetings.</p>
-          <div class="tile-actions">
-            <%= link_to "Open catalog →", admin_agenda_item_catalog_entries_path, class: "tile-act" %>
-          </div>
-        </div>
+  <div class="workspace-groups<%= " workspace-groups--single" if columns.one? %>">
+    <% columns.each_value do |column_groups| %>
+      <div class="workspace-column">
+        <% column_groups.each do |group| %>
+          <section class="workspace-group workspace-group--<%= group[:key] %>" aria-labelledby="workspace-<%= group[:key] %>">
+            <%= render "shared/section_header", label: group[:label], heading_tag: :h2, heading_id: "workspace-#{group[:key]}" %>
+            <div class="mrow-list">
+              <% group[:destinations].each do |destination| %>
+                <%= link_to destination[:path], class: "mrow workspace-destination" do %>
+                  <span class="mrow-id">
+                    <span class="mrow-name"><%= destination[:label] %></span>
+                    <% if destination[:roster] %>
+                      <span class="workspace-roster-status <%= @roster_stale ? "workspace-roster-status--due" : "workspace-roster-status--current" %>">
+                        <%= admin_workspace_roster_status %>
+                      </span>
+                    <% end %>
+                    <span class="mrow-sub"><%= destination[:description] %></span>
+                  </span>
+                  <span class="workspace-destination-arrow" aria-hidden="true">›</span>
+                <% end %>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 
-        <div class="tile">
-          <div class="tile-ic" aria-hidden="true">🗂️</div>
-          <p class="tile-t">Meeting Types</p>
-          <p class="tile-d">Reusable agenda templates for each kind of meeting, built from your catalog items.</p>
-          <div class="tile-actions">
-            <%= link_to "Manage meeting types →", admin_meeting_types_path, class: "tile-act" %>
-          </div>
-        </div>
-
-      <% end %>
-
-      <% if show_meeting_records %>
-        <div class="tile">
-          <div class="tile-ic" aria-hidden="true">🗓️</div>
-          <p class="tile-t">Meetings</p>
-          <p class="tile-d"><%= show_agendas ? "Schedule meetings and carry each agenda into its minutes record." : "Open past meetings and continue their minutes records." %></p>
-          <div class="tile-actions">
-            <%= link_to "Open meeting records →", admin_meetings_path, class: "tile-act" %>
-          </div>
-        </div>
-      <% end %>
+  <% if groups.empty? %>
+    <div class="empty">
+      <p>Your current permissions do not include workspace tools.</p>
+      <%= link_to "View shared meeting records", meetings_path, class: "btn-secondary" %>
     </div>
-  </section>
-<% end %>
-
-<% if show_positions %>
-  <section class="hub-sec">
-    <h2 class="hub-sec-h">Officers &amp; Elections</h2>
-    <p class="hub-sec-n">The offices your post fills and who holds them — usually only after an election.</p>
-    <div class="hub-tiles">
-      <div class="tile">
-        <div class="tile-ic" aria-hidden="true">🎖️</div>
-        <p class="tile-t">Post Positions</p>
-        <p class="tile-d">The offices your post fills, their wording, and their order.</p>
-        <div class="tile-actions">
-          <%= link_to "Manage positions →", admin_position_titles_path, class: "tile-act" %>
-        </div>
-      </div>
-    </div>
-  </section>
-<% end %>
-
-<% if show_admins %>
-  <section class="hub-sec">
-    <h2 class="hub-sec-h">Setup &amp; Administration</h2>
-    <p class="hub-sec-n">Accounts, access, and post details. Rarely changed.</p>
-    <div class="hub-tiles">
-      <div class="tile">
-        <div class="tile-ic" aria-hidden="true">👥</div>
-        <p class="tile-t">Administrators</p>
-        <p class="tile-d">Who can administer the app. Permissions are granted on each person’s page.</p>
-        <div class="tile-actions">
-          <%= link_to "View administrators →", admin_administrators_path, class: "tile-act" %>
-        </div>
-      </div>
-      <div class="tile">
-        <div class="tile-ic" aria-hidden="true">🔑</div>
-        <p class="tile-t">Website connections</p>
-        <p class="tile-d">Create and revoke Post-owned tokens for your public website.</p>
-        <div class="tile-actions">
-          <%= link_to "Manage website connections →", admin_website_access_tokens_path, class: "tile-act" %>
-        </div>
-      </div>
-      <div class="tile">
-        <div class="tile-ic" aria-hidden="true">🔑</div>
-        <p class="tile-t">Agent access</p>
-        <p class="tile-d">Review and revoke personal agent tokens across this installation.</p>
-        <div class="tile-actions">
-          <%= link_to "Review agent access →", admin_agent_access_tokens_path, class: "tile-act" %>
-        </div>
-      </div>
-    </div>
-  </section>
-<% end %>
-
-<% if current_user.can?("publish_public_content") %>
-  <section class="hub-sec"><h2 class="hub-sec-h">Public website</h2><p>Review introductions, portraits and activities before visitors see them.</p><%= link_to "Open public website publishing →", admin_website_publications_path, class: "btn-primary" %></section>
-<% end %>
+  <% end %>
+</div>

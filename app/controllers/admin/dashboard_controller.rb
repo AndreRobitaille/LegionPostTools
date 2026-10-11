@@ -3,13 +3,15 @@ module Admin
     before_action :require_admin_area
 
     def show
+      return unless current_user.can?("manage_settings")
+
       @latest_roster_import = RosterImport.latest_successful
       @roster_stale = RosterImport.roster_stale?
     end
 
     private
 
-    # The hub is reachable to anyone who can use at least one tile. Each linked
+    # The hub is reachable to anyone with workspace authority. Each linked
     # page keeps its own require_capability guard; this only gates the hub itself.
     def require_admin_area
       require_authentication

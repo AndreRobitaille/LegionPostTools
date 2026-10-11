@@ -52,17 +52,40 @@ brand.
 
 ```text
 OFFICER TOOLS
-Meeting preparation and records for your Post duties.
+Choose the work you need to do for your Post.
 
 +------------------------------------------------------+
 | SCOPED OFFICER ACCESS · ADJUTANT · FINANCE OFFICER  |
-| Meeting and records tools are available. Account    |
-| and system settings remain with administrators.     |
+| Account and system settings remain with            |
+| application administrators.                        |
 +------------------------------------------------------+
 
 MEETING WORK
-[Background Jobs] [Agenda Catalog] [Meeting Types] [Meetings]
+Meetings
+Manage Endeavors
+
+AGENDA SETUP
+Agenda catalog
+Meeting types
+
+OPERATIONS
+Background Jobs
 ```
+
+The October 11 hub redesign uses readable destination rows with whole-row links,
+semantic section headings, and visible keyboard focus. Meeting tools form one desktop
+column; People and roster, Public website, and Access form the other. A workspace with
+only one destination column uses a narrower measure; phone layouts keep meeting tools
+first. Actual role names
+appear in the duty placard when present; manual grants do not invent an officer title.
+
+Missing and overdue rosters have one compact attention area with an import action.
+Current roster status, import history, and email-audience synchronization remain beside
+the roster destinations. Empty groups and unauthorized rows are omitted. Publishing
+uses `publish_public_content`; website connections use `manage_settings`. Background
+Jobs requires `manage_settings`, `manage_minutes`, or `manage_agendas`; a record viewer
+gets Meetings without a Jobs link. Destination controllers retain their own guards.
+See [the hub design and validation](ADMIN_WORKSPACE_DESIGN.md).
 
 - Navigation says **Officer tools** for a person with scoped operational capabilities and
   **Admin** for a person with `manage_settings`.

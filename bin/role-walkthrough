@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+Dir.chdir(File.expand_path("..", __dir__))
+ENV["RAILS_ENV"] = "test"
+ENV["DATABASE_URL"] = "postgresql:///legion_post_tools_role_walkthrough_test"
+ENV["APP_TIME_ZONE"] = "America/Chicago"
+ENV["ENDEAVOR_HISTORY_ENABLED"] = "0"
+ENV["ROLE_WALKTHROUGH_PORT"] ||= "3095"
+ENV["ROLE_WALKTHROUGH_OUTPUT"] ||= "/tmp/legion-role-walkthrough"
+
+case ARGV.first
+when "prepare"
+  abort "Database preparation failed" unless system("bin/rails", "db:prepare")
+  exec("bin/rails", "runner", "script/role_walkthrough.rb", "prepare")
+when "inspect"
+  exec("bin/rails", "runner", "script/role_walkthrough.rb", "inspect")
+when "serve"
+  exec("bundle", "exec", "ruby", "script/role_walkthrough_server.rb")
+else
+  abort "Usage: bin/role-walkthrough prepare|serve|inspect"
+end

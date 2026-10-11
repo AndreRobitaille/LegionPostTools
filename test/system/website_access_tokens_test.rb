@@ -13,7 +13,7 @@ class WebsiteAccessTokensSystemTest < ApplicationSystemTestCase
 
   test "administrator creates views once and revokes a Post website connection at desktop and narrow widths" do
     visit admin_root_path
-    click_link "Manage website connections"
+    click_link "Website connections", exact: false
     assert_text "No website connections yet"
     capture_layout("empty")
     click_link "Create website connection"

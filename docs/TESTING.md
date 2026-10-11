@@ -93,6 +93,8 @@ Useful dated examples are the [workflow variant review](testing/WORKFLOW_VARIANT
 [October 11 completion report](testing/OVERNIGHT_HANDOFF_2026-10-11.md).
 The [map maintenance guide](application_map/MAINTENANCE.md) describes how to update
 contracts and retain discrepancies without confusing discovery with validation.
+The [officer role walkthroughs](testing/role_walkthroughs/README.md) provide source-blind,
+goal-based browser briefs and an isolated synthetic Post for handoff and turnover studies.
 
 ## Choose and run relevant checks
 

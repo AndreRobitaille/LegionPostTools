@@ -56,7 +56,7 @@ Scoped controllers inherit their own guards; technical screens use Admin::BaseCo
 
 | Interface | Pages and actions | Authority/data | Workflows |
 | --- | --- | --- | --- |
-| Officer tools / Administration `/admin` | Capability-filtered tiles and scoped-duty explanation; links to record work, roster, roles/admins/connections/agent tokens, publishing | Hub capability list in User; each target retains its own guard | NAV-01 |
+| Officer tools / Administration `/admin` | Grouped destination rows, roster attention/status, and scoped-duty explanation; links to record work, roster, roles/admins/connections/agent tokens, publishing | Hub capability list in User; each target retains its own guard; Jobs link requires settings, minutes, or agenda management | NAV-01 |
 | Meetings `/admin/meetings` | List, create/edit, occurrence workspace, create agenda, start minutes, transcript and documents, remove empty occurrence | Read: agenda/minutes/internal-record capability; scheduling mutations: `manage_agendas` | MTG-01–02, AGN-01, MIN-01 |
 | Dated agenda `/admin/dated_agendas/:id/edit` | Ordered sections/items, add catalog item, add discussion, add Endeavor, edit/move/reorder/remove, approve/publish/reopen/delete, member PDF/private notes PDF | `manage_agendas`; drafting only for structure edits; private notes PDF additionally needs current position authority | AGN-01–07, PDF-01 |
 | Dated sections | New/edit, create/update/delete/move/reorder | Agenda-local records; locked-parent and populated-section restrictions | AGN-02 |

@@ -887,31 +887,36 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .honor .num { font-size: 24px; font-weight: 700; color: var(--color-gold-ink); line-height: 1; }
 .honor .txt { font-size: 15px; color: #5c4a24; }
 
-/* ---------------------------------------------------------------------------
-   Admin hub: bounded tile cards grouped into topical sections. Tiles never
-   stretch full width; the auto-fill/minmax grid keeps a lone tile card-width.
-   Type floors: title 18px, description 15px, status label 13px.
-   --------------------------------------------------------------------------- */
-.hub-sec { margin-top: 26px; }
-.hub-sec:first-of-type { margin-top: 10px; }
-.hub-sec-h { font-size: 19px; font-weight: 800; color: var(--color-navy); margin: 0 0 2px; }
-.hub-sec-n { font-size: 14px; color: var(--color-muted); margin: 0 0 13px; }
-.hub-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 290px)); gap: 15px; }
-.hub-tiles--officer { grid-template-columns: repeat(2, minmax(250px, 1fr)); max-width: 780px; }
-.tile { display: flex; flex-direction: column; background: var(--color-paper); border: 1px solid #d3c391; border-radius: 11px; padding: 16px 17px 17px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
-.tile .tile-ic { font-size: 22px; margin-bottom: 9px; }
-.tile .tile-t { font-size: 18px; font-weight: 800; color: var(--color-navy); margin: 0 0 5px; }
-.tile .tile-d { font-size: 15px; color: var(--color-muted); line-height: 1.42; margin: 0 0 14px; flex: 1; }
-.tile .tile-actions { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
-/* Interactive text (tile links + Import button) stays >= 16px per the readability hard rule. */
-.tile .tile-act { font-size: 16px; font-weight: 700; color: var(--color-legionred); text-decoration: none; }
-.tile .tile-act:hover { text-decoration: underline; }
-.tile .tile-btn { display: inline-block; font-size: 16px; font-weight: 800; color: #fff; background: var(--color-legionred); border-radius: 8px; padding: 9px 15px; text-decoration: none; }
-.tile .tile-status { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; color: var(--color-gold-ink); background: #f0e2c2; border-radius: 20px; padding: 3px 10px; margin: 0 0 10px; }
-.tile .tile-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-gold-ink); }
-.tile .tile-status.ok { color: var(--color-green); background: #dfebd9; }
-.tile .tile-status.ok .dot { background: var(--color-green); }
-.tile.tile--due { background: #f8efe0; border-color: #e6cf9c; box-shadow: inset 3px 0 0 var(--color-gold-ink), 0 8px 22px rgba(0,0,0,.06); }
+/* Administration: quiet destination groups, with meeting work first. */
+.admin-workspace { max-width: var(--w-main); }
+.admin-workspace .page-lead { margin-bottom: 28px; }
+.admin-workspace .page-sub, .admin-workspace .officer-workspace-context small { color: var(--color-ink); }
+.admin-workspace .officer-workspace-context { max-width: var(--w-form); margin: 0 0 28px; }
+.admin-workspace .officer-workspace-context p span:only-child { padding-right: 0; border-right: 0; }
+.admin-workspace .sec-head-label { margin: 0; }
+.workspace-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 32px; align-items: start; }
+.workspace-groups--single { max-width: var(--w-form); grid-template-columns: minmax(0, 1fr); }
+.workspace-column { display: grid; gap: 28px; min-width: 0; }
+.workspace-group { min-width: 0; }
+.workspace-group .sec-head { margin-top: 0; }
+.workspace-group .mrow-list { margin-bottom: 0; border-color: var(--rule-strong); border-radius: var(--radius-card); background: var(--color-paper); }
+.workspace-group--meeting-work .mrow-list { border-top: 3px solid var(--color-gold); }
+.workspace-destination { min-height: 76px; box-sizing: border-box; padding: 15px 18px; border-color: var(--rule); }
+.workspace-destination .mrow-name { font-size: 18px; font-weight: 700; line-height: 1.35; }
+.workspace-destination .mrow-sub { color: var(--color-ink); font-size: 14px; line-height: 1.5; margin-top: 4px; }
+.workspace-destination-arrow { flex: 0 0 auto; color: var(--color-gold-ink); font-size: 26px; line-height: 1; }
+.workspace-destination:hover { background: var(--color-cream); }
+.workspace-destination:focus-visible { position: relative; outline: 3px solid var(--color-navy); outline-offset: -3px; background: var(--color-cream); }
+.workspace-roster-status { display: inline-block; margin-left: 10px; font-size: 14px; font-weight: 650; line-height: 1.5; }
+.workspace-roster-status--current { color: var(--color-green); }
+.workspace-roster-status--due { color: var(--color-gold-ink); }
+.workspace-attention { max-width: var(--w-form); padding: 18px 20px; margin-bottom: 28px; border: 1px solid var(--rule-strong); border-left: 4px solid var(--color-gold); border-radius: var(--radius-card); background: var(--color-paper); }
+.workspace-attention-content { display: flex; align-items: center; gap: 22px; }
+.workspace-attention-content > div { flex: 1; min-width: 0; }
+.workspace-attention h3 { margin: 0 0 5px; color: var(--color-navy); font-size: 19px; font-weight: 750; line-height: 1.4; }
+.workspace-attention p { margin: 0; font-size: 16px; line-height: 1.5; }
+.workspace-attention .btn-primary { flex: 0 0 auto; min-height: 44px; }
+.admin-workspace .btn-primary:focus-visible, .admin-workspace .btn-secondary:focus-visible { outline: 3px solid var(--color-navy); outline-offset: 3px; }
 
 /* Meeting type edit head: click-to-edit name + instant active toggle -------- */
 .mt-head { margin-bottom: 18px; }
@@ -1663,6 +1668,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .endeavor-form-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .member-dashboard-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .pk-card--sidebar { grid-row: 2; max-width: var(--w-form); margin-top: 28px; }
+  .workspace-groups { grid-template-columns: minmax(0, 1fr); }
   .officer-workspace-context p { align-items: flex-start; flex-direction: column; gap: 4px; }
   .officer-workspace-context p span { padding-right: 0; border-right: 0; }
   .page-lead-row { align-items: stretch; flex-direction: column; gap: 16px; }
@@ -1688,7 +1694,11 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .app-menu-panel { min-width: 244px; max-width: calc(100vw - 28px); }
 
   .app-main { min-width: 0; padding: 20px 16px 48px; }
-  .hub-tiles--officer { grid-template-columns: minmax(0, 1fr); }
+  .workspace-destination { flex-wrap: nowrap; gap: 0; padding: 15px 16px; }
+  .workspace-destination .mrow-id { flex: 1; padding-right: 14px; }
+  .workspace-roster-status { display: block; margin: 4px 0 0; }
+  .workspace-attention { padding: 16px; }
+  .workspace-attention-content { align-items: flex-start; flex-direction: column; gap: 16px; }
   .entry-hero { align-items: flex-start; padding: 24px 14px; }
   .entry-emb { width: 104px; height: 104px; }
   .entry-card { margin-top: 20px; padding: 22px 18px; }

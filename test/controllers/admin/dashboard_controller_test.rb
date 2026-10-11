@@ -22,6 +22,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
   test "full admin sees all administration groups and their links" do
     prepare_setup_complete_state
     admin = sign_in_member(can_manage_settings: true, can_manage_agendas: true)
+    admin.permission_grants.create!(capability: "publish_public_content")
 
     get admin_root_path
 
@@ -29,22 +30,25 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Administration"
     assert_select "a.nav-tab--admin", text: /Admin\z/
     assert_select ".officer-workspace-context", count: 0
-    assert_select ".hub-sec-h", text: "Meetings & Roster"
-    assert_select ".hub-sec-h", text: "Officers & Elections"
-    assert_select ".hub-sec-h", text: "Setup & Administration"
-    assert_select ".tile .tile-t", text: "Roster"
+    assert_equal [ "Meeting work", "Agenda setup", "Operations", "People and roster", "Public website", "Access" ],
+      css_select(".workspace-group h2").map(&:text)
+    assert_workspace_destinations admin_meetings_path, admin_endeavors_path,
+      new_admin_roster_import_path, admin_roster_imports_path, new_admin_loops_roster_sync_path,
+      admin_position_titles_path, admin_agenda_item_catalog_entries_path, admin_meeting_types_path,
+      admin_website_publications_path, admin_website_access_tokens_path, admin_jobs_path,
+      admin_administrators_path, admin_agent_access_tokens_path
     assert_select "a[href=?]", new_admin_roster_import_path, text: /Import roster/
     assert_select "a[href=?]", new_admin_loops_roster_sync_path, text: /Sync email audience/
-    assert_select "a[href=?]", admin_roster_imports_path, text: /View imports/
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
-    assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
-    assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
-    assert_select "a[href=?]", admin_jobs_path, text: /Open job history/
-    assert_select "a[href=?]", admin_position_titles_path, text: /Manage positions/
-    assert_select "a[href=?]", admin_administrators_path, text: /View administrators/
+    assert_select "a[href=?]", admin_roster_imports_path, text: /Import history/
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda catalog/
+    assert_select "a[href=?]", admin_meeting_types_path, text: /Meeting types/
+    assert_select "a[href=?]", admin_meetings_path, text: /Meetings/
+    assert_select "a[href=?]", admin_jobs_path, text: /Background Jobs/
+    assert_select "a[href=?]", admin_position_titles_path, text: /Post positions/
+    assert_select "a[href=?]", admin_administrators_path, text: /Administrators/
   end
 
-  test "agenda-only manager reaches the hub and sees the agenda tiles" do
+  test "agenda-only manager reaches the hub and sees only authorized destinations" do
     prepare_setup_complete_state
     officer = sign_in_member(can_manage_settings: false)
     adjutant = @org.position_titles.create!(name: "Adjutant", display_order: 1, active: true)
@@ -57,12 +61,14 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Officer tools"
     assert_select "a.nav-tab--admin", text: /Officer tools\z/
     assert_select ".officer-workspace-context", text: /Scoped officer access.*Adjutant.*remain with application administrators/m
-    assert_select ".hub-sec-h", text: "Meeting work"
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Open catalog/
-    assert_select "a[href=?]", admin_meeting_types_path, text: /Manage meeting types/
-    assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
-    assert_select ".hub-sec-h", text: "Officers & Elections", count: 0
-    assert_select ".hub-sec-h", text: "Setup & Administration", count: 0
+    assert_select ".workspace-group h2", text: "Meeting work"
+    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda catalog/
+    assert_select "a[href=?]", admin_meeting_types_path, text: /Meeting types/
+    assert_select "a[href=?]", admin_meetings_path, text: /Meetings/
+    assert_workspace_destinations admin_meetings_path, admin_endeavors_path,
+      admin_agenda_item_catalog_entries_path, admin_meeting_types_path, admin_jobs_path
+    assert_select ".workspace-group h2", text: "People and roster", count: 0
+    assert_select ".workspace-group h2", text: "Access", count: 0
     assert_select "a[href=?]", admin_position_titles_path, count: 0
     assert_select "a[href=?]", new_admin_roster_import_path, count: 0
   end
@@ -85,14 +91,16 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_select "a[href=?]", admin_meetings_path, text: /Open meeting records/
-    assert_select "a[href=?]", admin_jobs_path, text: /Open job history/
+    assert_select "a[href=?]", admin_meetings_path, text: /Meetings/
+    assert_select "a[href=?]", admin_jobs_path, text: /Background Jobs/
+    assert_workspace_destinations admin_meetings_path, admin_jobs_path
+    assert_select "a.workspace-destination[href=?]", admin_meetings_path, text: /Open meetings and continue their minutes/
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
     assert_select "a[href=?]", admin_meeting_types_path, count: 0
     assert_select "a[href=?]", new_admin_roster_import_path, count: 0
   end
 
-  test "roster tile reads current when a recent import exists" do
+  test "current roster remains visible without an attention area" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: true)
     RosterImport.create!(uploaded_filename: "roster.csv", status: "completed", imported_at: 2.days.ago,
@@ -101,11 +109,12 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_select ".tile .tile-status.ok", text: /Current/
-    assert_select ".tile--due", count: 0
+    assert_select ".workspace-roster-status--current", text: "Current"
+    assert_select ".workspace-destination", text: /Import roster.*Last imported/m
+    assert_select ".workspace-attention", count: 0
   end
 
-  test "roster tile turns due and flags an overdue import" do
+  test "overdue roster has one attention area beside its import action" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: true)
     RosterImport.create!(uploaded_filename: "roster.csv", status: "completed", imported_at: 31.days.ago,
@@ -114,20 +123,109 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     get admin_root_path
 
     assert_response :success
-    assert_select ".tile.tile--due .tile-status", text: /Import due/
+    assert_select ".workspace-roster-status--due", text: "Import due"
+    assert_select ".workspace-attention", count: 1 do
+      assert_select "h3", text: "Roster import is due"
+      assert_select "a[href=?]", new_admin_roster_import_path, text: "Import roster"
+    end
   end
 
-  test "roster tile flags when no roster has been imported" do
+  test "missing roster explains the first import and keeps its actions available" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: true)
 
     get admin_root_path
 
     assert_response :success
-    assert_select ".tile.tile--due .tile-status", text: /Not imported/
+    assert_select ".workspace-roster-status--due", text: "Not imported"
+    assert_select ".workspace-attention h3", text: "Import your first roster"
+    assert_select "a[href=?]", admin_roster_imports_path
+    assert_select "a[href=?]", new_admin_loops_roster_sync_path
+  end
+
+  test "publisher without settings gets only publishing and no empty groups" do
+    prepare_setup_complete_state
+    user = sign_in_member(can_manage_settings: false)
+    user.permission_grants.create!(capability: "publish_public_content")
+
+    get admin_root_path
+    assert_response :success
+    assert_workspace_destinations admin_website_publications_path
+    assert_equal [ "Public website" ], css_select(".workspace-group h2").map(&:text)
+    assert_select ".workspace-attention", count: 0
+
+    get admin_website_publications_path
+    assert_response :success
+    get admin_website_access_tokens_path
+    assert_redirected_to root_path
+    get admin_root_path
+    assert_workspace_destinations admin_website_publications_path
+  end
+
+  test "settings access does not imply public publishing authority" do
+    prepare_setup_complete_state
+    sign_in_member(can_manage_settings: true)
+
+    get admin_root_path
+    assert_select "a.workspace-destination[href=?]", admin_website_access_tokens_path
+    assert_select "a[href=?]", admin_website_publications_path, count: 0
+    get admin_website_publications_path
+    assert_redirected_to root_path
+  end
+
+  test "record viewer sees Meetings and cannot reach Background Jobs" do
+    prepare_setup_complete_state
+    user = sign_in_member(can_manage_settings: false)
+    grant = user.permission_grants.create!(capability: "view_internal_records")
+
+    get admin_root_path
+    assert_response :success
+    assert_workspace_destinations admin_meetings_path
+    assert_select "a.workspace-destination[href=?]", admin_meetings_path, text: /Read internal meeting records/
+    assert_equal [ "Meeting work" ], css_select(".workspace-group h2").map(&:text)
+    get admin_meetings_path
+    assert_response :success
+    get admin_jobs_path
+    assert_redirected_to root_path
+
+    grant.destroy!
+    get admin_root_path
+    assert_redirected_to root_path
+    get admin_meetings_path
+    assert_redirected_to root_path
+  end
+
+  test "opening the hub repeatedly starts no background or paid work" do
+    prepare_setup_complete_state
+    sign_in_member(can_manage_settings: true, can_manage_agendas: true, can_manage_minutes: true)
+
+    assert_no_difference [ "MinutesDraftRun.count", "EndeavorHistoryRun.count", "RosterImport.count" ] do
+      assert_no_enqueued_jobs do
+        2.times do
+          get admin_root_path
+          assert_response :success
+        end
+      end
+    end
+  end
+
+  test "approval-only authority keeps a helpful empty workspace" do
+    prepare_setup_complete_state
+    user = sign_in_member(can_manage_settings: false)
+    user.permission_grants.create!(capability: "record_minutes_approval")
+
+    get admin_root_path
+    assert_response :success
+    assert_select ".workspace-group", count: 0
+    assert_select ".empty", text: /current permissions do not include workspace tools/
+    assert_select "a[href=?]", meetings_path, text: "View shared meeting records"
   end
 
   private
+
+  def assert_workspace_destinations(*paths)
+    assert_equal paths.sort, css_select("a.workspace-destination").map { |link| link["href"] }.sort
+  end
 
   def prepare_setup_complete_state
     @org = Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
