@@ -194,6 +194,25 @@ Rails.application.routes.draw do
   resource :passkey_invitation, only: %i[destroy]
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
+  namespace :membership do
+    root to: "overview#index"
+    get "report", to: "reports#index"
+    get "post-checks", to: "post_checks#index", as: :post_checks
+    resources :people, only: :show do
+      resources :contacts, only: :create
+    end
+    resources :drives, only: %i[index new create show update] do
+      get :print, on: :member
+      resources :assignments, only: %i[create update]
+    end
+    resources :dues_records, only: :create do
+      post :reverse, on: :member
+    end
+    resources :summaries, only: %i[create show] do
+      get :print, on: :member
+    end
+  end
+  get "internal/membership-pdf-source", to: "membership_pdf_sources#show"
   namespace :api do
     resource :website_calendar, only: %i[show update], controller: "website_calendar" do
       post :preview
@@ -226,6 +245,11 @@ Rails.application.routes.draw do
     get "membership/renewals", to: "membership#renewals"
     get "membership/roster", to: "membership#roster"
     get "membership/people/:id", to: "membership#person"
+    get "membership/workspace", to: "membership_work#index"
+    get "membership/workspace/people/:id", to: "membership_work#person"
+    post "membership/workspace/people/:id/contacts", to: "membership_work#contact"
+    get "membership/workspace/drives/:id", to: "membership_work#drive"
+    get "membership/workspace/drives/:id/print", to: "membership_work#drive_print"
     resources :meeting_bodies, only: %i[index]
     resources :meeting_types, only: %i[index]
     resources :meetings, only: %i[index show create update destroy] do

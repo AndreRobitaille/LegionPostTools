@@ -13,6 +13,10 @@ class Organization < ApplicationRecord
   has_many :agenda_item_catalog_entries, dependent: :destroy
   has_many :meeting_types, dependent: :destroy
   has_many :endeavors, dependent: :restrict_with_exception
+  has_many :membership_drives, class_name: "MembershipDrive", dependent: :restrict_with_exception
+  has_many :membership_contacts, dependent: :restrict_with_exception
+  has_many :membership_dues_records, dependent: :restrict_with_exception
+  has_many :membership_summaries, dependent: :restrict_with_exception
 
   normalizes :public_email, with: ->(value) { value.strip.downcase }
 

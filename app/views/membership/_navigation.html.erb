@@ -1,0 +1,8 @@
+<nav class="membership-navigation" aria-label="Membership pages">
+  <%= link_to "Member follow-up", membership_root_path(membership_year: @membership_year), aria: { current: current == :worklist ? "page" : nil } %>
+  <%= link_to "Drives", membership_drives_path(membership_year: @membership_year), aria: { current: current == :drives ? "page" : nil } %>
+  <% if @access.manager? %>
+    <%= link_to "Adjutant report", membership_report_path(membership_year: @membership_year), aria: { current: current == :report ? "page" : nil } %>
+    <%= link_to "Post checks", membership_post_checks_path(membership_year: @membership_year), aria: { current: current == :checks ? "page" : nil } %>
+  <% end %>
+</nav>

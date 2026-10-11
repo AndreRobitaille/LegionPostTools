@@ -1,0 +1,21 @@
+<% content_for :title, "#{@drive.title} call sheets" %>
+<div class="membership-print">
+  <header><h1><%= @organization.name %></h1><h2><%= @drive.title %> · <%= @drive.membership_year %><%= " · Closed" if @drive.closed_at %></h2><p><%= MembershipDrive::PURPOSES.fetch(@drive.purpose) %> · Packet <%= @packet_id %> · Printed <%= legion_date(@organization.calendar_time_zone.today) %></p></header>
+  <p class="membership-notes"><%= @drive.script.presence || "Introduce yourself and the Post. Listen, record the result, and agree on any next step." %></p>
+  <p>Private Post use. Return completed sheets to the drive lead. Confirm the list is current before calling. Do not enter sensitive health or financial details.</p>
+  <% if @assignments.empty? %><p>No current assignments to print for this selection.</p><% end %>
+  <% @assignments.each do |assignment| %>
+    <% person = assignment.person; paused = @workspace.contact_paused?(person, purpose: @drive.purpose) %>
+    <section class="membership-call-block">
+      <h2><%= person.roster_display_name %></h2>
+      <p>Caller: <strong><%= assignment.assigned_to.person.full_name %></strong> · Reference: <%= @drive.id %>-<%= assignment.id %>-<%= @packet_id %></p>
+      <% if paused %><p><strong>Contact paused. Ask the membership officer before contacting.</strong></p>
+      <% else %><p>Phone: <%= person.directory_phone_number.presence || "Not recorded" %> · Email: <%= person.directory_email_address.presence || "Not recorded" %></p><% end %>
+      <% if @drive.purpose == "renewal" %><p><%= membership_renewal_label(person, @workspace.report) %> · <%= MembershipWorkspace::WORK_STATES.fetch(@workspace.work_state(person)) %></p><% end %>
+      <p>Contact date: ____________________ &nbsp; Channel: ____________________</p>
+      <div class="membership-call-outcomes"><% membership_contact_options(purpose: @drive.purpose).each do |label, value| %><span>[ ] <%= label %></span><% end %></div>
+      <p>Callback date: ____________________ &nbsp; Next step: ____________________</p>
+      <p>Notes:</p><div class="membership-writing-line"></div><div class="membership-writing-line"></div>
+    </section>
+  <% end %>
+</div>

@@ -202,6 +202,17 @@ bulk retrieval must not turn a narrow capability into an accidental full-roster 
 
 ## Renewal and Count Semantics
 
+The [Membership workspace](MEMBERSHIP_WORKSPACE.md) uses this current full-membership
+authority for officer management. Enabled volunteers receive member-specific access
+only during their assigned drive dates and assignment expiry, for that membership
+year. Revocation, drive closure, account disablement, or roster removal/death ends
+that access. Volunteers can record their own contacts, see results and officer
+reviews attached to their assigned calls, and print their assigned call sheets.
+They cannot read other callers' notes, separate individual officer notes, finances,
+or saved Post summaries. Permission restoration and administrative review require
+current officer authority, including when replaying a completed API request.
+The private JSON contact/worklist surface and PDFs enforce the same current scope.
+
 Membership questions must state what is being counted. A stored person row, a person on
 the latest imported roster, a member in good standing, a member needing outreach, and a
 member paid for a particular year are not interchangeable concepts.

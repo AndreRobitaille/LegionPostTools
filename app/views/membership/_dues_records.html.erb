@@ -1,0 +1,20 @@
+<% records.each do |record| %>
+  <article class="membership-contact">
+    <h2><%= MembershipDuesRecord::KINDS.fetch(record.kind) %><% if record.reversal %> · Reversed<% end %></h2>
+    <p><%= legion_date(record.received_on) %><% if record.amount %> · <%= number_to_currency(record.amount) %><% end %><% if record.reference.present? %> · <%= record.reference %><% end %></p>
+    <% if record.notes.present? %><p class="membership-notes"><%= record.notes %></p><% end %>
+    <p class="membership-secondary">Recorded by <%= record.recorded_by.person.full_name %>.</p>
+    <% if record.kind != "reversal" && record.reversal.nil? %>
+      <details class="membership-correction">
+        <summary>Correct this entry</summary>
+        <%= form_with url: reverse_membership_dues_record_path(record) do |form| %>
+          <%= form.hidden_field :membership_year, value: @membership_year %>
+          <%= hidden_field_tag "correction[submission_key]", SecureRandom.uuid %>
+          <%= label_tag "correction_notes_#{record.id}", "Reason for reversing this entry" %>
+          <%= text_field_tag "correction[notes]", nil, id: "correction_notes_#{record.id}", class: "f", required: true, maxlength: 2000 %>
+          <%= form.submit "Record reversal", class: "btn-secondary" %>
+        <% end %>
+      </details>
+    <% end %>
+  </article>
+<% end %>

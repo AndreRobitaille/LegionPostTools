@@ -1,0 +1,6 @@
+<% content_for :title, "Adjutant membership summary" %>
+<div class="membership-print">
+  <header><h1><%= @organization.name %></h1><h2>Adjutant membership summary</h2><p>Saved <%= legion_datetime(membership_local_time(@summary_record.created_at)) %> · Membership year <%= @summary_record.membership_year %></p></header>
+  <%= render "membership/summary", summary: @summary %>
+  <p>Prepared by <%= @summary_record.created_by.person.full_name %>. Figures are preserved as saved.</p>
+</div>

@@ -1349,6 +1349,202 @@ ALTER SEQUENCE public.meetings_id_seq OWNED BY public.meetings.id;
 
 
 --
+-- Name: membership_assignments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.membership_assignments (
+    id bigint NOT NULL,
+    membership_drive_id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    assigned_to_id bigint NOT NULL,
+    assigned_by_id bigint NOT NULL,
+    expires_on date NOT NULL,
+    revoked_at timestamp(6) without time zone,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: membership_assignments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.membership_assignments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: membership_assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.membership_assignments_id_seq OWNED BY public.membership_assignments.id;
+
+
+--
+-- Name: membership_contacts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.membership_contacts (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    recorded_by_id bigint NOT NULL,
+    membership_assignment_id bigint,
+    membership_year integer NOT NULL,
+    purpose character varying NOT NULL,
+    occurred_on date NOT NULL,
+    channel character varying NOT NULL,
+    outcome character varying NOT NULL,
+    notes text,
+    follow_up_on date,
+    paper_reference character varying,
+    submission_key character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: membership_contacts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.membership_contacts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: membership_contacts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.membership_contacts_id_seq OWNED BY public.membership_contacts.id;
+
+
+--
+-- Name: membership_drives; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.membership_drives (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    created_by_id bigint NOT NULL,
+    title character varying NOT NULL,
+    membership_year integer NOT NULL,
+    purpose character varying DEFAULT 'renewal'::character varying NOT NULL,
+    script text,
+    starts_on date NOT NULL,
+    ends_on date NOT NULL,
+    closed_at timestamp(6) without time zone,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: membership_drives_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.membership_drives_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: membership_drives_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.membership_drives_id_seq OWNED BY public.membership_drives.id;
+
+
+--
+-- Name: membership_dues_records; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.membership_dues_records (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    person_id bigint,
+    recorded_by_id bigint NOT NULL,
+    reverses_record_id bigint,
+    membership_year integer NOT NULL,
+    kind character varying NOT NULL,
+    received_on date NOT NULL,
+    amount numeric(12,2),
+    reference character varying,
+    notes text,
+    submission_key character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: membership_dues_records_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.membership_dues_records_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: membership_dues_records_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.membership_dues_records_id_seq OWNED BY public.membership_dues_records.id;
+
+
+--
+-- Name: membership_summaries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.membership_summaries (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    created_by_id bigint NOT NULL,
+    membership_year integer NOT NULL,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    submission_key character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: membership_summaries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.membership_summaries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: membership_summaries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.membership_summaries_id_seq OWNED BY public.membership_summaries.id;
+
+
+--
 -- Name: minutes_attendance_entries; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2617,6 +2813,41 @@ ALTER TABLE ONLY public.meetings ALTER COLUMN id SET DEFAULT nextval('public.mee
 
 
 --
+-- Name: membership_assignments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_assignments ALTER COLUMN id SET DEFAULT nextval('public.membership_assignments_id_seq'::regclass);
+
+
+--
+-- Name: membership_contacts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts ALTER COLUMN id SET DEFAULT nextval('public.membership_contacts_id_seq'::regclass);
+
+
+--
+-- Name: membership_drives id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_drives ALTER COLUMN id SET DEFAULT nextval('public.membership_drives_id_seq'::regclass);
+
+
+--
+-- Name: membership_dues_records id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_dues_records ALTER COLUMN id SET DEFAULT nextval('public.membership_dues_records_id_seq'::regclass);
+
+
+--
+-- Name: membership_summaries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_summaries ALTER COLUMN id SET DEFAULT nextval('public.membership_summaries_id_seq'::regclass);
+
+
+--
 -- Name: minutes_attendance_entries id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3055,6 +3286,46 @@ ALTER TABLE ONLY public.meetings
 
 
 --
+-- Name: membership_assignments membership_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_assignments
+    ADD CONSTRAINT membership_assignments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: membership_contacts membership_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT membership_contacts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: membership_drives membership_drives_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_drives
+    ADD CONSTRAINT membership_drives_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: membership_dues_records membership_dues_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_dues_records
+    ADD CONSTRAINT membership_dues_records_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: membership_summaries membership_summaries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_summaries
+    ADD CONSTRAINT membership_summaries_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: minutes_attendance_entries minutes_attendance_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3387,6 +3658,13 @@ CREATE UNIQUE INDEX idx_on_official_action_confirmation_id_7ceb2b7c93 ON public.
 --
 
 CREATE UNIQUE INDEX idx_on_organization_id_source_key_ecf47169eb ON public.agenda_item_catalog_entries USING btree (organization_id, source_key) WHERE (source_key IS NOT NULL);
+
+
+--
+-- Name: idx_on_person_id_membership_year_occurred_on_aa883f18d5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_on_person_id_membership_year_occurred_on_aa883f18d5 ON public.membership_contacts USING btree (person_id, membership_year, occurred_on);
 
 
 --
@@ -4139,6 +4417,153 @@ CREATE UNIQUE INDEX index_meetings_on_website_public_id ON public.meetings USING
 
 
 --
+-- Name: index_membership_assignments_on_assigned_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_assignments_on_assigned_by_id ON public.membership_assignments USING btree (assigned_by_id);
+
+
+--
+-- Name: index_membership_assignments_on_assigned_to_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_assignments_on_assigned_to_id ON public.membership_assignments USING btree (assigned_to_id);
+
+
+--
+-- Name: index_membership_assignments_on_drive_and_person; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_assignments_on_drive_and_person ON public.membership_assignments USING btree (membership_drive_id, person_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_membership_assignments_on_membership_drive_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_assignments_on_membership_drive_id ON public.membership_assignments USING btree (membership_drive_id);
+
+
+--
+-- Name: index_membership_assignments_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_assignments_on_person_id ON public.membership_assignments USING btree (person_id);
+
+
+--
+-- Name: index_membership_contacts_on_membership_assignment_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_contacts_on_membership_assignment_id ON public.membership_contacts USING btree (membership_assignment_id);
+
+
+--
+-- Name: index_membership_contacts_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_contacts_on_organization_id ON public.membership_contacts USING btree (organization_id);
+
+
+--
+-- Name: index_membership_contacts_on_paper_reference; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_contacts_on_paper_reference ON public.membership_contacts USING btree (paper_reference);
+
+
+--
+-- Name: index_membership_contacts_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_contacts_on_person_id ON public.membership_contacts USING btree (person_id);
+
+
+--
+-- Name: index_membership_contacts_on_recorded_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_contacts_on_recorded_by_id ON public.membership_contacts USING btree (recorded_by_id);
+
+
+--
+-- Name: index_membership_contacts_on_submission_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_contacts_on_submission_key ON public.membership_contacts USING btree (submission_key);
+
+
+--
+-- Name: index_membership_drives_on_created_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_drives_on_created_by_id ON public.membership_drives USING btree (created_by_id);
+
+
+--
+-- Name: index_membership_drives_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_drives_on_organization_id ON public.membership_drives USING btree (organization_id);
+
+
+--
+-- Name: index_membership_dues_records_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_dues_records_on_organization_id ON public.membership_dues_records USING btree (organization_id);
+
+
+--
+-- Name: index_membership_dues_records_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_dues_records_on_person_id ON public.membership_dues_records USING btree (person_id);
+
+
+--
+-- Name: index_membership_dues_records_on_recorded_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_dues_records_on_recorded_by_id ON public.membership_dues_records USING btree (recorded_by_id);
+
+
+--
+-- Name: index_membership_dues_records_on_reverses_record_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_dues_records_on_reverses_record_id ON public.membership_dues_records USING btree (reverses_record_id);
+
+
+--
+-- Name: index_membership_dues_records_on_submission_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_dues_records_on_submission_key ON public.membership_dues_records USING btree (submission_key);
+
+
+--
+-- Name: index_membership_summaries_on_created_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_summaries_on_created_by_id ON public.membership_summaries USING btree (created_by_id);
+
+
+--
+-- Name: index_membership_summaries_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_summaries_on_organization_id ON public.membership_summaries USING btree (organization_id);
+
+
+--
+-- Name: index_membership_summaries_on_submission_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_summaries_on_submission_key ON public.membership_summaries USING btree (submission_key);
+
+
+--
 -- Name: index_minutes_attendance_entries_on_meeting_minutes_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4883,6 +5308,14 @@ ALTER TABLE ONLY public.dated_agendas
 
 
 --
+-- Name: membership_assignments fk_rails_03f84f9765; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_assignments
+    ADD CONSTRAINT fk_rails_03f84f9765 FOREIGN KEY (membership_drive_id) REFERENCES public.membership_drives(id);
+
+
+--
 -- Name: endeavor_history_runs fk_rails_04674188df; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5067,6 +5500,14 @@ ALTER TABLE ONLY public.dated_agenda_roll_call_entries
 
 
 --
+-- Name: membership_contacts fk_rails_3193b30d30; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT fk_rails_3193b30d30 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: dated_agenda_items fk_rails_327c812377; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5203,6 +5644,14 @@ ALTER TABLE ONLY public.minutes_attendance_entries
 
 
 --
+-- Name: membership_dues_records fk_rails_4ed0d795aa; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_dues_records
+    ADD CONSTRAINT fk_rails_4ed0d795aa FOREIGN KEY (reverses_record_id) REFERENCES public.membership_dues_records(id);
+
+
+--
 -- Name: minutes_draft_runs fk_rails_507f09b832; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5227,11 +5676,43 @@ ALTER TABLE ONLY public.minutes_membership_approvals
 
 
 --
+-- Name: membership_dues_records fk_rails_550ca6e614; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_dues_records
+    ADD CONSTRAINT fk_rails_550ca6e614 FOREIGN KEY (person_id) REFERENCES public.people(id);
+
+
+--
+-- Name: membership_contacts fk_rails_554de8e5d0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT fk_rails_554de8e5d0 FOREIGN KEY (person_id) REFERENCES public.people(id);
+
+
+--
 -- Name: minutes_draft_runs fk_rails_5adeca557e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.minutes_draft_runs
     ADD CONSTRAINT fk_rails_5adeca557e FOREIGN KEY (discarded_by_id) REFERENCES public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: membership_assignments fk_rails_5d225614a9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_assignments
+    ADD CONSTRAINT fk_rails_5d225614a9 FOREIGN KEY (person_id) REFERENCES public.people(id);
+
+
+--
+-- Name: membership_contacts fk_rails_5d802297ce; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT fk_rails_5d802297ce FOREIGN KEY (membership_assignment_id) REFERENCES public.membership_assignments(id);
 
 
 --
@@ -5264,6 +5745,14 @@ ALTER TABLE ONLY public.website_publications
 
 ALTER TABLE ONLY public.minutes_items
     ADD CONSTRAINT fk_rails_63d18cccaf FOREIGN KEY (minutes_section_id) REFERENCES public.minutes_sections(id);
+
+
+--
+-- Name: membership_drives fk_rails_64102a71d8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_drives
+    ADD CONSTRAINT fk_rails_64102a71d8 FOREIGN KEY (created_by_id) REFERENCES public.users(id);
 
 
 --
@@ -5323,6 +5812,14 @@ ALTER TABLE ONLY public.calendar_events
 
 
 --
+-- Name: membership_summaries fk_rails_6db7e75764; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_summaries
+    ADD CONSTRAINT fk_rails_6db7e75764 FOREIGN KEY (created_by_id) REFERENCES public.users(id);
+
+
+--
 -- Name: sessions fk_rails_758836b4f0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5344,6 +5841,14 @@ ALTER TABLE ONLY public.minutes_attestations
 
 ALTER TABLE ONLY public.endeavor_history_results
     ADD CONSTRAINT fk_rails_7685ece73d FOREIGN KEY (endeavor_id) REFERENCES public.endeavors(id);
+
+
+--
+-- Name: membership_dues_records fk_rails_78af388f74; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_dues_records
+    ADD CONSTRAINT fk_rails_78af388f74 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -5384,6 +5889,14 @@ ALTER TABLE ONLY public.minutes_revisions
 
 ALTER TABLE ONLY public.dated_agenda_sections
     ADD CONSTRAINT fk_rails_846b265f4d FOREIGN KEY (dated_agenda_id) REFERENCES public.dated_agendas(id);
+
+
+--
+-- Name: membership_assignments fk_rails_86629e7ccc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_assignments
+    ADD CONSTRAINT fk_rails_86629e7ccc FOREIGN KEY (assigned_to_id) REFERENCES public.users(id);
 
 
 --
@@ -5635,6 +6148,14 @@ ALTER TABLE ONLY public.minutes_lifecycle_events
 
 
 --
+-- Name: membership_dues_records fk_rails_aad4e8c513; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_dues_records
+    ADD CONSTRAINT fk_rails_aad4e8c513 FOREIGN KEY (recorded_by_id) REFERENCES public.users(id);
+
+
+--
 -- Name: meeting_minutes fk_rails_ac0729233e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5755,6 +6276,14 @@ ALTER TABLE ONLY public.meeting_type_agenda_items
 
 
 --
+-- Name: membership_assignments fk_rails_cc079d0221; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_assignments
+    ADD CONSTRAINT fk_rails_cc079d0221 FOREIGN KEY (assigned_by_id) REFERENCES public.users(id);
+
+
+--
 -- Name: meetings fk_rails_cc68a84ab4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5784,6 +6313,14 @@ ALTER TABLE ONLY public.loops_roster_syncs
 
 ALTER TABLE ONLY public.website_publication_events
     ADD CONSTRAINT fk_rails_d2c73446aa FOREIGN KEY (website_publication_id) REFERENCES public.website_publications(id);
+
+
+--
+-- Name: membership_contacts fk_rails_d2dde99ca6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT fk_rails_d2dde99ca6 FOREIGN KEY (recorded_by_id) REFERENCES public.users(id);
 
 
 --
@@ -5848,6 +6385,22 @@ ALTER TABLE ONLY public.dated_agenda_sections
 
 ALTER TABLE ONLY public.minutes_lifecycle_events
     ADD CONSTRAINT fk_rails_e92f8872e1 FOREIGN KEY (minutes_revision_id) REFERENCES public.minutes_revisions(id);
+
+
+--
+-- Name: membership_drives fk_rails_eb5ef11ea4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_drives
+    ADD CONSTRAINT fk_rails_eb5ef11ea4 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: membership_summaries fk_rails_f2a040f583; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_summaries
+    ADD CONSTRAINT fk_rails_f2a040f583 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -5937,6 +6490,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261011200000'),
 ('20261011030000'),
 ('20261011020000'),
 ('20261011010000'),

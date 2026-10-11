@@ -1,0 +1,51 @@
+<% content_for :title, @drive.title %>
+<div class="page-lead">
+  <%= link_to "Membership drives", membership_drives_path(membership_year: @membership_year), class: "membership-back" %>
+  <h1 class="page-title"><%= @drive.title %></h1>
+  <p class="page-sub"><%= MembershipDrive::PURPOSES.fetch(@drive.purpose) %> · <%= @membership_year %> · <%= legion_date(@drive.starts_on) %> through <%= legion_date(@drive.ends_on) %><%= " · Closed" if @drive.closed_at %></p>
+</div>
+<% if @drive.script.present? %><%= render "shared/section_panel", label: "Call script" do %><p class="membership-notes"><%= @drive.script %></p><% end %><% end %>
+<%= form_with url: print_membership_drive_path(@drive), method: :get, class: "membership-toolbar", data: { turbo: false } do |form| %>
+  <%= form.hidden_field :membership_year, value: @membership_year %>
+  <% if @access.manager? %><div class="fl"><%= form.label :caller_id, "Call sheets for" %><%= form.select :caller_id, [["All callers", ""]] + @callers.map { |caller| [caller.person.full_name, caller.id] }, {}, class: "f" %></div><% end %>
+  <%= form.submit "Open call sheets PDF", class: "btn-secondary" %>
+<% end %>
+<%= render "shared/section_panel", label: "Assigned members" do %>
+  <% if @assignments.empty? %><p>No assignments yet.</p><% end %>
+  <% @assignments.each do |assignment| %>
+    <article class="membership-member">
+      <h2><%= link_to assignment.person.roster_display_name, membership_person_path(assignment.person, membership_year: @membership_year, assignment_id: assignment.id) %></h2>
+      <p>Caller: <%= assignment.assigned_to.person.full_name %> · Access through <%= legion_date(assignment.expires_on) %><% if assignment.revoked_at %> · Revoked<% elsif !assignment.active_on? %> · Outside active dates<% end %></p>
+      <%= render "membership/member_work", person: assignment.person, work_item: @workspace.contact_work_item(assignment.person, purpose: @drive.purpose, assignment:) %>
+      <% if @access.manager? && assignment.revoked_at.nil? %>
+        <%= form_with url: membership_drive_assignment_path(@drive, assignment), method: :patch do |form| %>
+          <%= form.hidden_field :membership_year, value: @membership_year %><%= form.hidden_field :lock_version, value: assignment.lock_version %>
+          <%= form.submit "Revoke assignment", class: "btn-secondary" %>
+        <% end %>
+      <% end %>
+    </article>
+  <% end %>
+<% end %>
+
+<% if @access.manager? && @drive.closed_at.nil? %>
+  <%= render "shared/section_panel", label: "Assign members to a caller" do %>
+    <% if @assignment_errors.present? %><div class="error-summary" role="alert"><%= @assignment_errors.to_sentence %></div><% end %>
+    <p class="panel-lead">Deceased and removed records are excluded. Renewal calls also leave out paid members, payments or records awaiting review, declined renewal, paused contact, and future callbacks. Volunteers receive only their assignments.</p>
+    <%= form_with url: membership_drive_assignments_path(@drive), scope: :assignment, class: "stacked-form membership-form" do |form| %>
+      <%= hidden_field_tag :membership_year, @membership_year %>
+      <div class="membership-form-grid">
+        <div class="fl"><%= form.label :assigned_to_id, "Caller" %><%= form.select :assigned_to_id, @callers.map { |caller| [caller.person.full_name, caller.id] }, { include_blank: "Choose a caller" }, class: "f", required: true %></div>
+        <div class="fl"><%= form.label :expires_on, "Access through" %><%= render "shared/editable_date_field", name: "assignment[expires_on]", id: "assignment_expires_on", value: @drive.ends_on %></div>
+      </div>
+      <fieldset class="membership-candidates"><legend>Members to assign</legend>
+        <% @candidates.each do |person| %><label><%= check_box_tag "assignment[person_ids][]", person.id %><span><%= person.roster_display_name %> <span class="membership-secondary"><%= membership_renewal_label(person, @workspace.report) %></span></span></label><% end %>
+        <% if @candidates.empty? %><p>No eligible unassigned members remain for this drive.</p><% end %>
+      </fieldset>
+      <%= form.submit "Assign selected members", class: "btn-primary" if @candidates.any? %>
+    <% end %>
+  <% end %>
+  <%= form_with url: membership_drive_path(@drive), method: :patch, class: "btnrow" do |form| %>
+    <%= form.hidden_field :membership_year, value: @membership_year %><%= form.hidden_field :lock_version, value: @drive.lock_version %>
+    <%= form.submit "Close drive", class: "btn-secondary" %>
+  <% end %>
+<% end %>

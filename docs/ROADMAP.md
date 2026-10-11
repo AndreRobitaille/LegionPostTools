@@ -339,4 +339,18 @@ in GitHub Issues.
 
 ## Open Work
 
+### Implemented locally: first membership workspace
+
+The [October 11 membership design](MEMBERSHIP_MANAGEMENT_DESIGN.md) records National
+and Wisconsin research, separate local dues and National standing, Adjutant report
+snapshots, volunteer assignments, web/PDF membership drives, member self-reports,
+and Post Excellence evidence. The [first workspace](MEMBERSHIP_WORKSPACE.md) now
+implements year-specific worklists, outreach, assigned volunteers, finished call
+sheet PDFs, separate local dues/National payment reports/Post-share check registers,
+corrections, and frozen Adjutant summaries. It has not been deployed. Partial-payment
+and transmittal accounting, member prompts, and award/Department form evidence
+remain later slices. Post-specific dues handling and additional recurring report
+editions remain operational discovery items. Integrated email and optional texting
+follow manual outreach.
+
 Open work, priorities, and status live in GitHub Issues: https://github.com/AndreRobitaille/LegionPostTools/issues

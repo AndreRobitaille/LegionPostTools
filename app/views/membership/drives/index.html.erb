@@ -1,0 +1,11 @@
+<% content_for :title, "Membership drives" %>
+<div class="page-lead"><h1 class="page-title">Membership drives</h1><p class="page-sub">Assign callers, open call sheets, and enter returned results.</p></div>
+<%= render "membership/navigation", current: :drives %>
+<%= render "membership/year_picker", url: membership_drives_path %>
+<%= render "shared/section_header", label: "Drives for #{@membership_year}", action: @access.manager? ? link_to("Create membership drive", new_membership_drive_path(membership_year: @membership_year), class: "sec-head-action") : nil, heading_tag: :h2 %>
+<% if @drives.empty? %><p class="empty">No drives for this membership year.</p><% end %>
+<div class="mrow-list">
+  <% @drives.each do |drive| %>
+    <div class="mrow"><div class="mrow-id"><h2 class="mrow-name"><%= link_to drive.title, membership_drive_path(drive, membership_year: drive.membership_year) %></h2><p class="membership-secondary"><%= MembershipDrive::PURPOSES.fetch(drive.purpose) %> · <%= legion_date(drive.starts_on) %> through <%= legion_date(drive.ends_on) %> · <%= drive.closed_at ? "Closed" : "Open" %></p></div></div>
+  <% end %>
+</div>

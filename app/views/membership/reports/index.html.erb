@@ -1,0 +1,14 @@
+<% content_for :title, "Adjutant membership report" %>
+<div class="page-lead"><h1 class="page-title">Adjutant membership report</h1><p class="page-sub">Review the current figures or save a copy for a meeting.</p></div>
+<%= render "membership/navigation", current: :report %>
+<%= render "membership/year_picker", url: membership_report_path %>
+<%= render "shared/section_panel", label: "Renewals for #{@membership_year}" do %>
+  <%= render "membership/summary", summary: @summary %>
+  <%= form_with url: membership_summaries_path, class: "btnrow" do |form| %>
+    <%= form.hidden_field :membership_year, value: @membership_year %>
+    <%= form.hidden_field :submission_key, value: SecureRandom.uuid %>
+    <%= form.submit "Save today's Adjutant summary", class: "btn-primary" %>
+  <% end %>
+<% end %>
+<%= render "shared/section_header", label: "Saved summaries", heading_tag: :h2 %>
+<% if @summaries.empty? %><p>No summaries saved for this year.</p><% else %><ul class="membership-links"><% @summaries.each do |saved| %><li><%= link_to "Summary saved #{legion_datetime(membership_local_time(saved.created_at))}", membership_summary_path(saved) %></li><% end %></ul><% end %>

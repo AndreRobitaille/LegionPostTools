@@ -1,0 +1,17 @@
+<%= form_with model: @dues_record, url: membership_dues_records_path, class: "stacked-form membership-form" do |form| %>
+  <% if @dues_record.errors.any? %><div class="error-summary" role="alert"><%= @dues_record.errors.full_messages.to_sentence %></div><% end %>
+  <%= hidden_field_tag :membership_year, @membership_year %>
+  <%= form.hidden_field :submission_key %>
+  <% if person %>
+    <%= form.hidden_field :person_id, value: person.id %>
+    <div class="fl"><%= form.label :kind, "Entry" %><%= form.select :kind, MembershipDuesRecord::KINDS.slice("post_receipt", "national_reported").map { |value, label| [label, value] }, {}, class: "f" %></div>
+  <% else %><%= form.hidden_field :kind, value: "post_share_received" %><% end %>
+  <div class="membership-form-grid">
+    <div class="fl"><%= form.label :received_on, person ? "Date received or reported" : "Check received on" %><%= render "shared/editable_date_field", name: "membership_dues_record[received_on]", id: "membership_dues_record_received_on", value: @dues_record.received_on %></div>
+    <div class="fl"><%= form.label :amount, "Amount received ($)" %><%= form.text_field :amount, inputmode: "decimal", placeholder: "45.00", class: "f" %></div>
+  </div>
+  <% if person %><p class="membership-secondary">For a report of National payment, leave the amount blank. Local receipts cover the full year's dues.</p><% end %>
+  <div class="fl"><%= form.label :reference, "Receipt or check reference" %><%= form.text_field :reference, class: "f", maxlength: 160 %></div>
+  <div class="fl"><%= form.label :notes, "Notes" %><%= form.text_area :notes, class: "f", rows: 2, maxlength: 2000 %></div>
+  <%= form.submit person ? "Record membership entry" : "Record Post-share check", class: "btn-primary" %>
+<% end %>

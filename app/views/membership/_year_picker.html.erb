@@ -1,0 +1,4 @@
+<%= form_with url: url, method: :get, class: "membership-toolbar membership-year-picker" do |form| %>
+  <div class="fl"><%= form.label :membership_year, "Membership year" %><%= form.number_field :membership_year, value: @membership_year, min: 2000, max: 2100, class: "f", required: true %></div>
+  <%= form.submit "Show year", class: "btn-secondary" %>
+<% end %>

@@ -1,0 +1,14 @@
+<% content_for :title, "Post checks" %>
+<div class="page-lead"><h1 class="page-title">Post checks</h1><p class="page-sub">Record checks the Post receives after members renew through National.</p></div>
+<%= render "membership/navigation", current: :checks %>
+<%= render "membership/year_picker", url: membership_post_checks_path %>
+<div class="membership-checks-layout">
+  <%= render "shared/section_panel", label: "Record a check" do %>
+    <p class="panel-lead">Enter the amount actually received. This check does not confirm any individual member's renewal.</p>
+    <%= render "membership/dues_form", person: nil %>
+  <% end %>
+  <%= render "shared/section_panel", label: "Checks and corrections for #{@membership_year}" do %>
+    <% if @post_share_records.empty? %><p>No checks recorded for this year.</p><% end %>
+    <%= render "membership/dues_records", records: @post_share_records %>
+  <% end %>
+</div>

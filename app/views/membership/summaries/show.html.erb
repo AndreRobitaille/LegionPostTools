@@ -1,0 +1,7 @@
+<% content_for :title, "Adjutant membership summary" %>
+<div class="page-lead">
+  <h1 class="page-title">Adjutant membership summary</h1>
+  <p class="page-sub">Saved <%= legion_datetime(membership_local_time(@summary_record.created_at)) %> by <%= @summary_record.created_by.person.full_name %>. These figures stay as recorded.</p>
+</div>
+<%= render "shared/section_panel", label: "Membership year #{@summary_record.membership_year}" do %><%= render "membership/summary", summary: @summary %><% end %>
+<div class="btnrow"><%= link_to "Open summary PDF", print_membership_summary_path(@summary_record), class: "btn-secondary", data: { turbo: false } %><%= link_to "Current Adjutant report", membership_report_path(membership_year: @summary_record.membership_year), class: "btn-secondary" %></div>

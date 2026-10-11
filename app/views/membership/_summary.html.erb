@@ -1,0 +1,22 @@
+<% figures = summary.deep_stringify_keys %>
+<div class="membership-summary">
+  <p class="panel-lead">Membership year <strong><%= figures.fetch("membership_year") %></strong> · Latest National roster import: <%= membership_source_date(figures.fetch("roster_source")) %></p>
+  <% if figures.dig("roster_source", "stale") %>
+    <p class="membership-notice">The roster is more than 30 days old or no import is recorded. Refresh it before relying on these figures.</p>
+  <% end %>
+  <dl class="membership-counts">
+    <div><dt>Paid for <%= figures.fetch("membership_year") %><span>National's roster shows paid through this year or later, including Paid Up For Life members.</span></dt><dd><%= figures.dig("work_counts", "confirmed") %></dd></div>
+    <div><dt>Members who paid the Post<span>We received their dues, but National's roster has not confirmed the renewal yet.</span></dt><dd><%= figures.dig("work_counts", "post_received") %></dd></div>
+    <div><dt>Members who say they paid online<span>They reported renewing through National. We still need to confirm it.</span></dt><dd><%= figures.dig("work_counts", "national_reported") %></dd></div>
+    <div><dt>Members still to renew<span>No payment is confirmed for this year or recorded here. Contact choices and callback dates determine follow-up.</span></dt><dd><%= figures.dig("work_counts", "needs_contact") %></dd></div>
+    <div><dt>Renewal calls paused<span>These members asked us not to contact them about renewal.</span></dt><dd><%= figures.dig("work_counts", "held") %></dd></div>
+    <div><dt>Membership records to check<span><%= figures.fetch("work_counts").key?("no_outreach") ? "Missing payment information or unclear National standing. An officer should check the record before outreach." : "As saved: includes deceased and removed records as well as unclear standing. These figures have not been recalculated." %></span></dt><dd><%= figures.dig("work_counts", "review") %></dd></div>
+    <% if figures.fetch("work_counts").key?("no_outreach") %>
+      <div><dt>Deceased or removed records<span>Deceased: <%= figures.dig("counts", "deceased") %>. Removed from the imported roster: <%= figures.dig("counts", "removed") %>. Kept for history; excluded from outreach.</span></dt><dd><%= figures.dig("work_counts", "no_outreach") %></dd></div>
+    <% end %>
+  </dl>
+  <p><strong>Money recorded for this year</strong><br>
+    Dues received by the Post: <strong><%= number_to_currency(figures.fetch("post_dues_received")) %></strong>.<br>
+    Checks received for the Post: <strong><%= number_to_currency(figures.fetch("post_share_checks_received")) %></strong>.</p>
+  <p class="membership-secondary"><%= figures.fetch("note") %></p>
+</div>

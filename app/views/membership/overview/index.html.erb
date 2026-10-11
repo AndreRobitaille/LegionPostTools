@@ -1,0 +1,35 @@
+<% content_for :title, "Membership · Member follow-up" %>
+<div class="page-lead">
+  <h1 class="page-title">Membership</h1>
+  <p class="page-sub"><%= @access.manager? ? "Choose a member and the next step." : "Work on your assigned members." %></p>
+</div>
+<%= render "membership/navigation", current: :worklist %>
+<%= form_with url: membership_root_path, method: :get, class: "membership-toolbar membership-worklist-filters" do |form| %>
+  <div class="fl"><%= form.label :membership_year, "Membership year" %><%= form.number_field :membership_year, value: @membership_year, min: 2000, max: 2100, class: "f", required: true %></div>
+  <div class="fl"><%= form.label :filter, "Show" %><%= form.select :filter, [["Needs attention", "attention"], [@access.manager? ? "All members" : "All assigned members", "all"]], { selected: @work_filter }, class: "f" %></div>
+  <div class="fl"><%= form.label :q, "Member name" %><%= form.search_field :q, value: params[:q], class: "f" %></div>
+  <%= form.submit "Show members", class: "btn-secondary" %>
+<% end %>
+
+<%= render "shared/section_header", label: @work_filter == "attention" ? "Needs attention" : (@access.manager? ? "All members" : "All assigned members"), meta: pluralize(@work_items.size, "member"), heading_tag: :h2 %>
+<% if @work_items.empty? %>
+  <div class="empty">
+    <p><%= @work_filter == "attention" ? "No members need attention in this selection." : "No members match this selection." %></p>
+    <% if @work_filter == "attention" %><%= link_to @access.manager? ? "Show all members" : "Show all assigned members", membership_root_path(membership_year: @membership_year, q: params[:q], filter: "all"), class: "sec-head-action" %><% end %>
+  </div>
+<% else %>
+  <div class="membership-worklist-heading" aria-hidden="true"><span>Member</span><span>Next step</span><span>Callback date</span></div>
+  <div class="mrow-list membership-worklist">
+    <% @work_items.each do |person, item| %>
+      <% path = membership_person_path(person, membership_year: @membership_year, assignment_id: item[:assignment_id]) %>
+      <article class="mrow membership-task">
+        <div class="mrow-id">
+          <h3 class="mrow-name"><%= link_to person.roster_display_name, path %></h3>
+          <p class="membership-secondary"><%= MembershipDrive::PURPOSES.fetch(item[:purpose]) %></p>
+        </div>
+        <div class="membership-task-action"><p><%= item[:next_step] %></p><%= link_to "Open", path, class: "btn-secondary", aria: { label: "Open #{person.roster_display_name}" } %></div>
+        <p class="membership-task-date"><span class="membership-secondary">Callback date</span><%= item[:follow_up_on] ? legion_date(item[:follow_up_on]) : "None scheduled" %></p>
+      </article>
+    <% end %>
+  </div>
+<% end %>

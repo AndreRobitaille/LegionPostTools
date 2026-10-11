@@ -13,6 +13,12 @@ class User < ApplicationRecord
   PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES = %w[approve_minutes attest_minutes].freeze
 
   belongs_to :person
+  has_many :membership_assignments, foreign_key: :assigned_to_id, dependent: :restrict_with_exception
+  has_many :recorded_membership_contacts, class_name: "MembershipContact", foreign_key: :recorded_by_id, dependent: :restrict_with_exception
+  has_many :recorded_membership_dues_records, class_name: "MembershipDuesRecord", foreign_key: :recorded_by_id, dependent: :restrict_with_exception
+  has_many :created_membership_drives, class_name: "MembershipDrive", foreign_key: :created_by_id, dependent: :restrict_with_exception
+  has_many :assigned_membership_work, class_name: "MembershipAssignment", foreign_key: :assigned_by_id, dependent: :restrict_with_exception
+  has_many :created_membership_summaries, class_name: "MembershipSummary", foreign_key: :created_by_id, dependent: :restrict_with_exception
   has_many :permission_grants, dependent: :destroy
   has_many :passkey_credentials, dependent: :destroy
   has_many :created_meeting_transcripts,
@@ -93,6 +99,15 @@ class User < ApplicationRecord
       .where("position_assignments.starts_on <= ?", on)
       .where("position_assignments.ends_on IS NULL OR position_assignments.ends_on >= ?", on)
       .exists?
+  end
+
+  def membership_workspace_access?
+    return false if disabled_at
+    return true if full_membership_access?
+
+    membership_assignments.active_on(Organization.current_local_date).joins(:person)
+      .where(people: { roster_removed_at: nil })
+      .where("LOWER(TRIM(COALESCE(people.roster_member_status, ''))) != ?", "deceased").exists?
   end
 
   def roster_email_mismatch?

@@ -2591,3 +2591,75 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 @media (max-width: 900px) { .publishing-review { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .publishing-panel { padding: 16px; } .publishing-row { flex-direction: column; gap: 4px; } }
 .publishing-row a { color: var(--color-navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Membership work keeps National standing, local work and contact separate. */
+.membership-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin-bottom: 24px; }
+.membership-toolbar .fl { min-width: 150px; flex: 1; }
+.membership-toolbar .f { width: 100%; }
+.membership-secondary { color: var(--color-muted); font-size: 14px; line-height: 1.5; }
+.membership-back { display: inline-block; margin-bottom: 14px; font-size: 16px; }
+.membership-navigation { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 22px 0 24px; border-bottom: 1px solid var(--rule-strong); }
+.membership-navigation a { padding: 10px 0; color: var(--color-navy); font-size: 16px; text-decoration: none; border-bottom: 3px solid transparent; }
+.membership-navigation a[aria-current="page"] { border-bottom-color: var(--color-gold); font-weight: 700; }
+.membership-navigation a:hover { text-decoration: underline; }
+.membership-year-picker { max-width: 320px; }
+.membership-worklist-filters { display: grid; grid-template-columns: 150px minmax(180px, 240px) minmax(180px, 1fr) auto; }
+.membership-worklist-heading, .membership-task { display: grid; grid-template-columns: minmax(180px, .85fr) minmax(280px, 1.6fr) 135px; gap: 20px; }
+.membership-worklist-heading { padding: 0 16px 12px; color: var(--color-muted); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+.membership-task { align-items: center; overflow-wrap: anywhere; }
+.membership-task .mrow-id { padding: 0; }
+.membership-task .mrow-name { margin: 0 0 6px; }
+.membership-task .membership-secondary { margin: 0; }
+.membership-task-action { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
+.membership-task-action p { margin: 0; font-size: 16px; line-height: 1.5; }
+.membership-task-action a { flex-shrink: 0; }
+.membership-task-date { margin: 0; font-size: 16px; line-height: 1.5; }
+.membership-task-date span { display: none; }
+.membership-checks-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.membership-counts { margin: 0 0 22px; }
+.membership-counts > div { display: flex; justify-content: space-between; gap: 24px; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
+.membership-counts dt { font-size: 16px; }
+.membership-counts dt span { display: block; max-width: 680px; margin-top: 5px; color: var(--color-muted); font-size: 14px; line-height: 1.5; }
+.membership-counts dd { margin: 0; font-size: 20px; font-weight: 700; }
+.membership-notice { padding: 12px 16px; border-left: 3px solid var(--color-gold); background: var(--color-paper); font-size: 16px; }
+.membership-member, .membership-contact { padding: 18px 0; border-bottom: 1px solid var(--rule-soft); overflow-wrap: anywhere; }
+.membership-member:last-child, .membership-contact:last-child { border-bottom: 0; }
+.membership-member h2, .membership-contact h2 { margin: 0 0 10px; font-size: 20px; font-weight: 700; }
+.membership-work-lines p { margin: 5px 0; font-size: 16px; line-height: 1.5; }
+.membership-work-lines span { display: inline-block; min-width: 145px; color: var(--color-muted); font-size: 14px; }
+.membership-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+.membership-form { max-width: 760px; border: 0; padding: 0; box-shadow: none; background: transparent; }
+.membership-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.membership-form textarea, .membership-form input, .membership-form select { font-size: 16px; }
+.membership-links { padding-left: 22px; font-size: 16px; line-height: 1.8; }
+.membership-candidates { margin: 0 0 20px; padding: 16px; border: 1px solid var(--rule); }
+.membership-candidates legend { font-size: 16px; font-weight: 600; }
+.membership-candidates label { display: flex; align-items: start; gap: 12px; padding: 12px 0; font-size: 16px; border-bottom: 1px solid var(--rule-soft); }
+.membership-candidates input { margin-top: 5px; width: 18px; height: 18px; flex-shrink: 0; }
+.membership-candidates .membership-secondary { display: block; }
+.membership-correction { margin-top: 16px; font-size: 16px; }
+.membership-correction summary { cursor: pointer; padding: 8px 0; }
+.membership-correction form { display: grid; gap: 12px; max-width: 660px; }
+.membership-print { color: #142333; font: 16px/1.45 Arial, sans-serif; }
+.membership-print header { border-bottom: 2px solid #9c792b; margin-bottom: 18px; }
+.membership-print header h1 { font-size: 24px; margin: 0 0 8px; }
+.membership-print h2 { font-size: 20px; margin: 0 0 8px; }
+.membership-print .membership-call-block { break-inside: avoid; border: 1px solid #b8b1a2; padding: 16px; margin: 20px 0; min-height: 3.4in; }
+.membership-call-outcomes { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 14px; }
+.membership-call-block p { margin: 10px 0; overflow-wrap: anywhere; }
+.membership-writing-line { border-bottom: 1px solid #bbb; height: 24px; }
+@media (max-width: 900px) { .membership-form-grid { grid-template-columns: 1fr; gap: 0; } .membership-task { grid-template-columns: minmax(160px, 1fr) minmax(220px, 1.5fr); } .membership-task-date { grid-column: 2; } .membership-task-date span { display: inline; margin-right: 8px; } .membership-worklist-heading { display: none; } .membership-checks-layout { grid-template-columns: 1fr; } .membership-worklist-filters { grid-template-columns: 150px minmax(0, 1fr); } }
+@media (max-width: 560px) { .membership-toolbar { display: grid; grid-template-columns: 1fr; } .membership-work-lines span { display: block; min-width: 0; } }
+@media (max-width: 560px) { .membership-task { grid-template-columns: 1fr; gap: 12px; } .membership-task-date { grid-column: 1; } .membership-navigation { column-gap: 18px; } }
+@media (max-width: 560px) { .membership-worklist-filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .membership-worklist-filters .fl { min-width: 0; } .membership-worklist-filters .f { min-width: 0; } .membership-worklist-filters .fl:nth-child(3), .membership-worklist-filters > input[type="submit"] { grid-column: 1 / -1; } }
+@page membership {
+  size: Letter portrait;
+  margin: .55in .45in;
+  @bottom-left { content: none; }
+  @bottom-center { content: none; }
+  @bottom-right { content: "Page " counter(page); padding-top: 4pt; color: #536171; border-top: .5pt solid #999; font: 11pt/1.2 Arial, sans-serif; }
+}
+@media print {
+  .membership-print { page: membership; padding: 0; }
+  .membership-print .membership-counts > div { break-inside: avoid; }
+}

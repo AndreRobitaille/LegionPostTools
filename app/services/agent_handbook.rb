@@ -279,6 +279,21 @@ class AgentHandbook
   ].freeze
 
   CATALOG = [
+    { name: "membership_worklist", method: "GET", path: "/api/membership/workspace", capability: nil, membership_access: :workspace, group: :common,
+      summary: "Use an explicit membership_year. Officers receive the current working summary; volunteers receive only members assigned to them for this year. This does not certify awards or reconcile an expected National check.",
+      example: "GET /api/membership/workspace?membership_year=2027" },
+    { name: "membership_work_member", method: "GET", path: "/api/membership/workspace/people/:id", capability: nil, membership_access: :workspace, group: :common,
+      summary: "Read the exact permitted member's work status, assignments and recent contacts. Volunteers see their own entries and officer-entered results or reviews for their assigned calls, excluding separate individual officer notes. Login credentials, member numbers, addresses and finance history are excluded.",
+      example: "GET /api/membership/workspace/people/:id?membership_year=2027" },
+    { name: "record_membership_contact", method: "POST", path: "/api/membership/workspace/people/:id/contacts", capability: nil, membership_access: :workspace, group: :common,
+      summary: "Append an observed contact using membership_contact with submission_key, occurred_on, channel and outcome. Volunteers also need membership_assignment_id; callbacks need follow_up_on. Use the printed paper_reference for returned sheets; same-day paper preserves digital next steps. Reports of paying National remain unverified. No email or text is sent. Exact retries reuse the submission_key and bearer Idempotency-Key. Current officers alone may restore contact permission or use channel administrative_review, with explanatory notes. Leave paper_reference blank on a review confirming a different next step.",
+      example: 'POST /api/membership/workspace/people/:id/contacts?membership_year=2027 {"membership_contact":{"membership_assignment_id":123,"submission_key":"unique-form-key","occurred_on":"2026-10-11","channel":"phone","outcome":"callback_requested","follow_up_on":"2026-10-15"}}' },
+    { name: "membership_drive_work", method: "GET", path: "/api/membership/workspace/drives/:id", capability: nil, membership_access: :workspace, group: :common,
+      summary: "Read the drive script and permitted assignments. Volunteer authority expires with the assignment and drive dates.",
+      example: "GET /api/membership/workspace/drives/:id?membership_year=2027" },
+    { name: "membership_drive_pdf", method: "GET", path: "/api/membership/workspace/drives/:id/print", capability: nil, membership_access: :workspace, group: :common,
+      summary: "Receive a private application/pdf call sheet. Volunteers receive only their current assignments; officers may filter by caller_id. Downloaded paper cannot be revoked: check the worklist before calling and return the sheet to the drive lead.",
+      example: "GET /api/membership/workspace/drives/:id/print?membership_year=2027" },
     { name: "show_website_calendar", method: "GET", path: "/api/website_calendar", capability: "publish_public_content", group: :common,
       summary: "Read automatic calendar enabled state, default types, policy version and available explicit types.",
       example: "GET /api/website_calendar" },
@@ -804,6 +819,7 @@ class AgentHandbook
     CATALOG.select do |action|
       next @user.can_manage_calendar? if action[:calendar_management]
       next false if action[:membership_access] == :full && !full_membership_access?
+      next false if action[:membership_access] == :workspace && !MembershipAccess.new(user: @user, organization: @organization).permitted?
       next action[:all_capabilities].all? { |capability| @user.can?(capability) } if action[:all_capabilities]
       next @user.can_any?(*action[:any_capabilities]) if action[:any_capabilities]
 
