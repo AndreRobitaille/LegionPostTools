@@ -489,3 +489,15 @@ and blobs pinned in [PDF_COMPONENT_SOURCE_CASES.md](PDF_COMPONENT_SOURCE_CASES.m
 versus real bytes, source HTML versus repeated page folios, filtered hidden content,
 status-only refusals and optional artifacts. All tests remain; no safe deletion or
 consolidation established. Recorded main CI is separate from source/fault evidence.
+
+## Whole template/dated-agenda component source slice (#84)
+
+Six complete files /39 cases at b965cf76 retain actual template copy/removal/error
+classification/section routes, historical rich dated snapshots, approved section locks,
+meeting-date roll-call refresh/snapshot, conservative legacy wording separation and
+reversible UTC-wall migration. Exact names/lines/blobs in
+[DATED_AGENDA_COMPONENT_SOURCE_CASES.md](DATED_AGENDA_COMPONENT_SOURCE_CASES.md),
+[located actions/assertions and limits](DATED_AGENDA_COMPONENT_SOURCE_REVIEW.md).
+Keep distinct seeded/local/error/model/route/history cases; no safe consolidation or
+test edit is established. Source reading, recorded execution and existing fault proof
+remain separate. No production backfill/migration or new authority date choice.

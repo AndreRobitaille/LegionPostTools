@@ -986,3 +986,12 @@ pins in [PDF_COMPONENT_SOURCE_CASES.md](PDF_COMPONENT_SOURCE_CASES.md), analysis
 new run or universal fault proof. This unmerged source branch now reviews33 complete
 files /265 indexed cases across its slices;36 literal Deferred inventory rows remain,
 alongside still-scoped files. #84 remains open; no safe consolidation is demonstrated.
+
+Six further whole template/dated-agenda component files /39 cases were read at b965cf76,
+including every fixture/helper/assertion. Exact pins and starting/action/saved-visible-
+subsequent limits in [DATED_AGENDA_COMPONENT_SOURCE_REVIEW.md](DATED_AGENDA_COMPONENT_SOURCE_REVIEW.md)
+and its case index. Keep historical rich snapshots, distinct template removal/errors,
+approved section/roll-call controls, exact legacy-wording refusal and reversible timezone
+representation tests. No source-only app/test changes, new execution or safe removal.
+The unmerged source branch now reviews39 complete files /304 exact cases;30 literal
+Deferred inventory rows and still-scoped work remain. #84 stays open.
