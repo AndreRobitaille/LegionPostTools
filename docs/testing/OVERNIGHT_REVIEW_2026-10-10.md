@@ -735,6 +735,23 @@ suites/security/candidate/main CI remain required. Whole source/assertion scopes
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
 
+
+## Roster identity and offline audience coverage (#108/#109)
+
+Combined scoped coverage-only candidate integrates main55e091f (PR#118). No application
+change proposed. Original stale-client call, later-contact break and same-alert invalid
+identity-write faults each fail1 /1 /1 on independent actual calls/payloads/saved graph;
+service/controller exact bytes restored in finally. Logs and SHA values are in the two
+designs. All old controller/User/audience/client/sync/admin assertions remain; the old
+single-contact rejection test is renamed to describe what it actually proves.
+
+Refined focus54 /260 /0 seed7997,1.71s; real partial-output/email-choice browser2 /105 /0
+seed51884,9.75s. Existing target and foreign grants make preservation non-vacuous.
+Actual screenshots were critiqued at1400/390 for source/refusal/error text and overflow.
+The first browser setup errors and corrected Profile expectation are documented honestly.
+Fresh integrated focused checks, final committed serial suites/security/candidate/main
+CI remain required. Main PR#118 CI is pending at this note; #102 stays open.
+No external provider calls, production, paid AI or real member data.
 ## Native calendar browser navigation and retained publication components (#105)
 
 PR #118 candidatea8989831 passed exact CI38115989210, PostgreSQL17.11 ordinary1289/11583
@@ -764,3 +781,17 @@ Created/list desktop1400/390 captures inspected; synthetic redaction follows cop
 Native-navigation exact-path evidence remains separate from unknown Chrome internals.
 Three changed Ruby files lint clean. Final main integration, committed serial suites,
 security/exact candidate/main CI pending; #121/#105 remain open. No app or production change.
+Roster candidate07aa328 passed committed local ordinary1290/11644, seed18337,104.84s,
+then browser71/1364,178.55s, no failures/errors/skips. Full lint507, Brakeman0/0, gem
+and importmap audits passed. Later main55e091f browser CI failed as recorded above;
+no independent merge proceeded. Calendar PR#119 candidate24769f2 passes exact all-four
+CI38117274225, PG17.11 ordinary1289/11583 then69/1260, merged as42a3154 with identical
+tree. Actual-main CI38117583145 is pending. Integrate that merge here, retaining both
+ledger sections; service/controller fault-target hashes still match their exact originals.
+Repeat final committed serial suites and exact candidate/main CI before roster merge.
+
+
+Integrated roster main15ce51b with all-four exact main CI38118516754, PG17.11
+1290/11644 then71/1365, no failures/errors/skips; #108/#109 completed. Preserve both
+review sections and distinct inventory rows. Final clipboard qualifying serial suites
+and exact candidate/main CI remain required; no app fault remains.
