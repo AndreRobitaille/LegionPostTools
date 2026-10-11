@@ -435,3 +435,13 @@ the existing readable-String assertion1/64/1 with a temporary message result, th
 exact scripts restore. Clean neighbors16/437 and final approval3/133 retain actual
 PDF/refusal/private resource boundaries. [Evidence](PDF_BROWSER_WAIT_CONTRACT.md).
 No general timeout increase, retries, skips, app or authority changes.
+
+## Failed browser state and original retry-name cleanup (#137/#139)
+
+Actual controlled failed print case/normal teardown/session reset leaves print media
+for the next case. A scoped class teardown reset restores real later screen navigation;
+temporary failure/order removed and all assertions in the original three calendar cases retained. The
+renamed API case retains all eight original agenda/Endeavor actions and every body/
+helper assertion; real narrowly duplicated updates reach its existing saved-count
+failure. [Exact design, restoration and clean neighbors](CALENDAR_PRINT_STATE_CLEANUP.md)
+separate injected failures from application incidents and universal retry claims.

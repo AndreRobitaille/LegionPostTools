@@ -943,3 +943,17 @@ retain both evidence histories and each current inventory row. Final committed t
 candidate now includes six font values and actual no-JavaScript restoration, so repeat
 serial full ordinary/system suites, applicable lint/security and new exact-SHA CI. Earlier
 failed CI38123404349 stays recorded; no blind retry, skip or production operation.
+
+## Calendar failure cleanup and accurate original retry scope (#137/#139)
+
+At main95a38a3, real print emulation survives a deliberately failed CalendarRefinements
+case and normal session reset into the next case:2/4/2 failures, seed38097. Add only the
+existing screen-reset pattern to teardown; the same pair2/8/1 leaves only the deliberate
+failure and real later sign-in/calendar navigation succeeds. Remove all temporary
+ordering/cases; every old assertion remains. Clean browser neighbors18/404, seed60673.
+Name the retained eight-action API retry case accurately; body/helper remain byte-exact.
+A broad new-key fault first hits existing201-vs422 uniqueness refusal1/2/1, then a
+narrow append-update fault reaches the preserved1-vs2 saved-update detector1/9/1.
+Exact restoration, clean API neighbors82/739, seed7508, focused lint2 and diff pass.
+Detailed design/results in [CALENDAR_PRINT_STATE_CLEANUP.md](CALENDAR_PRINT_STATE_CLEANUP.md).
+Full final suites/CI still required; no product/permission change, skip or production.
