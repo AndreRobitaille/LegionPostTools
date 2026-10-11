@@ -418,6 +418,15 @@ original draft API cases are retained/indexed with distinct direct state/single-
 limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
 and actual provider acceptance are separate. No test deletion, app authority or policy change.
 
+Queued progress readability (#130) extends that same browser recovery journey with
+independent fixed13px labels/14px supporting text/16px body and action floors, requiring
+each actual selector at1400/390. Original11px badge failure2/68/1 detects the gap;
+Five font values produce2/128 clean. The actual no-JavaScript fallback then catches
+its original13px body below16px:2/128/1 failure, seed23385. Its sixth font correction
+and actual script-disable/ensure-restore variant pass2/139, seed59695; the complete
+instruction and existing progression/actions were inspected at1400/390 without overflow.
+All previous assertions remain. [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md).
+
 Real browser PDF delivery (#134) keeps every existing approval/member/document/agenda
 byte/content/identity/immutable graph assertion. Scoped35-second PDF async helper
 matches the30-second renderer budget with margin and asserts ordinary wait restores.

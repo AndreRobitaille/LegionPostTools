@@ -93,8 +93,40 @@ class MinutesBackgroundDraftingTest < ApplicationSystemTestCase
     [ 1400, 390 ].each do |width|
       page.current_window.resize_to(width, 1200)
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+      {
+        ".ai-draft-dispatch-badge" => 13,
+        ".ai-draft-dispatch-track li > span" => 13,
+        ".ai-draft-dispatch-track strong" => 13,
+        ".ai-draft-dispatch-track small" => 14,
+        ".ai-draft-dispatch-note p" => 16,
+        ".ai-draft-dispatch-return" => 16,
+        ".ai-draft-dispatch-message" => 16,
+        "[data-draft-run-monitor-target='checkButton']" => 16
+      }.each do |selector, floor|
+        all(selector, minimum: 1).each do |element|
+          assert_operator element.evaluate_script("parseFloat(getComputedStyle(this).fontSize)"), :>=, floor, selector
+        end
+      end
       capture_system_screenshot("minutes-enqueue-recovered-#{width}")
     end
+
+    begin
+      page.driver.browser.execute_cdp("Emulation.setScriptExecutionDisabled", value: true)
+      visit admin_meeting_minutes_draft_run_path(@meeting, retry_run)
+      [ 1400, 390 ].each do |width|
+        page.current_window.resize_to(width, 1200)
+        assert_selector ".ai-draft-dispatch-noscript", text: "Automatic status checks require JavaScript. Refresh this page to check the draft."
+        assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+        assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+        assert_operator find(".ai-draft-dispatch-noscript").evaluate_script("parseFloat(getComputedStyle(this).fontSize)"), :>=, 16
+        find("body").scroll_to(find(".ai-draft-dispatch-noscript"), align: :center)
+        capture_system_screenshot("minutes-enqueue-noscript-#{width}")
+      end
+    ensure
+      page.driver.browser.execute_cdp("Emulation.setScriptExecutionDisabled", value: false)
+    end
+    visit admin_meeting_minutes_draft_run_path(@meeting, retry_run)
+    assert_selector ".ai-draft-dispatch", text: "Your draft is in line"
 
     @grant.destroy!
     click_button "Check status now"

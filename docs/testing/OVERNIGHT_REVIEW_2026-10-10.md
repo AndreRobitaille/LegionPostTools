@@ -899,6 +899,27 @@ as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate tha
 source repair here, preserve both histories and all original tests; qualify final
 committed queue-recovery revision serially. No production operation.
 
+## Queued minutes readability follow-up (#130)
+
+The recovered real-browser journey detects the original queued badge at11px below
+the fixed13px floor:2/68/1 failure, seed35279. Five existing font-size corrections
+raise labels to13px, secondary text to14px and body/actions to16px. The original
+disclosure and saved-graph/rejection/retry/permission-loss/Profile assertions all remain.
+Rebuilt browser2/128 seed31493 passes; fresh1400/390 captures inspected with clean
+wrapping, stacked phone steps and no horizontal overflow. Focused lint/diff clean.
+[Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md). Final full suites and CI pending.
+
+No-JavaScript fallback review extends that same bounded #130 slice. The actual Chromium
+script-disabled view renders the existing instruction at13px; fixed independent16px
+body floor fails2/128/1, seed23385,5.57s. Change only the sixth font value, preserve all
+copy/status/queue/authority behavior, and restore script execution in ensure before
+existing grant-loss/status/Profile checks. Rebuilt normal/fallback focus2/139 seed6021
+passes; final full-instruction captures/focus2/139 seed59695,6.62s pass with no failures,
+errors or skips. Fresh1400/390 views were inspected: complete warning wraps within
+paper panel, readable phone steps/actions, no overflow. PR#133 stays draft after its
+unrelated real-PDF harness CI failure38123404349; integrate verified PR#135 before
+final committed serial full suites and new exact-SHA CI. No test removed or fault left.
+
 ## Bounded browser PDF delivery (#134)
 
 Typography PR#133 exact CI38123404349 fails only the existing real minutes PDF async
@@ -914,3 +935,11 @@ and final restored approval3/133 pass; lint4/diff clean. Desktop/phone member ca
 inspected. [Design and exact evidence](PDF_BROWSER_WAIT_CONTRACT.md). Actual original
 CI request duration remains unmeasured; no retries or app/renderer/authority change.
 Final committed full suites/CI pending; no production or paid AI.
+
+PDF PR #135 merged as actual main1c17da556d36a168f60e65bdfc304d7cbdb76a62 with the
+candidate's identical tree. Actual-main all-four CI38125270879 passes ordinary1297/11980
+then system74/1607, zero failures/errors/skips. Integrate that verified repair here;
+retain both evidence histories and each current inventory row. Final committed typography
+candidate now includes six font values and actual no-JavaScript restoration, so repeat
+serial full ordinary/system suites, applicable lint/security and new exact-SHA CI. Earlier
+failed CI38123404349 stays recorded; no blind retry, skip or production operation.
