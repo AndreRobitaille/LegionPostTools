@@ -29,9 +29,15 @@ class TranscriptSourcePrivacyTest < ApplicationSystemTestCase
     assert_field "Paste transcript", with: source
     [ 1400, 390 ].each do |width|
       page.current_window.resize_to(width, 1000)
+      assert_rendered_font_floor(".transcript-textarea, .transcript-file", 16)
+      assert_rendered_font_floor(".transcript-source-panel > p:not(.meeting-workflow-kicker), .transcript-privacy-note p", 16)
+      assert_rendered_font_floor(".transcript-retention legend span, .transcript-choice strong em, .transcript-or", 13)
+      assert_rendered_font_floor(".transcript-choice small, .fl-help", 14)
       assert_no_horizontal_overflow
       page.execute_script("document.querySelector('.error-summary').scrollIntoView({block: 'start'})")
       capture_system_screenshot("transcript-refused-#{width}")
+      page.execute_script("document.querySelector('.transcript-retention').scrollIntoView({block: 'start'})")
+      capture_system_screenshot("transcript-retention-#{width}")
     end
 
     choose "meeting_transcript_retention_policy_retain_restricted"
@@ -49,6 +55,8 @@ class TranscriptSourcePrivacyTest < ApplicationSystemTestCase
     original_source = transcript.attributes
     [ 1400, 390 ].each do |width|
       page.current_window.resize_to(width, 1000)
+      assert_rendered_font_floor(".transcript-reader pre, .transcript-facts dd", 16)
+      assert_rendered_font_floor(".transcript-facts dt, .transcript-reader-head span", 13)
       assert_no_horizontal_overflow
       page.execute_script("document.querySelector('.transcript-reader').scrollIntoView({block: 'start'})")
       capture_system_screenshot("transcript-reader-#{width}")
@@ -120,6 +128,12 @@ class TranscriptSourcePrivacyTest < ApplicationSystemTestCase
   end
 
   private
+
+  def assert_rendered_font_floor(selector, floor)
+    sizes = page.evaluate_script("Array.from(document.querySelectorAll(#{selector.to_json})).map(element => parseFloat(getComputedStyle(element).fontSize))")
+    assert_not_empty sizes, "Expected rendered text for #{selector}"
+    sizes.each { |size| assert_operator size, :>=, floor, "Rendered #{selector} must meet the #{floor}px floor" }
+  end
 
   def assert_no_horizontal_overflow
     assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=, page.evaluate_script("window.innerWidth")

@@ -1342,35 +1342,35 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .transcript-form { max-width: var(--w-form); margin-top: 24px; }
 .transcript-source-panel, .transcript-retention { margin: 0 0 20px; padding: 22px 24px; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
 .transcript-source-panel h2 { margin: 0; color: var(--color-navy); font-size: 22px; }
-.transcript-source-panel > p:not(.meeting-workflow-kicker) { margin: 9px 0 20px; color: var(--color-muted); font-size: 15px; line-height: 1.5; }
-.transcript-textarea { min-height: 280px; font-family: var(--font-mono); font-size: 14px !important; line-height: 1.55; }
+.transcript-source-panel > p:not(.meeting-workflow-kicker) { margin: 9px 0 20px; color: var(--color-muted); font-size: 16px; line-height: 1.5; }
+.transcript-textarea { min-height: 280px; font-family: var(--font-mono); font-size: 16px !important; line-height: 1.55; }
 .transcript-file { min-height: 52px; padding: 11px !important; background: #fff; }
 .transcript-file::file-selector-button { margin-right: 12px; padding: 8px 11px; color: #fff; background: var(--color-navy); border: 0; border-radius: 4px; font-weight: 750; }
-.transcript-or { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--color-gold-ink); font-size: 12px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.transcript-or { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--color-gold-ink); font-size: 13px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 .transcript-or::before, .transcript-or::after { height: 1px; flex: 1; background: var(--rule-strong); content: ""; }
 .transcript-retention { min-width: 0; }
 .transcript-retention legend { padding: 0 7px; color: var(--color-navy); font-size: 18px; font-weight: 800; }
-.transcript-retention legend span { margin-right: 7px; color: var(--color-gold-ink); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+.transcript-retention legend span { margin-right: 7px; color: var(--color-gold-ink); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
 .transcript-choice { display: grid; grid-template-columns: 22px minmax(0, 1fr); align-items: start; gap: 10px; margin-top: 15px; padding: 15px; background: #fff; border: 1px solid var(--rule); border-radius: var(--radius-control); cursor: pointer; }
 .transcript-choice:has(input:checked) { background: #f3f6f8; border-color: var(--color-officer-blue); box-shadow: inset 4px 0 0 var(--color-officer-blue); }
 .transcript-choice input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--color-navy); }
 .transcript-choice strong, .transcript-choice small { display: block; }
 .transcript-choice strong { color: var(--color-navy); font-size: 16px; }
-.transcript-choice strong em { margin-left: 6px; color: var(--color-green); font-size: 11px; font-style: normal; letter-spacing: .06em; text-transform: uppercase; }
+.transcript-choice strong em { margin-left: 6px; color: var(--color-green); font-size: 13px; font-style: normal; letter-spacing: .06em; text-transform: uppercase; }
 .transcript-choice small { margin-top: 4px; color: var(--color-muted); font-size: 14px; line-height: 1.45; }
 .transcript-privacy-note { margin-bottom: 20px; padding: 17px 19px; color: #dbe6f0; background: var(--color-navy); border-left: 4px solid var(--color-gold); border-radius: var(--radius-control); }
 .transcript-privacy-note strong { color: #fff; }
-.transcript-privacy-note p { margin: 6px 0 0; font-size: 14px; line-height: 1.5; }
+.transcript-privacy-note p { margin: 6px 0 0; font-size: 16px; line-height: 1.5; }
 .transcript-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: var(--w-main); margin: 22px 0; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-radius: var(--radius-card); }
 .transcript-facts > div { min-width: 0; padding: 15px 17px; border-left: 1px solid var(--rule); }
 .transcript-facts > div:first-child { border-left: 0; }
-.transcript-facts dt { color: var(--color-gold-ink); font-size: 11px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
-.transcript-facts dd { margin: 5px 0 0; color: var(--color-ink); font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.transcript-facts dt { color: var(--color-gold-ink); font-size: 13px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.transcript-facts dd { margin: 5px 0 0; color: var(--color-ink); font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
 .transcript-reader { max-width: var(--w-main); overflow: hidden; background: #fff; border: 1px solid #cbd1d8; border-radius: var(--radius-card); }
 .transcript-reader-head { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 15px 18px; color: #fff; background: var(--color-navy); }
 .transcript-reader-head h2 { margin: 0; font-size: 18px; }
-.transcript-reader-head span { color: var(--color-gold-hi); font-size: 11px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
-.transcript-reader pre { max-height: 68vh; margin: 0; padding: 22px; overflow: auto; color: var(--color-ink); background: #fff; font-family: var(--font-mono); font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.transcript-reader-head span { color: var(--color-gold-hi); font-size: 13px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.transcript-reader pre { max-height: 68vh; margin: 0; padding: 22px; overflow: auto; color: var(--color-ink); background: #fff; font-family: var(--font-mono); font-size: 16px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* Transcript-assisted minutes review --------------------------------------
    The review behaves like an evidence ledger, not a chat transcript. The
