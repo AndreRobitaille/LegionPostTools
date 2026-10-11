@@ -431,6 +431,67 @@ authority while own Profile works and source/minutes stay intact. Both existing 
 and new upload journeys pass2/167; no claim about automatic purge/provider completion.
 See [design and exact evidence](TRANSCRIPT_SOURCE_INPUT_REVIEW.md). No test removal.
 
+## Whole-source minutes editing, review and worker variants
+
+Thirteen files/88 exact cases are separately indexed in
+[the pinned minutes case index](MINUTES_SOURCE_CASES.md) and mapped in
+[the source review](MINUTES_REVIEW_SOURCE_REVIEW.md): structured snapshot/digest/
+validation, manual editor mutations, individual suggestions and attendance, correction
+requests, optional handoff/attestation/locking, durable ledger/retry, numbered source/
+prompt instructions and offline background job chain. Actual-main5c54e39/all-four CI
+executes unchanged cases; source assertions and runtime/fault detection stay separate.
+Real approval browser and disclosure-only browser keep independent purposes. #128
+tracks initial rejected-enqueue mismatch before repair; #93/#79 decisions remain open.
+The every-editor test covers two surfaces, and a named same-body test only rejects a
+future meeting here. No blanket matrix, redundant-test or provider acceptance claim.
+
+The whole API minutes10 file is now separately indexed/reviewed: actual bearer source
+privacy, structured mutations, exact official provenance/replay and grant-loss graph
+remain distinct from cookie requests/fake PDF/manually attested fixtures. #131 retains
+existing detached Session refusal and records missing direct ten-minute/atomic consumption
+proof before component edits; no demonstrated app defect or consolidation is claimed.
+
+Whole Generate30 review completes that component's source reading and brings this
+minutes index to14 files/118 exact cases. Retain distinct structured validation,
+human review, provenance, same-ID polling, deadline/cancellation, source-change and
+terminal-output assertions. Source-only review is separate from the previously proved
+SDK privacy fault and actual CI execution; no fake-provider live acceptance claim.
+
+Minutes-to-Endeavor whole request12/browser3 review brings the index to16 files/133
+exact cases. Preserve manual form/atomic identity/grants/recovery/staleness/scope and
+original AI payload/result provenance detectors plus real keyboard/source-evidence/
+human editing/linking/dismissal journeys. Governing manual/AI confirmation policy,
+synthetic providers and artificial locked-state limits are recorded in the source review.
+
+Agenda catalog4 files/47 cases source-reviewed: actual requests, model normalization/
+atomic ordering/soft removal, concrete Legion seed/local-edit continuity and browser
+drag/arrow/modal/focus remain distinct. Coupled seed-definition transport is separate
+from fixed counts/wording/order; identity-only removal proof is separate from full
+historical body/PDF preservation. [Review and pins](AGENDA_CATALOG_SOURCE_REVIEW.md).
+All tests remain; no new runtime fault or safe consolidation is claimed.
+
+Meeting body/type/template model4 files/25 cases extend that index to8 files/72.
+Keep scalar location fallback, provenance/uniqueness/unused deletion/order, default/
+normalized/nonempty sections and rich/private copied wording/local overrides/source
+scope distinct from protected linked-type, dated/minutes snapshots and real PDF/authority.
+Combined source slice24 files/205 cases; no code/test edits or consolidation.
+
+Template seeder19 extends catalog/template index to9 files/91 cases and the combined
+source slice to25 files/224. Preserve fixed concrete Legion titles/section occupancy,
+local rich edits/active/order, referenced dated title/section, repeat/default/second-Post
+and reset detectors. Custom-row existence and title-only snapshots have explicit limits.
+
+Whole `test/controllers/api/idempotency_concurrency_test.rb` is separately read at
+b965cf76 (one case and all setup/teardown): [concurrent first uses serialize and perform one mutation](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/controllers/api/idempotency_concurrency_test.rb#L24).
+Two independent actual bearer request sessions start from a shared queue gate after
+warmup; both return201 with identical bodies, one fixed-title Endeavor and one exact-key
+receipt. Transactions are disabled for cross-connection visibility and synthetic rows
+are cleaned in teardown. Keep this actual concurrent-request detector beside current-
+authority/replay/receipt cleanup contracts. The gate releases both callers but does not
+prove a held lock or separate backend IDs; no revocation-race matrix, real human token
+issuance or new fault is established. One full-source addition brings this branch to
+26 reviewed files/225 pinned or directly linked cases; no app/test change or consolidation.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.
@@ -443,6 +504,79 @@ restored queued state, grant-loss status/protected denial and later own Profile.
 original draft API cases are retained/indexed with distinct direct state/single-attendance
 limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
 and actual provider acceptance are separate. No test deletion, app authority or policy change.
+
+## Whole PDF component source slice (#84)
+
+Seven complete files /40 exact cases at b965cf76 distinguish filename/signature/transport,
+loopback/CSP/organization/filter boundaries, real immutable officer/member revisions and
+actual native resource blocking. Read every helper/fixture/assertion; exact names, lines
+and blobs pinned in [PDF_COMPONENT_SOURCE_CASES.md](PDF_COMPONENT_SOURCE_CASES.md).
+[Located outcomes and limits](PDF_COMPONENT_SOURCE_REVIEW.md) preserve fake transport
+versus real bytes, source HTML versus repeated page folios, filtered hidden content,
+status-only refusals and optional artifacts. All tests remain; no safe deletion or
+consolidation established. Recorded main CI is separate from source/fault evidence.
+
+## Whole template/dated-agenda component source slice (#84)
+
+Six complete files /39 cases at b965cf76 retain actual template copy/removal/error
+classification/section routes, historical rich dated snapshots, approved section locks,
+meeting-date roll-call refresh/snapshot, conservative legacy wording separation and
+reversible UTC-wall migration. Exact names/lines/blobs in
+[DATED_AGENDA_COMPONENT_SOURCE_CASES.md](DATED_AGENDA_COMPONENT_SOURCE_CASES.md),
+[located actions/assertions and limits](DATED_AGENDA_COMPONENT_SOURCE_REVIEW.md).
+Keep distinct seeded/local/error/model/route/history cases; no safe consolidation or
+test edit is established. Source reading, recorded execution and existing fault proof
+remain separate. No production backfill/migration or new authority date choice.
+
+Four additional complete dated-agenda files /40 cases extend that slice to10/79.
+Real Endeavor picker/copy/duplicate/lock, independent rich catalog/template/Endeavor
+snapshots, stale locks/reorder/transition identity and published member HTML/PDF route
+selection remain distinct. Fixed exact case/blob pins and implementation-coupled lock
+increment, inactive-fixture/status-only/fake-renderer and unlinked-destruction limits
+are recorded in the same source review. All assertions remain; no runtime or cleanup
+claim follows from source reading alone.
+
+## Whole publication component source slice (#84)
+
+Five complete files /26 exact cases at b965cf76 and the shared fictional publication
+fixtures separate real website bearer/conditional snapshots, human consent/withdrawal,
+source callbacks, native portrait/browser controls and actual observed PG held-lock
+commit orders. [Exact case/blob pins](PUBLICATION_COMPONENT_SOURCE_CASES.md),
+[located outcomes and limits](PUBLICATION_COMPONENT_SOURCE_REVIEW.md) distinguish
+inactive legacy editorial state from automatic activation, status-only/exception-only
+parts, direct session/token fixtures and unverified live publishing. All retained;
+source reading and recorded CI remain separate from representative defect evidence.
+
+## Whole installation/access/offline adapter source slice (#84)
+
+Eight complete files /39 cases at b965cf76 retain real initial/partial/recovery setup,
+explicit Legion preset/technical scope, officer hub visibility/roster age labels,
+valid-CSRF direct-upload denial, print identity and offline mail/provider/real SDK
+serialization. [Exact names/lines/blobs](INSTALLATION_ADAPTER_SOURCE_CASES.md) and
+[located outcomes and limits](INSTALLATION_ADAPTER_SOURCE_REVIEW.md) separate unsaved
+validation, status/count-only portions, direct session fixtures and external acceptance.
+No tests/app changed or safe consolidation demonstrated. Source review never proves
+live delivery/paid AI or substitutes for #115/#79/#93 follow-up evidence/decisions.
+
+## Whole continuing Post work source slice (#84)
+
+Six complete files /37 cases at b965cf76 retain optional task dates/completion/reopen,
+append-only human updates, current/historical member continuity and exact related
+immutable passage/outcome reads. [Exact names/lines/blobs](ENDEAVOR_COMPONENT_SOURCE_CASES.md),
+[located action/outcome and limits](ENDEAVOR_COMPONENT_SOURCE_REVIEW.md) separate real
+handoff/attestation and saved rows from unsaved validation, status-only stale errors,
+manifest/config fixture coupling and fake history editions. No app/test edit or safe
+consolidation; existing #88/#95 source/SQL/provider fault proof remains independent.
+
+## Whole calendar component source slice (#84)
+
+Seven complete files /52 exact cases at b965cf76 retain real manager/member event actions,
+protected/stale/foreign deletion, filters/keyboard/Post-calendar dates, responsive details
+and actual private server/native print delivery. [Exact names/lines/blobs](CALENDAR_COMPONENT_SOURCE_CASES.md),
+[located outcomes and limits](CALENDAR_COMPONENT_SOURCE_REVIEW.md) distinguish fixed parsed
+page geometry and native state restoration from fake PDF wiring, partial refusal graphs,
+optional visual captures and unverified failure-path emulation cleanup. All assertions
+remain; no safe consolidation or blanket fault/runtime proof follows from source reading.
 
 Official confirmation lifetime/atomicity (#131) adds direct fixed-ten-minute factory,
 before/after expiry, wrong live identity/session, consumed reuse and real persisted
@@ -469,6 +603,37 @@ the existing readable-String assertion1/64/1 with a temporary message result, th
 exact scripts restore. Clean neighbors16/437 and final approval3/133 retain actual
 PDF/refusal/private resource boundaries. [Evidence](PDF_BROWSER_WAIT_CONTRACT.md).
 No general timeout increase, retries, skips, app or authority changes.
+
+## Whole Meeting occurrence/member/template-management source slice (#84)
+
+Seven complete files /66 exact cases at95a38a3 retain durable Meeting/body venue
+snapshots, honest member agenda/minutes states, actual rich immutable correction
+presentation and scoped private API echoes, guided officer occurrence and real native
+Turbo/template controls. [Exact names/lines/blobs](MEETING_OCCURRENCE_SOURCE_CASES.md),
+[located outcomes and limits](MEETING_OCCURRENCE_SOURCE_REVIEW.md) preserve distinct
+real attestation/content proof versus fake renderer, direct confirmation, partial denial
+graph and relative-order tests. All kept; no safe consolidation or universal fault proof.
+
+## Whole dated-agenda workspace/member-document source slice (#84)
+
+Five complete files /61 exact cases at95a38a3 retain scoped discussion/section/roll-call
+writes, human agenda transitions, saved local snapshots and private notes, actual
+protected deletion and native parsed member HTML/bearer PDF content at desktop/narrow.
+[Exact names/lines/blobs](DATED_AGENDA_WORKSPACE_SOURCE_CASES.md),
+[located outcomes and limits](DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md) preserve concrete
+source/action outcomes versus prefix-only PDF, partial graphs, vacuous Array.every and
+fixture-coupled styling. Keep every assertion; no safe consolidation or blanket fault proof.
+
+## Whole remaining delegated API component source slice (#84)
+
+Four complete files /82 exact cases at95a38a3 retain scoped private data, exact real
+bearer identity/receipt lifetimes, local agenda lineage/order/roll-call, calendar public
+projection/date/management and actual editorial portrait/audit/public consumer removal.
+[Exact names/lines/blobs](DELEGATED_COMPONENT_SOURCE_CASES.md),
+[located outcomes and limits](DELEGATED_COMPONENT_SOURCE_REVIEW.md) distinguish partial
+saved graphs, direct settings fixtures, application-coupled allowlists and the original
+eight-mutation retry title (#139). Every assertion remains; no universal fault/safe
+consolidation/live-policy proof follows from source reading.
 
 ## Failed browser state and original retry-name cleanup (#137/#139)
 
