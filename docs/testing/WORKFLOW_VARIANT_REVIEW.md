@@ -190,3 +190,17 @@ while agenda editing remains authorized. The returned copy now uses the same fre
 visibility predicates; selected/restored grants and actual deleted-agenda receipts retain
 safe content and unchanged execution/records. Passing `6045eb2` suites preceded this
 additional repair; the final changed revision must be verified separately.
+
+
+## Website connection native navigation (#105)
+
+Retain all real create/reveal-once/back/revoke and desktop/narrow overflow assertions.
+Add an exact path wait/outcome after the native form POST, before querying replacement
+DOM. Wrong-redirect fault fails on that outcome; exact controller restored. Local browser
+passes with readable inspected created/list layouts. Two earlier Chrome154 inspector
+failures remain recorded; synchronization is a bounded document-transition inference,
+not a proven driver defect or a license to retry/suppress errors. The existing journey
+checks a visible copy control, not clipboard contents. Full source review retains the
+five website credential management/identity/foreign-scope/CSRF request scenarios and
+three model digest/authority/replacement contracts; their distinct failure modes remain.
+See [review and limits](WEBSITE_TOKEN_BROWSER_RELIABILITY.md).
