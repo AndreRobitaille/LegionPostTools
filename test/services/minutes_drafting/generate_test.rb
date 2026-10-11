@@ -440,6 +440,38 @@ class MinutesDrafting::GenerateTest < ActiveSupport::TestCase
     assert_empty provider.cancelled_ids
   end
 
+  test "an actual adapter failure persists safe metadata without the echoed transcript or minutes changes" do
+    source = @transcript.source_text
+    failure = OpenAI::Errors::InternalServerError.new(url: URI("https://api.openai.com/v1/responses"), status: 500,
+      headers: { "x-request-id" => "req_safe_source_failure" }, body: { "error" => { "message" => source } }, request: nil, response: nil, message: source)
+    assert_includes failure.message, source
+    responses = Object.new
+    requests = []
+    responses.define_singleton_method(:create) do |**parameters|
+      requests << parameters
+      raise failure
+    end
+    client = Data.define(:responses).new(responses)
+    provider = MinutesDraftProviders::Openai.new(client: client)
+    original = [ @minutes.attributes, @item.attributes, @attendance.attributes, @transcript.attributes ]
+
+    error = assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes, requester: @requester, provider: provider)
+    end
+
+    run = error.run.reload
+    assert_not_includes run.attributes.to_json, source
+    assert_not_includes error.message, source
+    assert_equal original, [ @minutes.reload.attributes, @item.reload.attributes, @attendance.reload.attributes, @transcript.reload.attributes ]
+    assert_equal "failed", run.status
+    assert_equal "provider_error", run.error_category
+    assert_equal "req_safe_source_failure", run.provider_request_id
+    assert_nil run.provider_response_id
+    assert_equal 1, requests.size
+    assert_includes requests.sole.fetch(:input).to_s, source
+    assert_empty run.suggestions
+  end
+
   test "an initial timeout fails once without submitting a replacement generation" do
     provider = BackgroundProvider.new(MinutesDraftProviders::Error.new(category: "timeout", retryable: true))
     error = assert_raises(MinutesDrafting::Generate::DraftFailed) do

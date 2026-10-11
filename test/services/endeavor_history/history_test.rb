@@ -210,6 +210,28 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert_empty @provider.calls
   end
 
+  test "revoking the recorded delegate prevents queued work before provider access" do
+    token, = AgentAccessToken.issue!(user: @manager, name: "Queued history delegate", expires_in: 1.day)
+    run = Current.set(agent_access_token: token) do
+      EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true)
+    end
+    assert_equal token.id, run.agent_access_token_id
+    event = @endeavor.history_events.find_by!(action: "requested", endeavor_history_run: run)
+    assert_equal token.id, event.agent_access_token_id
+    assert_equal @manager.id, event.actor_id
+    original_source = @revision.reload.attributes
+    token.revoke!(@manager)
+    assert_no_difference [ "EndeavorHistoryEdition.count", "EndeavorHistoryResult.count", "EndeavorSourceLink.count" ] do
+      EndeavorHistory::Processing.new(run, provider: @provider).call
+    end
+    assert_equal original_source, @revision.reload.attributes
+    assert_equal "failed", run.reload.status
+    assert_equal "forbidden", run.error_category
+    assert_equal token.id, run.agent_access_token_id
+    assert_equal @manager.id, run.requested_by_id
+    assert_empty @provider.calls
+  end
+
   test "input limit stops without dropping text or calling a provider" do
     previous = ENV["ENDEAVOR_HISTORY_MAX_INPUT_BYTES"]
     ENV["ENDEAVOR_HISTORY_MAX_INPUT_BYTES"] = "100"
@@ -526,7 +548,11 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     automatic_process
     previous = ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"]
     @provider.alter = ->(stage, _input, _data) { ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = "1" if stage == "verify_discovery" }
-    first = EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true, meeting_id: @meeting.id)
+    token, = AgentAccessToken.issue!(user: @manager, name: "Scoped refresh delegate", expires_in: 1.day)
+    first = Current.set(agent_access_token: token) do
+      EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true, meeting_id: @meeting.id)
+    end
+    assert_equal token.id, first.agent_access_token_id
     EndeavorHistory::Processing.new(first, provider: @provider).call
     assert_equal "daily_budget", first.reload.error_category
     ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous
@@ -534,11 +560,15 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     @provider.calls.clear
     second = EndeavorHistory::Processing.request(@endeavor, force: true)
     assert_equal @manager, second.requested_by
-    metadata = @endeavor.history_events.find_by!(action: "requested", endeavor_history_run: second).metadata
+    assert_equal token.id, second.agent_access_token_id
+    event = @endeavor.history_events.find_by!(action: "requested", endeavor_history_run: second)
+    assert_equal token.id, event.agent_access_token_id
+    metadata = event.metadata
     assert_equal first.id, metadata["refresh_id"]
     assert_equal @meeting.id, metadata["meeting_id"]
     EndeavorHistory::Processing.new(second, provider: @provider).call
     assert_equal "succeeded", second.reload.status
+    assert_equal token.id, second.agent_access_token_id
     assert_equal %w[summary verify_summary], @provider.calls.map(&:first)
   ensure
     ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous

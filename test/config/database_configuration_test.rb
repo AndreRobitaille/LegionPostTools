@@ -18,12 +18,27 @@ class DatabaseConfigurationTest < ActiveSupport::TestCase
   end
 
   test "database configuration requires production postgres env in production" do
-    with_env(POSTGRES_ENV_KEYS.index_with { nil }.merge("RAILS_ENV" => "production")) do
-      error = assert_raises(KeyError) do
-        ERB.new(CONFIG_PATH.read).result
-      end
+    values = production_values
+    POSTGRES_ENV_KEYS.each do |missing_key|
+      with_env(values.merge(missing_key => nil)) do
+        error = assert_raises(KeyError, "Missing #{missing_key} must refuse production configuration") do
+          ERB.new(CONFIG_PATH.read).result
+        end
 
-      assert_includes error.message, "POSTGRES_DB"
+        assert_includes error.message, missing_key
+      end
+    end
+  end
+
+  test "supplied production database identities and host are preserved" do
+    with_env(production_values) do
+      config = YAML.safe_load(ERB.new(CONFIG_PATH.read).result, aliases: true)
+      assert_equal "synthetic_primary", config.dig("production", "primary", "database")
+      assert_equal "synthetic_cache", config.dig("production", "cache", "database")
+      assert_equal "synthetic_queue", config.dig("production", "queue", "database")
+      %w[primary cache queue].each do |connection|
+        assert_equal "synthetic-db.example.test", config.dig("production", connection, "host")
+      end
     end
   end
 
@@ -37,6 +52,12 @@ class DatabaseConfigurationTest < ActiveSupport::TestCase
   end
 
   private
+
+  def production_values
+    { "RAILS_ENV" => "production", "SECRET_KEY_BASE_DUMMY" => nil,
+      "POSTGRES_DB" => "synthetic_primary", "POSTGRES_CACHE_DB" => "synthetic_cache",
+      "POSTGRES_QUEUE_DB" => "synthetic_queue", "DB_HOST" => "synthetic-db.example.test" }
+  end
 
   def with_env(values)
     previous = values.keys.to_h { |key| [ key, ENV[key] ] }

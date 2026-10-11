@@ -142,6 +142,53 @@ class PasskeyEnrollmentSecurityTest < ActionDispatch::IntegrationTest
     assert_equal 1, response.parsed_body["excludeCredentials"].size
   end
 
+  test "real passkey authentication rejects unverified or wrong challenge assertions and recovers" do
+    sign_in_as(@user)
+    post registration_passkeys_path, params: { publicKeyCredential: enrollment_credential }
+    assert_response :created
+    credential = @user.passkey_credentials.sole
+
+    [ :unverified, :wrong_challenge ].each do |refusal|
+      travel 1.minute do
+        reset! # Authenticate from a fresh browser, without the enrollment session cookie.
+        post authentication_options_passkeys_path
+        assert_response :success
+        challenge = response.parsed_body.fetch("challenge")
+        assertion = if refusal == :unverified
+          @client.get(challenge: challenge, user_verified: false)
+        else
+          different_challenge = challenge.sub(/\A./) { |character| character == "A" ? "B" : "A" }
+          @client.get(challenge: different_challenge, user_verified: true)
+        end
+        original_credential = credential.reload.attributes
+        original_sessions = @user.sessions.order(:id).map(&:attributes)
+
+        post authentication_passkeys_path, params: { publicKeyCredential: assertion }
+        assert_equal original_credential, credential.reload.attributes, "#{refusal} must not record successful credential use"
+        assert_equal original_sessions, @user.sessions.order(:id).map(&:attributes), "#{refusal} must not create or refresh a session"
+        assert_response :unauthorized
+        assert_equal({ "error" => "invalid passkey authentication" }, response.parsed_body)
+
+        post authentication_options_passkeys_path
+        assert_response :success
+        verified_assertion = @client.get(challenge: response.parsed_body.fetch("challenge"), user_verified: true)
+        assert_difference -> { @user.sessions.count }, 1 do
+          post authentication_passkeys_path, params: { publicKeyCredential: verified_assertion }
+        end
+        assert_response :success
+        assert_equal({ "status" => "authenticated" }, response.parsed_body)
+        assert_operator credential.reload.sign_count, :>, original_credential.fetch("sign_count")
+        assert_equal Time.current, credential.last_used_at
+        fresh_session = @user.sessions.order(:id).last
+        assert_equal @user.id, fresh_session.user_id
+        assert_equal Time.current, fresh_session.authenticated_at
+        get profile_path
+        assert_response :success
+        assert_select ".app-menu-panel", text: /Enrollment Member/
+      end
+    end
+  end
+
   test "existing passkey confirms enrollment in the same session and preserves the name" do
     sign_in_as(@user)
     post registration_passkeys_path, params: { publicKeyCredential: enrollment_credential }

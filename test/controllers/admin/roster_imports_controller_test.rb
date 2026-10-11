@@ -42,6 +42,58 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Choose a roster CSV file to upload.", flash[:alert]
   end
 
+  test "empty uploaded CSV preserves people and sign in then a valid upload succeeds" do
+    prepare_setup_complete_state
+    sign_in_admin
+    member = Person.create!(first_name: "Existing", last_name: "Member", member_number: "000204540637",
+      roster_member_status: "Active", roster_address: "Original synthetic address", roster_imported_at: 3.days.ago)
+    user = User.create!(person: member, email_address: "private-login@example.test")
+    previous_import = RosterImport.create!(status: "completed", imported_at: 2.days.ago, uploaded_filename: "previous.csv")
+    original_import = previous_import.attributes
+    original = roster_identity_state
+
+    post admin_roster_imports_path, params: {
+      roster_import: { file: fixture_file_upload("test/fixtures/files/roster_empty.csv", "text/csv") }
+    }
+    assert_equal original, roster_identity_state
+    assert_equal original_import, previous_import.reload.attributes
+    failed = RosterImport.order(:id).last
+    assert_not_equal previous_import.id, failed.id
+    assert_equal "failed", failed.status
+    assert_equal "roster_empty.csv", failed.uploaded_filename
+    assert_equal [ 0, 0, 0, 0 ], [ failed.created_count, failed.updated_count, failed.unchanged_count, failed.removed_count ]
+    assert_match(/Missing required columns/, failed.first_problem_message)
+    assert_redirected_to admin_roster_import_path(failed)
+
+    get admin_roster_import_path(failed)
+    assert_response :success
+    assert_select "h1", "Roster import could not be completed"
+    assert_select ".item", text: /Missing required columns/
+    get admin_roster_import_path(previous_import)
+    assert_response :success
+    assert_select "h1", "Roster import complete"
+    assert_equal original_import, previous_import.reload.attributes
+
+    assert_difference -> { Person.count }, 1 do
+      assert_difference -> { User.count }, 1 do
+        post admin_roster_imports_path, params: {
+          roster_import: { file: fixture_file_upload("test/fixtures/files/roster_valid.csv", "text/csv") }
+        }
+      end
+    end
+    completed = RosterImport.order(:id).last
+    assert_equal "completed", completed.status
+    assert_equal [ 1, 1, 0 ], [ completed.created_count, completed.updated_count, completed.removed_count ]
+    assert_equal "123 Main St", member.reload.roster_address
+    assert_equal "private-login@example.test", user.reload.email_address
+    assert_equal member.id, Person.find_by!(member_number: "000204540637").id
+    assert_not_nil Person.find_by!(member_number: "000204540638").user
+    assert_redirected_to admin_roster_import_path(completed)
+    get admin_roster_import_path(completed)
+    assert_response :success
+    assert_select "h1", "Roster import complete"
+  end
+
   test "non-upload file param redirects back with alert" do
     prepare_setup_complete_state
     sign_in_admin
@@ -518,6 +570,10 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def roster_identity_state
+    [ Person.order(:id).map(&:attributes), User.order(:id).map(&:attributes), PermissionGrant.order(:id).map(&:attributes) ]
+  end
 
   def prepare_setup_complete_state
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")

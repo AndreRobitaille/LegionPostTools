@@ -40,6 +40,12 @@ Denial must return no cached private content and leave both records and the comp
 execution unchanged. Restoring authority permits the original receipt again without
 another write, audit event or official confirmation. A manual drafting grant does not
 retain identity-bound official duties or conditional Endeavor creation authority.
+This once-only receipt contract lasts while the execution is retained: receipts older
+than 30 days are eligible for recurring cleanup. A cleaned key no longer deduplicates
+an old request. Delegates must read saved current state and resolve uncertain older
+outcomes with the human before repeating a mutation; the window is not an immediate
+API expiry timer. See [finite receipt guidance](FINITE_RECEIPT_GUIDANCE.md) for actual
+cleanup/retry evidence.
 No schema, grant resolver, policy, endpoint or UI changes are required.
 
 ## Verification

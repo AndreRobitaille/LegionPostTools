@@ -369,6 +369,18 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     get "/api/endeavors", as: :json, headers: bearer_headers("lpt_missing_invalid")
 
     assert_response :unauthorized
+
+    get "/api/endeavors/#{@car_show.id}", as: :json
+    assert_response :success
+    assert_includes response.parsed_body.dig("endeavor", "details"), "Permit and volunteer history"
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Wrong secret refusal", expires_in: 30.days)
+    original_token = token.attributes
+    wrong_secret = plaintext.sub(/.$/) { |digit| digit == "0" ? "1" : "0" }
+
+    get "/api/endeavors/#{@car_show.id}", as: :json, headers: bearer_headers(wrong_secret)
+    assert_equal original_token, token.reload.attributes, "Rejected bearer secret must not record successful use"
+    assert_not_includes response.body, "Permit and volunteer history"
+    assert_response :unauthorized
   end
 
   test "revoked expired and disabled bearer tokens return unauthorized" do
@@ -404,25 +416,69 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_response :created
   end
 
-  test "exact bearer retry returns the stored response without duplicating mutation" do
-    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
-    headers = bearer_headers(plaintext, idempotency_key: "create-buddy-checks")
-    params = { title: "Buddy Checks", summary: "Call members" }
+  test "exact bearer retry preserves its original mutation until receipt cleanup" do
+    started = Time.current.change(usec: 0)
+    travel_to started do
+      token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 90.days)
+      headers = bearer_headers(plaintext, idempotency_key: "create-buddy-checks")
+      params = { title: "Buddy Checks", summary: "Call members" }
 
-    assert_difference -> { Endeavor.count }, 1 do
-      post "/api/endeavors", params: params, as: :json, headers: headers
-      assert_response :created
-      first_body = response.body
+      assert_difference -> { Endeavor.count }, 1 do
+        post "/api/endeavors", params: params, as: :json, headers: headers
+        saved = @organization.endeavors.find(response.parsed_body.dig("endeavor", "id"))
+        assert_equal [ @commander.id, "Buddy Checks", "Call members" ], [ saved.created_by_id, saved.title, saved.summary ]
+        saved_attributes = saved.attributes
+        assert_response :created
+        first_body = response.body
 
-      post "/api/endeavors", params: params, as: :json, headers: headers
+        post "/api/endeavors", params: params, as: :json, headers: headers
+        assert_equal saved_attributes, saved.reload.attributes
+        assert_response :created
+        assert_equal first_body, response.body
+      end
+
+      execution = token.agent_api_executions.find_by!(idempotency_key: "create-buddy-checks")
+      assert_equal @commander, execution.user
+      assert_equal "completed", execution.state
+      assert_equal 201, execution.response_status
+      original_receipt = execution.attributes
+      original_endeavor = @organization.endeavors.find(response.parsed_body.dig("endeavor", "id"))
+      original_record = original_endeavor.attributes
+
+      travel_to started + 30.days
+      CleanupAgentApiExecutionsJob.perform_now
+      assert_equal original_receipt, execution.reload.attributes
+      assert_no_difference -> { Endeavor.count } do
+        post "/api/endeavors", params: params, as: :json, headers: headers
+      end
+      assert_equal original_receipt.fetch("response_body"), response.body
+      assert_equal original_record, original_endeavor.reload.attributes
       assert_response :created
-      assert_equal first_body, response.body
+
+      travel_to started + 31.days
+      assert_no_difference -> { Endeavor.count } do
+        post "/api/endeavors", params: params, as: :json, headers: headers
+      end
+      assert_equal original_receipt.fetch("response_body"), response.body
+      assert_equal original_receipt, execution.reload.attributes
+      assert_response :created
+      CleanupAgentApiExecutionsJob.perform_now
+      assert_not AgentApiExecution.exists?(execution.id)
+      assert_equal original_record, original_endeavor.reload.attributes
+      assert_predicate token.reload, :active?
+      assert_difference -> { Endeavor.count }, 1 do
+        post "/api/endeavors", params: params, as: :json, headers: headers
+      end
+      replacement = token.agent_api_executions.find_by!(idempotency_key: "create-buddy-checks")
+      assert_not_equal execution.id, replacement.id
+      assert_not_equal original_endeavor.id, response.parsed_body.dig("endeavor", "id")
+      assert_equal original_record, original_endeavor.reload.attributes
+      assert_equal 2, @organization.endeavors.where(title: "Buddy Checks", summary: "Call members").count
+      assert_equal @commander, replacement.user
+      assert_equal "completed", replacement.state
+      assert_equal response.body, replacement.response_body
+      assert_response :created
     end
-
-    execution = token.agent_api_executions.find_by!(idempotency_key: "create-buddy-checks")
-    assert_equal @commander, execution.user
-    assert_equal "completed", execution.state
-    assert_equal 201, execution.response_status
   end
 
   test "altered input under an existing key is conflict" do
