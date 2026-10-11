@@ -778,3 +778,15 @@ CI38117274225, PG17.11 ordinary1289/11583 then69/1260, merged as42a3154 with ide
 tree. Actual-main CI38117583145 is pending. Integrate that merge here, retaining both
 ledger sections; service/controller fault-target hashes still match their exact originals.
 Repeat final committed serial suites and exact candidate/main CI before roster merge.
+
+
+## Whole-source review navigation and retained component distinctions
+
+Twenty-nine directory/account/roster/display/privileged-confirmation/Dashboard files
+reviewed in bounded groups are mapped in two source-only documents and a pinned exact
+case-name/source-line index. Remaining Deferred rows stay open with their priorities.
+Actual-main15ce51b CI38118516754 executes the unchanged reviewed components, PG17.11
+ordinary1290/11644 then system71/1365. This documents execution separately from fault
+proof; no blanket failure-detection or redundancy claim. Completed #108/#109/#111/#112
+have linked independent evidence. Local provenance#115/invitation#117 and Post-date#93
+remain open. No test removal, app edit or production/provider operation in this slice.

@@ -58,14 +58,14 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/api/minutes_draft_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed conditional creation authority and exact retry/preservation; all prior assertions retained |
 | `test/controllers/api/officer_api_test.rb` | controllers | Delegated mutations / #99 | P0 | Scoped exact-retry assertions reviewed/strengthened across retained/cleaned receipts; original missing guidance detected; remaining variants explicitly deferred |
-| `test/controllers/api/people_api_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/api/people_api_test.rb` | controllers | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/controllers/api/token_management_boundary_test.rb` | controllers | Authentication / authority / #81 | P0 | Both tests reviewed and retained: missing APIs preserve counts; bearer screens and revocation preserve tokens |
 | `test/controllers/api/user_accounts_api_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All four account mutation/current JSON/last-admin/member-denial variants reviewed/retained; see #107 |
 | `test/controllers/api/website_publications_api_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Reviewed existing editorial retry/current-authority boundary; other variants deferred |
 | `test/controllers/calendar_controller_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/calendar_event_deletion_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/calendar_pdf_sources_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/dashboard_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/dashboard_controller_test.rb` | controllers | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in PRIVILEGED_CONFIRMATION_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/controllers/dated_agenda_pdf_sources_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/dated_agendas_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/endeavor_histories_controller_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
@@ -75,14 +75,14 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/meeting_minutes_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/controllers/meeting_minutes_pdf_sources_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/meetings_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed #77 member-read variants; wider authority/variant review deferred to #78/#81/#84 |
-| `test/controllers/official_action_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/official_action_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in PRIVILEGED_CONFIRMATION_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/controllers/passkey_enrollment_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All twelve code/link/purpose/session/bearer/cancellation/intent cases reviewed and retained; actual enrollment identity proof differs from token proof; #104 |
 | `test/controllers/passkey_enrollment_security_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Eleven existing real registration/identity/session/challenge cases retained; new fresh-browser signed authentication refusal/recovery catches relaxed verification; #104 |
-| `test/controllers/passkey_invitations_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/passkey_invitations_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in PRIVILEGED_CONFIRMATION_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/controllers/passkeys_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All 13 option/verification/management/refusal/rate-limit cases retained; disabled/unknown saved graph strengthened; stub limits recorded; #104 |
-| `test/controllers/people_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/controllers/people_show_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/controllers/profiles_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/people_controller_test.rb` | controllers | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/controllers/people_show_test.rb` | controllers | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/controllers/profiles_controller_test.rb` | controllers | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/controllers/public_publishing_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/roster_email_reviews_controller_test.rb` | controllers | Member / navigation / roster | P1 | Five whole decisions/anonymous/invalid cases retained; fixed saved review metadata, nonempty target/foreign grants, unchanged identity and later Profile; same-alert write fault detected/restored (#108) |
 | `test/controllers/sessions_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All 17 sign-in/refusal/consumption/stale-cookie/sign-out variants reviewed and retained; later protected denial differs from helper setup; #104 |
@@ -90,9 +90,9 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/website_access_authentication_test.rb` | controllers | Publication / #60–#62, #81 | P0 | All five matrices reviewed/retained: credentials/methods/Post scope/HEAD/conditional/revocation; actual anonymous-content fault detected/restored |
 | `test/controllers/website_calendar_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Whole six authority/HTML signed activation/API replay audit/conflict/feed privacy ETag/meeting notice/CSRF cases reviewed and retained; invalid-CSRF-token and whole-graph denial limits explicit under #105 |
 | `test/controllers/website_publishing_admin_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
-| `test/helpers/legion_format_helper_test.rb` | helpers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/helpers/navigation_helper_test.rb` | helpers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/helpers/status_display_helper_test.rb` | helpers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
+| `test/helpers/legion_format_helper_test.rb` | helpers | Runner / component contracts | P2 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/helpers/navigation_helper_test.rb` | helpers | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/helpers/status_display_helper_test.rb` | helpers | Runner / component contracts | P2 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/integration/direct_upload_security_test.rb` | integration | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/integration/login_page_test.rb` | integration | Sign-in shell / #96 review | P1 | Five rendered identity/form/notice/confirmation/fallback variants reviewed/retained; actual sign-in remains browser evidence |
 | `test/integration/primary_nav_test.rb` | integration | Member / navigation / roster | P1 | All twelve destination/identity/current-section/sign-out form variants reviewed and retained; real menu interaction remains separate browser coverage |
@@ -121,7 +121,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/minutes_draft_run_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/organization_test.rb` | models | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/models/permission_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Both explicit granted/missing capability and complete unique grouping reviewed/retained; grouping is not independent privilege policy; see #107 |
-| `test/models/person_test.rb` | models | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/models/person_test.rb` | models | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/models/position_assignment_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three no-end, after-end and reversed-date component cases reviewed/retained; inclusive effective-authority proof remains User/#78 |
 | `test/models/position_capability_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Both allowed duty versus denied technical administration and duplicate-title capability cases reviewed/retained; see #107 |
 | `test/models/position_title_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three reorder cases reviewed/retained: saved 1-based order, foreign unchanged orders and duplicate refusal; see #107 |
@@ -145,7 +145,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/mail_delivery_test.rb` | services | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
 | `test/services/meeting_minutes_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/meeting_type_template_seeder_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/services/membership_report_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/services/membership_report_test.rb` | services | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/services/minutes_agenda_wording_backfill_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/minutes_draft_providers/openai_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/minutes_drafting/generate_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -163,7 +163,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/calendar_mobile_schedule_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/system/calendar_print_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/system/calendar_refinements_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
-| `test/system/dashboard_activities_test.rb` | system | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/system/dashboard_activities_test.rb` | system | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/system/dated_agendas_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/system/meeting_documents_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/system/meeting_types_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
@@ -176,10 +176,10 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/website_access_tokens_test.rb` | system | Publication / #60–#62, #81 | P0 | Full source retained; real native path/create/reveal-once/back/revoke/desktop-narrow checks, wrong-redirect detection; clipboard contents not tested; recurring CI inspector error bounded under #105 |
 | `test/system/website_calendar_test.rb` | system | Publication / #60–#62, #81 | P0 | Whole real native preview/create/activate/hide/meeting attendance/no-agenda desktop-phone journey retained; exact path wait catches wrong redirect, restored controller verified under #105; precise inspector cause unverified |
 | `test/system/website_publishing_test.rb` | system | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
-| `test/views/date_field_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/views/member_row_test.rb` | views | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/views/section_header_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/views/section_panel_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/views/stat_tile_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
+| `test/views/date_field_test.rb` | views | Runner / component contracts | P2 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/views/member_row_test.rb` | views | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/views/section_header_test.rb` | views | Runner / component contracts | P2 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/views/section_panel_test.rb` | views | Runner / component contracts | P2 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
+| `test/views/stat_tile_test.rb` | views | Runner / component contracts | P2 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/integration/protected_meeting_deletion_test.rb` | integration | #82 / #83 | P0 | Reviewed: source/state/denial matrix, original defect and detachment-fault evidence |
 | `test/system/position_titles_test.rb` | system | Configured Post title boundary / #107 | P0 | New real native foreign submission/public 404/unchanged authority graph, then ordinary Turbo controls at 1400/390px; initial harness assumptions and inspected layouts recorded |
