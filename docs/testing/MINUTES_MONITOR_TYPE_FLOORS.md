@@ -58,3 +58,11 @@ captures show the entire 16px instruction wrapping inside the existing paper pan
 readable stacked phone steps and actions, and no horizontal overflow. The normal
 script-enabled state returns before the actual grant-loss/status/Profile checks.
 Final committed full suites and CI remain pending after verified main integration.
+
+PDF PR #135 merged as actual main1c17da556d36a168f60e65bdfc304d7cbdb76a62 with the
+candidate's identical tree. Actual-main all-four CI38125270879 passes ordinary1297/11980
+then system74/1607, zero failures/errors/skips. Integrate that verified repair here;
+retain both evidence histories and each current inventory row. Final committed typography
+candidate now includes six font values and actual no-JavaScript restoration, so repeat
+serial full ordinary/system suites, applicable lint/security and new exact-SHA CI. Earlier
+failed CI38123404349 stays recorded; no blind retry, skip or production operation.

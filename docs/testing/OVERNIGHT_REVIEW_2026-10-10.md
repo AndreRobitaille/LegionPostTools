@@ -919,3 +919,27 @@ errors or skips. Fresh1400/390 views were inspected: complete warning wraps with
 paper panel, readable phone steps/actions, no overflow. PR#133 stays draft after its
 unrelated real-PDF harness CI failure38123404349; integrate verified PR#135 before
 final committed serial full suites and new exact-SHA CI. No test removed or fault left.
+
+## Bounded browser PDF delivery (#134)
+
+Typography PR#133 exact CI38123404349 fails only the existing real minutes PDF async
+helper (ScriptTimeoutError, Chrome154, seed53468); preserve its artifact/draft state.
+Locked Capybara sets a2-second async wait while the renderer allows30 seconds. An
+isolated3-second delayed real fetch reproduces1/62/1error, seed44796, then exact source
+restores. A PDF-only35-second helper retains all three fetch scripts/content/identity/
+immutable-graph assertions and verifies immediate ordinary-wait restoration. Same
+delayed real fetch passes1/95 seed11482. Wrong HTML first errors in native delivery,
+not credited to assertions; a temporary message-field result reaches the existing
+String assertion1/64/1 seed18145. Both experiments restore exactly. Neighbors16/437
+and final restored approval3/133 pass; lint4/diff clean. Desktop/phone member captures
+inspected. [Design and exact evidence](PDF_BROWSER_WAIT_CONTRACT.md). Actual original
+CI request duration remains unmeasured; no retries or app/renderer/authority change.
+Final committed full suites/CI pending; no production or paid AI.
+
+PDF PR #135 merged as actual main1c17da556d36a168f60e65bdfc304d7cbdb76a62 with the
+candidate's identical tree. Actual-main all-four CI38125270879 passes ordinary1297/11980
+then system74/1607, zero failures/errors/skips. Integrate that verified repair here;
+retain both evidence histories and each current inventory row. Final committed typography
+candidate now includes six font values and actual no-JavaScript restoration, so repeat
+serial full ordinary/system suites, applicable lint/security and new exact-SHA CI. Earlier
+failed CI38123404349 stays recorded; no blind retry, skip or production operation.
