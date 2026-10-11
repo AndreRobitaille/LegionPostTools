@@ -27,7 +27,7 @@ unreferenced item, retained AI suggestion lineage, member denials and foreign-Po
 No section-deletion API exists, so that variant is explicitly unavailable.
 
 Original candidate errors reproduced before repair (21 unhandled restriction/FK errors).
-Expanded final focused execution: 23 runs / 331 assertions / no failures/errors/skips.
+Expanded final focused execution: 24 runs / 339 assertions / no failures/errors/skips.
 Isolated source-detachment fault preserved response/alert but failed the graph equality
 assertion. Exact-byte restoration and clean rerun passed. No existing tests removed.
 
@@ -39,5 +39,27 @@ and absence of private cues/renamed template. 2 scenarios / 127 assertions passe
 rendered screenshots inspected. PDF renderer and browser boundaries are not mocked here.
 
 Detailed commands, failures/corrections and limits:
-[review ledger](OVERNIGHT_REVIEW_2026-10-10.md). Full final-revision suites and CI remain
-required before code merge. #84 remains open while deferred file/variant review remains.
+[review ledger](OVERNIGHT_REVIEW_2026-10-10.md). PR #85 merged after final ordinary/system
+suites and successful candidate CI; actual main CI also passed. #84 remains open while
+deferred file/variant review remains.
+
+## Fresh-schema immutable-record protection (#86)
+
+`OfficialRecordDatabaseGuardsTest`: ten direct SQL update/delete variants against final
+minutes and append-only revision/attestation/event/approval rows; a separate eleven-trigger
+inventory and legitimate draft update. No guard mocks or test-only installation. Each
+refusal requires the immutability message and unchanged persisted attributes; unrelated
+FK errors fail. Original preparation: eleven failures; fresh faithful SQL load: all
+twelve tests / 45 assertions pass. All existing component/request/browser tests retained.
+Endeavor triggers are inventoried here; their behavior remains a separate review slice.
+
+## Speculative response during identity confirmation (#89)
+
+`OfficialActionPrefetchTest#heading hover cannot discard the exact pending attestation
+before email confirmation`: real hover, bounded test-only delayed heading response,
+then actual email/code confirmation. Original layout loses pending cookie state and
+fails the same missing-code-form assertion as the full-suite failure. Completed outcome
+must retain the actor, exact confirmation/revision, one-use consumption and signed report.
+No authentication/record mock; email uses the synthetic test job adapter. Existing stale
+record, wrong-session, passkey, sign-out and approval browser variants retained. Temporary
+delay callback is removed in teardown; no general multi-tab concurrency claim.

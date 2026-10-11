@@ -249,7 +249,7 @@ These source links support the domain/dependency discovery. They are not new use
 
 - Empty-directory placeholders: [controller concerns](../../app/controllers/concerns/.keep) and [model concerns](../../app/models/concerns/.keep); no behavior.
 - [Application routes](../../config/routes.rb): explicit paths/methods, development-only mail preview, health and signed internal PDF sources.
-- [Application configuration](../../config/application.rb), [test configuration](../../config/environments/test.rb), [Gemfile](../../Gemfile), [database schema](../../db/schema.rb): runtime/record context; schema alone does not list all PostgreSQL immutability functions.
+- [Application configuration](../../config/application.rb), [test configuration](../../config/environments/test.rb), [Gemfile](../../Gemfile), [database schema](../../db/structure.sql): runtime/record context; current SQL schema preserves PostgreSQL immutability functions/triggers (#86); the initial Ruby-schema baseline omitted them.
 - [Minutes immutability migration](../../db/migrate/20260902010100_protect_membership_approved_minutes.rb): database protection for final minutes.
 - [CI](../../.github/workflows/ci.yml), [system-test setup](../../test/application_system_test_case.rb): runner discovery only; coverage/effectiveness not assessed.
 - [Deployment guide](../DEPLOYMENT.md): guarded operating boundary; deployment/live checks were not performed.

@@ -40,6 +40,8 @@ module LegionPostTools
 
     config.time_zone = installation_time_zone
     config.active_record.default_timezone = :utc
+    # PostgreSQL functions and immutability triggers must survive fresh schema loads.
+    config.active_record.schema_format = :sql
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end
