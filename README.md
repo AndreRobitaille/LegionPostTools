@@ -52,6 +52,7 @@ Most ordinary post members are not expected to log in during early versions. The
 ## Documentation
 
 - `AGENTS.md` and `CLAUDE.md` — general agent instructions and Claude-specific collaboration guidance.
+- `docs/APPLICATION_MAP.md` — application discovery, interface inventory, behavioral workflow contracts, source discrepancies, and the reference for future test-quality review.
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
 - `docs/AMERICAN_LEGION_CONTEXT.md` — Legion structure, source authority, Four Pillars, and Legion Family boundaries.
