@@ -158,6 +158,26 @@ provenance and add actual queued-token revocation refusal before the offline pro
 is called. This is distinct from direct SQL protection. See
 [design/evidence](../ENDEAVOR_HISTORY_DATABASE_GUARDS.md); no production/paid-provider claim.
 
+## Configuration, entry shell and strict receipt cutoff (#96)
+
+Real ERB/YAML parsing retains nonproduction/build defaults and independently omits each
+required production key from otherwise complete synthetic inputs. A supplied-input case
+checks actual database identities/host. Bypassing only queue-name refusal fails the new
+variant while earlier primary/cache refusals still pass; exact config restored.
+
+Real receipt cleanup retains the original 29-day path check/deleted 31-day row and adds
+a frozen exactly-30-day row. Making the comparison inclusive deletes that row and fails
+persisted preservation; exact model restored. This is cutoff/job proof, not recurrence
+or an infinite idempotency guarantee; #99 separately tests and explains old-key behavior.
+
+Retain distinct actual filter shapes, three child-process timezone boots, emblem and print
+CSS source invariants, five entry-shell scenarios and twelve member/officer/admin navigation
+variants. No component assertion is replaced by a browser count. Full account-menu source
+review preserves keyboard/open/close/phone paths and actual sign-out with later Profile
+denial, pending confirmation-session nullification and completed approval/revision survival.
+No removal/consolidation is justified. See [bounded review](CONFIGURATION_AND_SHELL_REVIEW.md)
+for the initial asset setup errors, corrected/clean focused runs, fault hashes and limits.
+
 Existing calendar, minutes-item Endeavor and attestation retry tests retain every prior
 assertion and add lost-authority content/record/receipt checks and permitted restored
 receipts. New calendar deletion and local-midnight cases prove replay preserves valid

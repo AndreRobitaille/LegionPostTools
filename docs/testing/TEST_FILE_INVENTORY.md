@@ -14,10 +14,10 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/manual/final_meeting_context_race.rb` | explicit runner | Final occurrence concurrency / #80 | P0 | Test database name guard; actual held finalization and waiting update; not CI-discovered |
 | `test/system/official_action_prefetch_test.rb` | system | Confirmation cookie continuity / #89 | P0 | Real hover and delayed speculative response reproduce missing request; normal email/provenance completion verified after repair |
 | `test/models/official_record_database_guards_test.rb` | models | Schema fidelity / #86 | P0 | Added direct SQL official-record variants; old-schema failures and fresh-load passes; Endeavor behavior deferred |
-| `test/assets_test.rb` | assets_test.rb | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/config/database_configuration_test.rb` | config | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/config/filter_parameter_logging_test.rb` | config | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/config/time_zone_configuration_test.rb` | config | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
+| `test/assets_test.rb` | assets_test.rb | Runner / component contracts | P2 | Both emblem resolution and distinct print pagination source rules reviewed/retained; source assertions do not establish visual print proof |
+| `test/config/database_configuration_test.rb` | config | Runner / configuration / #96 | P1 | All parsing variants retained; each missing production key and supplied identities/host strengthened; queue-requirement fault detected/restored |
+| `test/config/filter_parameter_logging_test.rb` | config | Private source / #96 review | P0 | Both real configured filter shapes reviewed/retained: nested transcript plus unnested content; no source-array substitute |
+| `test/config/time_zone_configuration_test.rb` | config | Runner / configuration | P1 | All three actual process boots reviewed/retained: default/configured/invalid zone; distinct from pending #93 date policy |
 | `test/controllers/admin/administrators_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/agenda_item_catalog_entries_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
@@ -91,9 +91,9 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/helpers/navigation_helper_test.rb` | helpers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/helpers/status_display_helper_test.rb` | helpers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/integration/direct_upload_security_test.rb` | integration | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/integration/login_page_test.rb` | integration | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/integration/primary_nav_test.rb` | integration | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/jobs/cleanup_agent_api_executions_job_test.rb` | jobs | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
+| `test/integration/login_page_test.rb` | integration | Sign-in shell / #96 review | P1 | Five rendered identity/form/notice/confirmation/fallback variants reviewed/retained; actual sign-in remains browser evidence |
+| `test/integration/primary_nav_test.rb` | integration | Member / navigation / roster | P1 | All twelve destination/identity/current-section/sign-out form variants reviewed and retained; real menu interaction remains separate browser coverage |
+| `test/jobs/cleanup_agent_api_executions_job_test.rb` | jobs | Receipt retention / #96 | P1 | Real old/new row outcomes retained; exact thirty-day frozen boundary strengthened; inclusive cleanup fault detected/restored |
 | `test/jobs/minutes_draft_generation_job_test.rb` | jobs | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/mailers/magic_links_mailer_test.rb` | mailers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/migrations/reinterpret_legacy_dated_agenda_times_test.rb` | migrations | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -151,7 +151,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/openai_sdk_contract_test.rb` | services | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
 | `test/services/roster_imports/csv_parser_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/services/roster_imports/importer_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/system/account_menu_test.rb` | system | Member / navigation / roster | P1 | Reviewed scoped variants in matrix; other variants deferred to #84 |
+| `test/system/account_menu_test.rb` | system | Member / navigation / sign-out | P0 | Full source reviewed/retained: actual keyboard/open/close/phone paths and sign-out plus later Profile denial, pending-session nullification and completed record preservation |
 | `test/system/agenda_item_catalog_entries_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/authentication_entry_test.rb` | system | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
