@@ -450,3 +450,53 @@ field. No permission or route expectation relaxed. Final restored focused set: 3
 0 (seed 64533, 9.87s), log `/tmp/legion-guidance-restored-clean.log`; five changed Ruby
 files lint clean. No application fault remains. Final committed full serial suites,
 security, exact candidate CI and actual-main evidence are required before merge.
+
+Replay actual-main CI 38108458080 now passes all four jobs for `0a5686a`, including
+actual PG17.11 ordinary 1252 / 10484 / 0 and system 66 / 1187 / 0. #92 completion
+comment records exact-tree/source/local/CI evidence; #78/#93 remain open.
+
+API final candidate `43073c3`: full ordinary 1260 / 11151 / 0 (seed 19249, 101.20s),
+then serial full system 66 / 1187 / 0 (seed 24138, 163.21s). Lint 500 files clean;
+Brakeman zero errors/warnings; both audits clean. Exact-SHA CI 38108689186 passes all
+four jobs, with actual PG17.11 counts matching local suites. Fresh review confirms
+independent expected duties, denied content/persisted preservation, exact official
+provenance and no remaining experimental faults. PR #97 merged as
+`08a7094eade6acb6601a6884fd0700ac04b404e3`, exactly matching the candidate tree;
+actual-main CI 38108959812 is pending at this entry. #81 completion waits for that check.
+
+Transcript retention decision draft is committed as `f371ab1`, reviewable in draft
+PR #98. Current source/ref/diff checks pass; start boundary is still pending, with no
+dependent implementation or deletion. #79 stays open. This is not an implementation
+or production retention claim.
+
+## Endeavor SQL guards and recorded delegate provenance (#88/#95)
+
+Design written before tests: `docs/ENDEAVOR_HISTORY_DATABASE_GUARDS.md`. All existing
+offline HistoryTest variants reviewed and retained, including citations/coverage,
+publication, source changes, immutable callbacks, budget/reuse/recovery and historical
+account continuity. The six inventoried triggers need behavioral proof independent of
+model callbacks. New tests compare saved rows before exact SQL refusal messages/types.
+
+Original source `31231f6` in fresh schema: 19 / 143 / two failures (seed 56824,
+3.61s). Pending/running jobs' recorded token
+can change. The other guard variants pass. This changes the worker's checked credential
+and persisted provenance; no ordinary API exploit or production incident is established.
+#95 tracks the narrow fix: one reversible function replacement adds only token identity
+to the existing conditions, retaining legitimate progress and system nil-token input.
+
+Controlled edition-trigger fault within the test transaction: 1 / 1 / one failure,
+actual saved payload changed before any SQL error assertion. Exact bytes restored,
+transactional DDL rolled back; all 13 real triggers are enabled. Fault hash and fixture
+refinement are documented in the design. Initial nil-token multi-state fixture correctly
+hit the one-active-run index; split scenarios and use nil requester for system fixtures,
+retaining that index and all expectations.
+
+Normal owned-database migration/down/up verifies previous and full repaired function
+definitions (normalized whitespace only). Intended SQL schema bytes restored exactly
+after normal dump; diff is only token condition plus migration version. Fresh normal SQL
+load and round-trip guard cases: 33 / 226 / 0 (4.04s). Final current-main focused guards,
+all offline pipeline tests and official guards: 76 / 436 / 0 (seed 24640, 11.48s).
+Existing recovery now retains original token/run/event identity; a real revoked-token
+request fails before the offline provider, preserving source rows and publishing nothing.
+Changed three Ruby files lint clean; diff checks pass. Full committed serial suites,
+security, exact-SHA CI and actual-main verification remain required before merge.

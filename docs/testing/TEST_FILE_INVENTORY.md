@@ -5,6 +5,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/models/endeavor_history_database_guards_test.rb` | models | Immutable history / #88, #95 | P0 | Six real SQL guards: update/delete, active identity/nil token, every terminal state, legitimate progress; original token failures and edition fault detected/restored |
 | `test/integration/api_guidance_authority_test.rb` | integration | Handbook / actual authority / #81 | P0 | Seven independent duties, both formats, actual reads/drafting/official acts and denial preservation; advertisement fault detected/restored |
 | `test/integration/officer_turnover_authority_test.rb` | integration | Current offices / #78, #92 | P0 | Real role/action/expiry matrices and human later approval; original cached content failure and restored expiry-content fault |
 | `test/controllers/api/mutation_authorization_inventory_test.rb` | controllers | Completed retry authority / #92 | P0 | All routed mutation guards inventoried; runtime contracts remain separately reviewed |
@@ -133,7 +134,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/american_legion_post_preset_test.rb` | services | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/services/calendar_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/dated_agenda_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/services/endeavor_history/history_test.rb` | services | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
+| `test/services/endeavor_history/history_test.rb` | services | Continuing Post work / #88, #95 | P0 | All existing offline pipeline/coverage/reuse/budget/recovery/source variants reviewed and retained; recorded-token refusal/recovery strengthened; no paid provider claim |
 | `test/services/endeavor_history/provider_test.rb` | services | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/services/loops/client_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/services/loops/roster_audience_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
