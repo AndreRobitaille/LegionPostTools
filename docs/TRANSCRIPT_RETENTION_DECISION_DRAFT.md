@@ -85,3 +85,35 @@ skill, inspect desktop/narrow screenshots, and retain current transcript-upload 
 minutes lifecycle browser coverage. Full serial ordinary/system suites, lint/security
 and exact candidate/actual-main CI are required before merge. No production operations,
 real data, paid AI or deletion outside synthetic test records is authorized here.
+
+## Restricted source-copy review while the decision is pending
+
+Local source and existing assertion review at `0a5686a`; no new execution or production
+claim. The transcript/drafting files below remain unchanged on `b852211`:
+
+- `Api::BaseController#transcript_summary_payload` returns source metadata, availability
+  and creator, not content. Transcript creation uses this serializer. Only the explicit
+  transcript GET adds text. Idempotency caches mutations only, with a SHA-256 request
+  fingerprint, path and response body; it does not store the request parameters. Thus
+  the normal create receipt has no full source copy in the reviewed source path.
+- AI run metadata contains provider IDs, configuration, counters, source line count and
+  digests. Run detail adds original suggestion payloads; source excerpts are added only
+  on explicit `include_source` GET and read the current transcript dynamically. Those
+  GETs do not enter mutation receipt storage. The existing evidence request test checks
+  explicit normalized text, no-store, nil excerpt after a synthetic purged state, and
+  content exclusion after permission loss. This does not prove actual scheduled deletion.
+- Successful generation retains structured proposal narrative, missing facts and line
+  ranges, without persisting its full numbered input. Failure stores a category and
+  provider IDs rather than the provider exception body. The provider client has logging
+  off in source; configured request filters cover nested transcript and pasted/API text.
+  The filter component tests exercise actual configured filtering, not production logs.
+- Reviewed proposal payloads and resulting minutes/Endeavor narrative can quote or
+  summarize source. They remain restricted review or human-authored record content;
+  deleting every matching phrase would invent a different record-retention policy.
+
+Required implementation checks remain: inspect actual synthetic bearer creation and
+error receipt bodies for an independent unique source sentinel; assert source-copy
+absence without treating missing serializer keys alone as proof. Verify purged-state
+later reads with original official graphs and real uploaded storage deletion/recovery.
+External SDK/provider retention, proxy/access logging, backups, downloads and storage
+configuration remain unverified and are not established by this source review.
