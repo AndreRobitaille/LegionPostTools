@@ -363,3 +363,18 @@ service/browser read navigates source/partial results/preview and loses settings
 while ordinary Profile remains. No provider opt-out state or Solid Queue dispatch claim.
 Details: [email identity](ROSTER_EMAIL_IDENTITY_REVIEW.md),
 [offline audience](OFFLINE_ROSTER_SYNC_REVIEW.md). No test deletion/consolidation.
+
+
+## Whole-source directory, roster and privileged-confirmation variants
+
+The [directory/roster review](DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md) records separate
+HTML index/detail, private bulk/summary JSON, Person/User representation, own Profile,
+menu destinations, membership report, roster transactions/preview/source and offline
+HTTP/audience/service contracts. The [confirmation review](PRIVILEGED_CONFIRMATION_SOURCE_REVIEW.md)
+retains purpose/session/code, link GET versus consuming POST, changed-text refusal,
+stubbed passkey orchestration, sign-out provenance and independent invitation boundaries.
+[Exact case names and pinned source lines](SOURCE_REVIEW_CASES.md) associate each retained
+case with its reviewed assertions. Actual-main15ce51b all-four CI executes those files;
+that unchanged-suite execution does not demonstrate a representative fault for every
+assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault evidence;
+#115/#117 and #93 decisions remain open. No safe test consolidation was established.
