@@ -343,6 +343,16 @@ finally restore exact bytes, clean focus54/531 passes. The thirty-day scheduling
 and actual deletion remain #79/PR#98; this is independent privacy evidence, not purge
 completion. See [scope and evidence](TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
 
+## Real copied token bytes and permission denial (#121)
+
+Both existing personal/Post-website journeys keep their distinct authority, issuance,
+reveal-once/back and revocation assertions. Shared browser support sets a fixed stale
+synthetic clipboard value, performs the real copy and reads exact actual copied bytes.
+Actual denied-write permission then produces the manual fallback with source focus and
+full exact selection. Stored credential attributes stay unchanged. Omitting only the
+application clipboard write preserves its success label yet fails both byte assertions;
+finally restores exact JS. Browser permissions reset in nested ensure; no stubbed
+clipboard, broad rescue, skip or consolidation. See [design and evidence](TOKEN_CLIPBOARD_REVIEW.md).
 ## Roster email identity and offline audience boundaries (#108/#109)
 
 Existing five email-review requests keep every old assertion and now inspect independently
