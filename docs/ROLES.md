@@ -45,6 +45,14 @@ into permanent grants on each officeholder. Effective authority is resolved thro
 person's current dated assignment, so it starts and ends with the term. A separate manual
 grant remains appropriate only when the responsibility should survive that office.
 
+Current dated authority and current role labels use the Post's saved local date. Start
+and end dates are inclusive in that time zone, consistently across HTML, calendar,
+minutes and delegated API requests. A renamed office keeps its configured duties.
+Historical roll calls still use the meeting date. Before setup, or if a legacy saved
+zone is invalid, the configured application time zone supplies the date; a request's
+temporary zone does not change that fallback. This date policy was chosen October 11,
+2026 in #93.
+
 ## People and Membership Access
 
 ### Standard Post Member

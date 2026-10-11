@@ -644,3 +644,16 @@ renamed API case retains all eight original agenda/Endeavor actions and every bo
 helper assertion; real narrowly duplicated updates reach its existing saved-count
 failure. [Exact design, restoration and clean neighbors](CALENDAR_PRINT_STATE_CLEANUP.md)
 separate injected failures from application incidents and universal retry claims.
+
+## Approved Post-local authority boundary (#78/#93)
+
+Andre chose the saved Post date on October11. Four independent Commander/Adjutant
+request variants span Chicago/Tokyo future start, inclusive end, local midnight,
+renaming, same-session/token, real minutes/calendar writes, identity acts, role/menu
+labels and later manual exceptions. Original source gives4/54/4 real failures;
+separate restored Person and officer-API faults each fail all four detectors. Two actual
+End role form variants reproduce the wrong submitted date and then save the approved
+Post-local date. Two real browser journeys retain original expiry/navigation assertions
+and add end-role controls plus sign-out/subsequent denial at1400/390.
+[Design, exact evidence and limitations](../OFFICER_AUTHORITY_LOCAL_DATE.md) distinguish
+these executions from fixture/harness corrections and pending final-candidate CI.

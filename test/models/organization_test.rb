@@ -1,6 +1,39 @@
 require "test_helper"
 
 class OrganizationTest < ActiveSupport::TestCase
+  test "the saved Post date is independent of the request zone and changes at local midnight" do
+    Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    travel_to Time.utc(2026, 11, 11, 5, 59) do
+      Time.use_zone("Asia/Tokyo") { assert_equal Date.new(2026, 11, 10), Organization.current_local_date }
+    end
+    travel_to Time.utc(2026, 11, 11, 6) do
+      Time.use_zone("Pacific/Honolulu") { assert_equal Date.new(2026, 11, 11), Organization.current_local_date }
+    end
+  end
+
+  test "setup and an invalid legacy saved zone use the configured app zone across request contexts" do
+    travel_to Time.utc(2026, 11, 11, 1) do
+      Time.use_zone("Pacific/Honolulu") do
+        assert_equal Date.new(2026, 11, 11), Organization.current_local_date
+        organization = Organization.create!(name: "Legacy Post", unit_type: "american_legion_post", timezone: "Invalid/LegacyZone")
+        assert_equal "UTC", organization.calendar_time_zone.name
+        assert_equal Date.new(2026, 11, 11), Organization.current_local_date
+      end
+    end
+  end
+
+  test "the saved Post date uses the daylight-saving midnight on a short day" do
+    Organization.create!(name: "Test Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    [
+      [ Time.utc(2026, 3, 8, 5, 59), Date.new(2026, 3, 7) ],
+      [ Time.utc(2026, 3, 8, 6), Date.new(2026, 3, 8) ],
+      [ Time.utc(2026, 3, 9, 4, 59), Date.new(2026, 3, 8) ],
+      [ Time.utc(2026, 3, 9, 5), Date.new(2026, 3, 9) ]
+    ].each do |instant, expected_date|
+      travel_to(instant) { assert_equal expected_date, Organization.current_local_date }
+    end
+  end
+
   test "normalizes and validates the public document email" do
     organization = Organization.new(
       name: "Test Post",

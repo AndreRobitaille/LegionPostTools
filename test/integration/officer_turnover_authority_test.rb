@@ -15,6 +15,63 @@ class OfficerTurnoverAuthorityTest < ActionDispatch::IntegrationTest
 
   teardown { travel_back }
 
+  {
+    "America/Chicago" => [
+      [ Time.utc(2026, 11, 11, 5, 59), Date.new(2026, 11, 10), false ],
+      [ Time.utc(2026, 11, 11, 6), Date.new(2026, 11, 11), true ],
+      [ Time.utc(2026, 11, 13, 5, 59), Date.new(2026, 11, 12), true ],
+      [ Time.utc(2026, 11, 13, 6), Date.new(2026, 11, 13), false ]
+    ],
+    "Asia/Tokyo" => [
+      [ Time.utc(2026, 11, 10, 14, 59), Date.new(2026, 11, 10), false ],
+      [ Time.utc(2026, 11, 10, 15), Date.new(2026, 11, 11), true ],
+      [ Time.utc(2026, 11, 12, 14, 59), Date.new(2026, 11, 12), true ],
+      [ Time.utc(2026, 11, 12, 15), Date.new(2026, 11, 13), false ]
+    ]
+  }.each do |zone, boundaries|
+    %w[Commander Adjutant].each do |office|
+      test "#{office} same session and token follow #{zone} midnight in duties labels and actual writes" do
+        @organization.update!(timezone: zone)
+        actor, assignment, headers = assigned_user(office, starts_on: @starts_on, ends_on: @ends_on)
+        session = sign_in_as(actor)
+        boundaries.each_with_index do |(instant, date, allowed), index|
+          travel_to instant
+          label = index >= 2 ? "Renamed #{office} office" : office
+          assignment.position_title.update!(name: label) if index == 2
+          assert_drafting(headers, allowed:, title: "#{zone} boundary #{index}")
+          assert_current_officer_labels(actor, headers, date:, label:, active: allowed)
+          calendar_before = @organization.calendar_events.order(:id).map(&:attributes)
+          post "/api/calendar_events", params: { title: "Boundary activity #{index}", starts_at: "2026-12-01T18:00:00Z", visibility: "members" }, headers: headers.merge("Idempotency-Key" => SecureRandom.uuid), as: :json
+          if allowed
+            assert_response :created
+            event = @organization.calendar_events.find(response.parsed_body.dig("calendar_event", "id"))
+            assert_equal "Boundary activity #{index}", event.title
+            assert_equal actor.id, event.created_by_id
+          else
+            assert_equal calendar_before, @organization.calendar_events.order(:id).map(&:attributes)
+            assert_response :forbidden
+          end
+          assert_identity_duty(actor, headers, office) if index == 2
+        end
+        before = official_graph
+        post "/api/meetings/#{@meeting.id}/minutes/#{office == 'Commander' ? 'approval' : 'attestation'}", headers: headers.merge("Idempotency-Key" => SecureRandom.uuid), as: :json
+        assert_equal before, official_graph
+        assert_response :forbidden
+        assert_equal session.id, actor.sessions.sole.id
+        assert_empty actor.reload.permission_grants
+        assert actor.full_membership_access?(on: Date.new(2026, 11, 12))
+        assert actor.private_agenda_notes_access?(on: Date.new(2026, 11, 12))
+        assert_equal [ "Renamed #{office} office" ], actor.position_capability_sources(on: Date.new(2026, 11, 12)).fetch("manage_minutes")
+        assert_equal [ "Renamed #{office} office" ], actor.person.active_role_labels(Date.new(2026, 11, 12))
+        actor.permission_grants.create!(capability: "manage_minutes")
+        assert_drafting(headers, allowed: true, title: "Explicit later exception", membership: false)
+        assert_empty actor.person.active_role_labels
+        assert_not actor.private_agenda_notes_access?
+        assert_not actor.can_manage_calendar?
+      end
+    end
+  end
+
   %w[Commander Adjutant].each do |office|
     test "#{office} current duties follow future inclusive expired inactive and renamed assignments through HTML and the same bearer" do
       actor, assignment, headers = assigned_user(office, starts_on: @starts_on, ends_on: @ends_on)
@@ -202,6 +259,31 @@ class OfficerTurnoverAuthorityTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def assert_current_officer_labels(actor, headers, date:, label:, active:)
+    expected_roles = active ? [ label ] : []
+    get root_path
+    assert_response :success
+    assert_select ".app-menu-id-role", text: label, count: active ? 1 : 0
+    assert_select "a[href='#{admin_root_path}']", text: "Officer tools", count: active ? 1 : 0
+    actor.person.reload
+    assert_equal expected_roles, actor.person.active_role_labels
+    if active
+      assert_equal label, actor.person.current_role_label
+    else
+      assert_nil actor.person.current_role_label
+    end
+    get "/api/officers", headers:, as: :json
+    assert_response :success
+    assert_equal date.iso8601, response.parsed_body.fetch("as_of")
+    assert_equal(active ? [ actor.person.id ] : [], response.parsed_body.fetch("people").map { |row| row.fetch("id") })
+    assert_equal expected_roles, response.parsed_body.fetch("people").flat_map { |row| row.fetch("roles") }
+    get "/api", headers:, as: :json
+    assert_response :success
+    assert_equal expected_roles, response.parsed_body.dig("caller", "roles")
+    assert_equal active, response.parsed_body.dig("caller", "calendar_management")
+    assert_equal(active ? "full_membership" : "directory", response.parsed_body.dig("caller", "people_access"))
+  end
 
   def assigned_user(office, starts_on:, ends_on: nil)
     actor = User.create!(person: Person.create!(first_name: "Synthetic", last_name: office), email_address: "turnover-#{SecureRandom.hex(4)}@example.com", email_verified_at: Time.current)
