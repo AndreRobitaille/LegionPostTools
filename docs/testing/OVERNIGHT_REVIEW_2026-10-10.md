@@ -1093,3 +1093,11 @@ native template controls distinct from partial graph/fake renderer/direct confir
 fixtures. All assertions remain, no source-only runtime/safe deletion claim. Combined
 source-only slices now76 complete files /564 indexed cases; still-scoped files and
 linked gaps remain. #84 stays open; no production or paid AI.
+
+Five further whole dated-agenda workspace/member-document files /61 cases read at95a38a3
+retain exact local discussion/roll-call/form/transition semantics, actual protected
+deletion, native Turbo and parsed member HTML/bearer PDF content. Exact pins and limits
+in [DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md](DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md).
+Vacuous-selector/direct fixture/partial graph/prefix-only PDF limits remain explicit;
+no app/test edit or safe consolidation. Combined source slices81files/625cases; four
+large API components still have scoped review. #84 stays open; no production or paid AI.

@@ -579,3 +579,13 @@ Turbo/template controls. [Exact names/lines/blobs](MEETING_OCCURRENCE_SOURCE_CAS
 [located outcomes and limits](MEETING_OCCURRENCE_SOURCE_REVIEW.md) preserve distinct
 real attestation/content proof versus fake renderer, direct confirmation, partial denial
 graph and relative-order tests. All kept; no safe consolidation or universal fault proof.
+
+## Whole dated-agenda workspace/member-document source slice (#84)
+
+Five complete files /61 exact cases at95a38a3 retain scoped discussion/section/roll-call
+writes, human agenda transitions, saved local snapshots and private notes, actual
+protected deletion and native parsed member HTML/bearer PDF content at desktop/narrow.
+[Exact names/lines/blobs](DATED_AGENDA_WORKSPACE_SOURCE_CASES.md),
+[located outcomes and limits](DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md) preserve concrete
+source/action outcomes versus prefix-only PDF, partial graphs, vacuous Array.every and
+fixture-coupled styling. Keep every assertion; no safe consolidation or blanket fault proof.
