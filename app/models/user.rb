@@ -143,6 +143,22 @@ class User < ApplicationRecord
     disabled_at.blank? && can?("manage_settings") && !self.class.another_enabled_manage_settings_user_exists?(self)
   end
 
+  def replace_manual_permissions!(capabilities)
+    transaction do
+      lock_relevant_admin_rows!
+      submitted_capabilities = Array(capabilities).map(&:to_s) & PermissionGrant::CAPABILITIES
+      submitted_capabilities -= position_capability_sources.keys
+
+      return :skipped_last_admin if !submitted_capabilities.include?("manage_settings") && only_enabled_administrator?
+
+      permission_grants.where.not(capability: submitted_capabilities).destroy_all
+      submitted_capabilities.each do |capability|
+        permission_grants.find_or_create_by!(capability: capability)
+      end
+      :updated_permissions
+    end
+  end
+
   def apply_roster_access!
     transaction do
       lock_relevant_admin_rows! if roster_access_should_disable?
@@ -168,7 +184,7 @@ class User < ApplicationRecord
 
   def set_login_access_override!(disabled:)
     transaction do
-      lock_relevant_admin_rows! if disabled && can?("manage_settings")
+      lock_relevant_admin_rows! if disabled
 
       if disabled && only_enabled_administrator?
         return :skipped_last_admin
@@ -245,9 +261,12 @@ class User < ApplicationRecord
   end
 
   def lock_relevant_admin_rows!
-    self.class.where(disabled_at: nil)
+    admin_ids = self.class.where(disabled_at: nil)
       .joins(:permission_grants)
       .where(permission_grants: { capability: "manage_settings" })
+      .select(:id)
+    self.class.where(id: admin_ids).or(self.class.where(id: id))
+      .order(:id)
       .lock
       .load
     lock!

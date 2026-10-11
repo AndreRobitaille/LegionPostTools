@@ -34,16 +34,17 @@ Push/merge does not invoke repository deployment. Recheck before first push/merg
 | Issue | Contract and review unit | Current status |
 | --- | --- | --- |
 | #77 | Member Meeting and immutable document reads, personal token parity and handbook | Complete: PR #91 merged; candidate and actual-main CI passed |
-| #78 | Independent Commander/Adjutant duties through assignment transitions | Focused/request/browser proof prepared; final candidate verification pending; related date-boundary decision #93 remains separate |
-| #79 | 30-day recovery after final approval; source removal and retained record/audit | Current issue read; policy/source investigation pending |
+| #78 | Independent Commander/Adjutant duties through assignment transitions | PR #94 current-role/action/refusal proof and candidate/main CI passed; open pending material date-boundary decision #93 |
+| #79 | 30-day recovery after final approval; source removal and retained record/audit | Draft PR #98 records retention/storage/provenance design; awaiting start-of-recovery choice; no purge runtime implemented |
 | #80 | Final occurrence context protected independently from agenda state | Complete: PR #90 merged; candidate and actual-main CI passed |
-| #81 | Current handbook, delegated official acts and Post website credential boundaries | Current issue read; policy/source investigation pending |
+| #81 | Current handbook, delegated official acts and Post website credential boundaries | Complete: PR #97 merged; independent handbook/actions and candidate/actual-main CI passed |
 | #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
 | #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
-| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Initial file inventory; remaining review explicitly deferred to slices |
+| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: bounded source/assertion/fault reviews merged; many remaining variants/files and linked findings remain |
 
-No acceptance criterion is completed by this initial inventory. No test removed,
-consolidated or weakened. Discovery documentation committed as `002f41e`. No push, PR or merge yet; controlled-fault evidence is recorded below.
+The initial inventory alone completes no acceptance criterion. No test removed,
+consolidated or weakened. Discovery documentation committed as `002f41e`; subsequent
+scoped commits/PRs and controlled-fault evidence are recorded below.
 
 ## Runner review
 
@@ -676,3 +677,43 @@ PG17.11 ordinary1285 / 11464 then system67 / 1219. Final local candidate61090d8 
 ordinary1285 / 11464 (seed47482,105.01s), then system67 / 1219 (seed7601,170.60s),
 all zero failures/errors/skips, lint503/security clean. Actual-main CI38113727296 is
 pending; #104 stays open until that verification. No production operations.
+
+
+## Last-administrator overlap reproduction and shared repair (#112)
+
+Initial observer cached pg_blocking_pids caused harness timeout1 / 4 / one error
+(seed2003); actual DELETE was blocked but cached observer state stayed empty. Uncached
+actual SQL observation reproduces original zero stored enabled admins1 / 7 / one failure
+(seed27822,0.92s), before response assertions. No injected authority predicate.
+Shared User ordered target+administrator transaction moves real grant replacement and
+last-admin checks together with existing disable/roster operations. Every replacement
+and manual disable now enters locks before current authority tests, including initial
+non-admin targets. Capability validation/automatic-role filtering/refusal policy remain.
+
+Initial corrected three real races3 / 63 / 0 (seed63849); initial neighbors92 / 728 / 0
+(seed503); two-line lock-scope refinement92 / 728 / 0 (seed17516). Integrate mainf5fc283,
+expanded neighbors123 / 968 / 0 (seed15636), browser1 / 22 / 0 (seed34244); new explicit
+three-independent-PG-connections assertion requires final focus recorded next. Both
+1400/390 refusal images inspected, readable/no overflow; local National-provenance
+mismatch linked separately #115. No old assertions dropped or fault remains.
+
+Passkey PR #113 actual-main CI38113727296 passes all four jobs on283911d, PG17.11
+1285 / 11464 then67 / 1219. #104 was auto-closed at merge because GitHub parsed the
+conditional PR close instruction; actual-main verification followed and completion comment
+6105726560 records that timing truthfully. Pending PR wording corrected to prevent that
+premature automation. #104 bounded criteria now verified; no policy/runtime auth change.
+
+Empty-roster PR #114 candidatebf1453a passes local ordinary1286 / 11508 (seed39891,
+105.47s), then serial system68 / 1237 (seed41065,172.75s), lint503/security clean.
+Exact CI38113975510 all four jobs passes matching PG17.11 counts. Merged asf5fc2832a605de861c15f2031021594903e0e7e1,
+exact candidate tree; actual-main CI38114329402 remains pending and #111 stays open.
+No application roster change, deployment or production operation.
+
+
+Final #112 integrated focus123 / 971 / 0 (seed4316,10.45s); refined browser1 / 22 / 0
+(seed34244,4.68s); four changed Ruby files lint clean/full intended diff reviewed. Explicit
+actual observer/request backend IDs are distinct; no predicate stubs or experimental faults.
+Final committed qualifying suites/security/candidate and main CI remain pending.
+Empty-roster actual-main CI38114329402 now passes all four jobs onf5fc283, matching
+PG17.11 ordinary1286 / 11508 then68 / 1237. #111 completed only after that verification;
+no application roster edit or production action. Broader #84 remains open.

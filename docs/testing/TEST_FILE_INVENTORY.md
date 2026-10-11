@@ -1,10 +1,11 @@
 # Test-file review inventory
 
-Baseline: `5adda175d67e9603f58fdf8574ad6f7a0313d6b9`. Every entry is located, not yet reviewed.
+Baseline: `5adda175d67e9603f58fdf8574ad6f7a0313d6b9`. The inventory began with located entries; each row now records its bounded review status.
 Runner execution and assertion/fault review are separate evidence. No file is declared redundant.
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/integration/last_administrator_concurrency_test.rb` | integration | Enabled settings administration / #112 | P0 | Three real independent PG/request overlap cases, original zero-admin stored failure, shared locking repair and truthful refusal/later access; no predicate mocks |
 | `test/models/endeavor_history_database_guards_test.rb` | models | Immutable history / #88, #95 | P0 | Six real SQL guards: update/delete, active identity/nil token, every terminal state, legitimate progress; original token failures and edition fault detected/restored |
 | `test/integration/api_guidance_authority_test.rb` | integration | Handbook / actual authority / #81 | P0 | Seven independent duties, both formats, actual reads/drafting/official acts and denial preservation; advertisement fault detected/restored |
 | `test/integration/officer_turnover_authority_test.rb` | integration | Current offices / #78, #92 | P0 | Real role/action/expiry matrices and human later approval; original cached content failure and restored expiry-content fault |
@@ -38,7 +39,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/minutes_draft_runs_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/minutes_editor_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/permission_grants_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All five exact saved grant replacement/filter/last-admin/automatic-role variants reviewed/retained; concurrent last-admin safety not proven; see #107 |
+| `test/controllers/admin/permission_grants_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All five serial grant/filter/last-admin/automatic-role cases retained; new real overlapping grant/manual/roster refusal and later-access proof in #112 |
 | `test/controllers/admin/position_assignments_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All eight cases reviewed/retained: saved dates, foreign nested person, malformed date preservation and active configured-title boundary; see #107 source review |
 | `test/controllers/admin/position_titles_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Full source reviewed/retained; new foreign update saved authority/assignment graph catches original mutation; later configured title save and native browser recovery under #107 |
 | `test/controllers/admin/roster_imports_controller_test.rb` | controllers | Member / navigation / roster | P1 | All thirty prior upload/history/confirmation/refusal/privacy/discard variants retained; actual empty attachment saved failure and later valid identity-preserving upload; #111 |
@@ -124,7 +125,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/position_title_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three reorder cases reviewed/retained: saved 1-based order, foreign unchanged orders and duplicate refusal; see #107 |
 | `test/models/roster_import_test.rb` | models | Member / navigation / roster | P1 | All seven latest-successful/history/staleness/old-summary/deceased/attachment contracts reviewed and retained; exact cutoff not separately frozen; #111 |
 | `test/models/session_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three actual session destruction/official lineage/confirmation detachment cases reviewed and retained; #104 |
-| `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | Reviewed: distinct manual/position/roster and last-administrator invariants retained; full suite preserves coverage |
+| `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | All thirty identity/email/manual/position/roster/last-admin cases reviewed and retained; real overlapping mutation proof separately #112, explicit email metadata gap #108 |
 | `test/models/website_access_token_test.rb` | models | Publication / #60–#62, #81 | P0 | Three digest/refusal/throttle, fixed Post authority and overlapping replacement contracts reviewed/retained; distinct from personal delegation |
 | `test/models/website_calendar_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/website_publication_concurrency_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
@@ -151,6 +152,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/openai_sdk_contract_test.rb` | services | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
 | `test/services/roster_imports/csv_parser_test.rb` | services | Member / navigation / roster | P1 | All seven literal fixture/BOM/missing-duplicate-ID/fatal malformed-header contracts retained; empty/BOM-only added to original header case; bypass fault detected/restored; #111 |
 | `test/services/roster_imports/importer_test.rb` | services | Member / navigation / roster | P1 | All thirty identity/account/rollback/status/login-email/last-admin/large-removal/summary privacy variants reviewed and retained; no concurrent supersession proof; #111 |
+| `test/system/administrator_permissions_test.rb` | system | Last-administrator refusal / #112 | P0 | Real sole-admin form refusal/unchanged graph at1400/390 then permitted successor handoff, old denied and new permitted navigation; no browser concurrency claim |
 | `test/system/account_menu_test.rb` | system | Member / navigation / sign-out | P0 | Full source reviewed/retained: actual keyboard/open/close/phone paths and sign-out plus later Profile denial, pending-session nullification and completed record preservation |
 | `test/system/agenda_item_catalog_entries_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |

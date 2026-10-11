@@ -278,3 +278,23 @@ completed layouts inspected; global header-problem heading is recorded as an exi
 incidental wording limit. Full source/assertion contracts, fault hash, commands and
 execution boundaries are in [empty-roster review](EMPTY_ROSTER_INPUT.md). No consolidation,
 National source copy, broad rescue or concurrency claim.
+
+
+## Overlapping last-administrator changes (#112)
+
+`overlapping administrator grant removals preserve one enabled administrator` uses real
+independent signed-in HTML sessions/connections and PostgreSQL row locks/wait state to
+schedule the actual write window. Original source leaves zero stored eligible admins and
+fails before response checks. Shared User transaction/ordered target+admin locks preserve
+one settings administrator; saved person/account/session identity and unrelated grants
+remain, one truthful refusal and one permitted message render, and later admin reads
+match saved authority. Separate manual-disable and roster-control overlap cases protect
+mixed existing routes. Observer SQL is uncached and all waits/queries are bounded;
+initial cached-observer harness timeout is recorded separately from the real defect.
+
+All five serial grant/filter/automatic-role tests and thirty User component cases remain.
+New browser `last administrator refusal preserves permissions and later permitted handoff
+works` exercises actual controls, unchanged refused graph at1400/390 and successor handoff
+with later old/new authority navigation. It does not establish browser concurrency.
+See [design and evidence](LAST_ADMINISTRATOR_CONCURRENCY.md). Local-panel National
+provenance mismatch is separately #115; explicit Post-date policy remains #93.
