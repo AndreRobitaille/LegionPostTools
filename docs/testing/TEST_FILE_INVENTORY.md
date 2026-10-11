@@ -120,6 +120,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/meeting_type_agenda_section_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_type_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/minutes_draft_run_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/official_action_confirmation_test.rb` | models | Official confirmation / #131 | P0 | New seven lifetime/provenance/before-after expiry/live identity/session/reuse/persisted-phase rollback/recovery contracts; expiry fault detected and exact model restored; existing components retained |
 | `test/models/organization_test.rb` | models | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/models/permission_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Both explicit granted/missing capability and complete unique grouping reviewed/retained; grouping is not independent privilege policy; see #107 |
 | `test/models/person_test.rb` | models | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
