@@ -1,6 +1,8 @@
 require "test_helper"
+require_relative "../../support/minutes_enqueue_support"
 
 class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
+  include MinutesEnqueueSupport
   include ActiveJob::TestHelper
 
   setup do
@@ -357,6 +359,30 @@ class Admin::MinutesDraftRunsControllerTest < ActionDispatch::IntegrationTest
 
     get admin_meeting_minutes_draft_run_path(@meeting, run)
     assert_redirected_to root_path
+  end
+
+  test "rejected enqueue records a failed initial run and permits a later actual retry" do
+    sign_in_as(@manager)
+    original = saved_minutes_source_graph(@minutes, @transcript)
+    assert_difference "MinutesDraftRun.count", 1 do
+      with_rejected_minutes_enqueue { post admin_meeting_minutes_draft_runs_path(@meeting) }
+    end
+    failed = @minutes.draft_runs.recent.first
+    assert_rejected_minutes_run(failed, requester: @manager, transcript: @transcript)
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_redirected_to admin_meeting_minutes_draft_run_path(@meeting, failed)
+    assert_match(/worker could not be started.*manual minutes workspace is unchanged/, flash[:alert])
+    follow_redirect!
+    assert_select ".ai-draft-failure", text: /worker.*could not be started/i
+    stored_failure = failed.reload.attributes
+
+    assert_enqueued_with(job: MinutesDraftGenerationJob) { post retry_admin_job_path(failed) }
+    retry_run = @minutes.draft_runs.recent.first
+    assert_equal failed.id, retry_run.retry_of_id
+    assert_equal "pending", retry_run.status
+    assert_equal stored_failure, failed.reload.attributes
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_redirected_to admin_meeting_minutes_draft_run_path(@meeting, retry_run)
   end
 
   private

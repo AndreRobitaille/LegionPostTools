@@ -875,3 +875,26 @@ Clipboard PR#127 exact candidate7930c76/all-four CI38120823673 passes PG17.11
 ordinary1292/11778 then72/1518. Normal merge2b9bf51 has identical tree; actual-main
 CI38121399155 remains pending. Integrate it here without changing any original
 source-input assertions. Qualify this final committed Unicode candidate serially.
+
+
+## Durable initial/retry queue rejection (#128)
+
+After fixing the new graph helper's nonexistent outcomes association, all four original
+HTML/API request paths error on false.successfully_enqueued?:4/0/4 seed57679. Temporary
+rethrowing diagnostic4/0/4 seed7811 inspects actual new pending/nil-category/no-completion
+rows, zero suggestions and unchanged source/minutes/prior attempts; exact support restored.
+Three existing job && guards now use the established failed-run helpers. Proper nil
+assertion corrects Minitest-only fixture failure; full request/job focus39/453 seed8253
+passes, lint8 clean. Real existing disclosure plus new recovery/authority-loss browser
+2/72 seed53472 pass. Four1400/390 failure/queued captures inspected; failure body16px,
+no overflow. #130 records smaller queued status/support/body type, keeping typography
+separate. Whole9 original draft API cases source-reviewed and retained with exact pins.
+Final committed serial suites/security/main integration/exact and actual-main CI pending.
+No production, paid provider call, source deletion or official-record application.
+
+Clipboard actual-main2b9bf51/all-four CI38121399155 passes1292/11778 then72/1518.
+#121/#105 closed with restored clipboard/native navigation evidence. Unicode PR#129
+exact candidatef4cc577/all-four CI38121785815 passes1293/11869 then73/1544, merged
+as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate that
+source repair here, preserve both histories and all original tests; qualify final
+committed queue-recovery revision serially. No production operation.

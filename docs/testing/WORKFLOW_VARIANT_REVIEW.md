@@ -404,3 +404,16 @@ Real uploaded-file browser variant reads accented source at1400/390, then loses 
 authority while own Profile works and source/minutes stay intact. Both existing privacy
 and new upload journeys pass2/167; no claim about automatic purge/provider completion.
 See [design and exact evidence](TRANSCRIPT_SOURCE_INPUT_REVIEW.md). No test removal.
+
+## Rejected initial minutes enqueue and recovery (#128)
+
+Actual Active Job before_enqueue abort reaches all four routed create/retry paths.
+Original false-result method errors leave pending runs/nil failure metadata while source,
+manual minutes and earlier run rows remain intact. Three existing guard corrections
+record durable failed queue_error/completion without a broad rescue. Four new request
+variants read saved identity/link/graph before response, then restore actual enqueue and
+retain both failures. Real browser checks existing failure/manual escape, rejected retry,
+restored queued state, grant-loss status/protected denial and later own Profile. Whole9
+original draft API cases are retained/indexed with distinct direct state/single-attendance
+limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
+and actual provider acceptance are separate. No test deletion, app authority or policy change.
