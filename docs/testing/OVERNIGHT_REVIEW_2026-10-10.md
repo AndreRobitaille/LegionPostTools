@@ -18,7 +18,7 @@ No development database setup/reset, member-data copy, production operation or p
 GitHub inspection: only CI and Dependabot workflows active; CI runs scans, lint, ordinary
 and then system tests, with no deploy step. No repository webhooks or rulesets, main
 branch protection endpoint reports unprotected. Local hooks have no deploy action.
-Push/merge does not invoke repository deployment. Recheck before first push/merge.
+Push/merge does not invoke repository deployment. Workflow content and empty hooks were rechecked before each authorized push/merge.
 
 ## Baseline
 
@@ -35,12 +35,12 @@ Push/merge does not invoke repository deployment. Recheck before first push/merg
 | --- | --- | --- |
 | #77 | Member Meeting and immutable document reads, personal token parity and handbook | Complete: PR #91 merged; candidate and actual-main CI passed |
 | #78 | Independent Commander/Adjutant duties through assignment transitions | PR #94 current-role/action/refusal proof and candidate/main CI passed; open pending material date-boundary decision #93 |
-| #79 | 30-day recovery after final approval; source removal and retained record/audit | Draft PR #98 records retention/storage/provenance design; awaiting start-of-recovery choice; no purge runtime implemented |
+| #79 | Promised 30-day recovery; source removal and retained record/audit | Draft PR #98 records the unresolved correction-clock/storage/provenance design and actual ordinary-approval missing-deletion reproduction; no purge runtime implemented |
 | #80 | Final occurrence context protected independently from agenda state | Complete: PR #90 merged; candidate and actual-main CI passed |
 | #81 | Current handbook, delegated official acts and Post website credential boundaries | Complete: PR #97 merged; independent handbook/actions and candidate/actual-main CI passed |
 | #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
 | #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
-| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: bounded source/assertion/fault reviews merged; many remaining variants/files and linked findings remain |
+| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: all current files have bounded review entries; independent cleanup is verified and source review/handoff published in PR #136; policy-dependent #78/#79 lifecycle/authority concerns remain explicit |
 
 The initial inventory alone completes no acceptance criterion. No test removed,
 consolidated or weakened. Discovery documentation committed as `002f41e`; subsequent
@@ -900,6 +900,39 @@ ordinary1292/11778 then72/1518. Normal merge2b9bf51 has identical tree; actual-m
 CI38121399155 remains pending. Integrate it here without changing any original
 source-input assertions. Qualify this final committed Unicode candidate serially.
 
+## Thirteen-file minutes source/assertion review
+
+Whole13 files/88 exact pinned cases at5c54e39 retain snapshot/digest, editor,
+correction, individual AI review/attendance, manual ledger/retry, source numbering/
+prompt, worker chain and distinct real approval/disclosure browser contracts. Reviewed
+assertions and concrete limits are documented; no code/test edit, new fault or deletion.
+Actual-main5c54e39/all-four CI38120256442 executes unchanged ordinary1292/11778 then
+system72/1506 on PG17.11, separate from blanket defect detection. #128 records the
+locked Active Job false-result discrepancy in initial HTML/API enqueue before routed
+reproduction/smallest repair. Remaining API/Generate/confirmation variants are still
+scoped, #93/#79 remain unresolved. Inventory Deferred rows stay open with priorities.
+
+The whole API minutes10 file is now separately indexed/reviewed: actual bearer source
+privacy, structured mutations, exact official provenance/replay and grant-loss graph
+remain distinct from cookie requests/fake PDF/manually attested fixtures. #131 retains
+existing detached Session refusal and records missing direct ten-minute/atomic consumption
+proof before component edits; no demonstrated app defect or consolidation is claimed.
+
+Clipboard PR#127 actual-main2b9bf51/all-four CI38121399155 passes1292/11778
+then72/1518; #121/#105 closed. Unicode PR#129 exactf4cc577/CI38121785815 and
+actual-main e53238f/CI38122104236 both pass1293/11869 then73/1544; #124 closed.
+This source-only review integrates actual-main e53238f, preserves all evidence histories
+and every existing assertion. Queue#128, queued readability#130 and direct official
+confirmation#131 are independently tracked; #78/#93 and #79 decisions remain open.
+
+Whole Generate30 source/assertion review extends the minutes slice to14 files and
+118 exact pinned cases. All helpers/fixtures and synchronous/background paths were
+read: citation/identity/rationale validation, human review/removal, provider provenance,
+safe actual SDK failure, submit-once/same-ID polling, deadlines/cancellation, source
+changes and terminal redelivery. Preserve every distinct component; no consolidation,
+new execution or new regression demonstration belongs to this source-only increment.
+Offline fake-provider evidence and application-relative timeouts are stated explicitly.
+
 Invitation integration retains both evidence sections and all distinct browser rows.
 Calendar main42a3154 CI38117583145 and roster main15ce51b CI38118516754 pass all four
 jobs; the latter PG17.11 ordinary1290/11644 then71/1365. Bounded #108/#109 completed,
@@ -933,6 +966,115 @@ exact candidatef4cc577/all-four CI38121785815 passes1293/11869 then73/1544, merg
 as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate that
 source repair here, preserve both histories and all original tests; qualify final
 committed queue-recovery revision serially. No production operation.
+
+Queue PR#132 exact1161fff/CI38122622338 and actual-main b965cf7/CI38122975568
+both pass all four jobs: PG17.11 ordinary1297/11980 then system74/1598 with zero
+failures/errors/skips. Merge has identical tree; #128 closed with full saved-state,
+restored fault/request/browser and later recovery evidence. This source-only branch
+integrates that verified main, retains every original assertion and both review histories.
+Queued type#130 and confirmation#131 remain separate; #78/#93 and #79 stay open.
+
+The two remaining minutes-to-Endeavor files add15 cases, bringing the pinned whole
+source review to16 files/133 cases. Read all actual manual creation/linking, dual-grant
+and recoverable/refusal/stale/locked/foreign contracts, immutable proposed payload and
+human result provenance, plus the three real browser keyboard/source-evidence/edit/
+existing-link/dismissal journeys. Governing MINUTES_ENDEAVOR_CONFIRMATION.md supplies
+expected behavior. Artificial locked status and offline provider are stated limits;
+no new execution, blanket fault proof, deletion or consolidation belongs to this increment.
+
+## Agenda catalog source review
+
+Four whole files/47 pinned cases now retain validation/provenance/slug/order/move/
+soft-removal, actual request form/grant/recovery, American Legion baseline/local-edit/
+semantic-list/retirement behavior and real browser drag/arrow/modal/focus detectors.
+[Source review and exact case index](AGENDA_CATALOG_SOURCE_REVIEW.md) separates
+coupled seed transport, fixed independent expectations, limited graph assertions and
+unchanged actual-main b965cf76 CI execution. No code/test change or consolidation.
+
+Four further meeting/body/template models add25 exact cases: fixed location fallback,
+type provenance/uniqueness/unused deletion/order, default/normalized/nonempty sections
+and rich wording/private controls/source scope/local-edit item copies. The catalog index
+now has8 files/72 cases; together with minutes16/133 this source-only slice records
+24 files/205 exact cases. Protected linked-type and full historical/PDF/authority
+proof remain distinct; no model-only name is promoted to whole workflow evidence.
+
+Whole template seeder19 adds independent exact American Legion membership/PEC titles,
+meeting-shaped sections/counts, local rich overrides/active/order continuity, referenced
+placeholder dated title/section preservation, repeat/default/second-Post and reset cases.
+The catalog/template index is9 files/91 cases; combined minutes source25 files/224
+cases. Custom-row survival is separate from all custom-field preservation, and dated
+title/section proof is separate from every historical body. No test or app changes.
+
+One whole independent bearer idempotency concurrency case adds actual two request
+sessions/gated starts/identical201 bodies, exactly one saved Endeavor and receipt,
+with nontransactional visibility/synthetic cleanup. Its exact b965cf76 source link and
+held-lock/backend/authority limitations are in the variant matrix. Combined source
+review now26 files/225 cases; no test removal, new fault or runtime claim belongs here.
+
+## Further whole PDF component source review (#84)
+
+Read all seven PDF service/source/resource-system files and forty exact cases at
+b965cf76, including fixtures/helpers/assertions. Retain separate signature/filename,
+content/filter/private-member revision, CSP and real native rendering detectors;
+record source-only and transport/parsed-content/folio/authority limits. Exact case/blob
+pins in [PDF_COMPONENT_SOURCE_CASES.md](PDF_COMPONENT_SOURCE_CASES.md), analysis in
+[PDF_COMPONENT_SOURCE_REVIEW.md](PDF_COMPONENT_SOURCE_REVIEW.md). No tests/app changed,
+new run or universal fault proof. This unmerged source branch now reviews33 complete
+files /265 indexed cases across its slices;36 literal Deferred inventory rows remain,
+alongside still-scoped files. #84 remains open; no safe consolidation is demonstrated.
+
+Six further whole template/dated-agenda component files /39 cases were read at b965cf76,
+including every fixture/helper/assertion. Exact pins and starting/action/saved-visible-
+subsequent limits in [DATED_AGENDA_COMPONENT_SOURCE_REVIEW.md](DATED_AGENDA_COMPONENT_SOURCE_REVIEW.md)
+and its case index. Keep historical rich snapshots, distinct template removal/errors,
+approved section/roll-call controls, exact legacy-wording refusal and reversible timezone
+representation tests. No source-only app/test changes, new execution or safe removal.
+The unmerged source branch now reviews39 complete files /304 exact cases;30 literal
+Deferred inventory rows and still-scoped work remain. #84 stays open.
+
+Read four more complete dated-agenda request/model files /40 cases and all fixtures,
+helpers and assertions. The dated-agenda source slice now10files/79 exact pinned cases,
+with rich snapshot/real transition/member-document outcomes and concrete limits.
+Combined unmerged whole source review43files/344cases;26 literal Deferred rows remain
+plus still-scoped files. Preserve every test and separate located/runtime/fault evidence;
+linked-minutes deletion refusal remains #83's independent contract. No production work.
+
+Whole publication component source review reads five files /26 exact cases plus shared
+fictional portrait/story fixture support at b965cf76. Record consumer conditional
+content, exact consent/snapshot/restriction/tombstone, actual held-PG-lock both commit
+orders and real browser controls with explicit legacy/active-policy and metadata/authority
+limits. All assertions remain; no app/test change or new run. Case/source analysis in
+[PUBLICATION_COMPONENT_SOURCE_REVIEW.md](PUBLICATION_COMPONENT_SOURCE_REVIEW.md).
+Combined unmerged whole source review48files/370cases;21 literal Deferred rows remain,
+plus still-scoped files. #84 stays open. No production publishing, real consent or paid AI.
+
+Whole installation/access/offline adapter review reads eight files /39 exact cases,
+all fixtures/helpers/assertions at b965cf76. Retain real partial setup/recovery, fixed
+Legion preset/technical hub scope, upload-CSRF refusal, print identity and fake mail/
+provider versus real offline SDK serialization detectors. Exact case/blob and limits in
+[INSTALLATION_ADAPTER_SOURCE_REVIEW.md](INSTALLATION_ADAPTER_SOURCE_REVIEW.md).
+No app/test edits/new run/safe deletion. Combined unmerged source review56files/409cases;
+13 literal Deferred rows remain plus still-scoped work. #84 stays open; no paid/live
+provider acceptance, production or real member-data copy claim.
+
+Read six whole continuing-work files /37 exact cases and every fixture/helper/assertion
+at b965cf76; keep task optional-date/actor, append-only human update, fixed priority,
+actual attested member continuity and exact related-source units distinct. Case/blob
+pins and bounded fixture/error/provenance limits in
+[ENDEAVOR_COMPONENT_SOURCE_REVIEW.md](ENDEAVOR_COMPONENT_SOURCE_REVIEW.md).
+No app/test changes/new execution or safe deletion. Combined unmerged source review
+62files/446cases;7 literal Deferred rows remain, all calendar, plus still-scoped files.
+#84 stays open; no production, real member-data copy or paid AI.
+
+Whole calendar source review reads seven complete files /52 exact cases, fixtures and
+helpers at b965cf76. Retain actual event/refusal/delete/filter/keyboard contracts and
+real server/native PDF delivery with independent page geometry and continuation bounds;
+source cases and concrete limits in [CALENDAR_COMPONENT_SOURCE_REVIEW.md](CALENDAR_COMPONENT_SOURCE_REVIEW.md).
+Potential print-emulation failure cleanup remains a reproduction candidate, not a proven
+product bug. All tests retained; no source-only execution/cleanup claim. This unmerged
+branch now reviews69 complete files /498 exact cases across its slices. All179 inventory
+rows have bounded review entries and no literal Deferred rows remain, but still-scoped
+files and required review work remain. #84 stays open; no production or paid AI.
 
 ## Direct official confirmation contracts (#131)
 
@@ -991,6 +1133,32 @@ candidate now includes six font values and actual no-JavaScript restoration, so 
 serial full ordinary/system suites, applicable lint/security and new exact-SHA CI. Earlier
 failed CI38123404349 stays recorded; no blind retry, skip or production operation.
 
+Seven additional complete Meeting/member/template-management files /66 exact cases
+were read at verified actual main95a38a3. Exact pins and saved/visible/subsequent limits
+in [MEETING_OCCURRENCE_SOURCE_REVIEW.md](MEETING_OCCURRENCE_SOURCE_REVIEW.md). Keep real
+attestation/correction/member rich paper, private API echoes, guided occurrence and
+native template controls distinct from partial graph/fake renderer/direct confirmation
+fixtures. All assertions remain, no source-only runtime/safe deletion claim. Combined
+source-only slices now76 complete files /564 indexed cases; still-scoped files and
+linked gaps remain. #84 stays open; no production or paid AI.
+
+Five further whole dated-agenda workspace/member-document files /61 cases read at95a38a3
+retain exact local discussion/roll-call/form/transition semantics, actual protected
+deletion, native Turbo and parsed member HTML/bearer PDF content. Exact pins and limits
+in [DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md](DATED_AGENDA_WORKSPACE_SOURCE_REVIEW.md).
+Vacuous-selector/direct fixture/partial graph/prefix-only PDF limits remain explicit;
+no app/test edit or safe consolidation. Combined source slices81files/625cases; four
+large API components still have scoped review. #84 stays open; no production or paid AI.
+
+Four remaining previously scoped API files /82 exact cases were completely read at95a38a3,
+including fixtures/helpers/assertions. Exact pins and per-component saved/subsequent
+limits in [DELEGATED_COMPONENT_SOURCE_REVIEW.md](DELEGATED_COMPONENT_SOURCE_REVIEW.md).
+Retain finite receipts/current authority, structured local history, calendar dates and
+actual editorial audit/consumer bytes. #139 scopes the misleading eight-action retry
+name and retained detector; no source-only runtime or safe deletion claim. Combined
+source-only slices85files/707cases; all179 current inventory rows have bounded reviewed
+entries. New prepared runtime work and unresolved #79/#93 still remain; #84 stays open.
+
 ## Calendar failure cleanup and accurate original retry scope (#137/#139)
 
 At main95a38a3, real print emulation survives a deliberately failed CalendarRefinements
@@ -1004,3 +1172,44 @@ narrow append-update fault reaches the preserved1-vs2 saved-update detector1/9/1
 Exact restoration, clean API neighbors82/739, seed7508, focused lint2 and diff pass.
 Detailed design/results in [CALENDAR_PRINT_STATE_CLEANUP.md](CALENDAR_PRINT_STATE_CLEANUP.md).
 Full final suites/CI still required; no product/permission change, skip or production.
+
+## Final independent cleanup qualification and decision handoff
+
+Progress/PDF PRs#133/#135 and official confirmation PR#138 pass exact and actual-main
+CI; main99371bde/38127549131 ordinary1304/12143 then74/1674, no failures/errors/skips.
+Calendar cleanup PR#140 candidateef441b4/38128202244 and identical main31e7d7e/
+38128481702 pass all four jobs and1304/12143 then74/1674. #137/#139 closed only after
+actual-main proof. Invitation PR#141 candidate2b3f923/38128519771 and identical main
+b1ead665/38128842532 pass all four jobs and1304/12160 then75/1707; #117 closed.
+
+Local provenance PR#142 candidate31ca5ec/38128908321 and identical main d14f6c3c/
+38129287632 pass all four jobs and1307/12215 then76/1789, no failures/errors/skips.
+Final committed local ordinary seed25207,96.18s, then system seed24606,184.64s, same
+totals and zero failures/errors/skips. RuboCop513 clean, Brakeman0/0, advisory1263 at
+a6847b0651a702488f5844081e848dd1ec9dbf1d and importmap audits clear. Actual first
+setup/local control/imported source/denial/later Profile journey and six inspected
+desktop-phone captures remain the behavior evidence. #115 closed after actual-main CI.
+
+The retention choice does not block ordinary final-approval reproduction. Draft PR#98
+now contains four real synthetic source-kind/policy cases and existing model actions:
+nonempty draft, Commander handoff, Adjutant attestation and actual later-Meeting approval.
+Source/official/metadata checks pass before29 days and retained official graphs pass
+after31 days. Both delete choices still expose source; upload attachment and Disk object
+remain. Both retain controls pass; no job is enqueued/performed. Original4/76/2 failures
+seed23017,1.33s; integrated repeat seed60529,1.28s agrees. No application fault injected.
+Test-owned physical-file cleanup after observation is not application deletion.
+
+Exact draft cfd1f52/CI38129393451 runs1311/12291 with only those2 expected failures,
+0 errors/skips; three lint/security jobs pass, system step not run after ordinary failure.
+Keep draft failing/unmerged. It diagnoses the existing approval/enqueued path, not an
+absent recurrence or production scheduler. Real future scheduled service, pending
+correction clock, delayed/repeated execution and storage-failure recovery remain #79.
+
+Current code-main inventory182 unique rows matches181 discovered *_test.rb files plus
+one separate explicit runner; no existing file is omitted. The source-only remaining
+slices are85 complete files/707 exact cases, validated against pinned declarations.
+Source reading is not a per-case mutation or production proof. Retain all tests; no
+removal/consolidation is justified. #78/#93 officer-date choice and #79 recovery-clock
+choice/actual lifecycle remain open; #84 coordinates those concerns rather than being
+closed by inventory. [Concise handoff](OVERNIGHT_HANDOFF_2026-10-11.md). No production,
+real member-data copy, paid AI or unsolicited member communication.
