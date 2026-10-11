@@ -531,3 +531,13 @@ serialization. [Exact names/lines/blobs](INSTALLATION_ADAPTER_SOURCE_CASES.md) a
 validation, status/count-only portions, direct session fixtures and external acceptance.
 No tests/app changed or safe consolidation demonstrated. Source review never proves
 live delivery/paid AI or substitutes for #115/#79/#93 follow-up evidence/decisions.
+
+## Whole continuing Post work source slice (#84)
+
+Six complete files /37 cases at b965cf76 retain optional task dates/completion/reopen,
+append-only human updates, current/historical member continuity and exact related
+immutable passage/outcome reads. [Exact names/lines/blobs](ENDEAVOR_COMPONENT_SOURCE_CASES.md),
+[located action/outcome and limits](ENDEAVOR_COMPONENT_SOURCE_REVIEW.md) separate real
+handoff/attestation and saved rows from unsaved validation, status-only stale errors,
+manifest/config fixture coupling and fake history editions. No app/test edit or safe
+consolidation; existing #88/#95 source/SQL/provider fault proof remains independent.
