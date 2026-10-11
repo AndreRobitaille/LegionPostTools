@@ -520,3 +520,14 @@ commit orders. [Exact case/blob pins](PUBLICATION_COMPONENT_SOURCE_CASES.md),
 inactive legacy editorial state from automatic activation, status-only/exception-only
 parts, direct session/token fixtures and unverified live publishing. All retained;
 source reading and recorded CI remain separate from representative defect evidence.
+
+## Whole installation/access/offline adapter source slice (#84)
+
+Eight complete files /39 cases at b965cf76 retain real initial/partial/recovery setup,
+explicit Legion preset/technical scope, officer hub visibility/roster age labels,
+valid-CSRF direct-upload denial, print identity and offline mail/provider/real SDK
+serialization. [Exact names/lines/blobs](INSTALLATION_ADAPTER_SOURCE_CASES.md) and
+[located outcomes and limits](INSTALLATION_ADAPTER_SOURCE_REVIEW.md) separate unsaved
+validation, status/count-only portions, direct session fixtures and external acceptance.
+No tests/app changed or safe consolidation demonstrated. Source review never proves
+live delivery/paid AI or substitutes for #115/#79/#93 follow-up evidence/decisions.

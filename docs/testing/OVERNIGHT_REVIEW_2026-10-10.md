@@ -1011,3 +1011,12 @@ limits. All assertions remain; no app/test change or new run. Case/source analys
 [PUBLICATION_COMPONENT_SOURCE_REVIEW.md](PUBLICATION_COMPONENT_SOURCE_REVIEW.md).
 Combined unmerged whole source review48files/370cases;21 literal Deferred rows remain,
 plus still-scoped files. #84 stays open. No production publishing, real consent or paid AI.
+
+Whole installation/access/offline adapter review reads eight files /39 exact cases,
+all fixtures/helpers/assertions at b965cf76. Retain real partial setup/recovery, fixed
+Legion preset/technical hub scope, upload-CSRF refusal, print identity and fake mail/
+provider versus real offline SDK serialization detectors. Exact case/blob and limits in
+[INSTALLATION_ADAPTER_SOURCE_REVIEW.md](INSTALLATION_ADAPTER_SOURCE_REVIEW.md).
+No app/test edits/new run/safe deletion. Combined unmerged source review56files/409cases;
+13 literal Deferred rows remain plus still-scoped work. #84 stays open; no paid/live
+provider acceptance, production or real member-data copy claim.
