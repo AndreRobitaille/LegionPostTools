@@ -23,7 +23,13 @@ class UserTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Jane", last_name: "Doe", roster_email_address: "roster@example.com")
     user = User.create!(person: person, email_address: "login@example.com", email_verified_at: Time.current)
 
-    user.keep_current_login_email!
+    freeze_time do
+      user.keep_current_login_email!
+      assert_equal "roster@example.com", user.reload.roster_email_reviewed_address
+      assert_equal "keep_current", user.roster_email_review_decision
+      assert_equal Time.current, user.roster_email_reviewed_at
+      assert_equal "login@example.com", user.email_address
+    end
 
     assert user.roster_email_mismatch?
     assert_not user.needs_roster_email_review?
@@ -33,7 +39,13 @@ class UserTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Jane", last_name: "Doe", roster_email_address: "roster@example.com")
     user = User.create!(person: person, email_address: "login@example.com", email_verified_at: Time.current)
 
-    user.remind_later_about_roster_email!
+    freeze_time do
+      user.remind_later_about_roster_email!
+      assert_equal "roster@example.com", user.reload.roster_email_reviewed_address
+      assert_equal "remind_later", user.roster_email_review_decision
+      assert_equal Time.current, user.roster_email_reviewed_at
+      assert_equal "login@example.com", user.email_address
+    end
 
     assert user.needs_roster_email_review?
   end

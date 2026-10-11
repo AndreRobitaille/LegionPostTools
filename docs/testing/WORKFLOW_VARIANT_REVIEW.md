@@ -219,6 +219,17 @@ five website credential management/identity/foreign-scope/CSRF request scenarios
 three model digest/authority/replacement contracts; their distinct failure modes remain.
 See [review and limits](WEBSITE_TOKEN_BROWSER_RELIABILITY.md).
 
+The later actual-main38116220723 fails with the same inspector symptom in the unchanged
+website-calendar native preview journey. Add its explicit preview-path assertion before
+replacement-DOM queries; retain every old create/listing/attendance/no-agenda/desktop-phone
+assertion. Wrong redirect fails at the path assertion, exact controller restored. Whole
+six request and nine policy cases retain signed activation, current authority, replay/audit,
+tampering/expiration/source changes/cross-Post scope, ETag/privacy, schedule versus approved
+document protection and legacy migration contracts. Focus15/97 and browser1/21 pass.
+CSRF invalid-token and incomplete whole-graph denial limits stay explicit; no clipboard
+claim, safe consolidation or precise Chrome cause is established. See
+[calendar review](WEBSITE_CALENDAR_BROWSER_RELIABILITY.md).
+
 
 ## Configured Post title update (#107)
 
@@ -325,3 +336,23 @@ retain distinct real authentication/keyboard/official-confirmation contracts. Om
 only the dismissal flag fails the retained card-absence assertion; exact controller
 restored. Frozen test clocks avoid legitimate last_seen touches, without app changes.
 See [design and evidence](PASSKEY_INVITATION_REVIEW.md); no safe consolidation established.
+## Roster email identity and offline audience boundaries (#108/#109)
+
+Existing five email-review requests keep every old assertion and now inspect independently
+expected review address/decision/time, actual login, unchanged National person/access/
+nonempty target-and-foreign grants/session graph and later own Profile. Invalid and
+anonymous writes preserve every stored field; a same-alert invalid write fault fails
+saved identity. User keep/remind components retain all prior predicates and add actual
+metadata. New real browser checks invalid form plus update/keep/remind, same-session
+suppression, sign-out/protected denial and fresh-sign-in re-prompt at desktop/390px.
+
+The six sync service cases retain every old result. Superseded input now requires zero
+provider opens/payloads and intact source/requester before failed status; dispatch-before-
+start fault fails that assertion. A separately named two-contact case requires both
+fixed payloads, exact failure identity/counts/timestamps/pacing; break-after-first fault
+fails on missing second payload. Exact service/controller bytes restored. Audience,
+fake HTTP and admin components retain distinct unchanged contracts. New actual offline
+service/browser read navigates source/partial results/preview and loses settings access
+while ordinary Profile remains. No provider opt-out state or Solid Queue dispatch claim.
+Details: [email identity](ROSTER_EMAIL_IDENTITY_REVIEW.md),
+[offline audience](OFFLINE_ROSTER_SYNC_REVIEW.md). No test deletion/consolidation.

@@ -747,3 +747,51 @@ Final frozen-clock focus27/151 seed23307,2.00s then browser1/33 seed17331,4.07s 
 Desktop1400/390 visible/dismissed/fresh screenshots inspected. No app, enrollment or
 session policy change. Main integration/final committed serial suites/security/exact
 candidate/main CI remain required; no safe test removal/consolidation established.
+## Roster identity and offline audience coverage (#108/#109)
+
+Combined scoped coverage-only candidate integrates main55e091f (PR#118). No application
+change proposed. Original stale-client call, later-contact break and same-alert invalid
+identity-write faults each fail1 /1 /1 on independent actual calls/payloads/saved graph;
+service/controller exact bytes restored in finally. Logs and SHA values are in the two
+designs. All old controller/User/audience/client/sync/admin assertions remain; the old
+single-contact rejection test is renamed to describe what it actually proves.
+
+Refined focus54 /260 /0 seed7997,1.71s; real partial-output/email-choice browser2 /105 /0
+seed51884,9.75s. Existing target and foreign grants make preservation non-vacuous.
+Actual screenshots were critiqued at1400/390 for source/refusal/error text and overflow.
+The first browser setup errors and corrected Profile expectation are documented honestly.
+Fresh integrated focused checks, final committed serial suites/security/candidate/main
+CI remain required. Main PR#118 CI is pending at this note; #102 stays open.
+No external provider calls, production, paid AI or real member data.
+## Native calendar browser navigation and retained publication components (#105)
+
+PR #118 candidatea8989831 passed exact CI38115989210, PostgreSQL17.11 ordinary1289/11583
+then browser69/1259. Normal merge produced main55e091f. Actual-main38116220723 passed
+ordinary but browser69/1243 had one Chrome154 inspector error in the unchanged calendar
+journey. No failed-job retry; #102 remains open and further independent code merges held.
+Exact artifact shows expected desktop preview; native form posts to a distinct preview
+path. Add one exact-path assertion after that click, retaining every old assertion. This
+is bounded navigation evidence, not a precise Chrome-cause diagnosis or a changed app flow.
+
+Whole six request/nine policy cases reviewed with explicit privacy/authority/token/ETag/
+official-document distinctions and limitations; focus15/97 seed59451 clean. Browser1/21
+seed54187 clean, desktop/narrow actual screenshots inspected. Wrong redirect fault1/4/
+1 failure seed25561 at new path assertion; finally restores exact controller SHA256
+f91f243e6e6eb0f33f56f6bec8cdb5f783e501b60a7186f57f7102210ea375f5.
+Final committed serial suites/security/exact candidate and actual-main CI remain required.
+No production operations, provider calls, dependency upgrades or exception suppression.
+
+Roster candidate07aa328 passed committed local ordinary1290/11644, seed18337,104.84s,
+then browser71/1364,178.55s, no failures/errors/skips. Full lint507, Brakeman0/0, gem
+and importmap audits passed. Later main55e091f browser CI failed as recorded above;
+no independent merge proceeded. Calendar PR#119 candidate24769f2 passes exact all-four
+CI38117274225, PG17.11 ordinary1289/11583 then69/1260, merged as42a3154 with identical
+tree. Actual-main CI38117583145 is pending. Integrate that merge here, retaining both
+ledger sections; service/controller fault-target hashes still match their exact originals.
+Repeat final committed serial suites and exact candidate/main CI before roster merge.
+
+
+Invitation integration retains both evidence sections and all distinct browser rows.
+Calendar main42a3154 CI38117583145 and roster main15ce51b CI38118516754 pass all four
+jobs; the latter PG17.11 ordinary1290/11644 then71/1365. Bounded #108/#109 completed,
+previous failed55e091f run retained. Final invitation candidate qualification/CI required.
