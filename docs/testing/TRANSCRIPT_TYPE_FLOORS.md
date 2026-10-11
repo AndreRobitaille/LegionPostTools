@@ -49,3 +49,11 @@ journey pass2/159 seed37661,5.70s, no failures/errors/skips. Changed system file
 clean; only ten CSS values change, without selector/layout/palette or retention wording
 changes. Integrate eventual merged privacy/main, then qualify the final committed
 candidate serially and with exact candidate/actual-main CI before normal merge.
+
+
+Integrate privacy normal merge79bf811 (PR#123) after exact candidate4675856 all-four
+CI38119147815, PostgreSQL17.11 ordinary1292/11778 then72/1398. Candidate and merged
+trees are identical; actual-main CI is pending. Final typography diff is only three
+files: ten CSS values, retained journey font expectations and this design/evidence.
+No privacy or roster changes are duplicated in this PR. Qualifying serial suites and
+exact typography candidate/main CI still required; no production operation.
