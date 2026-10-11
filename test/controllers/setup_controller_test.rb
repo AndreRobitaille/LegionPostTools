@@ -48,6 +48,16 @@ class SetupControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, Installation.count
     assert Installation.setup_completed?
     assert_redirected_to root_path
+
+    original_identity = [ user.person.attributes, user.attributes, PermissionGrant.order(:id).map(&:attributes) ]
+    get person_path(user.person)
+    assert_equal original_identity, [ user.person.reload.attributes, user.reload.attributes, PermissionGrant.order(:id).map(&:attributes) ]
+    assert_response :success
+    assert_select ".card-head-prov", text: "Local Post record"
+    assert_includes response.body, "No National roster record is linked to this person."
+    assert_includes response.body, "Sign-in is managed locally."
+    assert_not_includes response.body, "Sign-in follows the National roster."
+    assert_select ".k", text: "Mail deliverable", count: 0
   end
 
   test "rejects invalid setup params" do

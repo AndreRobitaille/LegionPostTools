@@ -735,6 +735,19 @@ suites/security/candidate/main CI remain required. Whole source/assertion scopes
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
 
+
+## Actual local versus National source presentation (#115)
+
+Original first-setup/local-create/unknown-date requests fail4/53/3 seed18974; imported
+history already passes. Roster-panel correction alone leaves the first local login-mode
+failure4/71/1 seed62295. Existing stored provenance now supplies truthful presentation;
+all fields, setup grants, override/access policies and National fields remain. Raise one
+existing account body rule15→16 to meet the visual floor. Corrected focus40/316 and
+real controls/browser1/82 seed59880 pass; six desktop1400/390 captures inspected.
+Fresh neighbors113/604 seed19849 clean; all old assertions stay. Design first, original
+failures establish detection, no residual injected fault. Final main integration and
+committed serial suites/security/exact candidate/main CI pending; no production operation.
+
 ## Independent raw-source privacy contracts (#79/#84)
 
 Retain all old cookie/HTML/provider/structured-generation assertions. Both source retention
