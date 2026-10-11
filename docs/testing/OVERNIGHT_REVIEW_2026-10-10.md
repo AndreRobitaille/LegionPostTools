@@ -1029,3 +1029,13 @@ pins and bounded fixture/error/provenance limits in
 No app/test changes/new execution or safe deletion. Combined unmerged source review
 62files/446cases;7 literal Deferred rows remain, all calendar, plus still-scoped files.
 #84 stays open; no production, real member-data copy or paid AI.
+
+Whole calendar source review reads seven complete files /52 exact cases, fixtures and
+helpers at b965cf76. Retain actual event/refusal/delete/filter/keyboard contracts and
+real server/native PDF delivery with independent page geometry and continuation bounds;
+source cases and concrete limits in [CALENDAR_COMPONENT_SOURCE_REVIEW.md](CALENDAR_COMPONENT_SOURCE_REVIEW.md).
+Potential print-emulation failure cleanup remains a reproduction candidate, not a proven
+product bug. All tests retained; no source-only execution/cleanup claim. This unmerged
+branch now reviews69 complete files /498 exact cases across its slices. All179 inventory
+rows have bounded review entries and no literal Deferred rows remain, but still-scoped
+files and required review work remain. #84 stays open; no production or paid AI.

@@ -541,3 +541,13 @@ immutable passage/outcome reads. [Exact names/lines/blobs](ENDEAVOR_COMPONENT_SO
 handoff/attestation and saved rows from unsaved validation, status-only stale errors,
 manifest/config fixture coupling and fake history editions. No app/test edit or safe
 consolidation; existing #88/#95 source/SQL/provider fault proof remains independent.
+
+## Whole calendar component source slice (#84)
+
+Seven complete files /52 exact cases at b965cf76 retain real manager/member event actions,
+protected/stale/foreign deletion, filters/keyboard/Post-calendar dates, responsive details
+and actual private server/native print delivery. [Exact names/lines/blobs](CALENDAR_COMPONENT_SOURCE_CASES.md),
+[located outcomes and limits](CALENDAR_COMPONENT_SOURCE_REVIEW.md) distinguish fixed parsed
+page geometry and native state restoration from fake PDF wiring, partial refusal graphs,
+optional visual captures and unverified failure-path emulation cleanup. All assertions
+remain; no safe consolidation or blanket fault/runtime proof follows from source reading.
