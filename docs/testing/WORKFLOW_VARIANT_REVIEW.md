@@ -437,6 +437,13 @@ original AI payload/result provenance detectors plus real keyboard/source-eviden
 human editing/linking/dismissal journeys. Governing manual/AI confirmation policy,
 synthetic providers and artificial locked-state limits are recorded in the source review.
 
+Agenda catalog4 files/47 cases source-reviewed: actual requests, model normalization/
+atomic ordering/soft removal, concrete Legion seed/local-edit continuity and browser
+drag/arrow/modal/focus remain distinct. Coupled seed-definition transport is separate
+from fixed counts/wording/order; identity-only removal proof is separate from full
+historical body/PDF preservation. [Review and pins](AGENDA_CATALOG_SOURCE_REVIEW.md).
+All tests remain; no new runtime fault or safe consolidation is claimed.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.

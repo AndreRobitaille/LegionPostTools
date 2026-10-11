@@ -945,3 +945,12 @@ human result provenance, plus the three real browser keyboard/source-evidence/ed
 existing-link/dismissal journeys. Governing MINUTES_ENDEAVOR_CONFIRMATION.md supplies
 expected behavior. Artificial locked status and offline provider are stated limits;
 no new execution, blanket fault proof, deletion or consolidation belongs to this increment.
+
+## Agenda catalog source review
+
+Four whole files/47 pinned cases now retain validation/provenance/slug/order/move/
+soft-removal, actual request form/grant/recovery, American Legion baseline/local-edit/
+semantic-list/retirement behavior and real browser drag/arrow/modal/focus detectors.
+[Source review and exact case index](AGENDA_CATALOG_SOURCE_REVIEW.md) separates
+coupled seed transport, fixed independent expectations, limited graph assertions and
+unchanged actual-main b965cf76 CI execution. No code/test change or consolidation.
