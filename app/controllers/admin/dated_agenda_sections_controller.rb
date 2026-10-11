@@ -49,6 +49,12 @@ module Admin
         @section.destroy!
         redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Agenda section removed."
       end
+    rescue ActiveRecord::DeleteRestrictionError
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda),
+        alert: "This agenda section is used by existing meeting records and cannot be removed."
+    rescue ActiveRecord::RecordNotDestroyed
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda),
+        alert: @section.errors.full_messages.to_sentence.presence || "Could not remove this agenda section."
     end
 
     def reorder

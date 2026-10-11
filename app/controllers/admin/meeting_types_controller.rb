@@ -47,8 +47,11 @@ module Admin
     end
 
     def destroy
-      @meeting_type.destroy
+      @meeting_type.destroy!
       redirect_to admin_meeting_types_path, notice: "Meeting type deleted."
+    rescue ActiveRecord::DeleteRestrictionError, ActiveRecord::RecordNotDestroyed
+      redirect_to admin_meeting_types_path,
+        alert: "This meeting type is used by existing meeting records and cannot be deleted. Deactivate it to stop using it for new agendas."
     end
 
     def reorder
