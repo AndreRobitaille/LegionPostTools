@@ -219,6 +219,17 @@ five website credential management/identity/foreign-scope/CSRF request scenarios
 three model digest/authority/replacement contracts; their distinct failure modes remain.
 See [review and limits](WEBSITE_TOKEN_BROWSER_RELIABILITY.md).
 
+The later actual-main38116220723 fails with the same inspector symptom in the unchanged
+website-calendar native preview journey. Add its explicit preview-path assertion before
+replacement-DOM queries; retain every old create/listing/attendance/no-agenda/desktop-phone
+assertion. Wrong redirect fails at the path assertion, exact controller restored. Whole
+six request and nine policy cases retain signed activation, current authority, replay/audit,
+tampering/expiration/source changes/cross-Post scope, ETag/privacy, schedule versus approved
+document protection and legacy migration contracts. Focus15/97 and browser1/21 pass.
+CSRF invalid-token and incomplete whole-graph denial limits stay explicit; no clipboard
+claim, safe consolidation or precise Chrome cause is established. See
+[calendar review](WEBSITE_CALENDAR_BROWSER_RELIABILITY.md).
+
 
 ## Configured Post title update (#107)
 
@@ -324,3 +335,124 @@ reads both source panels and uses create/disable/enable/manual-grant controls, t
 sign-out/protected refusal and local email sign-in/Profile. Desktop1400/390 critique and
 actual16px body checks preserve the 1919 system. No membership/authority policy change.
 See [design and original failures](LOCAL_ACCOUNT_PROVENANCE.md). No test consolidation.
+
+## Restricted transcript receipts, retry errors and offline provider failure (#79/#84)
+
+Preserve the existing cookie create/explicit-read/seed and blank-input cases. New real
+bearer source/replay for both retention choices checks actual durable receipt attributes
+for fixed raw-source sentinels before status/key absence; duplicate/invalid-policy errors
+preserve source/minutes and retain safe receipts. Explicit authorized reads create no
+receipts; current grant loss refuses both reads and completed replay. Existing HTML
+error case now includes nonblank source with invalid retention: safe error summary,
+no insertion, unchanged minutes and intentionally preserved authorized retry textarea.
+
+Retain all nine offline provider cases; strengthen supplied server/quota/configuration
+error messages with a proven raw-source fixture. New actual-adapter/service path preserves
+minutes/source and stores safe failure category/request ID without echoed source. Real
+browser1/33 follows invalid submission, valid recovery, restricted reader, permission loss,
+Profile and actual sign-out/protected denial at desktop/phone widths. Four controlled
+fault executions catch durable receipt/HTML summary/provider message/failed-run leaks,
+finally restore exact bytes, clean focus54/531 passes. The thirty-day scheduling decision
+and actual deletion remain #79/PR#98; this is independent privacy evidence, not purge
+completion. See [scope and evidence](TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
+
+## Real copied token bytes and permission denial (#121)
+
+Both existing personal/Post-website journeys keep their distinct authority, issuance,
+reveal-once/back and revocation assertions. Shared browser support sets a fixed stale
+synthetic clipboard value, performs the real copy and reads exact actual copied bytes.
+Actual denied-write permission then produces the manual fallback with source focus and
+full exact selection. Stored credential attributes stay unchanged. Omitting only the
+application clipboard write preserves its success label yet fails both byte assertions;
+finally restores exact JS. Browser permissions reset in nested ensure; no stubbed
+clipboard, broad rescue, skip or consolidation. See [design and evidence](TOKEN_CLIPBOARD_REVIEW.md).
+## Roster email identity and offline audience boundaries (#108/#109)
+
+Existing five email-review requests keep every old assertion and now inspect independently
+expected review address/decision/time, actual login, unchanged National person/access/
+nonempty target-and-foreign grants/session graph and later own Profile. Invalid and
+anonymous writes preserve every stored field; a same-alert invalid write fault fails
+saved identity. User keep/remind components retain all prior predicates and add actual
+metadata. New real browser checks invalid form plus update/keep/remind, same-session
+suppression, sign-out/protected denial and fresh-sign-in re-prompt at desktop/390px.
+
+The six sync service cases retain every old result. Superseded input now requires zero
+provider opens/payloads and intact source/requester before failed status; dispatch-before-
+start fault fails that assertion. A separately named two-contact case requires both
+fixed payloads, exact failure identity/counts/timestamps/pacing; break-after-first fault
+fails on missing second payload. Exact service/controller bytes restored. Audience,
+fake HTTP and admin components retain distinct unchanged contracts. New actual offline
+service/browser read navigates source/partial results/preview and loses settings access
+while ordinary Profile remains. No provider opt-out state or Solid Queue dispatch claim.
+Details: [email identity](ROSTER_EMAIL_IDENTITY_REVIEW.md),
+[offline audience](OFFLINE_ROSTER_SYNC_REVIEW.md). No test deletion/consolidation.
+
+
+## Whole-source directory, roster and privileged-confirmation variants
+
+The [directory/roster review](DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md) records separate
+HTML index/detail, private bulk/summary JSON, Person/User representation, own Profile,
+menu destinations, membership report, roster transactions/preview/source and offline
+HTTP/audience/service contracts. The [confirmation review](PRIVILEGED_CONFIRMATION_SOURCE_REVIEW.md)
+retains purpose/session/code, link GET versus consuming POST, changed-text refusal,
+stubbed passkey orchestration, sign-out provenance and independent invitation boundaries.
+[Exact case names and pinned source lines](SOURCE_REVIEW_CASES.md) associate each retained
+case with its reviewed assertions. Actual-main15ce51b all-four CI executes those files;
+that unchanged-suite execution does not demonstrate a representative fault for every
+assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault evidence;
+#115/#117 and #93 decisions remain open. No safe test consolidation was established.
+
+
+## Independent source size and uploaded UTF-8 reading (#124)
+
+All seven original transcript components remain. Old oversized input followed the app
+constant; a raised-limit control leaves it passing. Fixed five-megabyte plus one input
+and a separate exact-byte multibyte case now detect the same raised-limit fault in both
+pasted/upload paths. Refusals preserve source/blob/attachment and identity; later exact-
+size retry saves actual bytes, digest, creator and retention selection. Uploaded Unicode
+originally raises on binary-to-UTF-8 transcoding after raw storage agrees. One-line copy/
+encoding interpretation preserves bytes and existing BOM/CRLF normalization; small
+original reproduction fails, repaired component/request/provider neighbors pass62/674.
+Real uploaded-file browser variant reads accented source at1400/390, then loses source
+authority while own Profile works and source/minutes stay intact. Both existing privacy
+and new upload journeys pass2/167; no claim about automatic purge/provider completion.
+See [design and exact evidence](TRANSCRIPT_SOURCE_INPUT_REVIEW.md). No test removal.
+
+## Rejected initial minutes enqueue and recovery (#128)
+
+Actual Active Job before_enqueue abort reaches all four routed create/retry paths.
+Original false-result method errors leave pending runs/nil failure metadata while source,
+manual minutes and earlier run rows remain intact. Three existing guard corrections
+record durable failed queue_error/completion without a broad rescue. Four new request
+variants read saved identity/link/graph before response, then restore actual enqueue and
+retain both failures. Real browser checks existing failure/manual escape, rejected retry,
+restored queued state, grant-loss status/protected denial and later own Profile. Whole9
+original draft API cases are retained/indexed with distinct direct state/single-attendance
+limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
+and actual provider acceptance are separate. No test deletion, app authority or policy change.
+
+Official confirmation lifetime/atomicity (#131) adds direct fixed-ten-minute factory,
+before/after expiry, wrong live identity/session, consumed reuse and real persisted
+attestation-phase rollback/recovery components. Full saved confirmation/minutes/revision/
+attestation/event graph remains unchanged on refusal or rollback. Expiry fault2/2/2
+detects both refusals; exact source restoration leads to47/658 neighbors and3/131
+real approval browsers clean. [Design and evidence](OFFICIAL_CONFIRMATION_CONTRACTS.md).
+Keep the separate existing detached Session, provenance, request and browser assertions.
+
+Queued progress readability (#130) extends that same browser recovery journey with
+independent fixed13px labels/14px supporting text/16px body and action floors, requiring
+each actual selector at1400/390. Original11px badge failure2/68/1 detects the gap;
+Five font values produce2/128 clean. The actual no-JavaScript fallback then catches
+its original13px body below16px:2/128/1 failure, seed23385. Its sixth font correction
+and actual script-disable/ensure-restore variant pass2/139, seed59695; the complete
+instruction and existing progression/actions were inspected at1400/390 without overflow.
+All previous assertions remain. [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md).
+
+Real browser PDF delivery (#134) keeps every existing approval/member/document/agenda
+byte/content/identity/immutable graph assertion. Scoped35-second PDF async helper
+matches the30-second renderer budget with margin and asserts ordinary wait restores.
+Original3-second real-fetch delay1/62/1error becomes1/95 clean; wrong HTML reaches
+the existing readable-String assertion1/64/1 with a temporary message result, then
+exact scripts restore. Clean neighbors16/437 and final approval3/133 retain actual
+PDF/refusal/private resource boundaries. [Evidence](PDF_BROWSER_WAIT_CONTRACT.md).
+No general timeout increase, retries, skips, app or authority changes.

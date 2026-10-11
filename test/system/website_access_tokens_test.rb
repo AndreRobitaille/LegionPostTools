@@ -1,6 +1,8 @@
 require "application_system_test_case"
+require_relative "../support/token_clipboard_support"
 
 class WebsiteAccessTokensSystemTest < ApplicationSystemTestCase
+  include TokenClipboardSupport
   setup do
     Organization.create!(name: "Synthetic Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
@@ -24,6 +26,10 @@ class WebsiteAccessTokensSystemTest < ApplicationSystemTestCase
     assert_button "Copy token"
     secret = find("#issued-website-token").value
     assert_match(/\Alptw_[0-9a-f]{24}_[0-9a-f]{64}\z/, secret)
+    token = WebsiteAccessToken.find_by!(name: "Post public website")
+    original_token = token.attributes
+    assert_token_copied_to_clipboard(secret)
+    assert_equal original_token, token.reload.attributes
     # Hide only synthetic secret bytes in screenshots, preserving layout.
     page.execute_script("document.querySelector('#issued-website-token').value = 'lptw_' + 'x'.repeat(24) + '_' + 'x'.repeat(64)")
     capture_layout("created")

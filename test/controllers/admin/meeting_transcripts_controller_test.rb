@@ -64,6 +64,21 @@ class Admin::MeetingTranscriptsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_select ".error-summary", text: /provide either pasted transcript text or one text file/
     assert_no_match(/Commander said/, response.body)
+
+    source = "SYNTHETIC-RESTRICTED-ERROR-79: Commander described the service project."
+    original_minutes = @meeting.minutes.attributes
+    assert_no_difference "MeetingTranscript.count" do
+      post admin_meeting_transcript_path(@meeting), params: {
+        meeting_transcript: { pasted_text: source, retention_policy: "invalid-policy" }
+      }
+    end
+
+    assert_equal original_minutes, @meeting.minutes.reload.attributes
+    assert_nil @meeting.reload.transcript
+    assert_response :unprocessable_entity
+    assert_select ".error-summary", text: /Retention policy is not included in the list/
+    assert_not_includes css_select(".error-summary").sole.text, source
+    assert_select "textarea[name='meeting_transcript[pasted_text]']", text: source
   end
 
   test "internal record viewers can read source but cannot add it" do

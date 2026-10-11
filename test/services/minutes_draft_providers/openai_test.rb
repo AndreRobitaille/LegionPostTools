@@ -134,10 +134,13 @@ class MinutesDraftProviders::OpenaiTest < ActiveSupport::TestCase
       OpenAI::Errors::RateLimitError => [ "rate_limit", false, 429 ],
       OpenAI::Errors::AuthenticationError => [ "configuration", false, 401 ]
     }.each do |klass, (category, retryable, status)|
+      source = "SYNTHETIC-RESTRICTED-PROVIDER-79: Officer described the service project."
       failure = klass.new(url: URI("https://api.openai.com/v1/responses"), status: status,
-        headers: { "x-request-id" => "req_failure" }, body: {}, request: nil, response: nil)
+        headers: { "x-request-id" => "req_failure" }, body: { "error" => { "message" => source } }, request: nil, response: nil, message: source)
+      assert_includes failure.message, source
       error = assert_raises(MinutesDraftProviders::Error) { draft_with(FakeResponses.new(failure)) }
 
+      assert_not_includes error.message, source
       assert_equal category, error.category
       assert_equal retryable, error.retryable?
       assert_equal "req_failure", error.request_id

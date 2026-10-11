@@ -11,7 +11,7 @@ module Admin
       run = MinutesDrafting::Generate.prepare(minutes: @minutes, requester: current_user)
       job = MinutesDraftGenerationJob.perform_later(run)
 
-      unless job.successfully_enqueued?
+      unless job && job.successfully_enqueued?
         mark_enqueue_failed!(run)
         return redirect_to admin_meeting_minutes_draft_run_path(@meeting, run), alert: "The draft worker could not be started. The manual minutes workspace is unchanged."
       end

@@ -49,6 +49,14 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     page.save_screenshot(directory.join("#{name}.png"))
   end
 
+  # Allow the renderer's 30-second budget without changing ordinary browser waits.
+  def evaluate_pdf_async_script(script, *args)
+    ordinary_wait = Capybara.default_max_wait_time
+    result = Capybara.using_wait_time(35) { page.evaluate_async_script(script, *args) }
+    assert_equal ordinary_wait, Capybara.default_max_wait_time
+    result
+  end
+
   # Sign in through the app's real magic-link flow: mint a link for the user,
   # open it (GET renders the confirmation screen), then click through to POST
   # and establish the session in a fresh browser session. No production code is bypassed.

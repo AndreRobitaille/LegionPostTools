@@ -1,6 +1,8 @@
 require "test_helper"
+require_relative "../../support/minutes_enqueue_support"
 
 class Admin::JobsControllerTest < ActionDispatch::IntegrationTest
+  include MinutesEnqueueSupport
   include ActiveJob::TestHelper
 
   setup do
@@ -120,6 +122,34 @@ class Admin::JobsControllerTest < ActionDispatch::IntegrationTest
     get admin_jobs_path
 
     assert_redirected_to root_path
+  end
+
+  test "rejected enqueue preserves the old failure and records a failed retry before later recovery" do
+    failed = create_run!(status: "failed", error_category: "timeout")
+    stored_original = failed.reload.attributes
+    original = saved_minutes_source_graph(@minutes, @transcript)
+    sign_in_as(@manager)
+    assert_difference "MinutesDraftRun.count", 1 do
+      with_rejected_minutes_enqueue { post retry_admin_job_path(failed) }
+    end
+    rejected = @minutes.draft_runs.recent.first
+    assert_rejected_minutes_run(rejected, requester: @manager, transcript: @transcript, retry_of: failed)
+    assert_equal stored_original, failed.reload.attributes
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_redirected_to admin_jobs_path(filter: "attention")
+    assert_match(/retry was recorded.*worker could not be started/, flash[:alert])
+    get admin_jobs_path(filter: "attention")
+    assert_select ".jobs-run--failed", count: 2
+    stored_rejected = rejected.reload.attributes
+
+    assert_enqueued_with(job: MinutesDraftGenerationJob) { post retry_admin_job_path(failed) }
+    retry_run = @minutes.draft_runs.recent.first
+    assert_equal failed.id, retry_run.retry_of_id
+    assert_equal "pending", retry_run.status
+    assert_equal stored_original, failed.reload.attributes
+    assert_equal stored_rejected, rejected.reload.attributes
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_redirected_to admin_meeting_minutes_draft_run_path(@meeting, retry_run)
   end
 
   private
