@@ -195,3 +195,49 @@ Added PostgreSQL's official HTTPS key and signed distro-specific apt source to C
 package setup. This failing run cannot qualify a merge; the new revision requires
 successful exact-SHA CI and serial local final suites. No CI bypass or dependency
 upgrade was used to suppress the failure.
+
+Corrected candidate `4f00780b351920ffd170350ff704690f9a644027`: CI run 38103260738
+passed all four jobs, including actual 1226 / 9265 ordinary and 64 / 1071 system runs.
+It installed client 18.6 from the official signed PostgreSQL source. Final local ordinary
+seed 26558 passed 1226 / 9265 / 0 (99.26s), followed serially by system seed 16467:
+64 / 1040 / **one failure** / 0 errors/skips (149.22s). This failure prevents merge.
+
+## #84/#89 speculative form-response/session race
+
+Existing `MinutesApprovalFlowTest` failed at the confirmation code form. Screenshot
+showed invalid/expired official request. The log showed a heading GET returning after
+the attestation confirmation page; next POST had the same authenticated Session but a
+null pending confirmation ID. Bundled Turbo uses hover prefetch with X-Sec-Purpose.
+
+[Issue #89](https://github.com/AndreRobitaille/LegionPostTools/issues/89) records the
+bounded finding. Design is `docs/OFFICIAL_ACTION_PREFETCH.md`. A new real-browser
+regression delays only the speculative heading response, starts the actual attestation,
+then releases the old response before requesting email. Original default layout: 1 run /
+8 assertions / 1 failure / 0 errors/skips (5.34s), at the same missing code form.
+Its test-only callback is released and removed in teardown. No approval bypass occurs:
+the old behavior refuses the missing request, leaving the minutes unpublished.
+
+The fix disables link prefetch in the private application layout, preserving real click,
+Turbo submission, identity, stale-record, permission and one-use checks. It does not
+claim a general manual multi-tab CookieStore redesign. A new helper initially stopped
+job execution before the asynchronous email request completed, producing a nil test
+delivery; moved the code-form wait inside the job block. This was a test synchronization
+error, not a second application bug. No expectations removed or skips introduced.
+
+#88 independently scopes Endeavor SQL guards and legitimate run progress. #84 remains
+open; component/browser runner success is separate from deferred variant review.
+
+Final focused requests: official-action, passkey and session controller tests, 39 runs /
+527 assertions / 0 failures/errors/skips (2.40s). Then serial browser confirmation,
+minutes approval and account menu tests, seed 2233: 11 / 134 / 0 (23.11s). A controlled
+fault removed only the new layout meta/comment bytes: 1 / 8 / one missing-code-form
+failure (5.47s). Python `finally` restored exact layout bytes, verified by SHA-256;
+same restored scenario passed 1 / 18 / 0 (4.82s). Logs are
+`/tmp/legion-prefetch-{controlled-fault,restored-clean}.log`. The temporary delayed
+response is released and its callback removed; no experimental application fault remains.
+All 492 Ruby files pass RuboCop; Brakeman 0 errors/warnings, both dependency audits clean.
+PR #87 will include the independently recorded #89 fix; final full serial suites and
+new exact-SHA CI are required for the combined candidate. No test removed or weakened.
+Inspected desktop and 390px confirmation screenshots: action/record identity and code
+entry remain readable, wrapping correctly with ordinary vertical scrolling and no
+horizontal overflow. Existing 1919 visual layout is unchanged.

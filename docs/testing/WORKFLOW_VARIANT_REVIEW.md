@@ -52,3 +52,14 @@ refusal requires the immutability message and unchanged persisted attributes; un
 FK errors fail. Original preparation: eleven failures; fresh faithful SQL load: all
 twelve tests / 45 assertions pass. All existing component/request/browser tests retained.
 Endeavor triggers are inventoried here; their behavior remains a separate review slice.
+
+## Speculative response during identity confirmation (#89)
+
+`OfficialActionPrefetchTest#heading hover cannot discard the exact pending attestation
+before email confirmation`: real hover, bounded test-only delayed heading response,
+then actual email/code confirmation. Original layout loses pending cookie state and
+fails the same missing-code-form assertion as the full-suite failure. Completed outcome
+must retain the actor, exact confirmation/revision, one-use consumption and signed report.
+No authentication/record mock; email uses the synthetic test job adapter. Existing stale
+record, wrong-session, passkey, sign-out and approval browser variants retained. Temporary
+delay callback is removed in teardown; no general multi-tab concurrency claim.
