@@ -153,6 +153,32 @@ class Admin::UserAccountsControllerTest < ActionDispatch::IntegrationTest
     assert_nil person.reload.user
   end
 
+  test "creates a local account and later identifies its actual source" do
+    prepare_setup_complete_state
+    sign_in_manage_settings_admin
+    person = Person.create!(first_name: "Local", last_name: "Member")
+    original_person = person.attributes
+    original_grants = PermissionGrant.order(:id).map(&:attributes)
+
+    assert_difference -> { User.count }, 1 do
+      post admin_person_user_account_path(person), params: { user: { email_address: "local-member@example.test" } }
+    end
+    assert_equal original_person, person.reload.attributes
+    assert_equal original_grants, PermissionGrant.order(:id).map(&:attributes)
+    assert_redirected_to person_path(person)
+    assert_equal "local-member@example.test", person.user.email_address
+    assert person.user.login_access_override?
+    assert_nil person.user.disabled_at
+    assert_nil person.user.email_verified_at
+    follow_redirect!
+    assert_response :success
+    assert_select ".card-head-prov", text: "Local Post record"
+    assert_includes response.body, "No National roster record is linked to this person."
+    assert_includes response.body, "Sign-in is managed locally."
+    assert_select ".k", text: "Mail deliverable", count: 0
+    assert_select "form[action=?]", roster_control_admin_person_user_account_path(person), count: 0
+  end
+
   private
 
   def prepare_admin_person(roster_email_address: nil, sign_in_as_target: false)

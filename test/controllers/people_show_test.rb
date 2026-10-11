@@ -230,4 +230,40 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "option", text: "Commander"
   end
+
+  test "roster-backed record with unknown import date keeps National fields without inventing a date" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    person.update!(roster_imported_at: nil)
+    original = person.attributes
+
+    get person_path(person)
+
+    assert_equal original, person.reload.attributes
+    assert_response :success
+    assert_select ".card-head-prov", text: "National roster · import date unavailable"
+    assert_select ".v", text: "000204540637"
+    assert_select ".v", text: "vincent@example.com"
+    assert_includes response.body, "These fields come from the National roster"
+    assert_not_includes response.body, "No National roster record is linked"
+  end
+
+  test "removed roster record retains the actual National source and imported history" do
+    prepare_setup_complete_state
+    sign_in_officer
+    person = build_person
+    person.update!(roster_imported_at: Time.utc(2026, 10, 10, 18), roster_removed_at: Time.utc(2026, 10, 11, 18))
+    original = person.attributes
+
+    get person_path(person)
+
+    assert_equal original, person.reload.attributes
+    assert_response :success
+    assert_select ".card-head-prov", text: "National roster · imported 10 OCT 2026"
+    assert_select ".v", text: "000204540637"
+    assert_select ".v", text: "123 Main St"
+    assert_includes response.body, "These fields come from the National roster"
+    assert_not_includes response.body, "Local Post record"
+  end
 end

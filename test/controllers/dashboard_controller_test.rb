@@ -287,16 +287,51 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "invite stays hidden after dismissal within the session" do
-    signed_in_member
+    freeze_time
+    user = signed_in_member
+    other = User.create!(person: Person.create!(first_name: "Other", last_name: "Member"), email_address: "other-invitation@example.test")
+    other.permission_grants.create!(capability: "manage_minutes")
+    PasskeyCredential.create!(user: other, external_id: "other-invitation-credential", public_key: "synthetic-public-key", sign_count: 0)
+    Session.create!(user: other, last_seen_at: Time.current)
+    get root_path
+    assert_response :success
+    assert_select ".pk-card--sidebar", count: 1
+    original = invitation_identity_records
+
     delete passkey_invitation_path
+    assert_equal original, invitation_identity_records
     assert_redirected_to root_path
 
     get root_path
+    assert_equal original, invitation_identity_records
     assert_response :success
     assert_select ".pk-card--sidebar", count: 0
+
+    get profile_path
+    assert_equal original, invitation_identity_records
+    assert_response :success
+    assert_select ".profile-lead .page-sub", text: /#{Regexp.escape(user.person.full_name)}/
+    assert_not_includes response.body, other.email_address
+    get root_path
+    assert_select ".pk-card--sidebar", count: 0
+
+    assert_difference "Session.count", 1 do
+      open_session do |new_session|
+        new_session.sign_in_as(user)
+        new_session.get root_path
+        new_session.assert_response :success
+        new_session.assert_select ".pk-card--sidebar", count: 1
+      end
+    end
+    assert_equal original.take(4), invitation_identity_records.take(4)
+    assert_equal original.last, Session.where(id: original.last.map { |record| record.fetch("id") }).order(:id).map(&:attributes)
   end
 
   private
+
+  def invitation_identity_records
+    [ Person, User, PermissionGrant, PasskeyCredential, Session ].map { |model| model.order(:id).map(&:attributes) }
+  end
 
   # A fully set-up, signed-in member with no passkeys yet.
   def signed_in_member
