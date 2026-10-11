@@ -20,6 +20,11 @@ class AgentAccessTokenTest < ActiveSupport::TestCase
     token, plaintext = AgentAccessToken.issue!(user: @user, name: "Routine", expires_in: 30.days)
 
     assert_nil AgentAccessToken.authenticate("not-a-token")
+    original = token.reload.attributes
+    wrong_secret = plaintext.sub(/.$/) { |digit| digit == "0" ? "1" : "0" }
+    refused = AgentAccessToken.authenticate(wrong_secret)
+    assert_equal original, token.reload.attributes, "Rejected secret must not record a successful use"
+    assert_nil refused
     token.update!(expires_at: 1.minute.ago)
     assert_nil AgentAccessToken.authenticate(plaintext)
 

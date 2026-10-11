@@ -21,7 +21,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/config/time_zone_configuration_test.rb` | config | Runner / configuration | P1 | All three actual process boots reviewed/retained: default/configured/invalid zone; distinct from pending #93 date policy |
 | `test/controllers/admin/administrators_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Both enabled manual-admin listing and ordinary-member denial reviewed/retained; technical administration differs from Post office; see #107 |
 | `test/controllers/admin/agenda_item_catalog_entries_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Two whole administrator oversight/ordinary denial cases reviewed and retained under #102; revocation actor, no reveal and unavailable foreign mint route remain distinct |
 | `test/controllers/admin/dashboard_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/dated_agenda_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/dated_agenda_items_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
@@ -46,7 +46,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/user_accounts_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All twelve saved account/roster/override/last-admin variants reviewed/retained; technical settings fixtures do not prove all officer duties; see #107 |
 | `test/controllers/admin/website_access_tokens_controller_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Five management/identity/foreign-scope/CSRF variants reviewed/retained; actual saved authority and first revocation, no plaintext list; request proof separate from browser |
 | `test/controllers/agent_access_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All seven same-session/code/link/purpose/bearer token-identity cases reviewed and retained; #104 |
-| `test/controllers/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Five whole own-token list/recent-human/lifetime/one-time/foreign-revoke cases reviewed and retained under #102; direct sessions are request setup |
 | `test/controllers/api/agenda_parity_api_test.rb` | controllers | Runner / component contracts | P2 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/controllers/api/calendar_activities_api_test.rb` | controllers | Continuing Post work / calendar | P1 | Reviewed retry variants: grant loss, deleted target and calendar Post date; other variants deferred |
 | `test/controllers/api/handbook_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Reviewed all existing handbook contracts; retained, with independent actual-action cohorts under #81 |
@@ -99,7 +99,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/mailers/magic_links_mailer_test.rb` | mailers | Authentication / authority / #78, #81 | P0 | Actual multipart addressing/code/link/expiry/same-browser contracts reviewed and retained; external delivery unverified; #104 |
 | `test/migrations/reinterpret_legacy_dated_agenda_times_test.rb` | migrations | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/agenda_item_catalog_entry_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/models/agent_access_token_test.rb` | models | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/agent_access_token_test.rb` | models | Authentication / authority / #78, #81 | P0 | Four whole issuance/refusal/revocation/use-throttle cases reviewed and retained; strengthened correct-ID wrong-secret refusal catches saved-use change under restored guard fault (#102) |
 | `test/models/calendar_event_test.rb` | models | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/models/dated_agenda_item_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/dated_agenda_roll_call_entry_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -155,7 +155,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/administrator_permissions_test.rb` | system | Last-administrator refusal / #112 | P0 | Real sole-admin form refusal/unchanged graph at1400/390 then permitted successor handoff, old denied and new permitted navigation; no browser concurrency claim |
 | `test/system/account_menu_test.rb` | system | Member / navigation / sign-out | P0 | Full source reviewed/retained: actual keyboard/open/close/phone paths and sign-out plus later Profile denial, pending-session nullification and completed record preservation |
 | `test/system/agenda_item_catalog_entries_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Whole real magic-link/create/reveal-once/back/revoke desktop-phone journey reviewed and retained under #102; clipboard content remains unverified (#105) |
 | `test/system/authentication_entry_test.rb` | system | Runner / component contracts | P2 | Both actual phone-width email/resend/newest-code/sign-in/sign-out and returning-link session continuity journeys reviewed/retained; #104 |
 | `test/system/calendar_event_deletion_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/system/calendar_mobile_schedule_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |

@@ -298,3 +298,16 @@ works` exercises actual controls, unchanged refused graph at1400/390 and success
 with later old/new authority navigation. It does not establish browser concurrency.
 See [design and evidence](LAST_ADMINISTRATOR_CONCURRENCY.md). Local-panel National
 provenance mismatch is separately #115; explicit Post-date policy remains #93.
+
+
+## Personal token secret refusal and retained components (#102)
+
+The active actual-public-ID/guaranteed-different-hex secret case now checks saved token
+metadata before refusal in both the existing model denial test and existing invalid-bearer/
+valid-cookie request. The cookie first reads fixed private Endeavor text; the wrong bearer
+must neither record use nor expose that text. All old malformed/expiry/revocation/disabled
+assertions remain. Removing only `valid_secret` fails each saved-state check; exact model
+bytes restored in finally and clean behavior passes. Whole own/admin credential request,
+website credential model and real token browser tests remain separate retained contracts.
+Current integrated focus43/286 passes on877c18e; this scoped API case does not certify every
+mutation in OfficerApiTest. Details: [personal credential review](PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md).
