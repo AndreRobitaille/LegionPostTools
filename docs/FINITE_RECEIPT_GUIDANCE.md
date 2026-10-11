@@ -51,3 +51,10 @@ Expanded unchanged authority/retry/concurrency/inventory set: 51 / 852 / 0
 (seed 38320, 7.71s). Three changed Ruby files lint clean; no experimental runtime
 fault remains. Whole-file execution is not whole-file assertion review. Final committed
 serial suites/security/exact-SHA and actual-main CI remain required.
+
+
+Integrated #106 main `8a603bb7b1a3105296bee14b66cf607cdcae015a`: unchanged focused
+51 / 852 / 0 (seed24424, 7.63s). Append-only documentation conflicts retain both
+reviews. Earlier candidate's CI browser inspector error is preserved in #105 and the
+ledger; this integrated candidate requires new serial full suites and exact-SHA CI,
+not a retry of the old failing check.

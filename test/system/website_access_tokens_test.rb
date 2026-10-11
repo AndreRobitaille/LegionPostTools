@@ -9,7 +9,7 @@ class WebsiteAccessTokensSystemTest < ApplicationSystemTestCase
     system_sign_in(@admin)
   end
 
-  test "administrator creates copies and revokes a Post website connection at desktop and narrow widths" do
+  test "administrator creates views once and revokes a Post website connection at desktop and narrow widths" do
     visit admin_root_path
     click_link "Manage website connections"
     assert_text "No website connections yet"
@@ -19,6 +19,7 @@ class WebsiteAccessTokensSystemTest < ApplicationSystemTestCase
     capture_layout("new")
     fill_in "Connection name", with: "Post public website"
     click_button "Create token"
+    assert_current_path admin_website_access_tokens_path
     assert_selector "h1", text: "Copy your website token now"
     assert_button "Copy token"
     secret = find("#issued-website-token").value

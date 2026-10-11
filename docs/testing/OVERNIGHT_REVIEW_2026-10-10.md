@@ -565,3 +565,40 @@ CI38110200711 passes all four jobs with matching PG17.11 counts. Fresh review re
 all old cases/assertions and restored sources. PR #101 merged as
 `b8522118fe1b2b4a5d8b7ac6675aeb51f7a8e09c`, exact tree; actual-main verification follows.
 #84 remains open; #99's scoped officer API retry review does not establish full-file review.
+
+## Repeated website-token inspector error and native navigation (#105)
+
+Main configuration CI38110689517 passes all four jobs on `b852211`, actual PG17.11
+1283 / 11367 / 0 ordinary then 66 / 1187 / 0 system; #96 completion comment records it.
+Finite retry candidate `ab4e4f4` passes local ordinary 1283 / 11409 / 0 (seed18274,
+107.75s), then serial system 66 / 1187 / 0 (seed23237, 162.04s); lint502/security clean.
+Its CI38110781740 ordinary count matches; browser 66 / 1174 / 0 failures / 1 inspector
+error in the unchanged website-token creation journey. This repeats the earlier Chrome154
+node/document error, so PR #103 stays draft and no green-seeking rerun is performed.
+
+#105 design: `WEBSITE_TOKEN_BROWSER_RELIABILITY.md`. Expected creation-page failure
+screenshot reviewed; native creation deliberately bypasses Turbo. Add meaningful exact
+path assertion after real POST and before DOM query, preserving every old assertion;
+rename the journey to actual viewed-once evidence, not untested clipboard contents.
+No driver rescue/retry/sleep or application change. Exact Chrome154 version unavailable
+in official testing manifest; local152 proof is distinguished from pending exact CI.
+Focused request/model20 / 181 / 0; website/personal real browser2 / 37 / 0. Created/list
+1400/390px screenshots inspected. Controlled wrong redirect fails new native-path outcome
+1 / 8 / one failure; controller restored exactly (hash in design). The race explanation
+remains inference; later full suites and CI are needed before merge, and future recurrence
+must not be hidden by broad error suppression.
+
+
+Website-navigation candidate `db6c1686ddc8dc69b4d48127b5fec938c33de9ab` passes ordinary
+1283 / 11367 / 0 (seed9871, 101.86s), then qualifying serial system 66 / 1188 / 0
+(seed38538, 162.38s). Lint502 clean; Brakeman zero errors/warnings; audits clean.
+Exact-SHA CI38111233748 passes all four jobs with matching PG17.11 counts. PR #106
+merged as `8a603bb7b1a3105296bee14b66cf607cdcae015a`, exact candidate tree; actual-main
+CI38111511575 is pending at this recording. #105 remains open for precise inspector
+cause and untested clipboard contents. This is native-navigation outcome proof, not
+proof of the inferred document-transition race.
+
+Integrate #106 main into finite-retry PR #103. The two append-only ledger/matrix
+conflicts preserve both sections; inventory merges retain each distinct reviewed row.
+No application fault, dropped prior assertion or green-seeking CI rerun is included.
+The new combined committed candidate must repeat final serial suites and fresh CI.
