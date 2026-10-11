@@ -417,3 +417,11 @@ restored queued state, grant-loss status/protected denial and later own Profile.
 original draft API cases are retained/indexed with distinct direct state/single-attendance
 limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
 and actual provider acceptance are separate. No test deletion, app authority or policy change.
+
+Official confirmation lifetime/atomicity (#131) adds direct fixed-ten-minute factory,
+before/after expiry, wrong live identity/session, consumed reuse and real persisted
+attestation-phase rollback/recovery components. Full saved confirmation/minutes/revision/
+attestation/event graph remains unchanged on refusal or rollback. Expiry fault2/2/2
+detects both refusals; exact source restoration leads to47/658 neighbors and3/131
+real approval browsers clean. [Design and evidence](OFFICIAL_CONFIRMATION_CONTRACTS.md).
+Keep the separate existing detached Session, provenance, request and browser assertions.

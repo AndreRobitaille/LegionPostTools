@@ -898,3 +898,15 @@ exact candidatef4cc577/all-four CI38121785815 passes1293/11869 then73/1544, merg
 as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate that
 source repair here, preserve both histories and all original tests; qualify final
 committed queue-recovery revision serially. No production operation.
+
+## Direct official confirmation contracts (#131)
+
+Seven new lowest-level cases retain fixed ten-minute lifetime for all three provenance
+methods, actual in-app attestation before expiry, expired confirmation/consumption
+refusal, wrong live user/session, consumed reuse and rollback after actual persisted
+attestation/event writes. Existing Session/minutes/official request/browser assertions
+remain. Two new fixture failures were corrected transparently before clean7/163.
+Expiry-check removal yields2/2/2 failures, seed12134; exact model restores and neighbors
+pass47/658 seed56973. Real unchanged approval browser3/131 seed44011 passes.
+[Design and evidence](OFFICIAL_CONFIRMATION_CONTRACTS.md). No application change,
+new authority, paid AI or production operation; final committed full suites/CI pending.
