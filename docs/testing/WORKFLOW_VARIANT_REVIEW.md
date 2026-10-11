@@ -218,3 +218,21 @@ checks a visible copy control, not clipboard contents. Full source review retain
 five website credential management/identity/foreign-scope/CSRF request scenarios and
 three model digest/authority/replacement contracts; their distinct failure modes remain.
 See [review and limits](WEBSITE_TOKEN_BROWSER_RELIABILITY.md).
+
+
+## Configured Post title update (#107)
+
+`Admin::PositionTitlesControllerTest`'s new `update rejects a foreign Post title without
+changing its authority or assignments` submits name/active/membership edits through the
+actual route. Original global lookup changes stored foreign fields and fails preservation
+before 404; configured association lookup preserves both Post graphs, refuses and permits
+later legitimate own-title save. All old active/membership/order/settings variants stay.
+
+New browser `foreign position submission preserves saved authority and own controls still
+work` submits a foreign identity through a native form to inspect standard 404, then real
+ordinary Turbo deactivate/activate/grant/remove controls at 1400/390px, checking stored
+fields and foreign grants/assignments. Initial Turbo/static-page and test-debug-page
+assumptions failed and are documented; exception details are restored and :rescuable
+policy is retained. No new inline Turbo error behavior is claimed. See
+[scope and source review](POSITION_TITLE_UPDATE_SCOPE.md) for distinct retained officer,
+account and permission components; serial last-admin tests are not concurrency proof.

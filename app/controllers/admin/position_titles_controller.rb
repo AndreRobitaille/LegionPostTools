@@ -16,7 +16,7 @@ module Admin
     end
 
     def update
-      title = PositionTitle.find(params[:id])
+      title = Organization.first!.position_titles.find(params[:id])
       if title.update(position_title_params)
         redirect_to admin_position_titles_path, notice: "Post position updated."
       else

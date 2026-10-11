@@ -18,7 +18,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/config/database_configuration_test.rb` | config | Runner / configuration / #96 | P1 | All parsing variants retained; each missing production key and supplied identities/host strengthened; queue-requirement fault detected/restored |
 | `test/config/filter_parameter_logging_test.rb` | config | Private source / #96 review | P0 | Both real configured filter shapes reviewed/retained: nested transcript plus unnested content; no source-array substitute |
 | `test/config/time_zone_configuration_test.rb` | config | Runner / configuration | P1 | All three actual process boots reviewed/retained: default/configured/invalid zone; distinct from pending #93 date policy |
-| `test/controllers/admin/administrators_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/administrators_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Both enabled manual-admin listing and ordinary-member denial reviewed/retained; technical administration differs from Post office; see #107 |
 | `test/controllers/admin/agenda_item_catalog_entries_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/dashboard_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
@@ -38,11 +38,11 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/minutes_draft_runs_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/minutes_editor_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/permission_grants_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/position_assignments_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Reviewed: dated CRUD, installed-Post scope, explicit-grant retention; existing tests retained |
-| `test/controllers/admin/position_titles_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/permission_grants_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All five exact saved grant replacement/filter/last-admin/automatic-role variants reviewed/retained; concurrent last-admin safety not proven; see #107 |
+| `test/controllers/admin/position_assignments_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All eight cases reviewed/retained: saved dates, foreign nested person, malformed date preservation and active configured-title boundary; see #107 source review |
+| `test/controllers/admin/position_titles_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Full source reviewed/retained; new foreign update saved authority/assignment graph catches original mutation; later configured title save and native browser recovery under #107 |
 | `test/controllers/admin/roster_imports_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/user_accounts_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/user_accounts_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All twelve saved account/roster/override/last-admin variants reviewed/retained; technical settings fixtures do not prove all officer duties; see #107 |
 | `test/controllers/admin/website_access_tokens_controller_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Five management/identity/foreign-scope/CSRF variants reviewed/retained; actual saved authority and first revocation, no plaintext list; request proof separate from browser |
 | `test/controllers/agent_access_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
@@ -57,7 +57,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/api/officer_api_test.rb` | controllers | Delegated mutations / #99 | P0 | Scoped exact-retry assertions reviewed/strengthened across retained/cleaned receipts; original missing guidance detected; remaining variants explicitly deferred |
 | `test/controllers/api/people_api_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/token_management_boundary_test.rb` | controllers | Authentication / authority / #81 | P0 | Both tests reviewed and retained: missing APIs preserve counts; bearer screens and revocation preserve tokens |
-| `test/controllers/api/user_accounts_api_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/api/user_accounts_api_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All four account mutation/current JSON/last-admin/member-denial variants reviewed/retained; see #107 |
 | `test/controllers/api/website_publications_api_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Reviewed existing editorial retry/current-authority boundary; other variants deferred |
 | `test/controllers/calendar_controller_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/calendar_event_deletion_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
@@ -117,11 +117,11 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/meeting_type_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/minutes_draft_run_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/organization_test.rb` | models | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/models/permission_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/permission_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Both explicit granted/missing capability and complete unique grouping reviewed/retained; grouping is not independent privilege policy; see #107 |
 | `test/models/person_test.rb` | models | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/models/position_assignment_test.rb` | models | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
-| `test/models/position_capability_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Reviewed: position-capability uniqueness and canonical duties retained |
-| `test/models/position_title_test.rb` | models | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/position_assignment_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three no-end, after-end and reversed-date component cases reviewed/retained; inclusive effective-authority proof remains User/#78 |
+| `test/models/position_capability_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Both allowed duty versus denied technical administration and duplicate-title capability cases reviewed/retained; see #107 |
+| `test/models/position_title_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three reorder cases reviewed/retained: saved 1-based order, foreign unchanged orders and duplicate refusal; see #107 |
 | `test/models/roster_import_test.rb` | models | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/models/session_test.rb` | models | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | Reviewed: distinct manual/position/roster and last-administrator invariants retained; full suite preserves coverage |
@@ -178,3 +178,4 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/views/section_panel_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/views/stat_tile_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/integration/protected_meeting_deletion_test.rb` | integration | #82 / #83 | P0 | Reviewed: source/state/denial matrix, original defect and detachment-fault evidence |
+| `test/system/position_titles_test.rb` | system | Configured Post title boundary / #107 | P0 | New real native foreign submission/public 404/unchanged authority graph, then ordinary Turbo controls at 1400/390px; initial harness assumptions and inspected layouts recorded |
