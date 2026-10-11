@@ -3,6 +3,15 @@
 **Status:** Implemented August 31, 2026; approval/attestation parity extended by
 `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` later that day.
 
+**Historical scope:** The implementation outline below records the August 31 draft/API
+slice and its original restrictions; it is not the current operating contract. Current
+[minutes policy](../../MINUTES_APPROVAL_AND_ATTESTATION.md) permits editable Commander
+handoff, Adjutant attestation and delegated official provenance. [Member API reads](../../MEMBER_MEETING_API_READS.md)
+extend baseline occurrence and saved document access beyond the original workspace grants.
+Draft-only statements below apply to the original slice, not the later editable handoff.
+Reopening and membership-approval recording use the signed-in website; later amendments
+remain unavailable. Operational agents must authenticate and read the current GET /api.
+
 ## Purpose
 
 The private officer-agent API last received complete workflow parity when first-class

@@ -175,7 +175,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "GET /api/meetings/:meeting_id/minutes"
   end
 
-  test "internal-record viewer receives minutes reads without mutations or restricted transcript content" do
+  test "internal-record viewer receives minutes and explicit restricted source reads without mutations" do
     viewer = create_user("Viewer", capabilities: %w[view_internal_records])
     sign_in_as(viewer)
 

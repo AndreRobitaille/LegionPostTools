@@ -15,7 +15,7 @@ in [file inventory](TEST_FILE_INVENTORY.md); #84 stays open.
 | AGN-07 section removal | `Admin::DatedAgendaSectionsControllerTest#cannot remove a nonempty section or the final section` (request) | Exact two refusal messages; no later persistence assertions | Passed in ordinary baseline | Strengthen surviving rows; empty section with minutes reference not tested (#83) |
 | PDF-01 attested/official source | `MeetingMinutesControllerTest#ordinary members can open the attested PDF without modifying official records` plus correction/finalization variants (request) | Selected revision renderer arguments, payload/digest and record counts; renderer stub | Passed in ordinary baseline | Component selection evidence; reuse real browser/PDF coverage, do not call stub real PDF proof |
 | AUTH-04 sign-out with confirmation lineage | `AccountMenuSystemTest#signing out with a pending minutes approval ends the session` and completed approval variant (browser) | Actual sign-out control, later Profile denial, confirmation session nullification, retained approval/revision | Passed in system baseline | Useful unique lineage coverage; no deletion/consolidation proposed |
-| PUB-01/PUB-06 token boundaries | `WebsiteAccessAuthenticationTest` credential, revocation/conditional and cross-Post variants (request) | No-store/ETag/auth, methods, actual token/data isolation, private API denial | Passed in ordinary baseline | Reuse for #81; credential fault probe remains pending |
+| PUB-01/PUB-06 token boundaries | `WebsiteAccessAuthenticationTest` credential, revocation/conditional and cross-Post variants (request) | No-store/ETag/auth, methods, actual token/data isolation, private API denial | Passed in ordinary baseline | Retained/strengthened under #81; actual anonymous-content fault detected and restored |
 
 ## Protected-delete variants added for #82/#83
 
@@ -112,6 +112,28 @@ later approval, final occurrence refusal, member navigation and real PDF asserti
 authority now comes from configured assignments. A new same-session browser denial proves
 expired duties cannot save while ordinary member reading remains at desktop/phone widths.
 Broader date-context consistency is #93, with the midnight decision pending.
+
+## Guidance and actual delegated/website authority (#81)
+
+`ApiGuidanceAuthorityTest` independently states seven caller duties rather than deriving
+expectations from the action catalog. Both JSON and Markdown advertisements are compared
+to actual member/workspace/transcript reads, drafting, publishing reads and identity-bound
+official acts. Denied writes preserve full official graphs; allowed bearer acts retain the
+human actor and token, consumed confirmation and unchanged grants. Session requests require
+the human browser flow. An incorrect Administrator approval advertisement fails this test.
+
+Existing `ApiMinutesApiTest` handoff/attestation keeps every previous assertion and adds
+exact saved payload/digest/version/confirmation provenance and cached once-only graph
+preservation. Full website access matrices remain: a missing-credential fault returns real
+approved synthetic person content and fails content exclusion before 401. Correct authorized
+conditional reads return empty 304, then revocation still blocks GET/HEAD/conditional reads.
+Token-management tests preserve both token classes and prove absent API/UI bearer access.
+Standing instructions now match authenticated website consumption and current unavailable
+minutes operations; restoring the old brief fails the new contract. All faults restored
+exactly; no test removal or production/live publisher handback claim.
+
+See [design and evidence](../API_GUIDANCE_AUTHORITY_VERIFICATION.md) for focused counts,
+restoration hashes and distinction from the wider deferred #84 review.
 
 Existing calendar, minutes-item Endeavor and attestation retry tests retain every prior
 assertion and add lost-authority content/record/receipt checks and permitted restored

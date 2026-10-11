@@ -23,6 +23,9 @@ class WebsiteAccessAuthenticationTest < ActionDispatch::IntegrationTest
     @paths.each do |path|
       %i[get head post put patch delete options].each do |method|
         public_send(method, path)
+        assert_not_includes response.body, "Avery (fictional)"
+        assert_not_includes response.body, "Synthetic public gathering"
+        assert_not_equal "image/webp", response.media_type
         assert_response :unauthorized
         assert_equal "no-store", response.headers["Cache-Control"]
         assert_equal 'Bearer realm="website"', response.headers["WWW-Authenticate"]
@@ -50,7 +53,13 @@ class WebsiteAccessAuthenticationTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_equal %w[max-age=300 must-revalidate private], response.headers["Cache-Control"].split(", ").sort
       assert_equal "Authorization", response.headers["Vary"]
-      [ path, response.headers["ETag"] ]
+      etag = response.headers.fetch("ETag")
+      get path, headers: @headers.merge("If-None-Match" => etag)
+      assert_response :not_modified
+      assert_empty response.body
+      assert_equal "Authorization", response.headers["Vary"]
+      assert_equal %w[max-age=300 must-revalidate private], response.headers["Cache-Control"].split(", ").sort
+      [ path, etag ]
     end
     @token.revoke!(@publisher)
     etags.each do |path, etag|

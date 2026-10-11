@@ -5,6 +5,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/integration/api_guidance_authority_test.rb` | integration | Handbook / actual authority / #81 | P0 | Seven independent duties, both formats, actual reads/drafting/official acts and denial preservation; advertisement fault detected/restored |
 | `test/integration/officer_turnover_authority_test.rb` | integration | Current offices / #78, #92 | P0 | Real role/action/expiry matrices and human later approval; original cached content failure and restored expiry-content fault |
 | `test/controllers/api/mutation_authorization_inventory_test.rb` | controllers | Completed retry authority / #92 | P0 | All routed mutation guards inventoried; runtime contracts remain separately reviewed |
 | `test/integration/member_meeting_read_parity_test.rb` | integration | Member/delegate reading / #77 | P0 | Actual lifecycle, last attested/final projection, privacy, grant loss and PDF selection; working-copy fault detected/restored |
@@ -46,7 +47,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/agent_access_tokens_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/agenda_parity_api_test.rb` | controllers | Runner / component contracts | P2 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/controllers/api/calendar_activities_api_test.rb` | controllers | Continuing Post work / calendar | P1 | Reviewed retry variants: grant loss, deleted target and calendar Post date; other variants deferred |
-| `test/controllers/api/handbook_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Reviewed #77 member-read variants; wider authority/variant review deferred to #78/#81/#84 |
+| `test/controllers/api/handbook_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Reviewed all existing handbook contracts; retained, with independent actual-action cohorts under #81 |
 | `test/controllers/api/idempotency_concurrency_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/meetings_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
 | `test/controllers/api/minutes_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed official/creation retry and retained record contracts; other variants deferred |
@@ -54,7 +55,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/api/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed conditional creation authority and exact retry/preservation; all prior assertions retained |
 | `test/controllers/api/officer_api_test.rb` | controllers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/people_api_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/controllers/api/token_management_boundary_test.rb` | controllers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
+| `test/controllers/api/token_management_boundary_test.rb` | controllers | Authentication / authority / #81 | P0 | Both tests reviewed and retained: missing APIs preserve counts; bearer screens and revocation preserve tokens |
 | `test/controllers/api/user_accounts_api_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/website_publications_api_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Reviewed existing editorial retry/current-authority boundary; other variants deferred |
 | `test/controllers/calendar_controller_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
@@ -82,7 +83,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/roster_email_reviews_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/sessions_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/setup_controller_test.rb` | controllers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
-| `test/controllers/website_access_authentication_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
+| `test/controllers/website_access_authentication_test.rb` | controllers | Publication / #60–#62, #81 | P0 | All five matrices reviewed/retained: credentials/methods/Post scope/HEAD/conditional/revocation; actual anonymous-content fault detected/restored |
 | `test/controllers/website_calendar_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/website_publishing_admin_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/helpers/legion_format_helper_test.rb` | helpers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
@@ -128,7 +129,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/website_publication_concurrency_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/website_publication_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/agenda_item_catalog_seeder_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/services/agent_operator_instructions_test.rb` | services | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
+| `test/services/agent_operator_instructions_test.rb` | services | Agent instructions / #81 | P0 | Original two identity contracts retained; generated/standing credential and unavailable-operation contracts catch old misleading brief |
 | `test/services/american_legion_post_preset_test.rb` | services | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/services/calendar_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/dated_agenda_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
