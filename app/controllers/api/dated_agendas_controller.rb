@@ -25,6 +25,8 @@ module Api
       meeting = @dated_agenda.meeting
       @dated_agenda.destroy!
       render json: { deleted_dated_agenda: deleted, meeting: meeting_payload(meeting) }
+    rescue ActiveRecord::DeleteRestrictionError
+      render_error("This agenda is used by existing meeting records and cannot be deleted.", status: :unprocessable_entity)
     rescue ActiveRecord::RecordNotDestroyed => e
       render_validation_error(e.record, fallback: "Could not delete this agenda.")
     end

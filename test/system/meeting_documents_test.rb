@@ -1,5 +1,6 @@
 require "application_system_test_case"
 require "base64"
+require "open3"
 
 class MeetingDocumentsTest < ApplicationSystemTestCase
   test "members can distinguish and open both meeting documents on desktop and phone" do
@@ -26,6 +27,9 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     minutes.approve_with_confirmation!(confirmation: OfficialActionConfirmation.for_delegated_agent!(minutes:, agent_access_token: token, action: "approve"))
     minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(minutes:, user: adjutant, action: "attest", evidence_note: "Test written attestation."), recorded_by: commander)
     type.update!(name: "Renamed Template", slug: "renamed-template")
+    commander.permission_grants.create!(capability: "manage_agendas")
+    system_sign_in(commander)
+    assert_protected_deletions(type:, agenda:, meeting:, revision: minutes.current_revision)
     member = User.create!(person: Person.create!(first_name: "General", last_name: "Member"), email_address: "documents-member@example.com")
     system_sign_in(member)
     page.current_window.resize_to(1400, 1000)
@@ -49,6 +53,12 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_selector ".minutes-doc-attendance tbody", text: /Robin Member.*Excused/m
     assert_no_text "Private meeting instructions."
     assert_document_readability
+    pdf_text = member_pdf_text(print_meeting_minutes_path(meeting))
+    assert_includes pdf_text, "Membership Meeting"
+    assert_includes pdf_text, "Hold a community breakfast next month"
+    assert_match(/awaiting meeting approval/i, pdf_text)
+    assert_not_includes pdf_text, "Private meeting instructions."
+    assert_not_includes pdf_text, "Renamed Template"
     save_document_screenshot("/tmp/member-minutes-paper-desktop.png")
     summary = find(".member-minutes-provenance summary")
     summary.send_keys(:space)
@@ -61,6 +71,11 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_selector ".agenda-item-summary", text: "Review membership and welcome new members."
     assert_no_text "Private meeting instructions."
     assert_document_readability
+    pdf_text = member_pdf_text(print_dated_agenda_path(agenda))
+    assert_includes pdf_text, "Membership Meeting"
+    assert_includes pdf_text, "Discuss plans for a community breakfast."
+    assert_not_includes pdf_text, "Private meeting instructions."
+    assert_not_includes pdf_text, "Renamed Template"
     save_document_screenshot("/tmp/member-agenda-paper-desktop.png")
     visit meeting_path(meeting)
     page.current_window.resize_to(390, 844)
@@ -138,6 +153,65 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
   end
 
   private
+
+  def assert_protected_deletions(type:, agenda:, meeting:, revision:)
+    original_payload = revision.payload.deep_dup
+    original_digest = revision.sha256
+    [ 1400, 390 ].each do |width|
+      page.current_window.resize_to(width, 1000)
+      visit admin_meeting_types_path
+      accept_confirm do
+        within "[data-reorder-id='#{type.id}']" do
+          find("button.row-del").click
+        end
+      end
+      assert_selector ".app-flash-alert", text: /used by existing meeting records/
+      assert_no_text "Meeting type deleted."
+      assert_selector ".mrow-name", text: "Renamed Template"
+      assert_refusal_readability
+      capture_system_screenshot("protected-type-delete-#{width}")
+
+      visit edit_admin_dated_agenda_path(agenda)
+      click_button "Delete dated agenda"
+      within "dialog.confirm-dialog" do
+        click_button "Delete dated agenda"
+      end
+      assert_current_path edit_admin_dated_agenda_path(agenda)
+      assert_selector ".app-flash-alert", text: /used by existing meeting records/
+      assert_no_text "Dated agenda deleted."
+      assert_refusal_readability
+      capture_system_screenshot("protected-agenda-delete-#{width}")
+      assert_equal agenda.id, meeting.reload.dated_agenda.id
+      assert_equal type.id, meeting.meeting_type_id
+      assert_equal original_payload, revision.reload.payload
+      assert_equal original_digest, revision.sha256
+    end
+  end
+
+  def assert_refusal_readability
+    assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+    assert_operator page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.app-flash-alert')).fontSize)"), :>=, 16
+  end
+
+  def member_pdf_text(path)
+    previous_port = ENV["PDF_RENDER_PORT"]
+    ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
+    result = page.evaluate_async_script(<<~JAVASCRIPT, path)
+      const done = arguments[arguments.length - 1];
+      fetch(arguments[0], { credentials: "same-origin" }).then(async response => {
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        done({ status: response.status, type: response.headers.get("content-type"),
+          data: btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join("")) });
+      }).catch(error => done({ error: error.message }));
+    JAVASCRIPT
+    assert_equal 200, result.fetch("status")
+    assert_equal "application/pdf", result.fetch("type")
+    text, error, status = Open3.capture3("pdftotext", "-", "-", stdin_data: Base64.strict_decode64(result.fetch("data")), binmode: true)
+    assert status.success?, error
+    text
+  ensure
+    ENV["PDF_RENDER_PORT"] = previous_port
+  end
 
   def assert_document_readability
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")

@@ -17,6 +17,9 @@ module Admin
       meeting = @dated_agenda.meeting
       @dated_agenda.destroy!
       redirect_to admin_meeting_path(meeting), notice: "Dated agenda deleted. The meeting remains in the record.", status: :see_other
+    rescue ActiveRecord::DeleteRestrictionError, ActiveRecord::RecordNotDestroyed
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda),
+        alert: "This agenda is used by existing meeting records and cannot be deleted.", status: :see_other
     end
 
     def approve

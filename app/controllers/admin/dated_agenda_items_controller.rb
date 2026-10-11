@@ -88,6 +88,9 @@ module Admin
         @item.destroy!
       end
       redirect_to edit_admin_dated_agenda_path(@dated_agenda), notice: "Agenda item removed."
+    rescue ActiveRecord::DeleteRestrictionError
+      redirect_to edit_admin_dated_agenda_path(@dated_agenda),
+        alert: "This agenda item is used by existing meeting records and cannot be removed."
     rescue ActiveRecord::RecordNotDestroyed
       redirect_locked_agenda
     end
