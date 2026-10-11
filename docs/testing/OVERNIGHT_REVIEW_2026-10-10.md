@@ -755,6 +755,17 @@ reproduction required; no visual-floor pass claimed. #79/PR#98 still require the
 recovery-start decision and actual scheduling/deletion. Main integration/final suites/CI
 remain required before merge. No production, member-data copy, deployment or provider call.
 
+## Optional passkey invitation saved-state and browser proof (#117)
+
+Whole twenty Dashboard, one anonymous invite and six Profile cases stay; strengthen the
+existing positive dismissal test and add actual browser continuity. Nonempty foreign
+identity/grant/passkey/session graph remains; real sign-out refuses later Profile and
+fresh magic-link sign-in reoffers the optional invitation. Original flag omission fails
+retained card absence1/9/1 seed44205; finally restores controller86d54e2d9f25941ab875c5fa1c7fcf523f9ea328ecfc2a07d1fbffc0a147f5b7.
+Final frozen-clock focus27/151 seed23307,2.00s then browser1/33 seed17331,4.07s clean.
+Desktop1400/390 visible/dismissed/fresh screenshots inspected. No app, enrollment or
+session policy change. Main integration/final committed serial suites/security/exact
+candidate/main CI remain required; no safe test removal/consolidation established.
 ## Roster identity and offline audience coverage (#108/#109)
 
 Combined scoped coverage-only candidate integrates main55e091f (PR#118). No application
@@ -908,6 +919,18 @@ safe actual SDK failure, submit-once/same-ID polling, deadlines/cancellation, so
 changes and terminal redelivery. Preserve every distinct component; no consolidation,
 new execution or new regression demonstration belongs to this source-only increment.
 Offline fake-provider evidence and application-relative timeouts are stated explicitly.
+
+Invitation integration retains both evidence sections and all distinct browser rows.
+Calendar main42a3154 CI38117583145 and roster main15ce51b CI38118516754 pass all four
+jobs; the latter PG17.11 ordinary1290/11644 then71/1365. Bounded #108/#109 completed,
+previous failed55e091f run retained. Final invitation candidate qualification/CI required.
+
+Invitation integrates current actual-main e53238f/all-four CI38122104236: PG17.11
+ordinary1293/11869 then73/1544. Preserve newer source review and earlier invitation
+proofs, including distinct transcript/invitation inventory rows and original source pins.
+#124/#121/#105 now complete; #117 remains pending final committed qualification/CI.
+Queue#128 and minutes source review remain separate unmerged work. No production.
+
 
 ## Durable initial/retry queue rejection (#128)
 
@@ -1122,3 +1145,17 @@ actual editorial audit/consumer bytes. #139 scopes the misleading eight-action r
 name and retained detector; no source-only runtime or safe deletion claim. Combined
 source-only slices85files/707cases; all179 current inventory rows have bounded reviewed
 entries. New prepared runtime work and unresolved #79/#93 still remain; #84 stays open.
+
+## Calendar failure cleanup and accurate original retry scope (#137/#139)
+
+At main95a38a3, real print emulation survives a deliberately failed CalendarRefinements
+case and normal session reset into the next case:2/4/2 failures, seed38097. Add only the
+existing screen-reset pattern to teardown; the same pair2/8/1 leaves only the deliberate
+failure and real later sign-in/calendar navigation succeeds. Remove all temporary
+ordering/cases; every old assertion remains. Clean browser neighbors18/404, seed60673.
+Name the retained eight-action API retry case accurately; body/helper remain byte-exact.
+A broad new-key fault first hits existing201-vs422 uniqueness refusal1/2/1, then a
+narrow append-update fault reaches the preserved1-vs2 saved-update detector1/9/1.
+Exact restoration, clean API neighbors82/739, seed7508, focused lint2 and diff pass.
+Detailed design/results in [CALENDAR_PRINT_STATE_CLEANUP.md](CALENDAR_PRINT_STATE_CLEANUP.md).
+Full final suites/CI still required; no product/permission change, skip or production.
