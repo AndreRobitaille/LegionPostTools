@@ -828,9 +828,9 @@ both ledger sections and unique inventory rows. Qualify this final committed pri
 candidate serially; #79 timing/purge decisions remain open and PR#98 stays draft.
 
 
-## Twelve-file minutes source/assertion review
+## Thirteen-file minutes source/assertion review
 
-Whole12 files/78 exact pinned cases at5c54e39 retain snapshot/digest, editor,
+Whole13 files/88 exact pinned cases at5c54e39 retain snapshot/digest, editor,
 correction, individual AI review/attendance, manual ledger/retry, source numbering/
 prompt, worker chain and distinct real approval/disclosure browser contracts. Reviewed
 assertions and concrete limits are documented; no code/test edit, new fault or deletion.
@@ -839,3 +839,9 @@ system72/1506 on PG17.11, separate from blanket defect detection. #128 records t
 locked Active Job false-result discrepancy in initial HTML/API enqueue before routed
 reproduction/smallest repair. Remaining API/Generate/confirmation variants are still
 scoped, #93/#79 remain unresolved. Inventory Deferred rows stay open with priorities.
+
+The whole API minutes10 file is now separately indexed/reviewed: actual bearer source
+privacy, structured mutations, exact official provenance/replay and grant-loss graph
+remain distinct from cookie requests/fake PDF/manually attested fixtures. #131 retains
+existing detached Session refusal and records missing direct ten-minute/atomic consumption
+proof before component edits; no demonstrated app defect or consolidation is claimed.

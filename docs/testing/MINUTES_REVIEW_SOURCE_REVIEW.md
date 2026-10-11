@@ -8,7 +8,7 @@ suggestions and human records. Current approval documentation supersedes older p
 configuration prose in the lifecycle history. #77/#78/#79/#80/#81 and their completed
 guard/authority slices retain separate runtime proof; #93/#79 decisions stay open.
 
-Read all cases, fixtures, helpers and assertions in the twelve files below. Exact names,
+Read all cases, fixtures, helpers and assertions in the thirteen files below. Exact names,
 source SHA, file blobs and lines are in [MINUTES_SOURCE_CASES.md](MINUTES_SOURCE_CASES.md).
 This is source-only work: no app/test edits, new execution, faults, test deletions or
 consolidation. Actual-main5c54e39 CI38120256442 executes the unchanged components:
@@ -31,12 +31,13 @@ execution is separate from demonstration that each assertion catches a regressio
 | `test/jobs/minutes_draft_generation_job_test.rb` /6 | Stubbed service delegation; unexpected worker error becomes safe failed state and rethrows; fixed-time pending-response polling enqueue; succeeded no next poll; actual job chain plus offline provider submits once/retrieves same ID twice/completes without official status; rejected polling enqueue retains failed queue_error/response ID/completion. Shared method replacement/set restoration uses ensure. This is the test queue adapter, not real Solid Queue worker dispatch or paid provider acceptance. |
 | `test/system/minutes_background_drafting_test.rb` /1 | Real magic-link browser disclosure/model/manual escape/submit control at1400/390 with overflow and font floors. It never submits, polls or applies a completed suggestion. Retain it for independent disclosure/readability detection; do not treat the case name as provider/background completion proof. |
 | `test/system/minutes_approval_flow_test.rb` /3 | Real configured officers without manual grants: code-confirmed handoff, editable Adjutant review, attested member copy, later pending-correction decision, corrected final human lock; phone progression; saved original Meeting/revision refuse rewrite; ordinary member later HTML and actual fetched/rendered PDF contains final title/status. Direct Adjutant uses link GET then actual POST, and same browser loses officer edit after assignment expiry while member navigation/session continues. Real email is synthetic test delivery; same-session expiry proof does not decide inconsistent near-midnight date contexts (#93). |
+| `test/controllers/api/minutes_api_test.rb` /10 | Actual restricted source/create/explicit read/scaffold/later safe Meeting projection; both-policy real bearer receipts/error/replay/no-store/source and grant-loss preservation; internal viewer reads but cannot heading/source mutate; structured sections/items/outcomes/reorder/attendance/later content; locked-state section refusal and fake PDF delivery; bearer scaffold exact retry; member draft denial; independently configured Commander/Adjutant read without draft/source mutation; separate bearer handoff/attestation fixed snapshot/version/digest/token/confirmation/event and exact replay graph; editable Adjutant handoff/direct attestation/current-authority loss/restored same receipt. Synthetic manually attested status and fake PDF are distinct from actual saved human revision/rendered PDF; expected snapshot uses app revision_payload and does not alone prove every independent field; real content/digest neighbors remain. All cases retained. |
 
 Controllers inspected against those requests include actual reopening/membership approval,
 draft scope/editability, draft creation/status, Jobs retry and API create/retry enqueue.
 The monitor uses authenticated no-store fetch and Turbo replacement on terminal status.
 Offline Generate response-ID/pending/retrieval-timeout tests are separately located and
-retained; other Generate/API cases remain their current scoped review status. Revisions,
+retained; other Generate and API components remain their current scoped review status. Revisions,
 SQL protections, member projection and genuine passkey authentication are independent
 components; neither the request counts nor the browser journey makes them redundant.
 
@@ -50,7 +51,12 @@ source/prior attempt and restored later enqueue before the smallest repair. No p
 incident is established by source. Initial false handling and browser monitor completion
 remain distinct from the six retained job components and disclosure-only browser case.
 
-No whole-confirmation TTL/session/payload matrix is claimed from these tests; map the
-remaining API/Generate/official-action components before creating duplicate coverage.
+The expanded whole API10 review preserves exact bearer provenance/replay/current-
+authority checks. SessionTest's existing detached-session refusal/consumption block and
+completed approval preservation stay independent. Governing ten-minute expiry and
+atomic official consumption lack an explicit direct expiry detector in the located
+components; #131 records bounded model/session/rollback verification and restored fault
+before edits. No source defect or whole TTL/session/payload matrix is claimed. Other
+Generate/official-action components remain to review without duplicate coverage.
 No safe consolidation is established. Preserve every assertion and the source-only
 execution/fault distinction. No production, real member-data copy or paid AI occurred.

@@ -382,7 +382,7 @@ assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault
 
 ## Whole-source minutes editing, review and worker variants
 
-Twelve files/78 exact cases are separately indexed in
+Thirteen files/88 exact cases are separately indexed in
 [the pinned minutes case index](MINUTES_SOURCE_CASES.md) and mapped in
 [the source review](MINUTES_REVIEW_SOURCE_REVIEW.md): structured snapshot/digest/
 validation, manual editor mutations, individual suggestions and attendance, correction
@@ -393,3 +393,9 @@ Real approval browser and disclosure-only browser keep independent purposes. #12
 tracks initial rejected-enqueue mismatch before repair; #93/#79 decisions remain open.
 The every-editor test covers two surfaces, and a named same-body test only rejects a
 future meeting here. No blanket matrix, redundant-test or provider acceptance claim.
+
+The whole API minutes10 file is now separately indexed/reviewed: actual bearer source
+privacy, structured mutations, exact official provenance/replay and grant-loss graph
+remain distinct from cookie requests/fake PDF/manually attested fixtures. #131 retains
+existing detached Session refusal and records missing direct ten-minute/atomic consumption
+proof before component edits; no demonstrated app defect or consolidation is claimed.

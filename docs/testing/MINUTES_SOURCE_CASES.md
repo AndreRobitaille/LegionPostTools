@@ -142,3 +142,18 @@ Reviewed file blob: `fd42abcc7d05b85c0f8a20ca4fa1f0a4f5e8c1b1`.
 - [Commander handoff Adjutant edits and meeting corrections reach a locked record without extra approval clicks](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/system/minutes_approval_flow_test.rb#L25)
 - [Adjutant draft attests directly with one clear status on desktop and phone](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/system/minutes_approval_flow_test.rb#L115)
 - [ending officer duties denies a subsequent save in the same browser while member navigation remains](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/system/minutes_approval_flow_test.rb#L133)
+
+## test/controllers/api/minutes_api_test.rb
+
+Reviewed file blob: `29f5b9ca0e11314c51dcd2b03bdf9ec351701f50`.
+
+- [agent can add and explicitly read a restricted transcript then seed minutes](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L23)
+- [bearer transcript receipts and errors retain metadata without raw restricted source](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L55)
+- [internal record viewer can read but cannot mutate minutes or transcript](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L147)
+- [agent can build reorder and edit the structured draft](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L178)
+- [draft mutations reject locked minutes and PDF remains a read-only artifact](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L245)
+- [bearer minutes creation is idempotent](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L264)
+- [plain member cannot read draft records](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L282)
+- [approvers and attesters can read minutes without draft or transcript authority](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L290)
+- [bearer tokens approve and attest with their human capabilities and provenance](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L312)
+- [delegated Adjutant can edit a handoff and attest directly with idempotent retries](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/api/minutes_api_test.rb#L383)
