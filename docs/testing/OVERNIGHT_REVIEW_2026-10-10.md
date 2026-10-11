@@ -734,3 +734,23 @@ Complete credential/API focus43/286, seed33457,3.31s passes; final committed ser
 suites/security/candidate/main CI remain required. Whole source/assertion scopes and
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
+
+## Independent raw-source privacy contracts (#79/#84)
+
+Retain all old cookie/HTML/provider/structured-generation assertions. Both source retention
+choices now have real bearer durable receipt/replay/error/current-grant-loss expectations;
+nonblank HTML error input proves safe summary plus intentional authorized retry text.
+Actual adapter with supplied offline SDK error proves safe failed-run metadata and unchanged
+minutes/source. Initial fixture precondition54/494/2 fails because the locked SDK default
+message omits nested source; inspect constructor and explicitly supply raw message, keeping
+all safe-message/category assertions. Corrected focus54/531 seed7173 clean, restored
+focus54/531 seed29075 clean, real browser1/33 seed18317 clean at1400/390. No paid call.
+
+Four faults detect raw creation receipt1/9/1 seed50823, HTML summary1/14/1 seed55779,
+provider message1/5/1 seed30626, persisted failed run1/5/1 seed59110. Finally restores
+exact API/form/provider bytes; hashes in TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md. All old
+component cases stay, large API/generation files are scoped rather than fully certified.
+Existing smaller transcript typography is separately linked #120 with rendered-size
+reproduction required; no visual-floor pass claimed. #79/PR#98 still require the unresolved
+recovery-start decision and actual scheduling/deletion. Main integration/final suites/CI
+remain required before merge. No production, member-data copy, deployment or provider call.

@@ -52,6 +52,98 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "Commander opened"
   end
 
+  test "bearer transcript receipts and errors retain metadata without raw restricted source" do
+    token, secret = AgentAccessToken.issue!(user: @manager, name: "Synthetic transcript operator", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{secret}" }
+    transcripts = []
+
+    %w[delete_after_acceptance retain_restricted].each do |policy|
+      meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 2.days.ago)
+      minutes = MeetingMinutes.create_from_meeting!(meeting: meeting)
+      original_minutes = minutes.attributes
+      source = "SYNTHETIC-RESTRICTED-RECEIPT-79-#{policy}: Commander described the service project.\nAdjutant recorded the attendance."
+      parameters = { transcript_content: source, retention_policy: policy }
+      write_headers = headers.merge("Idempotency-Key" => "source-#{policy}")
+      path = "/api/meetings/#{meeting.id}/transcript"
+
+      assert_difference "MeetingTranscript.count", 1 do
+        post path, params: parameters, headers: write_headers, as: :json
+      end
+
+      transcript = meeting.reload.transcript
+      assert_equal source, transcript.source_text
+      assert_equal Digest::SHA256.hexdigest(source), transcript.sha256_digest
+      assert_equal @manager.id, transcript.created_by_id
+      assert_equal policy, transcript.retention_policy
+      assert_equal original_minutes, minutes.reload.attributes
+      execution = token.agent_api_executions.find_by!(idempotency_key: "source-#{policy}")
+      assert_not_includes execution.attributes.to_json, "SYNTHETIC-RESTRICTED-RECEIPT-79"
+      assert_response :created
+      assert_not_includes response.body, "SYNTHETIC-RESTRICTED-RECEIPT-79"
+      assert_nil response.parsed_body.dig("transcript", "content")
+      receipt = execution.attributes
+      created_response = response.body
+      stored_source = transcript.attributes
+
+      assert_no_difference "MeetingTranscript.count" do
+        post path, params: parameters, headers: write_headers, as: :json
+      end
+      assert_equal stored_source, transcript.reload.attributes
+      assert_equal receipt, execution.reload.attributes
+      assert_response :created
+      assert_equal created_response, response.body
+
+      replacement = "SYNTHETIC-RESTRICTED-REPLACEMENT-79: This must not replace the original source."
+      assert_no_difference "MeetingTranscript.count" do
+        post path, params: { transcript_content: replacement, retention_policy: policy },
+          headers: headers.merge("Idempotency-Key" => "duplicate-#{policy}"), as: :json
+      end
+      assert_equal stored_source, transcript.reload.attributes
+      assert_equal original_minutes, minutes.reload.attributes
+      error_receipt = token.agent_api_executions.find_by!(idempotency_key: "duplicate-#{policy}")
+      assert_not_includes error_receipt.attributes.to_json, "SYNTHETIC-RESTRICTED"
+      assert_response :unprocessable_entity
+      assert_includes response.parsed_body.fetch("details").join(" "), "already has a transcript source"
+
+      receipts = token.agent_api_executions.order(:id).map(&:attributes)
+      get "#{path}?include_content=true", headers: headers, as: :json
+      assert_equal receipts, token.agent_api_executions.order(:id).map(&:attributes)
+      assert_equal stored_source, transcript.reload.attributes
+      assert_response :success
+      assert_equal source, response.parsed_body.dig("transcript", "content")
+      assert_equal "no-store", response.headers["Cache-Control"]
+      transcripts << [ transcript, stored_source, minutes, original_minutes, path, parameters, write_headers ]
+    end
+
+    invalid_source = "SYNTHETIC-RESTRICTED-INVALID-79: Officer input must stay out of error receipts."
+    assert_no_difference "MeetingTranscript.count" do
+      post "/api/meetings/#{@meeting.id}/transcript",
+        params: { transcript_content: invalid_source, retention_policy: "invalid-policy" },
+        headers: headers.merge("Idempotency-Key" => "invalid-source-policy"), as: :json
+    end
+    error_receipt = token.agent_api_executions.find_by!(idempotency_key: "invalid-source-policy")
+    assert_not_includes error_receipt.attributes.to_json, "SYNTHETIC-RESTRICTED"
+    assert_nil @meeting.reload.transcript
+    assert_response :unprocessable_entity
+
+    receipts = token.agent_api_executions.order(:id).map(&:attributes)
+    @manager.permission_grants.find_by!(capability: "manage_minutes").destroy!
+    transcripts.each do |transcript, stored_source, minutes, original_minutes, path, parameters, write_headers|
+      get "#{path}?include_content=true", headers: headers, as: :json
+      assert_equal stored_source, transcript.reload.attributes
+      assert_equal original_minutes, minutes.reload.attributes
+      assert_equal receipts, token.agent_api_executions.order(:id).map(&:attributes)
+      assert_response :forbidden
+      assert_not_includes response.body, "SYNTHETIC-RESTRICTED"
+
+      post path, params: parameters, headers: write_headers, as: :json
+      assert_equal stored_source, transcript.reload.attributes
+      assert_equal receipts, token.agent_api_executions.order(:id).map(&:attributes)
+      assert_response :forbidden
+      assert_not_includes response.body, "SYNTHETIC-RESTRICTED"
+    end
+  end
+
   test "internal record viewer can read but cannot mutate minutes or transcript" do
     minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
     MeetingTranscripts::Create.new(
