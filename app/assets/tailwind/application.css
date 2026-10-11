@@ -823,7 +823,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .badge-off { font-size: 13px; font-weight: 700; color: var(--color-legionred); background: #f8e9e7; border: 1px solid #dfb7b1; border-radius: 20px; padding: 3px 11px; }
 
 /* The access service record answers status, authority, and next action in that order. */
-.acct-mode { display: flex; align-items: flex-start; gap: 9px; font-size: 15px; line-height: 1.5; border-radius: 8px; padding: 11px 14px; margin: 6px 0 14px; }
+.acct-mode { display: flex; align-items: flex-start; gap: 9px; font-size: 16px; line-height: 1.5; border-radius: 8px; padding: 11px 14px; margin: 6px 0 14px; }
 .acct-mode-dot { font-size: 10px; line-height: 1.7; }
 .acct-mode--manual { background: #eef2f7; border: 1px solid #cbd7e6; color: var(--color-navy); }
 .acct-mode--manual .acct-mode-dot { color: var(--color-navy); }

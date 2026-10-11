@@ -311,3 +311,16 @@ bytes restored in finally and clean behavior passes. Whole own/admin credential 
 website credential model and real token browser tests remain separate retained contracts.
 Current integrated focus43/286 passes on877c18e; this scoped API case does not certify every
 mutation in OfficerApiTest. Details: [personal credential review](PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md).
+
+
+## Truthful local and National account panels (#115)
+
+Actual first setup and administrator local-account creation must later describe a Local
+Post record, without invented National import/deliverability/roster-controlled sign-in.
+Original stored identity passes while those independent prose assertions fail. Existing
+roster_backed?/roster_managed? supply presentation only; all actual grants/access/source
+fields and imported/removed/unknown-date/private-account cases remain. Real browser
+reads both source panels and uses create/disable/enable/manual-grant controls, then
+sign-out/protected refusal and local email sign-in/Profile. Desktop1400/390 critique and
+actual16px body checks preserve the 1919 system. No membership/authority policy change.
+See [design and original failures](LOCAL_ACCOUNT_PROVENANCE.md). No test consolidation.

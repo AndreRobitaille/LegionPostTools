@@ -22,7 +22,7 @@
         <% end %>
       </span>
     </div>
-  <% elsif @user.login_access_override? %>
+  <% elsif @user.login_access_override? || !@user.roster_managed? %>
     <div class="acct-mode acct-mode--manual">
       <span class="acct-mode-dot" aria-hidden="true">&#9679;</span>
       <span>
