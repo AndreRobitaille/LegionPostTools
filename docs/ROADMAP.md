@@ -339,7 +339,7 @@ in GitHub Issues.
 
 ## Open Work
 
-### Implemented locally: first membership workspace
+### Released: first membership workspace
 
 The [October 11 membership design](MEMBERSHIP_MANAGEMENT_DESIGN.md) records National
 and Wisconsin research, separate local dues and National standing, Adjutant report
@@ -347,10 +347,32 @@ snapshots, volunteer assignments, web/PDF membership drives, member self-reports
 and Post Excellence evidence. The [first workspace](MEMBERSHIP_WORKSPACE.md) now
 implements year-specific worklists, outreach, assigned volunteers, finished call
 sheet PDFs, separate local dues/National payment reports/Post-share check registers,
-corrections, and frozen Adjutant summaries. It has not been deployed. Partial-payment
-and transmittal accounting, member prompts, and award/Department form evidence
+corrections, and frozen Adjutant summaries. Released October 11, 2026 as `7f862d5`.
+Partial-payment and transmittal accounting, member prompts, and award/Department form evidence
 remain later slices. Post-specific dues handling and additional recurring report
 editions remain operational discovery items. Integrated email and optional texting
 follow manual outreach.
+
+### Planned: in-app help from maintained documentation
+
+Tracked in [GitHub issue #147](https://github.com/AndreRobitaille/LegionPostTools/issues/147).
+
+Provide task-based help inside the website, with contextual links from the screens
+where people need it. Reuse maintained operator guides as the source of the help
+content so website instructions and repository documentation stay in step.
+
+Initial topics should cover sign-in, officer assignments and access, membership
+drive volunteers, printing call sheets, and entering returned paper results. The
+[membership workspace guide](MEMBERSHIP_WORKSPACE.md),
+[user-management guide](USER_MANAGEMENT_GUIDE.md), and
+[member sign-in guide](MEMBER_SIGN_IN_GUIDE.md) provide the starting material.
+Preserve stable topic headings, exact screen/button names, and clear distinctions
+between available behavior, limitations, and planned features. Separate policy
+explanations from step-by-step tasks and developer/API details.
+
+Help should explain the reader's current access and identify when a task needs an
+administrator or membership manager. It must not expose private member records.
+The publishing/rendering approach and visual design remain to be designed;
+no in-app help system is implemented by this documentation update.
 
 Open work, priorities, and status live in GitHub Issues: https://github.com/AndreRobitaille/LegionPostTools/issues

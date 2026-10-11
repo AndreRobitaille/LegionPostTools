@@ -83,6 +83,12 @@ The current Commander, Adjutant, and 1st Vice Commander have general operational
 responsibility for the Post's membership. They need complete and efficient access to
 membership information, including bulk access.
 
+The 1st Vice Commander handles membership; "membership officer" describes that duty,
+not a separate Post position to create. The standard Post preset grants all three
+offices full membership access through their current dated assignments. See the
+[membership workspace guide](MEMBERSHIP_WORKSPACE.md#who-can-use-membership)
+for the website steps, volunteer assignments, and call sheet printing.
+
 Their membership access may include:
 
 - complete National roster records;

@@ -3,16 +3,64 @@
 Implemented October 11, 2026. This is the first slice of the
 [membership design and National/Department research](MEMBERSHIP_MANAGEMENT_DESIGN.md).
 
-## Access and the member record
+## Who can use Membership?
 
-Open **Membership** from the navigation or Menu. Current full-membership officers
-and people with `manage_people` can manage the workspace. A volunteer sees this
-destination while they have a current assignment to an available roster member.
-The assignment, drive dates, enabled account, and selected membership year all
-limit volunteer access. Closing a drive or revoking an assignment ends access on
-the next request. Holding a historical office does not preserve officer access.
-The destination is absent from both the desktop navigation and Menu for people
-without that current authority; direct URLs use the same access policy.
+The **1st Vice Commander** handles membership. The **Commander** and **Adjutant**
+also have full membership access. Use these existing offices; a separate
+"Membership Officer" position is not needed.
+
+The standard American Legion Post preset supplies this access automatically:
+
+| Person's current authority | Membership access |
+| --- | --- |
+| Current Commander, 1st Vice Commander, or Adjutant | Full workspace: member follow-up, drive management, dues and Post checks, and Adjutant summaries. |
+| Volunteer with an active drive assignment | Assigned members and permitted contact results, drive instructions, and their own call sheets. |
+| Other member or historical officeholder | No Membership destination unless another current role, assignment, or manual permission grants access. |
+| Application administrator or someone granted **Manage people and accounts** | Full workspace through application permissions. |
+
+Everyone needs an enabled website login account. Holding an office does not create
+that account or grant technical administration. The **Membership** destination
+appears in desktop navigation and Menu only while the person has current access;
+direct URLs and the private API enforce the same boundary.
+
+### Assign or end an officer's membership access
+
+An application administrator manages officer assignments:
+
+1. Open **People** and select the person.
+2. Under **Post Roles**, choose **Commander**, **1st Vice Commander**, or **Adjutant**.
+3. Enter **Starts on**, then select **Assign role**.
+
+No additional membership permission checkbox is needed for these configured
+offices. Access starts on the assignment's start date and remains active through
+its end date, using the Post's local date. Use **End role**, or enter **Ended** and
+select **Save dates**, to record the end of the term. Historical assignments stay
+in the person's record but no longer supply access.
+
+**Admin → Post Positions** controls which offices supply access. The
+**Full membership access** marker identifies the configured offices.
+**Grant membership access** and **Remove membership access** change the position's
+policy for everyone currently holding that position; they do not assign a person
+to an office. The application uses this setting and dated assignments rather than
+matching an office's display name on each request.
+
+An administrator can also grant **Manage people and accounts** under
+**People → person → Login Account → Permissions → Save permissions**. This is a
+separate manual grant that remains until removed. Ending a role does not
+remove a manual grant, and removing a manual grant does not remove access from
+another current role. Use drive assignments for volunteers instead.
+
+Account, role, and permission controls require **Manage app settings**
+(`manage_settings`); membership access alone does not supply those controls.
+See the [user-management guide](USER_MANAGEMENT_GUIDE.md#membership-access-supplied-by-a-position)
+for login eligibility and officer turnover.
+
+## Find members who need attention
+
+Open **Membership** from the navigation or Menu. The assignment, drive dates,
+enabled account, and selected membership year all limit volunteer access.
+Closing a drive or revoking an assignment ends assignment-derived access on the
+next request; a separate current officer role or manual grant can still supply access.
 
 The landing page is **Member follow-up**, defaulting to **Needs attention**. It puts
 due callbacks first, followed by membership records to review, payment confirmation
@@ -64,8 +112,31 @@ date. Phone/email links open the person's device application; they do not send
 messages or record a completed contact. Website and text channels can record
 contacts that actually happened. There is no automated prompt or SMS sender yet.
 
-Open **Drives** and create a drive with its purpose, dates, and script, then select members and a caller
-with an enabled account. Every purpose excludes deceased and removed records.
+### Give a volunteer assigned-member access
+
+A current membership manager can create a drive and assign callers without
+technical administration access:
+
+1. Open **Membership → Drives** and choose the membership year.
+2. Select **Create membership drive**, enter the drive name, purpose, start/end
+   dates, and optional call script, then select **Create drive**. You can also open
+   an existing drive for that year.
+3. Under **Assign members to a caller**, select the volunteer under **Caller**.
+4. Set **Access through** to a date within the drive's start/end dates.
+5. Check **Members to assign**, then select **Assign selected members**.
+
+The assignment automatically grants scoped website access. Volunteers do not
+need a Post office or **Manage people and accounts** permission. A future drive
+does not grant access until its start date. Access lasts through **Access through**,
+unless **Revoke assignment**, **Close drive**, or disabled sign-in ends it earlier.
+
+**Caller** lists people with enabled website login accounts, not every person on
+the National roster. If a volunteer is missing, an administrator should check
+**People → person → Login Account**. For an eligible person without an account,
+enter a unique **Login email** and select **Create login account**. Roster-backed
+accounts still follow [National roster sign-in eligibility](USER_MANAGEMENT_GUIDE.md#are-members-enabled-or-disabled-by-default).
+
+Every purpose excludes deceased and removed records.
 Renewal candidates also omit paid members, payments awaiting verification, unclear
 standing awaiting officer review, declined renewal, paused contact, and future
 callbacks. Expired members can still need renewal help. Welcome and Buddy Check purposes are
@@ -77,11 +148,33 @@ and omit completed or deferred work. They cannot see financial history, another 
 or separate individual officer notes. Officers see all work and can transcribe
 returned sheets, including sheets for expired or revoked assignments.
 
-**Open call sheets PDF** produces a finished Letter-size document with member
-contact blocks, result choices, callbacks, and writing space. Officers can choose
-a caller; volunteers always receive their own permitted selection. Member numbers,
-mailing addresses, financial history, and private contact notes are excluded.
-Enter each block's reference when transcribing it to prevent duplicate paper entry.
+### Print call sheets
+
+1. Open **Membership → Drives** and select the drive.
+2. Assign members to callers first; the PDF uses those assignments.
+3. Near the top of the drive page, choose an individual caller or **All callers**
+   under **Call sheets for**. Volunteers have no caller selector and always receive
+   only their own permitted assignments.
+4. Select **Open call sheets PDF**, then use the PDF viewer's print button or
+   **Ctrl+P** / **Cmd+P**.
+
+The finished Letter-size document includes member contact blocks, result choices,
+callbacks, and writing space. Expired or revoked assignments are excluded, and
+assigned members must need contact now to appear. If no blocks appear, check the
+assignments and each member's current next step. Member numbers, mailing addresses,
+financial history, and private contact notes are excluded.
+
+### Work from paper and enter returned results
+
+A volunteer can make calls using printed sheets without signing in. An officer
+can print the sheets and enter the returned results. **Current limitation:** the
+named caller must still have an enabled website account, and assigning their
+members also grants scoped website access. There is no separate paper-only caller
+option that avoids creating or granting access to a login account.
+
+To enter returned results, open the drive, select the assigned member, record the
+actual contact date and result, and enter the block's reference under
+**Paper reference (when entering a call sheet)**. This prevents duplicate paper entry.
 The selected assignment identifies the caller; the signed-in person is separately
 recorded as the recorder. Actual contact dates determine ordering, so entering an
 older sheet does not replace a newer result or callback. A paper result from the

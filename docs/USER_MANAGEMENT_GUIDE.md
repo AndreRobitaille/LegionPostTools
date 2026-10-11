@@ -3,10 +3,11 @@
 This guide explains how to help members sign in, keep login access current with the
 National roster, record Post officers, and grant application permissions.
 
-The screens described here are available only to someone with the **Manage settings**
-permission. A Commander or Adjutant who does not see these controls should ask an
+The account, role, and permission controls described here require **Manage app settings**
+(`manage_settings`). A Commander or Adjutant who does not see these controls should ask an
 existing LegionPostTools administrator for that permission. Holding a Post office and
 administering the application are intentionally separate responsibilities.
+Membership drive management uses membership access, as described below.
 
 ## The Four Records to Keep Straight
 
@@ -173,10 +174,15 @@ position before assigning it. Do not create a second spelling of an existing off
 
 In the standard American Legion Post setup, current assignments as Commander, 1st Vice
 Commander, and Adjutant are configured to provide full membership and renewal access.
-Other positions begin with ordinary member directory access.
+The 1st Vice Commander handles membership; do not create a separate "Membership Officer"
+position for that responsibility. Assign the existing office under **People → person →
+Post Roles**. No additional membership permission checkbox is needed. Other positions
+begin with ordinary member directory access.
 
-Under **Admin → Post Positions**, a gold key marks any title that grants full membership
-access. Change this only as a deliberate Post policy decision. This access begins and
+Under **Admin → Post Positions**, the **Full membership access** marker identifies a
+title that grants this access. **Grant membership access** and **Remove membership
+access** change the policy for everyone currently holding that position. Change this
+only as a deliberate Post policy decision. This access begins and
 ends with the dated assignment, but it still requires the person to have an enabled login
 account before they can sign in and use it.
 
@@ -199,10 +205,10 @@ what the person can do in LegionPostTools. Grant only what the person actually n
 
 Important distinctions:
 
-- **Manage settings** makes the person an application administrator who can manage
+- **Manage app settings** makes the person an application administrator who can manage
   accounts, roles, settings, and most operational areas. Reserve it for trusted people
   who actually administer the application.
-- **Manage people** grants full membership access without making the person a technical
+- **Manage people and accounts** grants full membership access without making the person a technical
   administrator.
 - Meeting and records permissions should match the person's real duties.
 - Approval, attestation, and acceptance permissions are personal official-record powers.
@@ -214,14 +220,35 @@ Important distinctions:
   supplies; add a manual exception after the office ends only if the separate duty
   should continue.
 
-At least one enabled person must retain **Manage settings**. The application prevents an
-administrator from removing or disabling the last such account.
+Ending an officer assignment removes access supplied by that office, but a separate
+manual grant or another current role can still grant membership access. Similarly,
+removing a manual grant does not revoke access supplied by a current office.
+
+At least one enabled person must retain **Manage app settings**. The application prevents
+an administrator from removing or disabling the last such account.
+
+## Membership Drive Volunteers and Paper Call Sheets
+
+Membership managers assign volunteers under **Membership → Drives → drive → Assign
+members to a caller**. Selecting an enabled **Caller**, an **Access through** date, and
+the assigned members automatically gives that volunteer access only to their assigned
+members. Do not grant **Manage people and accounts** or administration permissions for
+ordinary drive work.
+
+To print, open the drive, choose **Call sheets for**, and select **Open call sheets PDF**.
+An officer can print and enter returned results for a volunteer who works entirely on
+paper. The current named-caller workflow still requires an enabled website account and
+also grants scoped website access; there is no separate paper-only caller option.
+
+See the [membership workspace guide](MEMBERSHIP_WORKSPACE.md#give-a-volunteer-assigned-member-access)
+for assignment, expiration, printing, and returned-paper steps. Drive management requires
+membership access, while creating/enabling accounts requires an application administrator.
 
 ## Delegating Account Work to an Agent
 
 The private API is intended to let a bot or agent perform ordinary administrator work for
 the signed-in person, not merely report what the website contains. With that person's
-current **Manage settings** permission, the agent may inspect an exact person's account,
+current **Manage app settings** permission, the agent may inspect an exact person's account,
 create or enable it, disable sign-in, or return a roster-managed account to automatic
 roster control. The same last-administrator protection, roster eligibility rules, email
 validation, and separation between account, Post role, and app permissions still apply.
@@ -271,8 +298,8 @@ same person or two people who share an address.
 
 ### The management controls are missing
 
-The signed-in person needs **Manage settings**. Commander, Adjutant, full roster access,
-and **Manage people** do not by themselves provide account-management controls.
+The signed-in person needs **Manage app settings**. Commander, Adjutant, full roster access,
+and **Manage people and accounts** do not by themselves provide account-management controls.
 
 ### A roster import did not change access
 
