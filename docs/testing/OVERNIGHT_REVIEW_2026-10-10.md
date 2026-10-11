@@ -734,3 +734,21 @@ Complete credential/API focus43/286, seed33457,3.31s passes; final committed ser
 suites/security/candidate/main CI remain required. Whole source/assertion scopes and
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
+
+
+## Roster identity and offline audience coverage (#108/#109)
+
+Combined scoped coverage-only candidate integrates main55e091f (PR#118). No application
+change proposed. Original stale-client call, later-contact break and same-alert invalid
+identity-write faults each fail1 /1 /1 on independent actual calls/payloads/saved graph;
+service/controller exact bytes restored in finally. Logs and SHA values are in the two
+designs. All old controller/User/audience/client/sync/admin assertions remain; the old
+single-contact rejection test is renamed to describe what it actually proves.
+
+Refined focus54 /260 /0 seed7997,1.71s; real partial-output/email-choice browser2 /105 /0
+seed51884,9.75s. Existing target and foreign grants make preservation non-vacuous.
+Actual screenshots were critiqued at1400/390 for source/refusal/error text and overflow.
+The first browser setup errors and corrected Profile expectation are documented honestly.
+Fresh integrated focused checks, final committed serial suites/security/candidate/main
+CI remain required. Main PR#118 CI is pending at this note; #102 stays open.
+No external provider calls, production, paid AI or real member data.

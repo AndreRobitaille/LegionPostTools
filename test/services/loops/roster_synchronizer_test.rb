@@ -2,15 +2,17 @@ require "test_helper"
 
 class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
   class FakeClient
-    attr_reader :payloads
+    attr_reader :payloads, :open_count
 
     def initialize(rejected_email: nil, terminal_error: nil)
       @rejected_email = rejected_email
       @terminal_error = terminal_error
       @payloads = []
+      @open_count = 0
     end
 
     def open
+      @open_count += 1
       raise @terminal_error if @terminal_error
 
       yield self
@@ -47,7 +49,7 @@ class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
     assert_not client.payloads.first.key?(:subscribed)
   end
 
-  test "continues after a contact rejection and records the member" do
+  test "records a rejected contact without aborting the run" do
     client = FakeClient.new(rejected_email: "ready@example.com")
     roster_sync = create_sync
 
@@ -60,12 +62,52 @@ class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
     assert_equal "Provider rejected contact", roster_sync.failures.first["message"]
   end
 
+  test "a later contact is actually sent after the first contact is rejected" do
+    Person.create!(first_name: "Later", last_name: "Zzz", member_number: "M200",
+      roster_member_status: "active", roster_email_address: "later@example.test")
+    freeze_time do
+      roster_sync = create_sync
+      original_source = roster_source_state
+      client = FakeClient.new(rejected_email: "ready@example.com")
+      intervals = []
+
+      Loops::RosterSynchronizer.new(roster_sync, client: client, sleeper: ->(interval) { intervals << interval }).call
+
+      assert_equal [
+        { email: "ready@example.com", userId: "american-legion-member:M100", firstName: "Ready", lastName: "Member" },
+        { email: "later@example.test", userId: "american-legion-member:M200", firstName: "Later", lastName: "Zzz" }
+      ], client.payloads
+      assert_equal 1, client.open_count
+      assert_equal original_source, roster_source_state
+      assert_equal @roster_import.id, roster_sync.reload.roster_import_id
+      assert_equal @requester.id, roster_sync.requested_by_id
+      assert_equal [ 2, 1, 1 ], [ roster_sync.eligible_count, roster_sync.synced_count, roster_sync.failed_count ]
+      assert_equal [ { "name" => "Ready Member", "member_number" => "M100", "email" => "ready@example.com",
+        "message" => "Provider rejected contact", "status" => 400 } ], roster_sync.failures
+      assert_equal Time.current, roster_sync.started_at
+      assert_equal Time.current, roster_sync.finished_at
+      assert_equal 1, intervals.size
+      assert_operator intervals.sole, :>, 0
+      assert_equal "completed", roster_sync.status
+    end
+  end
+
   test "refuses to sync after a newer roster import" do
     roster_sync = create_sync
     RosterImport.create!(status: "completed", imported_at: 1.minute.from_now, uploaded_filename: "new.csv")
 
-    Loops::RosterSynchronizer.new(roster_sync, client: FakeClient.new, sleeper: ->(_) { }).call
+    client = FakeClient.new
+    original_source = roster_source_state
+    original_identity = roster_sync.attributes.slice("id", "roster_import_id", "requested_by_id")
 
+    Loops::RosterSynchronizer.new(roster_sync, client: client, sleeper: ->(_) { }).call
+
+    assert_equal 0, client.open_count, "Superseded source must be refused before opening the provider client"
+    assert_equal [], client.payloads
+    assert_equal original_source, roster_source_state
+    assert_equal original_identity, roster_sync.reload.attributes.slice("id", "roster_import_id", "requested_by_id")
+    assert_nil roster_sync.started_at
+    assert_equal [ 0, 0 ], [ roster_sync.synced_count, roster_sync.failed_count ]
     assert_equal "failed", roster_sync.reload.status
     assert_match(/newer roster import/, roster_sync.error_message)
   end
@@ -93,6 +135,10 @@ class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
   end
 
   private
+
+  def roster_source_state
+    [ Person.order(:id).map(&:attributes), User.order(:id).map(&:attributes), RosterImport.order(:id).map(&:attributes) ]
+  end
 
   def create_sync
     LoopsRosterSync.create!(roster_import: @roster_import, requested_by: @requester, eligible_count: 1)
