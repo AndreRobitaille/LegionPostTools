@@ -6,6 +6,8 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
 | `test/system/transcript_source_privacy_test.rb` | system | Restricted source / #79, #84 | P0 | Real invalid input/retry recovery/authorized reader/grant loss/Profile/sign-out journey at desktop-phone; source privacy and saved records preserved, actual purge timing deferred |
+| `test/system/loops_roster_syncs_test.rb` | system | Offline email audience reading / #109 | P1 | Actual offline service partial output, real sign-in, desktop/narrow source/failure, preview/later result and settings-grant loss denial; no live dispatch |
+| `test/system/roster_email_reviews_test.rb` | system | Member email identity / #108 | P1 | Real invalid form, saved identity/grants/session, all three choices, own Profile, sign-out/denial/new-sign-in remind; desktop/narrow |
 | `test/integration/last_administrator_concurrency_test.rb` | integration | Enabled settings administration / #112 | P0 | Three real independent PG/request overlap cases, original zero-admin stored failure, shared locking repair and truthful refusal/later access; no predicate mocks |
 | `test/models/endeavor_history_database_guards_test.rb` | models | Immutable history / #88, #95 | P0 | Six real SQL guards: update/delete, active identity/nil token, every terminal state, legitimate progress; original token failures and edition fault detected/restored |
 | `test/integration/api_guidance_authority_test.rb` | integration | Handbook / actual authority / #81 | P0 | Seven independent duties, both formats, actual reads/drafting/official acts and denial preservation; advertisement fault detected/restored |
@@ -29,7 +31,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/dated_agenda_sections_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/controllers/admin/dated_agendas_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/controllers/admin/jobs_controller_test.rb` | controllers | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/loops_roster_syncs_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/loops_roster_syncs_controller_test.rb` | controllers | Member / navigation / roster | P1 | All seven settings/preview/staleness/source-enqueue/configuration/active-run/partial-read cases source-reviewed and retained; exact30-day and actual job dispatch not asserted here (#109) |
 | `test/controllers/admin/meeting_minutes_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/meeting_transcripts_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Whole five paste/upload/safe invalid retry/viewer/member-denial cases reviewed and retained; nonblank error-summary leak fault detected/restored under #79; deletion remains unverified |
 | `test/controllers/admin/meeting_type_agenda_items_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -83,7 +85,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/people_show_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/profiles_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/public_publishing_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/roster_email_reviews_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/roster_email_reviews_controller_test.rb` | controllers | Member / navigation / roster | P1 | Five whole decisions/anonymous/invalid cases retained; fixed saved review metadata, nonempty target/foreign grants, unchanged identity and later Profile; same-alert write fault detected/restored (#108) |
 | `test/controllers/sessions_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All 17 sign-in/refusal/consumption/stale-cookie/sign-out variants reviewed and retained; later protected denial differs from helper setup; #104 |
 | `test/controllers/setup_controller_test.rb` | controllers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/controllers/website_access_authentication_test.rb` | controllers | Publication / #60–#62, #81 | P0 | All five matrices reviewed/retained: credentials/methods/Post scope/HEAD/conditional/revocation; actual anonymous-content fault detected/restored |
@@ -126,7 +128,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/position_title_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three reorder cases reviewed/retained: saved 1-based order, foreign unchanged orders and duplicate refusal; see #107 |
 | `test/models/roster_import_test.rb` | models | Member / navigation / roster | P1 | All seven latest-successful/history/staleness/old-summary/deceased/attachment contracts reviewed and retained; exact cutoff not separately frozen; #111 |
 | `test/models/session_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three actual session destruction/official lineage/confirmation detachment cases reviewed and retained; #104 |
-| `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | All thirty identity/email/manual/position/roster/last-admin cases reviewed and retained; real overlapping mutation proof separately #112, explicit email metadata gap #108 |
+| `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | All thirty person/email/sole-admin/manual/roster/role/grant/private-notes/membership cases retained; keep/remind saved metadata strengthened (#108); overlapping requests separately #112 |
 | `test/models/website_access_token_test.rb` | models | Publication / #60–#62, #81 | P0 | Three digest/refusal/throttle, fixed Post authority and overlapping replacement contracts reviewed/retained; distinct from personal delegation |
 | `test/models/website_calendar_test.rb` | models | Publication / #60–#62, #81 | P0 | Whole nine explicit-type/override/privacy/schedule/approved-document/all-day/signed preview expiry-authority-scope/legacy migration cases reviewed and retained under #105; no consolidation |
 | `test/models/website_publication_concurrency_test.rb` | models | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
@@ -138,9 +140,9 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/dated_agenda_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/endeavor_history/history_test.rb` | services | Continuing Post work / #88, #95 | P0 | All existing offline pipeline/coverage/reuse/budget/recovery/source variants reviewed and retained; recorded-token refusal/recovery strengthened; no paid provider claim |
 | `test/services/endeavor_history/provider_test.rb` | services | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
-| `test/services/loops/client_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/services/loops/roster_audience_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/services/loops/roster_synchronizer_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/services/loops/client_test.rb` | services | Member / navigation / roster | P1 | All three fake-HTTP authenticated PUT/rate-limit pacing/provider error cases source-reviewed and retained; actual external TLS/provider delivery unverified (#109) |
+| `test/services/loops/roster_audience_test.rb` | services | Member / navigation / roster | P1 | All three selection/skipped email/stable ID-name/omitted opt-out keys cases source-reviewed and retained; actual external opt-out state unverified (#109) |
+| `test/services/loops/roster_synchronizer_test.rb` | services | Member / navigation / roster | P1 | Six whole success/partial/stale/terminal/configuration cases retained or strengthened; actual missing later payload and stale client call faults caught/restored (#109) |
 | `test/services/mail_delivery_test.rb` | services | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
 | `test/services/meeting_minutes_pdf_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/meeting_type_template_seeder_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |

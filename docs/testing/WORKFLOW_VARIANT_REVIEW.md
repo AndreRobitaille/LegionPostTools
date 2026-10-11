@@ -342,3 +342,24 @@ fault executions catch durable receipt/HTML summary/provider message/failed-run 
 finally restore exact bytes, clean focus54/531 passes. The thirty-day scheduling decision
 and actual deletion remain #79/PR#98; this is independent privacy evidence, not purge
 completion. See [scope and evidence](TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
+
+## Roster email identity and offline audience boundaries (#108/#109)
+
+Existing five email-review requests keep every old assertion and now inspect independently
+expected review address/decision/time, actual login, unchanged National person/access/
+nonempty target-and-foreign grants/session graph and later own Profile. Invalid and
+anonymous writes preserve every stored field; a same-alert invalid write fault fails
+saved identity. User keep/remind components retain all prior predicates and add actual
+metadata. New real browser checks invalid form plus update/keep/remind, same-session
+suppression, sign-out/protected denial and fresh-sign-in re-prompt at desktop/390px.
+
+The six sync service cases retain every old result. Superseded input now requires zero
+provider opens/payloads and intact source/requester before failed status; dispatch-before-
+start fault fails that assertion. A separately named two-contact case requires both
+fixed payloads, exact failure identity/counts/timestamps/pacing; break-after-first fault
+fails on missing second payload. Exact service/controller bytes restored. Audience,
+fake HTTP and admin components retain distinct unchanged contracts. New actual offline
+service/browser read navigates source/partial results/preview and loses settings access
+while ordinary Profile remains. No provider opt-out state or Solid Queue dispatch claim.
+Details: [email identity](ROSTER_EMAIL_IDENTITY_REVIEW.md),
+[offline audience](OFFLINE_ROSTER_SYNC_REVIEW.md). No test deletion/consolidation.
