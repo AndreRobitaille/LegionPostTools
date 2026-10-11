@@ -455,6 +455,17 @@ source slice to25 files/224. Preserve fixed concrete Legion titles/section occup
 local rich edits/active/order, referenced dated title/section, repeat/default/second-Post
 and reset detectors. Custom-row existence and title-only snapshots have explicit limits.
 
+Whole `test/controllers/api/idempotency_concurrency_test.rb` is separately read at
+b965cf76 (one case and all setup/teardown): [concurrent first uses serialize and perform one mutation](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/controllers/api/idempotency_concurrency_test.rb#L24).
+Two independent actual bearer request sessions start from a shared queue gate after
+warmup; both return201 with identical bodies, one fixed-title Endeavor and one exact-key
+receipt. Transactions are disabled for cross-connection visibility and synthetic rows
+are cleaned in teardown. Keep this actual concurrent-request detector beside current-
+authority/replay/receipt cleanup contracts. The gate releases both callers but does not
+prove a held lock or separate backend IDs; no revocation-race matrix, real human token
+issuance or new fault is established. One full-source addition brings this branch to
+26 reviewed files/225 pinned or directly linked cases; no app/test change or consolidation.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.

@@ -968,3 +968,9 @@ placeholder dated title/section preservation, repeat/default/second-Post and res
 The catalog/template index is9 files/91 cases; combined minutes source25 files/224
 cases. Custom-row survival is separate from all custom-field preservation, and dated
 title/section proof is separate from every historical body. No test or app changes.
+
+One whole independent bearer idempotency concurrency case adds actual two request
+sessions/gated starts/identical201 bodies, exactly one saved Endeavor and receipt,
+with nontransactional visibility/synthetic cleanup. Its exact b965cf76 source link and
+held-lock/backend/authority limitations are in the variant matrix. Combined source
+review now26 files/225 cases; no test removal, new fault or runtime claim belongs here.
