@@ -501,3 +501,11 @@ reversible UTC-wall migration. Exact names/lines/blobs in
 Keep distinct seeded/local/error/model/route/history cases; no safe consolidation or
 test edit is established. Source reading, recorded execution and existing fault proof
 remain separate. No production backfill/migration or new authority date choice.
+
+Four additional complete dated-agenda files /40 cases extend that slice to10/79.
+Real Endeavor picker/copy/duplicate/lock, independent rich catalog/template/Endeavor
+snapshots, stale locks/reorder/transition identity and published member HTML/PDF route
+selection remain distinct. Fixed exact case/blob pins and implementation-coupled lock
+increment, inactive-fixture/status-only/fake-renderer and unlinked-destruction limits
+are recorded in the same source review. All assertions remain; no runtime or cleanup
+claim follows from source reading alone.

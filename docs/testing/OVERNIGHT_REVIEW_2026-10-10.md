@@ -995,3 +995,10 @@ approved section/roll-call controls, exact legacy-wording refusal and reversible
 representation tests. No source-only app/test changes, new execution or safe removal.
 The unmerged source branch now reviews39 complete files /304 exact cases;30 literal
 Deferred inventory rows and still-scoped work remain. #84 stays open.
+
+Read four more complete dated-agenda request/model files /40 cases and all fixtures,
+helpers and assertions. The dated-agenda source slice now10files/79 exact pinned cases,
+with rich snapshot/real transition/member-document outcomes and concrete limits.
+Combined unmerged whole source review43files/344cases;26 literal Deferred rows remain
+plus still-scoped files. Preserve every test and separate located/runtime/fault evidence;
+linked-minutes deletion refusal remains #83's independent contract. No production work.
