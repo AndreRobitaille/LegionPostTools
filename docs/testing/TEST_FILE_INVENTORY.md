@@ -5,6 +5,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/system/transcript_source_privacy_test.rb` | system | Restricted source / #79, #84 | P0 | Real invalid input/retry recovery/authorized reader/grant loss/Profile/sign-out journey at desktop-phone; source privacy and saved records preserved, actual purge timing deferred |
 | `test/system/loops_roster_syncs_test.rb` | system | Offline email audience reading / #109 | P1 | Actual offline service partial output, real sign-in, desktop/narrow source/failure, preview/later result and settings-grant loss denial; no live dispatch |
 | `test/system/roster_email_reviews_test.rb` | system | Member email identity / #108 | P1 | Real invalid form, saved identity/grants/session, all three choices, own Profile, sign-out/denial/new-sign-in remind; desktop/narrow |
 | `test/integration/last_administrator_concurrency_test.rb` | integration | Enabled settings administration / #112 | P0 | Three real independent PG/request overlap cases, original zero-admin stored failure, shared locking repair and truthful refusal/later access; no predicate mocks |
@@ -32,7 +33,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/jobs_controller_test.rb` | controllers | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/loops_roster_syncs_controller_test.rb` | controllers | Member / navigation / roster | P1 | All seven settings/preview/staleness/source-enqueue/configuration/active-run/partial-read cases source-reviewed and retained; exact30-day and actual job dispatch not asserted here (#109) |
 | `test/controllers/admin/meeting_minutes_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/admin/meeting_transcripts_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/meeting_transcripts_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Whole five paste/upload/safe invalid retry/viewer/member-denial cases reviewed and retained; nonblank error-summary leak fault detected/restored under #79; deletion remains unverified |
 | `test/controllers/admin/meeting_type_agenda_items_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/meeting_type_agenda_sections_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/meeting_types_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
@@ -54,7 +55,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/api/handbook_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Reviewed all existing handbook contracts; retained, with independent actual-action cohorts under #81 |
 | `test/controllers/api/idempotency_concurrency_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/meetings_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
-| `test/controllers/api/minutes_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed official/creation retry and retained record contracts; other variants deferred |
+| `test/controllers/api/minutes_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed official/creation retry and retained record contracts; real transcript receipts/errors/read/replay privacy for both retention choices fault-verified under #79; other variants deferred |
 | `test/controllers/api/minutes_draft_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed conditional creation authority and exact retry/preservation; all prior assertions retained |
 | `test/controllers/api/officer_api_test.rb` | controllers | Delegated mutations / #99 | P0 | Scoped exact-retry assertions reviewed/strengthened across retained/cleaned receipts; original missing guidance detected; remaining variants explicitly deferred |
@@ -147,8 +148,8 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/meeting_type_template_seeder_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/membership_report_test.rb` | services | Member / navigation / roster | P1 | Whole source/assertions reviewed and retained; exact pinned case index and distinct limits in DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md; unchanged actual-main15ce51b CI execution, no blanket fault/consolidation claim |
 | `test/services/minutes_agenda_wording_backfill_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/services/minutes_draft_providers/openai_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/services/minutes_drafting/generate_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/services/minutes_draft_providers/openai_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Whole nine offline strict request/pending IDs/retrieve/cancel/terminal parsing/network/quota/configuration/single SDK submission cases retained; raw message fault detected/restored under #79; no real provider acceptance claim |
+| `test/services/minutes_drafting/generate_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Scoped actual-adapter SDK failure preserves minutes/source and safe failed-run metadata; raw category persistence fault detected/restored under #79; other structured/background variants deferred |
 | `test/services/minutes_drafting/prompt_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/minutes_drafting/source_document_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/openai_sdk_contract_test.rb` | services | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
@@ -168,7 +169,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/meeting_documents_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/system/meeting_types_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/system/minutes_approval_flow_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed full existing journey; configured duties and same-session expiry added; all earlier assertions retained |
-| `test/system/minutes_background_drafting_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/system/minutes_background_drafting_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Whole real disclosure/model/manual escape/desktop-phone overflow/type-floor case reviewed and retained; no submission or real provider background/storage acceptance claim |
 | `test/system/minutes_endeavor_confirmation_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/passkey_enrollment_security_test.rb` | system | Authentication / authority / #78, #81 | P0 | Actual virtual-authenticator/CSRF/email/nickname/saved credential at 1400/390/320 reviewed and retained; globals restored; #104 |
 | `test/system/pdf_resource_security_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |

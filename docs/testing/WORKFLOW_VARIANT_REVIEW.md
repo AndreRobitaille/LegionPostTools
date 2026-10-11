@@ -323,6 +323,25 @@ website credential model and real token browser tests remain separate retained c
 Current integrated focus43/286 passes on877c18e; this scoped API case does not certify every
 mutation in OfficerApiTest. Details: [personal credential review](PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md).
 
+## Restricted transcript receipts, retry errors and offline provider failure (#79/#84)
+
+Preserve the existing cookie create/explicit-read/seed and blank-input cases. New real
+bearer source/replay for both retention choices checks actual durable receipt attributes
+for fixed raw-source sentinels before status/key absence; duplicate/invalid-policy errors
+preserve source/minutes and retain safe receipts. Explicit authorized reads create no
+receipts; current grant loss refuses both reads and completed replay. Existing HTML
+error case now includes nonblank source with invalid retention: safe error summary,
+no insertion, unchanged minutes and intentionally preserved authorized retry textarea.
+
+Retain all nine offline provider cases; strengthen supplied server/quota/configuration
+error messages with a proven raw-source fixture. New actual-adapter/service path preserves
+minutes/source and stores safe failure category/request ID without echoed source. Real
+browser1/33 follows invalid submission, valid recovery, restricted reader, permission loss,
+Profile and actual sign-out/protected denial at desktop/phone widths. Four controlled
+fault executions catch durable receipt/HTML summary/provider message/failed-run leaks,
+finally restore exact bytes, clean focus54/531 passes. The thirty-day scheduling decision
+and actual deletion remain #79/PR#98; this is independent privacy evidence, not purge
+completion. See [scope and evidence](TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
 
 ## Roster email identity and offline audience boundaries (#108/#109)
 
