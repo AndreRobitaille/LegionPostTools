@@ -117,3 +117,26 @@ absence without treating missing serializer keys alone as proof. Verify purged-s
 later reads with original official graphs and real uploaded storage deletion/recovery.
 External SDK/provider retention, proxy/access logging, backups, downloads and storage
 configuration remain unverified and are not established by this source review.
+
+## Verified independent work after the initial draft
+
+At actual main `99371bde2c5e5963d11be0a614ff255b56a3960b`, the policy decision and
+automatic removal are still outstanding. A fresh service/job/recurrence review finds
+only `MeetingTranscripts::Create`, with no scheduling/purge path. No timestamp or
+manual synthetic purged state is being credited as actual deletion.
+
+PR #123 supplies the previously required source-copy evidence: real bearer creation
+for both choices, actual stored receipt bodies, error/replay/current-grant denial, and
+offline SDK failure followed by actual saved failed-run inspection. Four reversible
+faults put a unique source sentinel into the receipt, HTML error, provider message or
+saved error; each reaches the intended detector and exact source is restored. Its
+actual-main CI38119436435 passed all four jobs. See
+[restricted-source evidence](testing/TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
+
+PR #129 preserves real uploaded UTF-8 bytes, digest and metadata while fixing the
+binary-encoding reader failure. Its independent five-megabyte limit fault and actual
+Unicode file-control/later-reader/grant-loss browser evidence are in
+[source-input evidence](testing/TRANSCRIPT_SOURCE_INPUT_REVIEW.md). Actual-main
+CI38122104236 passed all four jobs. These completed checks concern source handling,
+not the recovery-clock choice, actual scheduled deletion, backup erasure or provider
+retention. #79 stays open. No production or paid AI was used.
