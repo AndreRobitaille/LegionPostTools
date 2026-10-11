@@ -552,6 +552,14 @@ page geometry and native state restoration from fake PDF wiring, partial refusal
 optional visual captures and unverified failure-path emulation cleanup. All assertions
 remain; no safe consolidation or blanket fault/runtime proof follows from source reading.
 
+Official confirmation lifetime/atomicity (#131) adds direct fixed-ten-minute factory,
+before/after expiry, wrong live identity/session, consumed reuse and real persisted
+attestation-phase rollback/recovery components. Full saved confirmation/minutes/revision/
+attestation/event graph remains unchanged on refusal or rollback. Expiry fault2/2/2
+detects both refusals; exact source restoration leads to47/658 neighbors and3/131
+real approval browsers clean. [Design and evidence](OFFICIAL_CONFIRMATION_CONTRACTS.md).
+Keep the separate existing detached Session, provenance, request and browser assertions.
+
 Queued progress readability (#130) extends that same browser recovery journey with
 independent fixed13px labels/14px supporting text/16px body and action floors, requiring
 each actual selector at1400/390. Original11px badge failure2/68/1 detects the gap;
