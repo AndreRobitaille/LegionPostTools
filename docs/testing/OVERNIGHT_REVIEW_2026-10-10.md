@@ -752,3 +752,15 @@ seed54187 clean, desktop/narrow actual screenshots inspected. Wrong redirect fau
 f91f243e6e6eb0f33f56f6bec8cdb5f783e501b60a7186f57f7102210ea375f5.
 Final committed serial suites/security/exact candidate and actual-main CI remain required.
 No production operations, provider calls, dependency upgrades or exception suppression.
+
+
+## Actual synthetic token copying (#121/#105)
+
+Retain both credential journeys and every old assertion. Real clipboard readback plus
+actual denied-write manual fallback pass2/49 seed44498; full stored token attributes
+remain unchanged. Success-label-without-write fault fails2/24/2 seed56311 at exact
+copied bytes, then restores JS SHA2562b62abaf98f9a2df5af834c2c563674caa8157e8cf4ae89265a33e783e0b4f9b.
+Created/list desktop1400/390 captures inspected; synthetic redaction follows copy proof.
+Native-navigation exact-path evidence remains separate from unknown Chrome internals.
+Three changed Ruby files lint clean. Final main integration, committed serial suites,
+security/exact candidate/main CI pending; #121/#105 remain open. No app or production change.

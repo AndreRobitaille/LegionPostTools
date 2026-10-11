@@ -155,7 +155,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/administrator_permissions_test.rb` | system | Last-administrator refusal / #112 | P0 | Real sole-admin form refusal/unchanged graph at1400/390 then permitted successor handoff, old denied and new permitted navigation; no browser concurrency claim |
 | `test/system/account_menu_test.rb` | system | Member / navigation / sign-out | P0 | Full source reviewed/retained: actual keyboard/open/close/phone paths and sign-out plus later Profile denial, pending-session nullification and completed record preservation |
 | `test/system/agenda_item_catalog_entries_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Whole real magic-link/create/reveal-once/back/revoke desktop-phone journey reviewed and retained under #102; clipboard content remains unverified (#105) |
+| `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Whole real magic-link/create/reveal-once/back/revoke journey retained; actual clipboard bytes, denied-write full-selection fallback and unchanged token metadata verified under #121; copy omission fails before later journey assertions |
 | `test/system/authentication_entry_test.rb` | system | Runner / component contracts | P2 | Both actual phone-width email/resend/newest-code/sign-in/sign-out and returning-link session continuity journeys reviewed/retained; #104 |
 | `test/system/calendar_event_deletion_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/system/calendar_mobile_schedule_test.rb` | system | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
@@ -171,7 +171,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/passkey_enrollment_security_test.rb` | system | Authentication / authority / #78, #81 | P0 | Actual virtual-authenticator/CSRF/email/nickname/saved credential at 1400/390/320 reviewed and retained; globals restored; #104 |
 | `test/system/pdf_resource_security_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/roster_import_results_test.rb` | system | Member / navigation / roster | P1 | Old names/accounts/deceased-warning/result-link/layout journey retained; new actual empty upload/refusal/Import another roster/valid recovery at desktop-narrow layouts; #111 |
-| `test/system/website_access_tokens_test.rb` | system | Publication / #60–#62, #81 | P0 | Full source retained; real native path/create/reveal-once/back/revoke/desktop-narrow checks, wrong-redirect detection; clipboard contents not tested; recurring CI inspector error bounded under #105 |
+| `test/system/website_access_tokens_test.rb` | system | Publication / #60–#62, #81 | P0 | Whole native path/create/reveal-once/back/revoke/desktop-phone journey retained; actual clipboard bytes and denied-write full-selection fallback verified before synthetic screenshot redaction; copy omission fails (#121); Chrome internals bounded under #105 |
 | `test/system/website_calendar_test.rb` | system | Publication / #60–#62, #81 | P0 | Whole real native preview/create/activate/hide/meeting attendance/no-agenda desktop-phone journey retained; exact path wait catches wrong redirect, restored controller verified under #105; precise inspector cause unverified |
 | `test/system/website_publishing_test.rb` | system | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/views/date_field_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
@@ -181,3 +181,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/views/stat_tile_test.rb` | views | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/integration/protected_meeting_deletion_test.rb` | integration | #82 / #83 | P0 | Reviewed: source/state/denial matrix, original defect and detachment-fault evidence |
 | `test/system/position_titles_test.rb` | system | Configured Post title boundary / #107 | P0 | New real native foreign submission/public 404/unchanged authority graph, then ordinary Turbo controls at 1400/390px; initial harness assumptions and inspected layouts recorded |
+
+Clipboard boundary helper `test/support/token_clipboard_support.rb` is shared by the two
+retained credential journeys and is not a separately discovered test file. Permission
+overrides and synthetic clipboard cleanup use nested ensure; no capability skip/rescue.

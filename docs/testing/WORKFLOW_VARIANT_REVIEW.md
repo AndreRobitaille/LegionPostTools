@@ -322,3 +322,15 @@ bytes restored in finally and clean behavior passes. Whole own/admin credential 
 website credential model and real token browser tests remain separate retained contracts.
 Current integrated focus43/286 passes on877c18e; this scoped API case does not certify every
 mutation in OfficerApiTest. Details: [personal credential review](PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md).
+
+
+## Real copied token bytes and permission denial (#121)
+
+Both existing personal/Post-website journeys keep their distinct authority, issuance,
+reveal-once/back and revocation assertions. Shared browser support sets a fixed stale
+synthetic clipboard value, performs the real copy and reads exact actual copied bytes.
+Actual denied-write permission then produces the manual fallback with source focus and
+full exact selection. Stored credential attributes stay unchanged. Omitting only the
+application clipboard write preserves its success label yet fails both byte assertions;
+finally restores exact JS. Browser permissions reset in nested ensure; no stubbed
+clipboard, broad rescue, skip or consolidation. See [design and evidence](TOKEN_CLIPBOARD_REVIEW.md).
