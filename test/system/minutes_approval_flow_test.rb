@@ -1,4 +1,6 @@
 require "application_system_test_case"
+require "base64"
+require "open3"
 
 class MinutesApprovalFlowTest < ApplicationSystemTestCase
   include ActiveJob::TestHelper
@@ -68,6 +70,38 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     visit admin_meeting_path(@meeting)
     assert_selector ".minutes-status-card h2", text: "Approved and locked"
     assert_no_link "Record meeting approval"
+    @adjutant.permission_grants.create!(capability: "manage_agendas")
+    original_meeting = @meeting.reload.attributes
+    revision = @minutes.member_revision
+    original_revision = revision.attributes
+    member = officer("Member")
+    [ 1400, 390 ].each do |width|
+      page.current_window.resize_to(width, 1000)
+      system_sign_in(@adjutant)
+      visit edit_admin_meeting_path(@meeting)
+      fill_in "Meeting title (optional)", with: "Rewritten after final approval"
+      click_button "Save meeting"
+      assert_selector ".error-summary", text: "locked because its minutes are approved"
+      assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+      capture_system_screenshot("final-meeting-refusal-#{width}")
+      assert_equal original_meeting, @meeting.reload.attributes
+      assert_equal original_revision, revision.reload.attributes
+      click_link "Cancel", exact: true
+      assert_current_path admin_meeting_path(@meeting)
+
+      system_sign_in(member)
+      visit meetings_path
+      within find("a[href='#{meeting_minutes_path(@meeting)}']").ancestor(".member-meeting-row") do
+        click_link "View minutes"
+      end
+      assert_current_path meeting_minutes_path(@meeting)
+      assert_selector ".agenda-meeting-heading h1", text: "Corrected PEC Meeting"
+      assert_selector ".member-minutes-status", text: "Approved as corrected"
+      assert_no_text "Rewritten after final approval"
+      assert_final_pdf
+      assert_equal original_meeting, @meeting.reload.attributes
+      assert_equal original_revision, revision.reload.attributes
+    end
   ensure
     page.current_window.resize_to(1400, 1000)
   end
@@ -91,6 +125,30 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
   end
 
   private
+
+  def assert_final_pdf
+    previous_port = ENV["PDF_RENDER_PORT"]
+    ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
+    encoded = page.evaluate_async_script(<<~JS, print_meeting_minutes_path(@meeting))
+      const [url, done] = arguments;
+      fetch(url).then(response => {
+        if (!response.ok || !response.headers.get('content-type').includes('application/pdf')) throw new Error('Expected a readable minutes PDF');
+        return response.blob();
+      }).then(blob => {
+        const reader = new FileReader();
+        reader.onload = () => done(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      }).catch(error => done({error: error.message}));
+    JS
+    assert_kind_of String, encoded
+    text, stderr, status = Open3.capture3("pdftotext", "-", "-", stdin_data: Base64.decode64(encoded), binmode: true)
+    assert status.success?, stderr
+    assert_includes text, "Corrected PEC Meeting"
+    assert_includes text, "Approved as corrected"
+    assert_not_includes text, "Rewritten after final approval"
+  ensure
+    ENV["PDF_RENDER_PORT"] = previous_port
+  end
 
   def confirm_by_email(via_link: false)
     assert_selector "h1", text: "Confirm and complete"

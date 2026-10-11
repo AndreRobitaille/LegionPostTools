@@ -63,3 +63,17 @@ must retain the actor, exact confirmation/revision, one-use consumption and sign
 No authentication/record mock; email uses the synthetic test job adapter. Existing stale
 record, wrong-session, passkey, sign-out and approval browser variants retained. Temporary
 delay callback is removed in teardown; no general multi-tab concurrency claim.
+
+## Final occurrence context (#80)
+
+`FinalMeetingContextTest`: HTML/API × absent/draft/reopened agenda after real attestation
+and later-Meeting approval. Reloaded historical fields, signed revisions, approval/source
+identity and later member reads are compared before response assertions. Separate model
+and direct-SQL attempts exercise seven fields with a cached pre-final association. Positive
+draft/pending-correction and dedicated website edits remain. Original routed variants
+accepted mutation; the stronger graph assertion also failed on the original code.
+
+Existing `MinutesApprovalFlowTest` retains its full handoff/correction/confirmation journey
+and adds final occurrence edit refusal, member archive navigation and real final PDF reads
+at desktop/phone widths. The manual two-connection probe is separately recorded; it is
+not automatically discovered by Rails/CI. All earlier component and browser coverage stays.

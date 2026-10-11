@@ -50,7 +50,8 @@ class OfficialRecordDatabaseGuardsTest < ActiveSupport::TestCase
     expected = %w[
       endeavor_history_editions_immutable endeavor_history_events_immutable endeavor_history_guidances_immutable
       endeavor_history_results_immutable endeavor_history_run_protected endeavor_source_links_immutable
-      meeting_minutes_membership_approved_immutable minutes_attestations_append_only minutes_lifecycle_events_append_only
+      meeting_minutes_final_context_lock meeting_minutes_membership_approved_immutable meetings_final_context_immutable
+      minutes_attestations_append_only minutes_lifecycle_events_append_only
       minutes_membership_approvals_append_only minutes_revisions_append_only
     ]
     actual = ActiveRecord::Base.connection.select_values("SELECT tgname FROM pg_trigger WHERE NOT tgisinternal ORDER BY tgname")

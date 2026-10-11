@@ -11,6 +11,44 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: lock_final_minutes_meeting_context(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.lock_final_minutes_meeting_context() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.status = 'membership_approved' THEN
+    PERFORM 1 FROM meetings WHERE id = NEW.meeting_id FOR UPDATE;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: prevent_final_meeting_context_mutation(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.prevent_final_meeting_context_mutation() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF ROW(NEW.organization_id, NEW.meeting_body_id, NEW.meeting_type_id,
+         NEW.starts_at, NEW.title, NEW.location_name, NEW.location_address)
+     IS DISTINCT FROM
+     ROW(OLD.organization_id, OLD.meeting_body_id, OLD.meeting_type_id,
+         OLD.starts_at, OLD.title, OLD.location_name, OLD.location_address)
+     AND EXISTS (SELECT 1 FROM meeting_minutes
+                 WHERE meeting_id = OLD.id AND status = 'membership_approved') THEN
+    RAISE EXCEPTION 'This meeting''s date, title, body, type, and place are locked because its minutes are approved.';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: prevent_membership_approved_minutes_mutation(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -321,7 +359,7 @@ CREATE TABLE public.agent_api_executions (
     response_body text,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT agent_api_executions_state_check CHECK (((state)::text = ANY ((ARRAY['processing'::character varying, 'completed'::character varying])::text[])))
+    CONSTRAINT agent_api_executions_state_check CHECK (((state)::text = ANY (ARRAY[('processing'::character varying)::text, ('completed'::character varying)::text])))
 );
 
 
@@ -385,7 +423,7 @@ CREATE TABLE public.calendar_events (
     website_description text,
     attendance character varying DEFAULT 'members'::character varying NOT NULL,
     CONSTRAINT calendar_events_date_order CHECK (((ends_at IS NULL) OR (ends_at >= starts_at))),
-    CONSTRAINT calendar_events_visibility CHECK (((visibility)::text = ANY ((ARRAY['members'::character varying, 'public'::character varying])::text[])))
+    CONSTRAINT calendar_events_visibility CHECK (((visibility)::text = ANY (ARRAY[('members'::character varying)::text, ('public'::character varying)::text])))
 );
 
 
@@ -733,7 +771,7 @@ CREATE TABLE public.endeavor_history_runs (
     finished_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT endeavor_history_run_status CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying, 'superseded'::character varying])::text[])))
+    CONSTRAINT endeavor_history_run_status CHECK (((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('running'::character varying)::text, ('succeeded'::character varying)::text, ('failed'::character varying)::text, ('superseded'::character varying)::text])))
 );
 
 
@@ -883,8 +921,8 @@ CREATE TABLE public.endeavors (
     updated_at timestamp(6) without time zone CONSTRAINT tracked_items_updated_at_not_null NOT NULL,
     history_withdrawn boolean DEFAULT false NOT NULL,
     history_generation integer DEFAULT 0 NOT NULL,
-    CONSTRAINT endeavors_importance_check CHECK (((importance)::text = ANY ((ARRAY['standard'::character varying, 'important'::character varying])::text[]))),
-    CONSTRAINT endeavors_status_check CHECK (((status)::text = ANY ((ARRAY['active'::character varying, 'completed'::character varying])::text[])))
+    CONSTRAINT endeavors_importance_check CHECK (((importance)::text = ANY (ARRAY[('standard'::character varying)::text, ('important'::character varying)::text]))),
+    CONSTRAINT endeavors_status_check CHECK (((status)::text = ANY (ARRAY[('active'::character varying)::text, ('completed'::character varying)::text])))
 );
 
 
@@ -999,7 +1037,7 @@ CREATE TABLE public.magic_links (
     failed_attempts integer DEFAULT 0 NOT NULL,
     purpose character varying DEFAULT 'sign_in'::character varying NOT NULL,
     session_id bigint,
-    CONSTRAINT magic_links_purpose_check CHECK (((purpose)::text = ANY ((ARRAY['sign_in'::character varying, 'create_agent_access_token'::character varying, 'official_minutes_action'::character varying, 'enroll_passkey'::character varying])::text[])))
+    CONSTRAINT magic_links_purpose_check CHECK (((purpose)::text = ANY (ARRAY[('sign_in'::character varying)::text, ('create_agent_access_token'::character varying)::text, ('official_minutes_action'::character varying)::text, ('enroll_passkey'::character varying)::text])))
 );
 
 
@@ -1078,7 +1116,7 @@ CREATE TABLE public.meeting_minutes (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     current_revision_id bigint,
-    CONSTRAINT meeting_minutes_status_check CHECK (((status)::text = ANY ((ARRAY['draft'::character varying, 'approved'::character varying, 'attested'::character varying, 'membership_approved'::character varying])::text[])))
+    CONSTRAINT meeting_minutes_status_check CHECK (((status)::text = ANY (ARRAY[('draft'::character varying)::text, ('approved'::character varying)::text, ('attested'::character varying)::text, ('membership_approved'::character varying)::text])))
 );
 
 
@@ -1124,8 +1162,8 @@ CREATE TABLE public.meeting_transcripts (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     CONSTRAINT meeting_transcripts_byte_size_check CHECK ((byte_size >= 0)),
-    CONSTRAINT meeting_transcripts_retention_policy_check CHECK (((retention_policy)::text = ANY ((ARRAY['delete_after_acceptance'::character varying, 'retain_restricted'::character varying])::text[]))),
-    CONSTRAINT meeting_transcripts_source_kind_check CHECK (((source_kind)::text = ANY ((ARRAY['pasted_text'::character varying, 'text_upload'::character varying])::text[])))
+    CONSTRAINT meeting_transcripts_retention_policy_check CHECK (((retention_policy)::text = ANY (ARRAY[('delete_after_acceptance'::character varying)::text, ('retain_restricted'::character varying)::text]))),
+    CONSTRAINT meeting_transcripts_source_kind_check CHECK (((source_kind)::text = ANY (ARRAY[('pasted_text'::character varying)::text, ('text_upload'::character varying)::text])))
 );
 
 
@@ -1324,7 +1362,7 @@ CREATE TABLE public.minutes_attendance_entries (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     CONSTRAINT minutes_attendance_position_check CHECK (("position" > 0)),
-    CONSTRAINT minutes_attendance_status_check CHECK (((status)::text = ANY ((ARRAY['present'::character varying, 'absent'::character varying, 'excused'::character varying, 'vacant'::character varying, 'not_recorded'::character varying])::text[])))
+    CONSTRAINT minutes_attendance_status_check CHECK (((status)::text = ANY (ARRAY[('present'::character varying)::text, ('absent'::character varying)::text, ('excused'::character varying)::text, ('vacant'::character varying)::text, ('not_recorded'::character varying)::text])))
 );
 
 
@@ -1418,7 +1456,7 @@ CREATE TABLE public.minutes_draft_runs (
     discarded_by_id bigint,
     discarded_at timestamp(6) without time zone,
     CONSTRAINT minutes_draft_runs_source_line_count_check CHECK ((source_line_count > 0)),
-    CONSTRAINT minutes_draft_runs_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying, 'succeeded'::character varying, 'failed'::character varying])::text[])))
+    CONSTRAINT minutes_draft_runs_status_check CHECK (((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('running'::character varying)::text, ('succeeded'::character varying)::text, ('failed'::character varying)::text])))
 );
 
 
@@ -1465,9 +1503,9 @@ CREATE TABLE public.minutes_draft_suggestions (
     applied_record_id bigint,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT minutes_draft_suggestions_confidence_check CHECK (((confidence)::text = ANY ((ARRAY['high'::character varying, 'medium'::character varying, 'low'::character varying])::text[]))),
-    CONSTRAINT minutes_draft_suggestions_kind_check CHECK (((kind)::text = ANY ((ARRAY['item_summary'::character varying, 'outcome'::character varying, 'attendance'::character varying, 'additional_item'::character varying, 'endeavor_proposal'::character varying])::text[]))),
-    CONSTRAINT minutes_draft_suggestions_review_state_check CHECK (((review_state)::text = ANY ((ARRAY['unreviewed'::character varying, 'used'::character varying, 'edited'::character varying, 'discarded'::character varying])::text[]))),
+    CONSTRAINT minutes_draft_suggestions_confidence_check CHECK (((confidence)::text = ANY (ARRAY[('high'::character varying)::text, ('medium'::character varying)::text, ('low'::character varying)::text]))),
+    CONSTRAINT minutes_draft_suggestions_kind_check CHECK (((kind)::text = ANY (ARRAY[('item_summary'::character varying)::text, ('outcome'::character varying)::text, ('attendance'::character varying)::text, ('additional_item'::character varying)::text, ('endeavor_proposal'::character varying)::text]))),
+    CONSTRAINT minutes_draft_suggestions_review_state_check CHECK (((review_state)::text = ANY (ARRAY[('unreviewed'::character varying)::text, ('used'::character varying)::text, ('edited'::character varying)::text, ('discarded'::character varying)::text]))),
     CONSTRAINT minutes_draft_suggestions_source_range_check CHECK (((source_start_line > 0) AND (source_end_line >= source_start_line)))
 );
 
@@ -1550,7 +1588,7 @@ CREATE TABLE public.minutes_lifecycle_events (
     metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT minutes_lifecycle_events_type_check CHECK (((event_type)::text = ANY ((ARRAY['approved'::character varying, 'attested'::character varying, 'reopened'::character varying, 'membership_approved'::character varying])::text[])))
+    CONSTRAINT minutes_lifecycle_events_type_check CHECK (((event_type)::text = ANY (ARRAY[('approved'::character varying)::text, ('attested'::character varying)::text, ('reopened'::character varying)::text, ('membership_approved'::character varying)::text])))
 );
 
 
@@ -1591,7 +1629,7 @@ CREATE TABLE public.minutes_membership_approvals (
     recorded_at timestamp(6) without time zone NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT minutes_membership_approvals_disposition_check CHECK (((disposition)::text = ANY ((ARRAY['approved_as_presented'::character varying, 'approved_as_corrected'::character varying, 'approved_by_motion'::character varying, 'other'::character varying])::text[])))
+    CONSTRAINT minutes_membership_approvals_disposition_check CHECK (((disposition)::text = ANY (ARRAY[('approved_as_presented'::character varying)::text, ('approved_as_corrected'::character varying)::text, ('approved_by_motion'::character varying)::text, ('other'::character varying)::text])))
 );
 
 
@@ -1633,8 +1671,8 @@ CREATE TABLE public.minutes_outcomes (
     lock_version integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT minutes_outcomes_disposition_check CHECK (((disposition)::text = ANY ((ARRAY['adopted'::character varying, 'lost'::character varying, 'withdrawn'::character varying, 'postponed'::character varying, 'referred'::character varying, 'no_vote'::character varying, 'not_recorded'::character varying])::text[]))),
-    CONSTRAINT minutes_outcomes_kind_check CHECK (((kind)::text = ANY ((ARRAY['motion'::character varying, 'decision'::character varying])::text[]))),
+    CONSTRAINT minutes_outcomes_disposition_check CHECK (((disposition)::text = ANY (ARRAY[('adopted'::character varying)::text, ('lost'::character varying)::text, ('withdrawn'::character varying)::text, ('postponed'::character varying)::text, ('referred'::character varying)::text, ('no_vote'::character varying)::text, ('not_recorded'::character varying)::text]))),
+    CONSTRAINT minutes_outcomes_kind_check CHECK (((kind)::text = ANY (ARRAY[('motion'::character varying)::text, ('decision'::character varying)::text]))),
     CONSTRAINT minutes_outcomes_position_check CHECK (("position" > 0))
 );
 
@@ -1755,8 +1793,8 @@ CREATE TABLE public.official_action_confirmations (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     action_payload jsonb DEFAULT '{}'::jsonb NOT NULL,
-    CONSTRAINT official_action_confirmations_action_check CHECK (((action)::text = ANY ((ARRAY['approve'::character varying, 'attest'::character varying, 'reopen'::character varying, 'record_membership_approval'::character varying])::text[]))),
-    CONSTRAINT official_action_confirmations_method_check CHECK (((confirmation_method)::text = ANY ((ARRAY['in_app'::character varying, 'delegated_agent'::character varying, 'external_written_confirmation'::character varying])::text[])))
+    CONSTRAINT official_action_confirmations_action_check CHECK (((action)::text = ANY (ARRAY[('approve'::character varying)::text, ('attest'::character varying)::text, ('reopen'::character varying)::text, ('record_membership_approval'::character varying)::text]))),
+    CONSTRAINT official_action_confirmations_method_check CHECK (((confirmation_method)::text = ANY (ARRAY[('in_app'::character varying)::text, ('delegated_agent'::character varying)::text, ('external_written_confirmation'::character varying)::text])))
 );
 
 
@@ -1917,7 +1955,7 @@ CREATE TABLE public.permission_grants (
     capability character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT permission_grants_capability_check CHECK (((capability)::text = ANY ((ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying])::text[])))
+    CONSTRAINT permission_grants_capability_check CHECK (((capability)::text = ANY (ARRAY[('manage_settings'::character varying)::text, ('manage_people'::character varying)::text, ('manage_meeting_bodies'::character varying)::text, ('manage_agendas'::character varying)::text, ('manage_minutes'::character varying)::text, ('approve_minutes'::character varying)::text, ('attest_minutes'::character varying)::text, ('record_minutes_approval'::character varying)::text, ('view_internal_records'::character varying)::text, ('publish_public_content'::character varying)::text])))
 );
 
 
@@ -1985,7 +2023,7 @@ CREATE TABLE public.position_capability_grants (
     capability character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT position_capability_grants_capability_check CHECK (((capability)::text = ANY ((ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying])::text[])))
+    CONSTRAINT position_capability_grants_capability_check CHECK (((capability)::text = ANY (ARRAY[('manage_people'::character varying)::text, ('manage_meeting_bodies'::character varying)::text, ('manage_agendas'::character varying)::text, ('manage_minutes'::character varying)::text, ('approve_minutes'::character varying)::text, ('attest_minutes'::character varying)::text, ('record_minutes_approval'::character varying)::text, ('view_internal_records'::character varying)::text, ('publish_public_content'::character varying)::text])))
 );
 
 
@@ -3351,14 +3389,14 @@ CREATE UNIQUE INDEX idx_on_organization_id_source_key_ecf47169eb ON public.agend
 -- Name: idx_one_active_loops_roster_sync; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_one_active_loops_roster_sync ON public.loops_roster_syncs USING btree (status) WHERE ((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying])::text[]));
+CREATE UNIQUE INDEX idx_one_active_loops_roster_sync ON public.loops_roster_syncs USING btree (status) WHERE ((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]));
 
 
 --
 -- Name: idx_one_active_minutes_draft_retry; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_one_active_minutes_draft_retry ON public.minutes_draft_runs USING btree (retry_of_id) WHERE ((retry_of_id IS NOT NULL) AND ((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[])));
+CREATE UNIQUE INDEX idx_one_active_minutes_draft_retry ON public.minutes_draft_runs USING btree (retry_of_id) WHERE ((retry_of_id IS NOT NULL) AND ((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('running'::character varying)::text])));
 
 
 --
@@ -4716,7 +4754,7 @@ CREATE UNIQUE INDEX index_website_publications_on_public_id ON public.website_pu
 -- Name: one_active_endeavor_history_run; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX one_active_endeavor_history_run ON public.endeavor_history_runs USING btree (endeavor_id) WHERE ((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[]));
+CREATE UNIQUE INDEX one_active_endeavor_history_run ON public.endeavor_history_runs USING btree (endeavor_id) WHERE ((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('running'::character varying)::text]));
 
 
 --
@@ -4776,10 +4814,24 @@ CREATE TRIGGER endeavor_source_links_immutable BEFORE DELETE OR UPDATE ON public
 
 
 --
+-- Name: meeting_minutes meeting_minutes_final_context_lock; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER meeting_minutes_final_context_lock BEFORE INSERT OR UPDATE ON public.meeting_minutes FOR EACH ROW EXECUTE FUNCTION public.lock_final_minutes_meeting_context();
+
+
+--
 -- Name: meeting_minutes meeting_minutes_membership_approved_immutable; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER meeting_minutes_membership_approved_immutable BEFORE DELETE OR UPDATE ON public.meeting_minutes FOR EACH ROW EXECUTE FUNCTION public.prevent_membership_approved_minutes_mutation();
+
+
+--
+-- Name: meetings meetings_final_context_immutable; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER meetings_final_context_immutable BEFORE UPDATE ON public.meetings FOR EACH ROW EXECUTE FUNCTION public.prevent_final_meeting_context_mutation();
 
 
 --
@@ -5881,6 +5933,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261011010000'),
 ('20261004010000'),
 ('20261002010000'),
 ('20260930000000'),

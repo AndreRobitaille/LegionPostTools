@@ -1,6 +1,8 @@
 class Meeting < ApplicationRecord
   include WebsiteCalendarEntry
   HEADING_FIELDS = %w[starts_at title location_name location_address].freeze
+  HISTORICAL_FIELDS = (HEADING_FIELDS + %w[organization_id meeting_body_id meeting_type_id]).freeze
+  FINAL_CONTEXT_ERROR = "This meeting's date, title, body, type, and place are locked because its minutes are approved.".freeze
 
   normalizes :calendar_category, with: ->(value) { value.presence }
   validates :calendar_category, inclusion: { in: CalendarCategories::EDITABLE.keys + CalendarCategories::LEGACY_VALUES }, allow_nil: true
@@ -47,6 +49,12 @@ class Meeting < ApplicationRecord
     transaction { update(attributes) }
   rescue ActiveRecord::RecordInvalid
     false
+  rescue ActiveRecord::StatementInvalid => error
+    raise unless error.cause.is_a?(PG::RaiseException) &&
+      error.cause.result.error_field(PG::Result::PG_DIAG_MESSAGE_PRIMARY) == FINAL_CONTEXT_ERROR
+
+    errors.add(:base, FINAL_CONTEXT_ERROR)
+    false
   end
 
   def empty_record?
@@ -69,6 +77,12 @@ class Meeting < ApplicationRecord
   end
 
   def document_boundaries_are_respected
+    if (changes.keys & HISTORICAL_FIELDS).any? &&
+        final_minutes_in_database?
+      errors.add(:base, FINAL_CONTEXT_ERROR)
+      return
+    end
+
     return if dated_agenda.nil?
 
     if will_save_change_to_meeting_body_id? || will_save_change_to_meeting_type_id?
@@ -78,6 +92,10 @@ class Meeting < ApplicationRecord
     if dated_agenda.locked_for_editing? && (changes.keys & HEADING_FIELDS).any?
       errors.add(:base, "Reopen the agenda before changing this meeting's date, title, or place.")
     end
+  end
+
+  def final_minutes_in_database?
+    MeetingMinutes.uncached { MeetingMinutes.where(meeting_id: id, status: "membership_approved").exists? }
   end
 
   def sync_draft_agenda_heading!

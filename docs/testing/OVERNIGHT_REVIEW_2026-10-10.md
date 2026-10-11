@@ -248,3 +248,44 @@ PostgreSQL client tools. Align the CI service/client with the repository's confi
 major 17 to verify standard SQL-schema loading on that target; keep the local 18.6
 verification separate. No deployment configuration, container or production data is
 inspected/changed. This requires fresh candidate CI and final serial local verification.
+
+PR #87 final candidate `c76627fd6b80897bb1ed2b3d4105498daf33d6ca`: local ordinary
+1226 / 9265 / 0 (seed 11609, 100.76s), then system 65 / 1089 / 0 (160.89s).
+All four candidate CI jobs in run 38104270364 passed; logs prove PostgreSQL server/client
+17.11 and actual ordinary/system execution. Merged as
+`34d6abd7128b771049589c80a7cf1d198f1b61bf`; tree matches the candidate. Actual main CI
+38104592150 passed all four jobs, including serial ordinary/system steps. Issues #86/#89
+are complete; #84/#88 remain open. No deployment, production inspection or paid AI.
+
+## #80 Meeting context after final approval
+
+Design: [Final Meeting context](../FINAL_MEETING_CONTEXT.md). Seven explicit historical
+fields are protected independently of agenda status; website notice edits remain allowed.
+Original `b092bf6` routed variants: 6 / 6 / six failures, each accepting title mutation.
+Strengthened original persisted-graph assertion: 1 / 1 / one failure, proving occurrence
+mutation while the signed minutes stayed unchanged. No production record was inspected.
+
+New-worktree focused preparation first produced 13 missing-Tailwind errors. After
+`bin/rails tailwindcss:build`, six focused files passed 46 / 560 / 0 (seed 41535, 6.21s):
+`test/integration/final_meeting_context_test.rb`, `test/models/meeting_test.rb`,
+`test/models/official_record_database_guards_test.rb`,
+`test/controllers/admin/meetings_controller_test.rb`,
+`test/controllers/api/meetings_api_test.rb`, `test/controllers/meeting_minutes_controller_test.rb`.
+Database: owned `legion_context_race_test`, test environment, no source/AI mocks.
+
+Manual two-connection actual-finalization race passed on PostgreSQL 18.6; see the design
+for exact scope and observer correction. The SQL schema preserves all prior guards and
+adds two functions/triggers. Standard pg_dump normalized some equivalent array casts.
+The new browser argument to `test:system` did not select a file: Rails' rake task runs
+the entire suite. Record that result as a full exploratory run and use `bin/rails test
+test/system/minutes_approval_flow_test.rb` for focused capture. Final merge verification
+is still pending; no tests removed, weakened or skipped.
+
+Exploratory full system seed 29299: 65 / 1096 / 0 failures / one error (164.30s).
+The added archive selector matched both original and later PEC rows; selecting the row
+by its exact minutes URL removes ambiguity and explicitly asserts record identity.
+No application failure or relaxed expectation. Focused direct file runner seed 9718
+passed 2 / 104 / 0 (18.77s), including desktop/390px refusal, member archive and actual final
+PDF text. Refusal screenshots inspected: readable wrapping/controls, no horizontal
+overflow. RuboCop 495 files / zero offenses; Brakeman zero errors/warnings; gem and
+importmap audits report no vulnerabilities. Full serial final revision checks remain.

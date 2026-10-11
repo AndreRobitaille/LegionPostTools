@@ -5,6 +5,8 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/integration/final_meeting_context_test.rb` | integration | Final occurrence / #80 | P0 | Seven fields, routed agenda variants, persisted graph and later member reads; original mutation reproduced |
+| `test/manual/final_meeting_context_race.rb` | explicit runner | Final occurrence concurrency / #80 | P0 | Test database name guard; actual held finalization and waiting update; not CI-discovered |
 | `test/system/official_action_prefetch_test.rb` | system | Confirmation cookie continuity / #89 | P0 | Real hover and delayed speculative response reproduce missing request; normal email/provenance completion verified after repair |
 | `test/models/official_record_database_guards_test.rb` | models | Schema fidelity / #86 | P0 | Added direct SQL official-record variants; old-schema failures and fresh-load passes; Endeavor behavior deferred |
 | `test/assets_test.rb` | assets_test.rb | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
@@ -26,7 +28,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/meeting_type_agenda_items_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/meeting_type_agenda_sections_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/meeting_types_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
-| `test/controllers/admin/meetings_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/meetings_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
 | `test/controllers/admin/minutes_corrections_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/minutes_draft_runs_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/admin/minutes_editor_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -43,7 +45,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/api/calendar_activities_api_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/handbook_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/idempotency_concurrency_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/api/meetings_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/api/meetings_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
 | `test/controllers/api/minutes_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/minutes_draft_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -103,7 +105,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/magic_link_test.rb` | models | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_body_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_minutes_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/models/meeting_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/meeting_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
 | `test/models/meeting_transcript_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_type_agenda_item_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_type_agenda_section_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
@@ -156,7 +158,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/dated_agendas_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/system/meeting_documents_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
 | `test/system/meeting_types_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed scoped variants in matrix; other variants deferred to #84 |
-| `test/system/minutes_approval_flow_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/system/minutes_approval_flow_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
 | `test/system/minutes_background_drafting_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/minutes_endeavor_confirmation_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/passkey_enrollment_security_test.rb` | system | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
