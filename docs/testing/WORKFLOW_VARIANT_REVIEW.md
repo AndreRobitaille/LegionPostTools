@@ -343,6 +343,16 @@ finally restore exact bytes, clean focus54/531 passes. The thirty-day scheduling
 and actual deletion remain #79/PR#98; this is independent privacy evidence, not purge
 completion. See [scope and evidence](TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
 
+## Real copied token bytes and permission denial (#121)
+
+Both existing personal/Post-website journeys keep their distinct authority, issuance,
+reveal-once/back and revocation assertions. Shared browser support sets a fixed stale
+synthetic clipboard value, performs the real copy and reads exact actual copied bytes.
+Actual denied-write permission then produces the manual fallback with source focus and
+full exact selection. Stored credential attributes stay unchanged. Omitting only the
+application clipboard write preserves its success label yet fails both byte assertions;
+finally restores exact JS. Browser permissions reset in nested ensure; no stubbed
+clipboard, broad rescue, skip or consolidation. See [design and evidence](TOKEN_CLIPBOARD_REVIEW.md).
 ## Roster email identity and offline audience boundaries (#108/#109)
 
 Existing five email-review requests keep every old assertion and now inspect independently
@@ -379,6 +389,21 @@ that unchanged-suite execution does not demonstrate a representative fault for e
 assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault evidence;
 #115/#117 and #93 decisions remain open. No safe test consolidation was established.
 
+
+## Independent source size and uploaded UTF-8 reading (#124)
+
+All seven original transcript components remain. Old oversized input followed the app
+constant; a raised-limit control leaves it passing. Fixed five-megabyte plus one input
+and a separate exact-byte multibyte case now detect the same raised-limit fault in both
+pasted/upload paths. Refusals preserve source/blob/attachment and identity; later exact-
+size retry saves actual bytes, digest, creator and retention selection. Uploaded Unicode
+originally raises on binary-to-UTF-8 transcoding after raw storage agrees. One-line copy/
+encoding interpretation preserves bytes and existing BOM/CRLF normalization; small
+original reproduction fails, repaired component/request/provider neighbors pass62/674.
+Real uploaded-file browser variant reads accented source at1400/390, then loses source
+authority while own Profile works and source/minutes stay intact. Both existing privacy
+and new upload journeys pass2/167; no claim about automatic purge/provider completion.
+See [design and exact evidence](TRANSCRIPT_SOURCE_INPUT_REVIEW.md). No test removal.
 
 ## Whole-source minutes editing, review and worker variants
 
