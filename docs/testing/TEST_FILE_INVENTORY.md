@@ -5,6 +5,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/system/passkey_invitation_test.rb` | system | Optional sign-in invitation / #117 | P0 | Actual email sign-in/dismissal/same-session Profile/home, saved nonempty identity and foreign-session preservation, real sign-out/refusal/fresh invitation at desktop-phone; no enrollment policy change |
 | `test/integration/last_administrator_concurrency_test.rb` | integration | Enabled settings administration / #112 | P0 | Three real independent PG/request overlap cases, original zero-admin stored failure, shared locking repair and truthful refusal/later access; no predicate mocks |
 | `test/models/endeavor_history_database_guards_test.rb` | models | Immutable history / #88, #95 | P0 | Six real SQL guards: update/delete, active identity/nil token, every terminal state, legitimate progress; original token failures and edition fault detected/restored |
 | `test/integration/api_guidance_authority_test.rb` | integration | Handbook / actual authority / #81 | P0 | Seven independent duties, both formats, actual reads/drafting/official acts and denial preservation; advertisement fault detected/restored |
@@ -63,7 +64,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/calendar_controller_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/calendar_event_deletion_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/calendar_pdf_sources_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/controllers/dashboard_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/dashboard_controller_test.rb` | controllers | Member / navigation / roster | P1 | Whole twenty setup/recovery/expiry/meeting/activity/email/passkey cases reviewed and retained; strengthened existing positive dismissal preserves nonempty identity/grant/passkey/session graph and later Profile/fresh-session continuity (#117) |
 | `test/controllers/dated_agenda_pdf_sources_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/dated_agendas_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/endeavor_histories_controller_test.rb` | controllers | Continuing Post work / calendar | P1 | Deferred: awaiting bounded slice review |
@@ -76,11 +77,11 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/official_action_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/passkey_enrollment_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All twelve code/link/purpose/session/bearer/cancellation/intent cases reviewed and retained; actual enrollment identity proof differs from token proof; #104 |
 | `test/controllers/passkey_enrollment_security_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Eleven existing real registration/identity/session/challenge cases retained; new fresh-browser signed authentication refusal/recovery catches relaxed verification; #104 |
-| `test/controllers/passkey_invitations_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
+| `test/controllers/passkey_invitations_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Whole anonymous-refusal component retained; positive dismissal remains separately in Dashboard and real browser (#117) |
 | `test/controllers/passkeys_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All 13 option/verification/management/refusal/rate-limit cases retained; disabled/unknown saved graph strengthened; stub limits recorded; #104 |
 | `test/controllers/people_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/people_show_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/controllers/profiles_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/profiles_controller_test.rb` | controllers | Member / navigation / roster | P1 | Whole six own-profile/private-account components reviewed and retained; actual post-dismissal own Profile and foreign identity exclusion verified (#117) |
 | `test/controllers/public_publishing_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/roster_email_reviews_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/sessions_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All 17 sign-in/refusal/consumption/stale-cookie/sign-out variants reviewed and retained; later protected denial differs from helper setup; #104 |

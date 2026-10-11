@@ -734,3 +734,16 @@ Complete credential/API focus43/286, seed33457,3.31s passes; final committed ser
 suites/security/candidate/main CI remain required. Whole source/assertion scopes and
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
+
+
+## Optional passkey invitation saved-state and browser proof (#117)
+
+Whole twenty Dashboard, one anonymous invite and six Profile cases stay; strengthen the
+existing positive dismissal test and add actual browser continuity. Nonempty foreign
+identity/grant/passkey/session graph remains; real sign-out refuses later Profile and
+fresh magic-link sign-in reoffers the optional invitation. Original flag omission fails
+retained card absence1/9/1 seed44205; finally restores controller86d54e2d9f25941ab875c5fa1c7fcf523f9ea328ecfc2a07d1fbffc0a147f5b7.
+Final frozen-clock focus27/151 seed23307,2.00s then browser1/33 seed17331,4.07s clean.
+Desktop1400/390 visible/dismissed/fresh screenshots inspected. No app, enrollment or
+session policy change. Main integration/final committed serial suites/security/exact
+candidate/main CI remain required; no safe test removal/consolidation established.

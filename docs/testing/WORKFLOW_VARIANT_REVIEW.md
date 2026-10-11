@@ -311,3 +311,17 @@ bytes restored in finally and clean behavior passes. Whole own/admin credential 
 website credential model and real token browser tests remain separate retained contracts.
 Current integrated focus43/286 passes on877c18e; this scoped API case does not certify every
 mutation in OfficerApiTest. Details: [personal credential review](PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md).
+
+
+## Optional passkey invitation continuity (#117)
+
+Keep the existing Dashboard positive dismissal detector and anonymous request component.
+The former now proves a visible invitation and unchanged nonempty person/account/grant/
+passkey/session graph, later own Profile/home and a distinct fresh authenticated session.
+The new real-browser journey supplies actual email sign-in, dismissal, Profile/home,
+sign-out/protected refusal and fresh invitation while other-person sessions remain.
+All twenty Dashboard and six Profile cases remain; AuthenticationEntry and AccountMenu
+retain distinct real authentication/keyboard/official-confirmation contracts. Omitting
+only the dismissal flag fails the retained card-absence assertion; exact controller
+restored. Frozen test clocks avoid legitimate last_seen touches, without app changes.
+See [design and evidence](PASSKEY_INVITATION_REVIEW.md); no safe consolidation established.
