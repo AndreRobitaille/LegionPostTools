@@ -411,3 +411,42 @@ sets matching draft context. No application validation was weakened.
 Focused changed replay/API neighbors: 70 / 866 / 0 (seed 29799, 12.28s); four changed
 Ruby files pass lint. This source change requires a new committed candidate, serial full
 suites and exact-SHA CI; the earlier passing candidate is not substituted as final proof.
+
+Final replay candidate `31231f6`: ordinary 1252 / 10484 / 0 (seed 17790, 140.68s),
+followed by qualifying serial system 66 / 1187 / 0 (seed 65277, 162.64s). The earlier
+passing system run at seed 43330 overlapped one short independent API probe and is
+excluded. RuboCop 499 files clean; Brakeman zero errors/warnings; both audits clean.
+Exact-SHA CI 38107402806 passes all four jobs and actual PG17.11 suites with matching
+counts. Its first attempt encountered Chrome154's detached-node inspector error during
+a website-token visibility check; the expected page was present in the screenshot. One
+failed-job rerun completed all retained assertions; no tests suppress errors or retry.
+Fresh review checked callback scopes, partial returned-copy redaction, deletion/stale
+receipt continuity and official once-only provenance. PR #94 merged as
+`0a5686a92bc0203085497fc4f3e75a8c6d8b5215`; exact merged tree matches the candidate.
+Actual-main CI 38108458080 is pending at this entry. #92 closed; #78/#93 remain open.
+
+## API guidance / actual delegated and website authority (#81)
+
+Design: `docs/API_GUIDANCE_AUTHORITY_VERIFICATION.md`, written before changes. Seven
+independent profiles compare JSON/Markdown advertisements to real saved reads, denied
+write preservation, drafting and delegated official acts. Original component tests remain.
+Full existing handbook/website-access/operator/token-management contracts are reviewed;
+other API files remain scoped/deferred, rather than claiming suite execution reviews them.
+The old internal-viewer test name incorrectly described denial of restricted sources;
+rename it to its existing explicit-read contract without changing its assertions.
+
+Strengthened original minutes handoff/attestation checks: exact payload/version/digest,
+real owner/token, consumed confirmation, saved attestation/event references and original
+byte-identical receipt with unchanged graph. Website matrices add anonymous content
+exclusion before 401 and real authenticated empty conditional 304 before revocation.
+Correct the standing brief's anonymous-feed claim and label the dated August parity
+outline historical, linking current policy/member reads without rewriting history.
+
+Detection: bad Administrator approval advertisement 1 / 19 / one failure; missing website
+credential fault 1 / 2 / one failure exposing actual fictional person content; restored
+old brief 1 / 2 / one failure. Exact-byte restorations and hashes are in the design.
+Initial caller-ID assumption failed because the handbook has a name field; use that real
+field. No permission or route expectation relaxed. Final restored focused set: 38 / 1482 /
+0 (seed 64533, 9.87s), log `/tmp/legion-guidance-restored-clean.log`; five changed Ruby
+files lint clean. No application fault remains. Final committed full serial suites,
+security, exact candidate CI and actual-main evidence are required before merge.

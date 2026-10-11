@@ -225,8 +225,11 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     adjutant_title = @organization.position_titles.create!(name: "Adjutant", display_order: 2, active: true)
     commander_title.position_assignments.create!(person: approver.person, starts_on: 1.year.ago.to_date)
     adjutant_title.position_assignments.create!(person: attester.person, starts_on: 1.year.ago.to_date)
-    _approval_token, approval_plaintext = AgentAccessToken.issue!(user: approver, name: "Commander agent", expires_in: 1.day)
-    _attestation_token, attestation_plaintext = AgentAccessToken.issue!(user: attester, name: "Adjutant agent", expires_in: 1.day)
+    approval_token, approval_plaintext = AgentAccessToken.issue!(user: approver, name: "Commander agent", expires_in: 1.day)
+    attestation_token, attestation_plaintext = AgentAccessToken.issue!(user: attester, name: "Adjutant agent", expires_in: 1.day)
+    expected_payload = minutes.revision_payload.deep_dup
+    expected_version = minutes.lock_version
+    expected_digest = Digest::SHA256.hexdigest(JSON.generate(expected_payload))
 
     post "/api/meetings/#{@meeting.id}/minutes/approval", headers: {
       "Authorization" => "Bearer #{approval_plaintext}",
@@ -237,6 +240,28 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_equal "approved", response.parsed_body.dig("minutes", "status")
     assert_equal "delegated_agent", response.parsed_body.dig("execution", "mode")
     assert_equal "attest", response.parsed_body.dig("minutes", "lifecycle", "next_action")
+    confirmation = approver.official_action_confirmations.sole
+    assert_equal approval_token.id, confirmation.agent_access_token_id
+    assert_nil confirmation.session_id
+    assert_equal expected_version, confirmation.record_lock_version
+    assert_equal expected_digest, confirmation.content_digest
+    assert confirmation.confirmed_at
+    assert confirmation.consumed_at
+    assert_equal expected_payload, minutes.reload.current_revision.payload
+    assert_equal expected_digest, minutes.current_revision.sha256
+    assert_equal confirmation.id, minutes.lifecycle_events.last.official_action_confirmation_id
+    receipt = response.body
+    original_graph = [ minutes.attributes, minutes.revisions.map(&:attributes), minutes.lifecycle_events.map(&:attributes), confirmation.attributes ]
+    post "/api/meetings/#{@meeting.id}/minutes/approval", headers: {
+      "Authorization" => "Bearer #{approval_plaintext}", "Idempotency-Key" => "approve-august-minutes"
+    }, as: :json
+    assert_response :success
+    assert_equal receipt, response.body
+    assert_equal original_graph, [ minutes.reload.attributes, minutes.revisions.map(&:attributes), minutes.lifecycle_events.map(&:attributes), confirmation.reload.attributes ]
+    assert_equal 1, approver.official_action_confirmations.count
+    expected_payload = minutes.revision_payload.deep_dup
+    expected_version = minutes.lock_version
+    expected_digest = Digest::SHA256.hexdigest(JSON.generate(expected_payload))
 
     post "/api/meetings/#{@meeting.id}/minutes/attestation", headers: {
       "Authorization" => "Bearer #{attestation_plaintext}",
@@ -250,6 +275,17 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_equal "record_membership_approval_or_reopen", response.parsed_body.dig("minutes", "lifecycle", "next_action")
     assert_equal attester.person.full_name, response.parsed_body.dig("attestation", "attested_by")
     assert_equal 2, minutes.lifecycle_events.count
+    confirmation = attester.official_action_confirmations.sole
+    assert_equal attestation_token.id, confirmation.agent_access_token_id
+    assert_nil confirmation.session_id
+    assert_equal expected_version, confirmation.record_lock_version
+    assert_equal expected_digest, confirmation.content_digest
+    assert confirmation.confirmed_at
+    assert confirmation.consumed_at
+    assert_equal expected_payload, minutes.reload.current_revision.payload
+    assert_equal expected_digest, minutes.current_revision.sha256
+    assert_equal confirmation.id, minutes.lifecycle_events.last.official_action_confirmation_id
+    assert_equal confirmation.id, minutes.current_revision.attestation.official_action_confirmation_id
   end
 
   test "delegated Adjutant can edit a handoff and attest directly with idempotent retries" do
