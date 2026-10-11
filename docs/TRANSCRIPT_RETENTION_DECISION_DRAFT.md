@@ -140,3 +140,40 @@ Unicode file-control/later-reader/grant-loss browser evidence are in
 CI38122104236 passed all four jobs. These completed checks concern source handling,
 not the recovery-clock choice, actual scheduled deletion, backup erasure or provider
 retention. #79 stays open. No production or paid AI was used.
+
+## Independent ordinary-approval reproduction design
+
+Ordinary approval without pending corrections has the same recorded final event under
+both proposed clocks. It can be investigated now without choosing the pending-correction
+boundary. Use four synthetic cases: pasted/uploaded sources and each policy, a nonempty
+actual draft, Commander handoff, Adjutant attestation and real later-Meeting approval.
+Capture the saved official graph and source/storage metadata. Just before thirty days,
+source remains available. At thirty-one days, execute due jobs actually enqueued by
+this path and inspect saved text, attachment/blob/storage presence and unchanged official
+records. Expected missing-behavior detector: delete-after-acceptance source still available;
+retain-restricted is the separate positive control.
+
+This experiment checks the existing approval/queued-job path. It does not fabricate a
+missing scheduler, exercise a recurrence that does not exist, prove production execution
+or define the future scheduler implementation. Keep any failing reproduction on this
+unmerged draft. Once policy and the real scheduling path are implemented, the final
+lifecycle test must invoke that actual scheduled service/job and include pending
+corrections, delayed execution, retry and storage-failure recovery. No generated minutes,
+provider, external email, production or real member data is involved.
+
+Original ordinary-approval reproduction on unchanged transcript/approval logic:
+`bin/rails test test/integration/transcript_retention_reproduction_test.rb` using the
+owned legion_retention_reproduction_test database passes both retain-restricted controls
+and fails both delete-after-acceptance detectors:4/76,2 failures,0 errors/skips,
+seed23017,1.33s. All four real final approvals, before-window source reads, retained
+metadata and after-window official-graph comparisons succeed. At thirty-one days pasted
+content is still present; uploaded attachment and actual Disk storage object still exist.
+No deletion job is enqueued/performed. Test teardown removes only its own synthetic file
+after observation; that cleanup is not application purge evidence.
+
+The new reproduction deliberately stays failing and unmerged with this decision draft.
+It is a current-path diagnostic, not a final scheduler test: future implementation must
+wire the real chosen recurrence/job and extend storage-error/idempotency/pending-correction
+coverage. No application fault is injected and no expected behavior is weakened. One-file
+RuboCop, Ruby parsing and diff/reference checks pass. Successful older docs-only CI does
+not qualify this changed draft; its expected failed regression CI is reported separately.
