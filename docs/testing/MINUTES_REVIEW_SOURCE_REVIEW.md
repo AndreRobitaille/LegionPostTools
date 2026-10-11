@@ -8,7 +8,7 @@ suggestions and human records. Current approval documentation supersedes older p
 configuration prose in the lifecycle history. #77/#78/#79/#80/#81 and their completed
 guard/authority slices retain separate runtime proof; #93/#79 decisions stay open.
 
-Read all cases, fixtures, helpers and assertions in the thirteen files below. Exact names,
+Read all cases, fixtures, helpers and assertions in the fourteen files below. Exact names,
 source SHA, file blobs and lines are in [MINUTES_SOURCE_CASES.md](MINUTES_SOURCE_CASES.md).
 This is source-only work: no app/test edits, new execution, faults, test deletions or
 consolidation. Actual-main5c54e39 CI38120256442 executes the unchanged components:
@@ -28,6 +28,7 @@ execution is separate from demonstration that each assertion catches a regressio
 | `test/models/minutes_draft_run_test.rb` /1 | Actual original and other-Meeting source fixtures; cross-minutes retry validation and incomplete discard actor/time validation. Unsaved invalid objects test validation, not full routed retry/persistence/concurrency or symmetric provenance variants. |
 | `test/services/minutes_drafting/source_document_test.rb` /3 | Exact stable numbered lines/excerpt; long punctuation passage splits and stays within configured length; oversized unspaced input reassembles without content loss and correct chunk lengths. Configured internal length expectations are not an independent product byte-size limit. Empty/invalid excerpt variants are not located here. |
 | `test/services/minutes_drafting/prompt_test.rb` /2 | Concrete instruction text retains agenda-subject routing, exact Endeavor lookup/source citation, absent-member detail, privacy exceptions and uncertain-identity constraints. These are prompt-contract detectors, not evidence the external model obeys them. Offline Generate/provider validation remains independent. |
+| `test/services/minutes_drafting/generate_test.rb` /30 | Offline synchronous and background providers retain exact source/model/token provenance, independently reviewed suggestions and unchanged manual minutes; new/existing Endeavor routing, stale/foreign identities, rationale/length and source citation validation; reviewed/dismissed/manual removal and additional-item outcomes; superseded prompt/no submission and terminal redelivery; actual SDK failure keeps safe metadata and original minutes/source. Background cases assert one submission/same response ID, pending retrieval, retryable timeout, initial/late timeout and cancellation, terminal retrieval failure, invalid completed output with preserved provider IDs, unknown running ID without resubmission, source changes before/during retrieval, released minutes and duplicate completion without suggestions. Component assertions vary: some validate only the exception/category, while others preserve saved content, counts and provenance. Configurable deadline tests use the application timeout constant; fake provider counters are independent of live SDK acceptance, real queue dispatch and current routed authority. Keep all thirty cases and their distinct validation/polling/cancellation/provenance detectors. |
 | `test/jobs/minutes_draft_generation_job_test.rb` /6 | Stubbed service delegation; unexpected worker error becomes safe failed state and rethrows; fixed-time pending-response polling enqueue; succeeded no next poll; actual job chain plus offline provider submits once/retrieves same ID twice/completes without official status; rejected polling enqueue retains failed queue_error/response ID/completion. Shared method replacement/set restoration uses ensure. This is the test queue adapter, not real Solid Queue worker dispatch or paid provider acceptance. |
 | `test/system/minutes_background_drafting_test.rb` /1 | Real magic-link browser disclosure/model/manual escape/submit control at1400/390 with overflow and font floors. It never submits, polls or applies a completed suggestion. Retain it for independent disclosure/readability detection; do not treat the case name as provider/background completion proof. |
 | `test/system/minutes_approval_flow_test.rb` /3 | Real configured officers without manual grants: code-confirmed handoff, editable Adjutant review, attested member copy, later pending-correction decision, corrected final human lock; phone progression; saved original Meeting/revision refuse rewrite; ordinary member later HTML and actual fetched/rendered PDF contains final title/status. Direct Adjutant uses link GET then actual POST, and same browser loses officer edit after assignment expiry while member navigation/session continues. Real email is synthetic test delivery; same-session expiry proof does not decide inconsistent near-midnight date contexts (#93). |
@@ -36,8 +37,9 @@ execution is separate from demonstration that each assertion catches a regressio
 Controllers inspected against those requests include actual reopening/membership approval,
 draft scope/editability, draft creation/status, Jobs retry and API create/retry enqueue.
 The monitor uses authenticated no-store fetch and Turbo replacement on terminal status.
-Offline Generate response-ID/pending/retrieval-timeout tests are separately located and
-retained; other Generate and API components remain their current scoped review status. Revisions,
+The whole Generate file is now reviewed and retained; its offline provider evidence
+remains distinct from actual queue/provider acceptance. Other API components retain
+their current scoped review status. Revisions,
 SQL protections, member projection and genuine passkey authentication are independent
 components; neither the request counts nor the browser journey makes them redundant.
 
@@ -57,6 +59,6 @@ completed approval preservation stay independent. Governing ten-minute expiry an
 atomic official consumption lack an explicit direct expiry detector in the located
 components; #131 records bounded model/session/rollback verification and restored fault
 before edits. No source defect or whole TTL/session/payload matrix is claimed. Other
-Generate/official-action components remain to review without duplicate coverage.
+official-action components remain to review without duplicate coverage.
 No safe consolidation is established. Preserve every assertion and the source-only
 execution/fault distinction. No production, real member-data copy or paid AI occurred.

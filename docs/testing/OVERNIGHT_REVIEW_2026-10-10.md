@@ -900,3 +900,11 @@ actual-main e53238f/CI38122104236 both pass1293/11869 then73/1544; #124 closed.
 This source-only review integrates actual-main e53238f, preserves all evidence histories
 and every existing assertion. Queue#128, queued readability#130 and direct official
 confirmation#131 are independently tracked; #78/#93 and #79 decisions remain open.
+
+Whole Generate30 source/assertion review extends the minutes slice to14 files and
+118 exact pinned cases. All helpers/fixtures and synchronous/background paths were
+read: citation/identity/rationale validation, human review/removal, provider provenance,
+safe actual SDK failure, submit-once/same-ID polling, deadlines/cancellation, source
+changes and terminal redelivery. Preserve every distinct component; no consolidation,
+new execution or new regression demonstration belongs to this source-only increment.
+Offline fake-provider evidence and application-relative timeouts are stated explicitly.

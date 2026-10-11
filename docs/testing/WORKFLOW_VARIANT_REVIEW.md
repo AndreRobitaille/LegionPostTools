@@ -424,3 +424,9 @@ privacy, structured mutations, exact official provenance/replay and grant-loss g
 remain distinct from cookie requests/fake PDF/manually attested fixtures. #131 retains
 existing detached Session refusal and records missing direct ten-minute/atomic consumption
 proof before component edits; no demonstrated app defect or consolidation is claimed.
+
+Whole Generate30 review completes that component's source reading and brings this
+minutes index to14 files/118 exact cases. Retain distinct structured validation,
+human review, provenance, same-ID polling, deadline/cancellation, source-change and
+terminal-output assertions. Source-only review is separate from the previously proved
+SDK privacy fault and actual CI execution; no fake-provider live acceptance claim.
