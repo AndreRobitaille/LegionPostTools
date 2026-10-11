@@ -192,6 +192,20 @@ safe content and unchanged execution/records. Passing `6045eb2` suites preceded 
 additional repair; the final changed revision must be verified separately.
 
 
+## Finite exact bearer retries (#99)
+
+The existing officer API retry scenario retains same-day no-duplicate, receipt identity,
+actor/completion/status and byte-identical body assertions. It now verifies saved business
+fields and actual real cleanup at/beyond 30 days: exact cutoff retained; later still-retained
+receipt replays until cleanup; cleaned old key creates a second distinct business row and
+new completed receipt, with the original unchanged and token active. This reproduces the
+existing finite guarantee, not a proposed policy change. Independent handbook expectations
+fail original missing-duration prose; revised JSON/Markdown and standing instructions state
+current authority/visibility and human resolution of older uncertain outcomes. Runtime and
+text contracts remain distinct; concurrent/current-authority tests are retained. See
+[design and evidence](../FINITE_RECEIPT_GUIDANCE.md). Remaining officer API variants are
+explicitly deferred; executing the whole file alone is not complete assertion review.
+
 ## Website connection native navigation (#105)
 
 Retain all real create/reveal-once/back/revoke and desktop/narrow overflow assertions.

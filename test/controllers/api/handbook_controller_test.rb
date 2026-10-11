@@ -221,6 +221,16 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_nil body["csrf_header"]
     assert_match(/Authorization/, body.dig("calling", "authentication"))
     assert_match(/Idempotency-Key/, body.dig("calling", "writes"))
+    assert_includes body.dig("calling", "writes"), "30 days"
+    assert_includes body.dig("calling", "writes"), "read saved current state"
+    assert_includes body.dig("calling", "writes"), "human"
+    assert_includes body.dig("calling", "writes"), "current authority and visibility"
+
+    get "/api", headers: { "Authorization" => "Bearer #{plaintext}", "Accept" => "text/markdown" }
+    assert_response :success
+    assert_includes response.body, "30 days"
+    assert_includes response.body, "read saved current state"
+    assert_includes response.body, "current authority and visibility"
   end
 
   test "handbook catalog actions are real routes" do

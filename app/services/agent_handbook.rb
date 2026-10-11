@@ -62,6 +62,7 @@ class AgentHandbook
   CALLING = {
     "session" => "You must already be signed in on this browser. The session cookie is httponly; do not use curl on the same machine unless that curl sends this browser's cookies.",
     "csrf" => "Every POST, PATCH, PUT, or DELETE needs header X-CSRF-Token set to csrf_token from this handbook. Refresh the token by GET /api again if a write returns 422 about authenticity.",
+    "bearer_retries" => "Idempotency receipts can be cleaned up after 30 days. Replays use current authority and visibility. After that window, read saved current state and resolve any uncertain outcome with the human before repeating a mutation.",
     "json" => "For JSON, send Accept: application/json. Dates and times are ISO 8601. Use this installation's timezone.",
     "rich_text" => "Agenda body and commander_notes writes accept sanitized HTML fragments. Use semantic HTML such as <p> for paragraphs and <ul><li>...</li></ul> for bullet lists. Plain newlines and literal • characters are not converted to HTML structure and may display inline. Agenda reads return plain text in wording and commander_notes, so omit both write fields when changing unrelated attributes instead of sending the plain-text read value back.",
     "lists" => "The people directory supports a q name filter. Other resources do not provide fuzzy search: list the collection, read titles, and pick an id. Do not create a second Car Show because you skipped the list.",
@@ -689,6 +690,7 @@ class AgentHandbook
     if @agent_access_token
       lines << "- Authentication: send `Authorization: Bearer <token>` from secure credential storage. Never put the token in a URL or log."
       lines << "- Writes: send a unique `Idempotency-Key` for every intended mutation. Retry the same request with the same key."
+      lines << "- #{CALLING.fetch("bearer_retries")}"
     else
       lines << "- Work in this signed-in browser. The session cookie is httponly."
       lines << "- Writes: header `X-CSRF-Token: #{@csrf_token}` (this value is `csrf_token` in the JSON handbook)."
@@ -766,7 +768,7 @@ class AgentHandbook
     if @agent_access_token
       common.merge(
         "authentication" => "Send Authorization: Bearer <token>. Keep the token in secure credential storage, never in chat, URLs, command history, or logs.",
-        "writes" => "Every POST, PATCH, PUT, or DELETE needs a unique Idempotency-Key. Exact retries reuse the same key; changed input needs a new key."
+        "writes" => "Every POST, PATCH, PUT, or DELETE needs a unique Idempotency-Key. Exact retries reuse the same key; changed input needs a new key. #{CALLING.fetch("bearer_retries")}"
       )
     else
       common.merge(

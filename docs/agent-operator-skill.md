@@ -46,7 +46,10 @@ human consent and eligibility decisions; publish, withdraw, mark internal or cha
 homepage order only when the human asks for that exact act. Never expose editorial
 drafts, consent notes or audit responses to a public consumer.
 Fetch lock_version before editing and reconsider stale conflicts. Exact bearer retries
-reuse Idempotency-Key. Calendar-management permission differs from manage_agendas;
+reuse Idempotency-Key. Receipts can be cleaned up after 30 days; for an older uncertain
+outcome, read saved current state and resolve it with the human before repeating a mutation.
+Replays use current authority and visibility, so restricted summaries may be filtered.
+Calendar-management permission differs from manage_agendas;
 never infer one from the other. Re-read `/api` after a deployment or role change.
 
 Local maintainers: `docs/CALENDAR_API.md` and `docs/WEBSITE_PUBLISHING_API.md` document

@@ -539,6 +539,33 @@ This committed slice still needs final serial suites, security, exact-SHA CI and
 actual-main verification before completion. #84 remains open.
 
 
+## Finite bearer receipt guidance (#99)
+
+Design: `docs/FINITE_RECEIPT_GUIDANCE.md`. Strengthen the existing same-request retry
+scenario without removing its assertions: actual saved creator/business fields, frozen
+exact 30-day cleanup retention, 31-day retained replay before cleanup, actual receipt
+removal and subsequent second distinct Endeavor/new receipt under the original key.
+A 90-day token isolates receipt cleanup from credential expiry; the original record
+remains unchanged. Current authority/visibility filtering remains the separate #92 contract.
+
+Original live guidance fails the independent duration expectation (2 / 40 / one failure,
+2.42s), while the actual finite runtime behavior passes. Revised shared JSON/Markdown
+prose and standing instructions direct older uncertain mutations to current saved state
+and the human. No retention or mutation behavior changes. Revised two contracts:
+2 / 58 / 0 (seed30718, 3.35s). Neighboring authority/retry/concurrency/inventory matrix:
+51 / 852 / 0 (seed32818, 7.76s); after integrating actual main `b852211`:
+51 / 852 / 0 (seed38320, 7.71s). Changed three Ruby files lint clean; diff checks pass.
+An initial command named nonexistent files; corrected to the actual inventoried paths,
+without changing tests. Full candidate serial suites/security/CI remain required.
+
+Configuration candidate `2eb7d6c98ff39fe5bd43441a36a864534b15788c` passed ordinary
+1283 / 11367 / 0 (seed55877, 103.68s), then serial system 66 / 1187 / 0 (seed29389,
+162.52s). RuboCop 502 files clean, Brakeman zero warnings, audits clean. Exact-SHA
+CI38110200711 passes all four jobs with matching PG17.11 counts. Fresh review retained
+all old cases/assertions and restored sources. PR #101 merged as
+`b8522118fe1b2b4a5d8b7ac6675aeb51f7a8e09c`, exact tree; actual-main verification follows.
+#84 remains open; #99's scoped officer API retry review does not establish full-file review.
+
 ## Repeated website-token inspector error and native navigation (#105)
 
 Main configuration CI38110689517 passes all four jobs on `b852211`, actual PG17.11
@@ -560,3 +587,18 @@ Focused request/model20 / 181 / 0; website/personal real browser2 / 37 / 0. Crea
 1 / 8 / one failure; controller restored exactly (hash in design). The race explanation
 remains inference; later full suites and CI are needed before merge, and future recurrence
 must not be hidden by broad error suppression.
+
+
+Website-navigation candidate `db6c1686ddc8dc69b4d48127b5fec938c33de9ab` passes ordinary
+1283 / 11367 / 0 (seed9871, 101.86s), then qualifying serial system 66 / 1188 / 0
+(seed38538, 162.38s). Lint502 clean; Brakeman zero errors/warnings; audits clean.
+Exact-SHA CI38111233748 passes all four jobs with matching PG17.11 counts. PR #106
+merged as `8a603bb7b1a3105296bee14b66cf607cdcae015a`, exact candidate tree; actual-main
+CI38111511575 is pending at this recording. #105 remains open for precise inspector
+cause and untested clipboard contents. This is native-navigation outcome proof, not
+proof of the inferred document-transition race.
+
+Integrate #106 main into finite-retry PR #103. The two append-only ledger/matrix
+conflicts preserve both sections; inventory merges retain each distinct reviewed row.
+No application fault, dropped prior assertion or green-seeking CI rerun is included.
+The new combined committed candidate must repeat final serial suites and fresh CI.
