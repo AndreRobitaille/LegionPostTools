@@ -18,7 +18,7 @@ No development database setup/reset, member-data copy, production operation or p
 GitHub inspection: only CI and Dependabot workflows active; CI runs scans, lint, ordinary
 and then system tests, with no deploy step. No repository webhooks or rulesets, main
 branch protection endpoint reports unprotected. Local hooks have no deploy action.
-Push/merge does not invoke repository deployment. Recheck before first push/merge.
+Push/merge does not invoke repository deployment. Workflow content and empty hooks were rechecked before each authorized push/merge.
 
 ## Baseline
 
@@ -35,12 +35,12 @@ Push/merge does not invoke repository deployment. Recheck before first push/merg
 | --- | --- | --- |
 | #77 | Member Meeting and immutable document reads, personal token parity and handbook | Complete: PR #91 merged; candidate and actual-main CI passed |
 | #78 | Independent Commander/Adjutant duties through assignment transitions | PR #94 current-role/action/refusal proof and candidate/main CI passed; open pending material date-boundary decision #93 |
-| #79 | 30-day recovery after final approval; source removal and retained record/audit | Draft PR #98 records retention/storage/provenance design; awaiting start-of-recovery choice; no purge runtime implemented |
+| #79 | Promised 30-day recovery; source removal and retained record/audit | Draft PR #98 records the unresolved correction-clock/storage/provenance design and actual ordinary-approval missing-deletion reproduction; no purge runtime implemented |
 | #80 | Final occurrence context protected independently from agenda state | Complete: PR #90 merged; candidate and actual-main CI passed |
 | #81 | Current handbook, delegated official acts and Post website credential boundaries | Complete: PR #97 merged; independent handbook/actions and candidate/actual-main CI passed |
 | #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
 | #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
-| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: bounded source/assertion/fault reviews merged; many remaining variants/files and linked findings remain |
+| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: all current files have bounded review entries; independent cleanup is verified; final source-review publication and policy-dependent #78/#79 lifecycle/authority concerns remain explicit |
 
 The initial inventory alone completes no acceptance criterion. No test removed,
 consolidated or weakened. Discovery documentation committed as `002f41e`; subsequent
@@ -1172,3 +1172,44 @@ narrow append-update fault reaches the preserved1-vs2 saved-update detector1/9/1
 Exact restoration, clean API neighbors82/739, seed7508, focused lint2 and diff pass.
 Detailed design/results in [CALENDAR_PRINT_STATE_CLEANUP.md](CALENDAR_PRINT_STATE_CLEANUP.md).
 Full final suites/CI still required; no product/permission change, skip or production.
+
+## Final independent cleanup qualification and decision handoff
+
+Progress/PDF PRs#133/#135 and official confirmation PR#138 pass exact and actual-main
+CI; main99371bde/38127549131 ordinary1304/12143 then74/1674, no failures/errors/skips.
+Calendar cleanup PR#140 candidateef441b4/38128202244 and identical main31e7d7e/
+38128481702 pass all four jobs and1304/12143 then74/1674. #137/#139 closed only after
+actual-main proof. Invitation PR#141 candidate2b3f923/38128519771 and identical main
+b1ead665/38128842532 pass all four jobs and1304/12160 then75/1707; #117 closed.
+
+Local provenance PR#142 candidate31ca5ec/38128908321 and identical main d14f6c3c/
+38129287632 pass all four jobs and1307/12215 then76/1789, no failures/errors/skips.
+Final committed local ordinary seed25207,96.18s, then system seed24606,184.64s, same
+totals and zero failures/errors/skips. RuboCop513 clean, Brakeman0/0, advisory1263 at
+a6847b0651a702488f5844081e848dd1ec9dbf1d and importmap audits clear. Actual first
+setup/local control/imported source/denial/later Profile journey and six inspected
+desktop-phone captures remain the behavior evidence. #115 closed after actual-main CI.
+
+The retention choice does not block ordinary final-approval reproduction. Draft PR#98
+now contains four real synthetic source-kind/policy cases and existing model actions:
+nonempty draft, Commander handoff, Adjutant attestation and actual later-Meeting approval.
+Source/official/metadata checks pass before29 days and retained official graphs pass
+after31 days. Both delete choices still expose source; upload attachment and Disk object
+remain. Both retain controls pass; no job is enqueued/performed. Original4/76/2 failures
+seed23017,1.33s; integrated repeat seed60529,1.28s agrees. No application fault injected.
+Test-owned physical-file cleanup after observation is not application deletion.
+
+Exact draft cfd1f52/CI38129393451 runs1311/12291 with only those2 expected failures,
+0 errors/skips; three lint/security jobs pass, system step not run after ordinary failure.
+Keep draft failing/unmerged. It diagnoses the existing approval/enqueued path, not an
+absent recurrence or production scheduler. Real future scheduled service, pending
+correction clock, delayed/repeated execution and storage-failure recovery remain #79.
+
+Current code-main inventory182 unique rows matches181 discovered *_test.rb files plus
+one separate explicit runner; no existing file is omitted. The source-only remaining
+slices are85 complete files/707 exact cases, validated against pinned declarations.
+Source reading is not a per-case mutation or production proof. Retain all tests; no
+removal/consolidation is justified. #78/#93 officer-date choice and #79 recovery-clock
+choice/actual lifecycle remain open; #84 coordinates those concerns rather than being
+closed by inventory. [Concise handoff](OVERNIGHT_HANDOFF_2026-10-11.md). No production,
+real member-data copy, paid AI or unsolicited member communication.
