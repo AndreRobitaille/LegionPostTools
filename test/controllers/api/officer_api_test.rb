@@ -369,6 +369,18 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     get "/api/endeavors", as: :json, headers: bearer_headers("lpt_missing_invalid")
 
     assert_response :unauthorized
+
+    get "/api/endeavors/#{@car_show.id}", as: :json
+    assert_response :success
+    assert_includes response.parsed_body.dig("endeavor", "details"), "Permit and volunteer history"
+    token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Wrong secret refusal", expires_in: 30.days)
+    original_token = token.attributes
+    wrong_secret = plaintext.sub(/.$/) { |digit| digit == "0" ? "1" : "0" }
+
+    get "/api/endeavors/#{@car_show.id}", as: :json, headers: bearer_headers(wrong_secret)
+    assert_equal original_token, token.reload.attributes, "Rejected bearer secret must not record successful use"
+    assert_not_includes response.body, "Permit and volunteer history"
+    assert_response :unauthorized
   end
 
   test "revoked expired and disabled bearer tokens return unauthorized" do

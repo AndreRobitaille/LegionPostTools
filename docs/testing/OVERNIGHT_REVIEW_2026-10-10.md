@@ -717,3 +717,20 @@ Final committed qualifying suites/security/candidate and main CI remain pending.
 Empty-roster actual-main CI38114329402 now passes all four jobs onf5fc283, matching
 PG17.11 ordinary1286 / 11508 then68 / 1237. #111 completed only after that verification;
 no application roster edit or production action. Broader #84 remains open.
+
+
+## Actual-main administrator completion and personal token refusal (#112/#102)
+
+PR #116 candidate85536255 merged as main877c18e. Actual-main CI38115173719 passed all
+four jobs on PostgreSQL17.11:1289/11574 ordinary, then69/1259 browser; no failures,
+errors or skips. #112 closed after checking actual-main logs and posting completion
+evidence (comment6105915895). No production operations.
+
+Personal token #102 integrates that main in its isolated worktree. Correctly shaped
+wrong-secret model refusal and real cookie/bearer refusal strengthen existing tests;
+all old cases remain. Guard-only faults fail saved-use metadata before nil/status,
+finally restore model SHA83245346397165c589e4aa0ce48f87399733840fbd25a1259ff8fe73f7a2adc4.
+Complete credential/API focus43/286, seed33457,3.31s passes; final committed serial
+suites/security/candidate/main CI remain required. Whole source/assertion scopes and
+limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
+removal/consolidation is demonstrated.
