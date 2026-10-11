@@ -78,6 +78,55 @@ class TranscriptSourcePrivacyTest < ApplicationSystemTestCase
     assert_equal original_source, transcript.reload.attributes
   end
 
+  test "a real Unicode text-file upload preserves bytes and later source authority" do
+    raw = "\uFEFFCommander: José described the synthetic service project.\r\n"
+    normalized = "Commander: José described the synthetic service project.\n"
+    original_minutes = @minutes.attributes
+    system_sign_in(@manager)
+    visit new_admin_meeting_transcript_path(@meeting)
+
+    Tempfile.create([ "unicode-source", ".txt" ]) do |file|
+      file.binmode
+      file.write(raw)
+      file.flush
+      attach_file "Upload a transcript file", file.path
+      choose "meeting_transcript_retention_policy_retain_restricted"
+      click_button "Save restricted transcript"
+      assert_text "Restricted transcript source added."
+      transcript = @meeting.reload.transcript
+      assert_equal raw.b, transcript.text_file.download.b
+      assert_equal normalized, transcript.source_text
+      assert_equal Digest::SHA256.hexdigest(raw), transcript.sha256_digest
+      assert_equal raw.bytesize, transcript.byte_size
+      assert_equal @manager.id, transcript.created_by_id
+      assert_equal "retain_restricted", transcript.retention_policy
+      assert_equal original_minutes, @minutes.reload.attributes
+      original_source = transcript.attributes
+
+      click_link "Review transcript"
+      assert_selector ".transcript-reader pre", text: "José described the synthetic service project."
+      [ 1400, 390 ].each do |width|
+        page.current_window.resize_to(width, 1000)
+        assert_no_horizontal_overflow
+        assert_operator find(".transcript-reader pre").evaluate_script("parseFloat(getComputedStyle(this).fontSize)"), :>=, 16
+        page.execute_script("document.querySelector('.transcript-reader').scrollIntoView({block: 'start'})")
+        capture_system_screenshot("transcript-upload-reader-#{width}")
+      end
+      assert_equal original_source, transcript.reload.attributes
+      assert_equal original_minutes, @minutes.reload.attributes
+
+      @grant.destroy!
+      visit admin_meeting_transcript_path(@meeting)
+      assert_current_path root_path
+      assert_no_text "José described the synthetic service project."
+      assert_equal original_source, transcript.reload.attributes
+      assert_equal raw.b, transcript.text_file.download.b
+      assert_equal original_minutes, @minutes.reload.attributes
+      visit profile_path
+      assert_text @manager.person.roster_display_name
+    end
+  end
+
   private
 
   def assert_rendered_font_floor(selector, floor)

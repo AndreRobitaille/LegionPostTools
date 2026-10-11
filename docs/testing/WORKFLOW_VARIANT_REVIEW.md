@@ -390,6 +390,21 @@ assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault
 #115/#117 and #93 decisions remain open. No safe test consolidation was established.
 
 
+## Independent source size and uploaded UTF-8 reading (#124)
+
+All seven original transcript components remain. Old oversized input followed the app
+constant; a raised-limit control leaves it passing. Fixed five-megabyte plus one input
+and a separate exact-byte multibyte case now detect the same raised-limit fault in both
+pasted/upload paths. Refusals preserve source/blob/attachment and identity; later exact-
+size retry saves actual bytes, digest, creator and retention selection. Uploaded Unicode
+originally raises on binary-to-UTF-8 transcoding after raw storage agrees. One-line copy/
+encoding interpretation preserves bytes and existing BOM/CRLF normalization; small
+original reproduction fails, repaired component/request/provider neighbors pass62/674.
+Real uploaded-file browser variant reads accented source at1400/390, then loses source
+authority while own Profile works and source/minutes stay intact. Both existing privacy
+and new upload journeys pass2/167; no claim about automatic purge/provider completion.
+See [design and exact evidence](TRANSCRIPT_SOURCE_INPUT_REVIEW.md). No test removal.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.
