@@ -937,3 +937,11 @@ failures/errors/skips. Merge has identical tree; #128 closed with full saved-sta
 restored fault/request/browser and later recovery evidence. This source-only branch
 integrates that verified main, retains every original assertion and both review histories.
 Queued type#130 and confirmation#131 remain separate; #78/#93 and #79 stay open.
+
+The two remaining minutes-to-Endeavor files add15 cases, bringing the pinned whole
+source review to16 files/133 cases. Read all actual manual creation/linking, dual-grant
+and recoverable/refusal/stale/locked/foreign contracts, immutable proposed payload and
+human result provenance, plus the three real browser keyboard/source-evidence/edit/
+existing-link/dismissal journeys. Governing MINUTES_ENDEAVOR_CONFIRMATION.md supplies
+expected behavior. Artificial locked status and offline provider are stated limits;
+no new execution, blanket fault proof, deletion or consolidation belongs to this increment.

@@ -431,6 +431,12 @@ human review, provenance, same-ID polling, deadline/cancellation, source-change 
 terminal-output assertions. Source-only review is separate from the previously proved
 SDK privacy fault and actual CI execution; no fake-provider live acceptance claim.
 
+Minutes-to-Endeavor whole request12/browser3 review brings the index to16 files/133
+exact cases. Preserve manual form/atomic identity/grants/recovery/staleness/scope and
+original AI payload/result provenance detectors plus real keyboard/source-evidence/
+human editing/linking/dismissal journeys. Governing manual/AI confirmation policy,
+synthetic providers and artificial locked-state limits are recorded in the source review.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.

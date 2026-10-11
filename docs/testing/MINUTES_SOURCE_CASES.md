@@ -192,3 +192,28 @@ Reviewed file blob: `b6e3aaeabfef2a8457f63fa0998f6088f303e888`.
 - [source changes during retrieval prevent completed output from being staged](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/services/minutes_drafting/generate_test.rb#L599)
 - [released minutes prevent a completed background result from being staged](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/services/minutes_drafting/generate_test.rb#L613)
 - [duplicate completion cannot stage suggestions for a terminal run](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/services/minutes_drafting/generate_test.rb#L626)
+
+## test/controllers/admin/minutes_item_endeavors_controller_test.rb
+
+Reviewed file blob: `02fd4f87af940a067e8ce01935104d6b94443046`.
+
+- [manual form starts with the discussion and creation returns to minutes without rewriting it](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L16)
+- [minutes-only manager may link but cannot create and the workspace reflects those grants](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L35)
+- [sign-in and minutes authority are required for form and submission](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L54)
+- [validation retains text and creates no partial record or link](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L70)
+- [blank existing selection is a recoverable validation error](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L81)
+- [duplicate normalized title directs the officer to reuse an Endeavor](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L90)
+- [stale and double submission do not create extra Endeavors](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L100)
+- [parent draft state is rechecked inside the confirmation service](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L113)
+- [locked minutes hide actions and reject direct creation and linking](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L125)
+- [cross-meeting items and cross-organization Endeavors are rejected](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L139)
+- [AI confirmation records the human and edited result without replacing its proposed payload](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L151)
+- [another item cannot consume this proposal and a newly confirmed link cannot be overwritten](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/controllers/admin/minutes_item_endeavors_controller_test.rb#L173)
+
+## test/system/minutes_endeavor_confirmation_test.rb
+
+Reviewed file blob: `f916d6cb1cd76adc6c54040d39d7eccb701a88c6`.
+
+- [manual creation stays inside minutes and is readable at desktop and narrow widths](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/system/minutes_endeavor_confirmation_test.rb#L26)
+- [AI proposal opens the shared form with source evidence and records edited human confirmation](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/system/minutes_endeavor_confirmation_test.rb#L57)
+- [officer confirms an existing Endeavor and can dismiss a separate proposal](https://github.com/AndreRobitaille/LegionPostTools/blob/5c54e39307cd80824d3d3cbbb6138a0306e22e2f/test/system/minutes_endeavor_confirmation_test.rb#L88)
