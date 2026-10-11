@@ -444,6 +444,12 @@ from fixed counts/wording/order; identity-only removal proof is separate from fu
 historical body/PDF preservation. [Review and pins](AGENDA_CATALOG_SOURCE_REVIEW.md).
 All tests remain; no new runtime fault or safe consolidation is claimed.
 
+Meeting body/type/template model4 files/25 cases extend that index to8 files/72.
+Keep scalar location fallback, provenance/uniqueness/unused deletion/order, default/
+normalized/nonempty sections and rich/private copied wording/local overrides/source
+scope distinct from protected linked-type, dated/minutes snapshots and real PDF/authority.
+Combined source slice24 files/205 cases; no code/test edits or consolidation.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.

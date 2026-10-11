@@ -70,3 +70,48 @@ Reviewed file blob: `379f25fd15c3d96b545e78c2bec1711aa9805d2a`.
 - [compact arrow controls move an item without JavaScript drag gestures](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/system/agenda_item_catalog_entries_test.rb#L31)
 - [trash action removes an item from the catalog after confirmation](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/system/agenda_item_catalog_entries_test.rb#L46)
 - [edit page repeats the catalog removal modal at the bottom](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/system/agenda_item_catalog_entries_test.rb#L66)
+
+## test/models/meeting_body_test.rb
+
+Reviewed file blob: `0bad3d8dba64f8a2935d52427bf8c88863db5ed4`.
+
+- [uses the meeting body's location before the organization default](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_body_test.rb#L4)
+
+## test/models/meeting_type_test.rb
+
+Reviewed file blob: `2b0b8f28ead7e44d04d29269e93f05c551b2cc52`.
+
+- [derives slug from name when none is given](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L8)
+- [derived slug avoids collisions within the organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L14)
+- [slug uniqueness is scoped to organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L22)
+- [name uniqueness is scoped to organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L31)
+- [position uniqueness is scoped to organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L43)
+- [normalizes blank source key to nil](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L52)
+- [orders by position then name](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L59)
+- [can be destroyed cleanly](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L66)
+- [reorder! rewrites position to the given 1-based sequence](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L76)
+- [reorder! rejects ids outside the organization and changes nothing](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L88)
+- [reorder! rejects duplicate ids](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_test.rb#L102)
+
+## test/models/meeting_type_agenda_section_test.rb
+
+Reviewed file blob: `f5c382b53046f4ae8143da32a9f37c14d87265b5`.
+
+- [new meeting types receive a default section](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_section_test.rb#L9)
+- [section titles are normalized and unique within a meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_section_test.rb#L14)
+- [reorder changes only the selected meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_section_test.rb#L23)
+- [a section with agenda items cannot be destroyed directly](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_section_test.rb#L34)
+
+## test/models/meeting_type_agenda_item_test.rb
+
+Reviewed file blob: `ad389dc39a91663543688e32c4cae836fa82288c`.
+
+- [copies title summary and body from catalog entry](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L18)
+- [copies document controls and Commander notes from catalog entry](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L27)
+- [template edits do not modify the catalog entry](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L41)
+- [prevents duplicate catalog entry in same meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L52)
+- [position uniqueness is scoped to meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L60)
+- [same catalog entry can be used by another meeting type in same organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L81)
+- [rejects catalog entries from another organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L90)
+- [reorder! rewrites item position to the given 1-based sequence](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L106)
+- [reorder! rejects ids from another meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L120)

@@ -954,3 +954,10 @@ semantic-list/retirement behavior and real browser drag/arrow/modal/focus detect
 [Source review and exact case index](AGENDA_CATALOG_SOURCE_REVIEW.md) separates
 coupled seed transport, fixed independent expectations, limited graph assertions and
 unchanged actual-main b965cf76 CI execution. No code/test change or consolidation.
+
+Four further meeting/body/template models add25 exact cases: fixed location fallback,
+type provenance/uniqueness/unused deletion/order, default/normalized/nonempty sections
+and rich wording/private controls/source scope/local-edit item copies. The catalog index
+now has8 files/72 cases; together with minutes16/133 this source-only slice records
+24 files/205 exact cases. Protected linked-type and full historical/PDF/authority
+proof remain distinct; no model-only name is promoted to whole workflow evidence.
