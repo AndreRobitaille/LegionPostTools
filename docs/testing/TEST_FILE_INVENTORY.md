@@ -5,6 +5,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
+| `test/models/official_record_database_guards_test.rb` | models | Schema fidelity / #86 | P0 | Added direct SQL official-record variants; old-schema failures and fresh-load passes; Endeavor behavior deferred |
 | `test/assets_test.rb` | assets_test.rb | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/config/database_configuration_test.rb` | config | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
 | `test/config/filter_parameter_logging_test.rb` | config | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |

@@ -38,8 +38,8 @@ Push/merge does not invoke repository deployment. Recheck before first push/merg
 | #79 | 30-day recovery after final approval; source removal and retained record/audit | Current issue read; policy/source investigation pending |
 | #80 | Final occurrence context protected independently from agenda state | Current issue read; policy/source investigation pending |
 | #81 | Current handbook, delegated official acts and Post website credential boundaries | Current issue read; policy/source investigation pending |
-| #82 | Referenced Meeting Type delete refusal and later document reads | Reproduced and repaired; local request/browser/PDF/fault checks pass; final suites and CI/merge pending |
-| #83 | Referenced agenda/child delete refusal without historical loss | Reproduced and repaired, including AI lineage; local request/browser/PDF/fault checks pass; final suites and CI/merge pending |
+| #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
+| #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
 | #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Initial file inventory; remaining review explicitly deferred to slices |
 
 No acceptance criterion is completed by this initial inventory. No test removed,
@@ -136,3 +136,54 @@ Final candidate ordinary/system suites will run serially after the code commit; 
 and exact SHA will be attached to the PR and morning handoff, with CI separately verified.
 
 Final neighboring model/request run: seed 35518; 149 runs, 1001 assertions, no failures/errors/skips (19.15s). Browser assertion extraction retained all 127 assertions; final focused browser seed and duration are recorded in `/tmp/legion-protected-final-browser.log`. Added a routed late-item-reference scenario after opening its editor; final focused result is in `/tmp/legion-protected-last-focused.log`. No source/test fault marker remains.
+
+## #82/#83 merged verification
+
+Final candidate `9d971a32d904f42d57a47257870cd194ce23469b`: full ordinary suite,
+seed 63445, 1214 runs / 9220 assertions / 0 failures/errors/skips (95.09s), followed
+serially by full system suite with `CI=true PARALLEL_WORKERS=1`: 64 runs / 1071
+assertions / 0 failures/errors/skips (152.27s). RuboCop 490 files / 0 offenses;
+Brakeman 0 errors/warnings; gem and importmap audits clean; diff check passed.
+Exact candidate CI run 38102197566 passed all four jobs and actually ran both suites.
+
+[PR #85](https://github.com/AndreRobitaille/LegionPostTools/pull/85) merged at
+2026-10-11 01:39:24 UTC as `b092bf6789d7611d55747ebc1acdc5bf85b6b369`.
+Actual main tree matches the tested candidate (`bdac19f698ea34ee672b199cd8b01701c0bcca36`);
+main CI run 38102560190 passed all four jobs. #82/#83 closed by the merge, with
+completion evidence posted. No release/deploy/production command ran.
+
+## #84/#86 fresh-schema guard regression
+
+[Issue #86](https://github.com/AndreRobitaille/LegionPostTools/issues/86) is a bounded
+#84 follow-up, not a claim that the wider test review is complete. Before repair,
+fresh Ruby-schema preparation omitted all eleven existing PostgreSQL triggers. New
+component tests attempted direct update/delete of finalized minutes, revisions,
+attestations, events and approvals. They require the actual guard's message, so an
+incidental FK violation cannot be mistaken for immutable-record protection.
+
+- Original Ruby-schema database: 12 runs / 19 assertions / 11 failures / 0 errors/skips.
+  A migration-only test attempt also failed: Rails maintenance reloaded the Ruby schema
+  and dropped the triggers. This is evidence about the real preparation path.
+- Faithful SQL path from a blank owned synthetic database: focused guard tests,
+  seed 43460, 12 runs / 45 assertions / 0 failures/errors/skips.
+- A separately loaded fresh SQL database: seed 25219, same 12 / 45 / 0 result.
+  Compared metadata for 679 columns, 731 constraints, 274 indexes, five functions,
+  eleven triggers and 57 sequence definitions: identical between migration-built and
+  freshly loaded schemas. Canonical metadata SHA-256:
+  `f4af70931f2241e79711706bfb7952e375f769244e7e59af35a870582b9f9d84`.
+- Exploratory full ordinary suite on that fresh SQL database: seed 31516,
+  1226 runs / 9265 assertions / 0 failures/errors/skips (103.05s).
+- No existing component/browser tests removed or relaxed. Trigger inventory proves
+  preparation; only the exercised operations establish behavioral detection. Endeavor
+  guard variants still need their own bounded review. No production guard claim.
+
+Commands use the existing environment wrapper with
+`DATABASE_URL=postgresql:///legion_guard_roundtrip_test`; ordinary and system suites
+run serially. Final candidate verification and merge/CI evidence remain required.
+
+An exploratory system run passed 64 / 1071 / 0, but a short focused component rerun
+accidentally overlapped it. That system result is excluded from merge evidence. A new
+serial focused run precedes the commit, and both full suites will run serially on the
+committed candidate. YAML parses, RuboCop 491 files / 0 offenses, Brakeman 0 errors and
+warnings. The SQL dump contains only schema definitions and migration version inserts,
+not copied member rows. No experimental application fault or trigger installer remains.
