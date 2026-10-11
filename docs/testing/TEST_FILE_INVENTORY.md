@@ -41,7 +41,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/admin/permission_grants_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All five exact saved grant replacement/filter/last-admin/automatic-role variants reviewed/retained; concurrent last-admin safety not proven; see #107 |
 | `test/controllers/admin/position_assignments_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All eight cases reviewed/retained: saved dates, foreign nested person, malformed date preservation and active configured-title boundary; see #107 source review |
 | `test/controllers/admin/position_titles_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Full source reviewed/retained; new foreign update saved authority/assignment graph catches original mutation; later configured title save and native browser recovery under #107 |
-| `test/controllers/admin/roster_imports_controller_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/controllers/admin/roster_imports_controller_test.rb` | controllers | Member / navigation / roster | P1 | All thirty prior upload/history/confirmation/refusal/privacy/discard variants retained; actual empty attachment saved failure and later valid identity-preserving upload; #111 |
 | `test/controllers/admin/user_accounts_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All twelve saved account/roster/override/last-admin variants reviewed/retained; technical settings fixtures do not prove all officer duties; see #107 |
 | `test/controllers/admin/website_access_tokens_controller_test.rb` | controllers | Publication / #60–#62, #81 | P0 | Five management/identity/foreign-scope/CSRF variants reviewed/retained; actual saved authority and first revocation, no plaintext list; request proof separate from browser |
 | `test/controllers/agent_access_reauthentications_controller_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | All seven same-session/code/link/purpose/bearer token-identity cases reviewed and retained; #104 |
@@ -122,7 +122,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/position_assignment_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three no-end, after-end and reversed-date component cases reviewed/retained; inclusive effective-authority proof remains User/#78 |
 | `test/models/position_capability_grant_test.rb` | models | Authentication / authority / #78, #81 | P0 | Both allowed duty versus denied technical administration and duplicate-title capability cases reviewed/retained; see #107 |
 | `test/models/position_title_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three reorder cases reviewed/retained: saved 1-based order, foreign unchanged orders and duplicate refusal; see #107 |
-| `test/models/roster_import_test.rb` | models | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/models/roster_import_test.rb` | models | Member / navigation / roster | P1 | All seven latest-successful/history/staleness/old-summary/deceased/attachment contracts reviewed and retained; exact cutoff not separately frozen; #111 |
 | `test/models/session_test.rb` | models | Authentication / authority / #78, #81 | P0 | All three actual session destruction/official lineage/confirmation detachment cases reviewed and retained; #104 |
 | `test/models/user_test.rb` | models | Authentication / authority / #78, #81 | P0 | Reviewed: distinct manual/position/roster and last-administrator invariants retained; full suite preserves coverage |
 | `test/models/website_access_token_test.rb` | models | Publication / #60–#62, #81 | P0 | Three digest/refusal/throttle, fixed Post authority and overlapping replacement contracts reviewed/retained; distinct from personal delegation |
@@ -149,8 +149,8 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/services/minutes_drafting/prompt_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/minutes_drafting/source_document_test.rb` | services | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/services/openai_sdk_contract_test.rb` | services | Background / external boundaries | P1 | Deferred: awaiting bounded slice review |
-| `test/services/roster_imports/csv_parser_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
-| `test/services/roster_imports/importer_test.rb` | services | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/services/roster_imports/csv_parser_test.rb` | services | Member / navigation / roster | P1 | All seven literal fixture/BOM/missing-duplicate-ID/fatal malformed-header contracts retained; empty/BOM-only added to original header case; bypass fault detected/restored; #111 |
+| `test/services/roster_imports/importer_test.rb` | services | Member / navigation / roster | P1 | All thirty identity/account/rollback/status/login-email/last-admin/large-removal/summary privacy variants reviewed and retained; no concurrent supersession proof; #111 |
 | `test/system/account_menu_test.rb` | system | Member / navigation / sign-out | P0 | Full source reviewed/retained: actual keyboard/open/close/phone paths and sign-out plus later Profile denial, pending-session nullification and completed record preservation |
 | `test/system/agenda_item_catalog_entries_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/agent_access_tokens_test.rb` | system | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
@@ -168,7 +168,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/system/minutes_endeavor_confirmation_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/passkey_enrollment_security_test.rb` | system | Authentication / authority / #78, #81 | P0 | Actual virtual-authenticator/CSRF/email/nickname/saved credential at 1400/390/320 reviewed and retained; globals restored; #104 |
 | `test/system/pdf_resource_security_test.rb` | system | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
-| `test/system/roster_import_results_test.rb` | system | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
+| `test/system/roster_import_results_test.rb` | system | Member / navigation / roster | P1 | Old names/accounts/deceased-warning/result-link/layout journey retained; new actual empty upload/refusal/Import another roster/valid recovery at desktop-narrow layouts; #111 |
 | `test/system/website_access_tokens_test.rb` | system | Publication / #60–#62, #81 | P0 | Full source retained; real native path/create/reveal-once/back/revoke/desktop-narrow checks, wrong-redirect detection; clipboard contents not tested; recurring CI inspector error bounded under #105 |
 | `test/system/website_calendar_test.rb` | system | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |
 | `test/system/website_publishing_test.rb` | system | Publication / #60–#62, #81 | P0 | Deferred: awaiting bounded slice review |

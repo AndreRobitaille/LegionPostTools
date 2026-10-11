@@ -61,11 +61,12 @@ class RosterImports::CsvParserTest < ActiveSupport::TestCase
   end
 
   test "missing required headers is fatal" do
-    csv = "Member ID,Name\n000204540637,\"A, One\"\n"
-    result = RosterImports::CsvParser.new(csv).parse
-    assert_not result.valid?
-    assert_equal [], result.rows
-    assert_match(/Missing required columns/, result.fatal_errors.first)
+    { "partial headers" => "Member ID,Name\n000204540637,\"A, One\"\n", "empty" => "", "BOM only" => "\uFEFF" }.each do |variant, csv|
+      result = RosterImports::CsvParser.new(csv).parse
+      assert_not result.valid?, variant
+      assert_equal [], result.rows, variant
+      assert_match(/Missing required columns/, result.fatal_errors.first, variant)
+    end
   end
 
   test "malformed csv is fatal" do

@@ -652,3 +652,27 @@ saved-metadata failure (seed53734), exact SHA restored; clean passkey25 / 230 / 
 change, test consolidation or deletion. All eleven distinct neighboring files reviewed
 and retained; source and execution limits in PASSKEY_REFUSAL_REVIEW. Final committed
 serial suites/security and candidate/main CI remain required before merge.
+
+
+## Empty attached National roster and subsequent valid upload (#111)
+
+Candidate nil-header hypothesis disproved on unchanged application: CSV3.3.6 parse
+returns a Table with empty headers, original new parser/upload contracts2 / 48 / 0.
+Keep app source exactly. Empty-header validation bypass leaves partial-header refusal
+intact but fails both new checks2 / 9 / two failures (seed8913); exact parser SHA restored
+(in EMPTY_ROSTER_INPUT). Expanded roster75 / 470 / 0 (seed35763). Real file upload,
+refusal, actual Import another roster link and valid recovery plus old result journey
+2 / 27 / 0 (seed41034). All four1400/390 failed/completed images inspected: readable/
+no overflow, existing global-error row heading limit recorded. All five complete roster
+files reviewed/retained; no test deletion/consolidation. Integrate main283911d; final
+focused/committed serial suites/security and candidate/main CI still required.
+
+
+Integrated #111 focus75 / 470 / 0 (seed4814, 2.79s), browser2 / 27 / 0
+(seed45162, 5.02s), changed Ruby lint clean/diff reviewed/source SHA exact. Candidate
+retains every prior assertion and contains no application file change. PR #113 passkey
+review is merged as283911d6e834aefa572180cbcf0a48caae88e5df; exact CI38113455501 passes
+PG17.11 ordinary1285 / 11464 then system67 / 1219. Final local candidate61090d8 runs
+ordinary1285 / 11464 (seed47482,105.01s), then system67 / 1219 (seed7601,170.60s),
+all zero failures/errors/skips, lint503/security clean. Actual-main CI38113727296 is
+pending; #104 stays open until that verification. No production operations.
