@@ -406,4 +406,3 @@ Reviewed file blob: `afaef3dff7e204571c64c9ecb3fb41fae74456cc`.
 - [remind later shows the roster email review prompt again in a new signed-in session](https://github.com/AndreRobitaille/LegionPostTools/blob/15ce51b677a432275ce7e8d7e503fff36e4ace11/test/controllers/dashboard_controller_test.rb#L261)
 - [does not show roster email review prompt when roster and login emails match](https://github.com/AndreRobitaille/LegionPostTools/blob/15ce51b677a432275ce7e8d7e503fff36e4ace11/test/controllers/dashboard_controller_test.rb#L279)
 - [invite stays hidden after dismissal within the session](https://github.com/AndreRobitaille/LegionPostTools/blob/15ce51b677a432275ce7e8d7e503fff36e4ace11/test/controllers/dashboard_controller_test.rb#L289)
-
