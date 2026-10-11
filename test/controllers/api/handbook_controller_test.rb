@@ -155,11 +155,24 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes paths, [ "POST", "/api/endeavors" ]
     assert_includes paths, [ "GET", "/api/people" ]
     assert_includes paths, [ "GET", "/api/officers" ]
+    assert_includes paths, [ "GET", "/api/meetings" ]
+    assert_includes paths, [ "GET", "/api/meetings/:id" ]
+    assert_includes paths, [ "GET", "/api/meetings/:meeting_id/member_documents/agenda" ]
+    assert_includes paths, [ "GET", "/api/meetings/:meeting_id/member_documents/minutes" ]
+    assert_not_includes paths, [ "GET", "/api/meetings/:meeting_id/minutes" ]
     assert_not_includes paths, [ "GET", "/api/membership/summary" ]
     assert_equal "directory", response.parsed_body.dig("caller", "people_access")
     assert_equal [], response.parsed_body["agenda_item_fields"]
     assert_equal [], response.parsed_body["minutes_fields"]
     assert_equal [], response.parsed_body["guided_workflows"]
+
+    get "/api/meetings", as: :json
+    assert_response :success
+    assert_equal [], response.parsed_body.fetch("meetings")
+    get "/api"
+    assert_response :success
+    assert_includes response.body, "GET /api/meetings/:meeting_id/member_documents/minutes"
+    assert_not_includes response.body, "GET /api/meetings/:meeting_id/minutes"
   end
 
   test "internal-record viewer receives minutes reads without mutations or restricted transcript content" do

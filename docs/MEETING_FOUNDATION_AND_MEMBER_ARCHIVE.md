@@ -6,6 +6,12 @@ scope. The later structured draft-minutes layer is now implemented as described 
 minutes awaiting acceptance are now implemented; acceptance and amendments remain future
 work.
 
+Current minutes approval/attestation behavior is governed by
+[Minutes approval and attestation](MINUTES_APPROVAL_AND_ATTESTATION.md), including final
+later-Meeting approval. [Member Meeting API reading](MEMBER_MEETING_API_READS.md) describes
+the current private member/delegate read boundary and separate officer workspace. The
+milestone text below remains foundation history where it discusses future minutes work.
+
 ## Purpose
 
 LegionPostTools currently treats a dated agenda as the closest thing to a meeting. That

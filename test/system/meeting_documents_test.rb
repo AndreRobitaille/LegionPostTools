@@ -31,6 +31,8 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     system_sign_in(commander)
     assert_protected_deletions(type:, agenda:, meeting:, revision: minutes.current_revision)
     member = User.create!(person: Person.create!(first_name: "General", last_name: "Member"), email_address: "documents-member@example.com")
+    _member_token, member_plaintext = AgentAccessToken.issue!(user: member, name: "Synthetic member documents", expires_in: 1.day)
+    member_headers = { "Authorization" => "Bearer #{member_plaintext}" }
     system_sign_in(member)
     page.current_window.resize_to(1400, 1000)
     visit meeting_path(meeting)
@@ -59,6 +61,15 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_match(/awaiting meeting approval/i, pdf_text)
     assert_not_includes pdf_text, "Private meeting instructions."
     assert_not_includes pdf_text, "Renamed Template"
+    member_json = read_member_json("/api/meetings/#{meeting.id}/member_documents/minutes", member_headers)
+    assert_equal minutes.member_revision.id, member_json.dig("minutes", "revision_id")
+    assert_equal "Awaiting meeting approval", member_json.dig("minutes", "label")
+    assert_equal "Membership Meeting", member_json.dig("minutes", "document", "title")
+    assert_not_includes member_json.to_json, "Private meeting instructions."
+    api_pdf_text = member_pdf_text("/api/meetings/#{meeting.id}/member_documents/minutes/print", headers: member_headers)
+    assert_includes api_pdf_text, "Hold a community breakfast next month"
+    assert_match(/awaiting meeting approval/i, api_pdf_text)
+    assert_not_includes api_pdf_text, "Private meeting instructions."
     save_document_screenshot("/tmp/member-minutes-paper-desktop.png")
     summary = find(".member-minutes-provenance summary")
     summary.send_keys(:space)
@@ -76,6 +87,13 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_includes pdf_text, "Discuss plans for a community breakfast."
     assert_not_includes pdf_text, "Private meeting instructions."
     assert_not_includes pdf_text, "Renamed Template"
+    member_json = read_member_json("/api/meetings/#{meeting.id}/member_documents/agenda", member_headers)
+    assert_equal agenda.id, member_json.dig("agenda", "id")
+    assert_not_includes member_json.to_json, "Private meeting instructions."
+    api_pdf_text = member_pdf_text("/api/meetings/#{meeting.id}/member_documents/agenda/print", headers: member_headers)
+    assert_includes api_pdf_text, "Discuss plans for a community breakfast."
+    assert_not_includes api_pdf_text, "Private meeting instructions."
+    assert_not_includes api_pdf_text, "Review membership and welcome new members."
     save_document_screenshot("/tmp/member-agenda-paper-desktop.png")
     visit meeting_path(meeting)
     page.current_window.resize_to(390, 844)
@@ -86,7 +104,11 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting — Agenda"
     assert_document_readability
     save_document_screenshot("/tmp/member-agenda-paper-mobile.png")
-    visit meeting_minutes_path(meeting)
+    visit meetings_path
+    within find("a[href='#{meeting_minutes_path(meeting)}']").ancestor(".member-meeting-row") do
+      click_link "View minutes"
+    end
+    assert_current_path meeting_minutes_path(meeting)
     assert_selector ".agenda-meeting-heading h1", text: "Membership Meeting"
     assert_selector "a.agenda-print-link", text: "Open minutes PDF"
     assert_document_readability
@@ -193,12 +215,22 @@ class MeetingDocumentsTest < ApplicationSystemTestCase
     assert_operator page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.app-flash-alert')).fontSize)"), :>=, 16
   end
 
-  def member_pdf_text(path)
+  def read_member_json(path, headers)
+    result = page.evaluate_async_script(<<~JS, path, headers)
+      const [url, headers, done] = arguments;
+      fetch(url, {headers}).then(async response => done({status: response.status, body: await response.json()}))
+        .catch(error => done({error: error.message}));
+    JS
+    assert_equal 200, result.fetch("status")
+    result.fetch("body")
+  end
+
+  def member_pdf_text(path, headers: {})
     previous_port = ENV["PDF_RENDER_PORT"]
     ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
-    result = page.evaluate_async_script(<<~JAVASCRIPT, path)
+    result = page.evaluate_async_script(<<~JAVASCRIPT, path, headers)
       const done = arguments[arguments.length - 1];
-      fetch(arguments[0], { credentials: "same-origin" }).then(async response => {
+      fetch(arguments[0], { credentials: "same-origin", headers: arguments[1] }).then(async response => {
         const bytes = new Uint8Array(await response.arrayBuffer());
         done({ status: response.status, type: response.headers.get("content-type"),
           data: btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join("")) });

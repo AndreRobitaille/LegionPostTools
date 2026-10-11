@@ -289,3 +289,32 @@ passed 2 / 104 / 0 (18.77s), including desktop/390px refusal, member archive and
 PDF text. Refusal screenshots inspected: readable wrapping/controls, no horizontal
 overflow. RuboCop 495 files / zero offenses; Brakeman zero errors/warnings; gem and
 importmap audits report no vulnerabilities. Full serial final revision checks remain.
+
+#80 final candidate `2b7be1f06e8679800acf8500a1f702ba0041fc26`: local ordinary
+1234 / 9593 / 0 (seed 36939, 94.94s), then system 65 / 1131 / 0 (seed 39809, 156.89s).
+Exact-SHA CI 38105072186 passed all four jobs with those actual counts and PostgreSQL
+17.11. PR #90 merged as `c3985b450b8ce48887e0d1b56768306fe51b7a82`; tree matches
+candidate. Actual-main CI 38105389468 passed all four jobs, including actual serial
+ordinary/system steps. #80 is complete. No production inspection, mutation or deployment.
+
+## #77 Member/delegate occurrence and document parity
+
+Design/evidence: [Member Meeting API reads](../MEMBER_MEETING_API_READS.md). Original
+application `34d6abd`: 2 / 3 / two failures, 403 member list and actual agenda-only
+transcript/working-minutes summaries. No full transcript text leaked by that response.
+Repair uses authenticated baseline occurrences, explicitly member-safe document endpoints,
+and current-capability filtering on all Meeting payload consumers, including update and
+agenda-delete echoes. Existing officer endpoints retain their authority checks.
+
+Final focused neighbor checks before commit: 66 / 1605 / 0 (seed 47107, 10.71s), covering
+API Meeting/handbook/workspace, member HTML/PDF, final occurrence and officer forms.
+`MeetingDocumentsTest` 2 / 156 / 0 (20.81s): real browser member bearer JSON and real PDFs,
+native/custom protected delete controls, document/archive navigation and readable layouts.
+Desktop/390px screenshots inspected. No assertions removed or skips added.
+
+Controlled mutation of only the member document's payload source to mutable working text:
+1 / 84 / one saved-heading assertion failure (1.82s); exact-byte restoration then
+5 / 506 / 0 (seed 17499, 2.85s). Logs `/tmp/legion-member-{controlled-fault,restored-clean}.log`.
+No experimental source fault remains. Metadata/detail now share one selected revision.
+RuboCop 497 files clean; Brakeman zero errors/warnings; dependency audits clean.
+Full committed-candidate suites/CI and actual-main verification remain required.
