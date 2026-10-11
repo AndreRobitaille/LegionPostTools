@@ -40,7 +40,7 @@ Push/merge does not invoke repository deployment. Workflow content and empty hoo
 | #81 | Current handbook, delegated official acts and Post website credential boundaries | Complete: PR #97 merged; independent handbook/actions and candidate/actual-main CI passed |
 | #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
 | #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
-| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: all current files have bounded review entries; independent cleanup is verified; final source-review publication and policy-dependent #78/#79 lifecycle/authority concerns remain explicit |
+| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: all current files have bounded review entries; independent cleanup is verified and source review/handoff published in PR #136; policy-dependent #78/#79 lifecycle/authority concerns remain explicit |
 
 The initial inventory alone completes no acceptance criterion. No test removed,
 consolidated or weakened. Discovery documentation committed as `002f41e`; subsequent
