@@ -168,7 +168,7 @@ Policy/source basis: [member experience](../STANDARD_MEMBER_EXPERIENCE.md),
 - **Result:** Occurrence remains readable without a published document; member receives only published agenda and selected immutable attested/final minutes.
 - **Observe:** Minutes promoted when available; awaiting approval versus official/locked labels truthful; correction notice retains previous attested copy.
 - **Then:** Draft direct URL unavailable; reopening agenda removes it until republished; corrected attestation replaces member revision without altering prior revisions.
-- **Failures:** Working rows or transcripts leak; missing document shown as a broken action; title/date/place follows today's template; accepted copy silently changes. Standard-member `/api/meetings` parity is a source discrepancy (G-01).
+- **Failures:** Working rows or transcripts leak; missing document shown as a broken action; title/date/place follows today's template; accepted copy silently changes. The baseline Standard-member `/api/meetings` discrepancy (G-01) and restricted summary disclosure were reproduced; [#77 contract/evidence](../MEMBER_MEETING_API_READS.md) records the scoped repair and verification.
 
 ## Accounts, roster, and officer turnover
 

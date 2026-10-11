@@ -229,6 +229,10 @@ Rails.application.routes.draw do
     resources :meeting_bodies, only: %i[index]
     resources :meeting_types, only: %i[index]
     resources :meetings, only: %i[index show create update destroy] do
+      get "member_documents/agenda", to: "member_meeting_documents#agenda"
+      get "member_documents/agenda/print", to: "member_meeting_documents#agenda_print"
+      get "member_documents/minutes", to: "member_meeting_documents#minutes"
+      get "member_documents/minutes/print", to: "member_meeting_documents#minutes_print"
       resource :transcript, only: %i[show create], controller: "meeting_transcripts"
       resource :minutes, only: %i[show create update], controller: "meeting_minutes" do
         get :print

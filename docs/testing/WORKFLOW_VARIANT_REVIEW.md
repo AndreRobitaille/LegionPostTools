@@ -77,3 +77,22 @@ Existing `MinutesApprovalFlowTest` retains its full handoff/correction/confirmat
 and adds final occurrence edit refusal, member archive navigation and real final PDF reads
 at desktop/phone widths. The manual two-connection probe is separately recorded; it is
 not automatically discovered by Rails/CI. All earlier component and browser coverage stays.
+
+## Member and personal-delegate reading (#77)
+
+`ApiMeetingsApiTest`: enabled member session/bearer list/detail, independently expected
+upcoming/past identities and no added grants; agenda-only list/detail/update echoes must
+exclude transcript metadata and working minutes. Original code failed both variants,
+showing 403 and the two actual restricted summaries.
+
+`MemberMeetingReadParityTest`: actual handoff/attestation/reopen/pending/final lifecycle,
+last attested immutable snapshot/authority, HTML comparison, privacy exclusions, unchanged
+official graph, published agenda screen projection, same-token loss of office duties,
+foreign/anonymous/disabled/revoked denial, and API PDF selection/failure. PDF selection uses
+an explicit stub; existing `MeetingDocumentsTest` supplies real bearer JSON and actual
+PDF extraction plus archive navigation and desktop/narrow review. No component/browser
+assertion removed. Handbook member contract is compared to real list requests and Markdown.
+
+Controlled working-copy substitution passes routing but fails the saved heading assertion
+after reopening. Exact controller bytes restored; all five lifecycle scenarios pass again.
+Commands, counts and limits are in [Member API design/evidence](../MEMBER_MEETING_API_READS.md).

@@ -287,19 +287,45 @@ module Api
         title: meeting.title,
         calendar_category: meeting.calendar_category,
         cancelled: meeting.cancelled?,
-        website_calendar: meeting.website_calendar_state,
+        website_calendar: (meeting.website_calendar_state if current_user.can?("manage_agendas")),
         starts_at: meeting.starts_at.iso8601,
         location_name: meeting.location_name,
         location_address: meeting.location_address,
         lock_version: meeting.lock_version,
         meeting_body: meeting_body_payload(meeting.meeting_body),
         meeting_type: meeting_type_payload(meeting.meeting_type),
-        agenda: meeting.dated_agenda ? {
+        agenda: meeting.dated_agenda && (meeting.dated_agenda.published? || current_user.can?("manage_agendas")) ? {
           id: meeting.dated_agenda.id,
           status: meeting.dated_agenda.status
         } : nil,
-        transcript: meeting.transcript ? transcript_summary_payload(meeting.transcript) : nil,
-        minutes: meeting.minutes ? minutes_summary_payload(meeting.minutes) : nil
+        transcript: meeting.transcript && current_user.can_any?("manage_minutes", "view_internal_records") ? transcript_summary_payload(meeting.transcript) : nil,
+        minutes: meeting.minutes && current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records") ? minutes_summary_payload(meeting.minutes) : nil,
+        member_documents: {
+          agenda: meeting.dated_agenda&.published? ? member_agenda_summary_payload(meeting.dated_agenda) : nil,
+          minutes: member_minutes_summary_payload(meeting.minutes)
+        }
+      }
+    end
+
+    def member_agenda_summary_payload(agenda)
+      agenda_summary_payload(agenda).merge(
+        json_path: "/api/meetings/#{agenda.meeting_id}/member_documents/agenda",
+        pdf_path: "/api/meetings/#{agenda.meeting_id}/member_documents/agenda/print",
+        html_path: dated_agenda_path(agenda)
+      )
+    end
+
+    def member_minutes_summary_payload(minutes, revision: minutes&.member_revision)
+      return nil unless revision&.attestation
+
+      {
+        id: minutes.id, meeting_id: minutes.meeting_id,
+        revision_id: revision.id, revision_number: revision.number, sha256: revision.sha256,
+        authority: minutes.membership_approved? ? "official" : "attested",
+        label: helpers.member_minutes_status(minutes), title: revision.payload.fetch("title"),
+        json_path: "/api/meetings/#{minutes.meeting_id}/member_documents/minutes",
+        pdf_path: "/api/meetings/#{minutes.meeting_id}/member_documents/minutes/print",
+        html_path: meeting_minutes_path(minutes.meeting_id)
       }
     end
 

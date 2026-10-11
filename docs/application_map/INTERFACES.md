@@ -129,7 +129,7 @@ clients must inspect truncation/offset metadata where supplied.
 | People/officers/position titles/membership | Directory list/detail and officers; full-membership summary/renewals/roster/person; position-title list restricted to agenda manager | MEM-02–03, API-01 |
 | People account | Account state/create/change email/disable/roster-control; `manage_settings` | ADMIN-01, API-02 |
 | Meeting bodies/types | Read configured bodies/types; `manage_agendas`; no general configuration mutation | TPL-02, API-01 |
-| Meetings | CRUD; current reads require agenda/minutes/internal capability, unlike member HTML (G-01) | MTG-01–02 |
+| Meetings | Baseline CRUD with officer-gated reads (G-01); [#77 member/delegate read contract](../MEMBER_MEETING_API_READS.md) adds safe baseline occurrence/documents while retaining officer mutation authority | MTG-01–02, MEM-04 |
 | Dated agendas/items/roll calls/catalog | CRUD within exposed family, approve/publish/reopen; item and catalog reorder; roll-call update/refresh; Endeavor placement | AGN-01–07, TPL-01 |
 | Working minutes/sections/items/outcomes/attendance | Read/create/heading update/PDF, structured mutations/reorder, explicit Endeavor confirmation; restricted workflow access | MIN-01–04, MIN-06 |
 | Draft runs/suggestions | List/show/create, failed retry/discard/restore, attendance review, use/edit/discard | MIN-05–06, MIN-12 |

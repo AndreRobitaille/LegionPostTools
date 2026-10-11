@@ -59,4 +59,50 @@ class ApiMeetingsApiTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_match(/Remove the meeting's agenda/, response.parsed_body["error"])
   end
+
+  test "ordinary member and personal delegate can read occurrences without officer duties" do
+    past = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.week.ago, title: "Past occurrence")
+    upcoming = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.week.from_now, title: "Upcoming occurrence")
+    member = User.create!(person: Person.create!(first_name: "Ordinary", last_name: "Member"), email_address: "ordinary@example.com")
+    _token, plaintext = AgentAccessToken.issue!(user: member, name: "Member delegate", expires_in: 1.day)
+    sign_in_as(member)
+
+    [ {}, { "Authorization" => "Bearer #{plaintext}" } ].each do |headers|
+      get "/api/meetings", headers:, as: :json
+      assert_response :success
+      assert_equal [ upcoming.id, past.id ], response.parsed_body.fetch("meetings").map { |row| row.fetch("id") }
+      get "/api/meetings/#{past.id}", headers:, as: :json
+      assert_response :success
+      assert_equal "Past occurrence", response.parsed_body.dig("meeting", "title")
+      assert_equal [], member.reload.permission_grants.pluck(:capability)
+    end
+  end
+
+  test "agenda-only meeting responses exclude restricted transcript and working minutes including update echoes" do
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.week.ago, title: "Meeting occurrence")
+    minutes = MeetingMinutes.create_from_meeting!(meeting:)
+    minutes.update!(title: "Private working heading")
+    source = "Restricted source evidence."
+    MeetingTranscript.create!(organization: @organization, meeting:, created_by: @manager, source_kind: "pasted_text",
+      content: source, original_filename: "private-source.txt", byte_size: source.bytesize, media_type: "text/plain",
+      sha256_digest: Digest::SHA256.hexdigest(source), retention_policy: "retain_restricted")
+    original_minutes = minutes.reload.attributes
+
+    [ :list, :show, :update ].each do |action|
+      case action
+      when :list then get "/api/meetings", as: :json
+      when :show then get "/api/meetings/#{meeting.id}", as: :json
+      when :update then patch "/api/meetings/#{meeting.id}", params: { website_title: "Reviewed notice heading" }, as: :json
+      end
+      assert_response :success
+      payload = action == :list ? response.parsed_body.fetch("meetings").find { |row| row["id"] == meeting.id } : response.parsed_body.fetch("meeting")
+      assert_equal({ "transcript" => nil, "minutes" => nil }, payload.slice("transcript", "minutes"), "#{action} cannot disclose either restricted record")
+      assert_nil payload.fetch("transcript"), "#{action} must respect the existing transcript-read boundary"
+      assert_nil payload.fetch("minutes"), "#{action} must respect the existing working-minutes boundary"
+      assert_not_includes response.body, "Private working heading"
+      assert_not_includes response.body, "private-source.txt"
+      assert_equal original_minutes, minutes.reload.attributes
+    end
+    assert_equal "Reviewed notice heading", meeting.reload.website_title
+  end
 end
