@@ -1213,3 +1213,67 @@ removal/consolidation is justified. #78/#93 officer-date choice and #79 recovery
 choice/actual lifecycle remain open; #84 coordinates those concerns rather than being
 closed by inventory. [Concise handoff](OVERNIGHT_HANDOFF_2026-10-11.md). No production,
 real member-data copy, paid AI or unsolicited member communication.
+
+## Resolved decisions and final implementation preparation — October 11
+
+Andre selected the saved Post local date for #93 and final corrected Adjutant attestation
+for #79. The timestamp of the original pending-correction decision remains immutable.
+The two decision comments are6108327517/6108327745. No authority or retention policy
+was inferred from elapsed time.
+
+Officer PR #144 candidate c1b748f3d78282cfd672bc49ed4a0f4ed3693bc4 merged normally as
+860373344afc002d66f43ab17f83958a10be85b9; identical tree1fa0eb944c64eb7092d838f33f4eb9b3c0554e01.
+Committed local ordinary1316/12758 (seed850,110.281s) then system77/1811 (200.635s),
+zero failures/errors/skips; RuboCop513 clean, Brakeman0/0, audits clear. Candidate
+CI38135025374 and actual-main CI38135710941 pass all four jobs. Actual main runs the
+same serial totals (78.812917s/162.704327s). Six actual 1400/390 rendered images inspected;
+original and separate restored date faults are in OFFICER_AUTHORITY_LOCAL_DATE.md.
+#78/#93 closed only after main verification; comments6108652847/6108653159 preserve
+original issue title/body/labels/assignees/milestone. No production assignment inspection.
+
+Retention branch integrates that actual main as c161d4d9ba66789a819c02fae282c2b1897db9d4.
+The approved design precedes implementation: computed immutable clock, hourly bounded
+job, storage-first removal with persisted unavailable state and retry locator, truthful
+automatic-service provenance, preserved official graphs and retain-restricted controls.
+Migration was run only against owned legion_retention_reproduction_test. Recurrence is
+repository code for a future separately authorized release; no scheduler was activated
+in production. See TRANSCRIPT_RETENTION_LIFECYCLE_REVIEW.md for component/read boundaries.
+
+Three isolated faults name their detector before execution and restore exact bytes:
+- Earlier-decision clock instead of final corrected attestation:4/96/2 failures,0 errors/skips;
+  both delete-policy cases expect2026-12-01 18:00UTC rather than2026-10-31 18:00UTC.
+- Omitted storage delete:1/23/1 (seed39473); actual Disk object still exists even though
+  completion metadata is saved. The source-availability flag alone would miss this.
+- Ignored pending state on source reads:1/8/1 (seed47742); storage failure retains real
+  bytes but subsequent source availability must be false.
+Model SHA256 restored aadd155baaee41987f98664ac237fc17f4df2c8fa7e8b26ca4d4bb09402e4c67;
+purge service restored219aed382a0539df10f4df8c5e944607f3df6d22fdb9d21b7a8191feb068526b.
+The restored twelve-file neighboring command (transcript/minutes/confirmation models,
+both jobs, lifecycle integration, source/minutes/draft controllers, both API files and
+offline Generate) passes137/1812,0 failures/errors/skips (seed27225,9.969843s).
+Subsequent added final API refusal/enqueue preservation passes its whole file12/195/0
+(seed7000,2.021651s). No original component is removed or weakened.
+
+Prepared-assets original source-cache assertions fail2/12/2,0 errors/skips. Scoped source
+HTML/JSON now use no-store. Initial missing assets, the unsupported TEST= CLI argument,
+a fixture copy mismatch, CSS-uppercase text expectation and an attempted final-review
+read were harness/contract corrections; they are not credited as product regressions.
+The old manual-purge excerpt component remains unchanged; the new real-purge case obeys
+final-record refusal while checking dynamic excerpt absence and an unused offline provider.
+
+Actual browser source file runs3/397/0 (seed44525,10.485470s), real magic-link sign-in,
+input refusal/correction, pasted/Unicode upload, preserved bytes/digest, pending approval,
+final date, real storage failure, pending reader, retry/physical deletion, completed reader,
+current source JSON, management-grant loss, unchanged final member minutes, sign-out and
+subsequent protected refusal. Audited official acts here prepare fixtures; the independent
+full approval journey retains actual confirmation controls/native PDFs. All six final
+scheduled/pending/completed desktop/phone fact-and-reader images were inspected; body16px,
+labels13px, no horizontal overflow, clear padded upright statuses and Post-local dates.
+An early accidental whole system run78/1813 had one fixture-wording failure; final
+candidate serial suites remain required and will be reported with exact CI separately.
+
+Inventory now184 unique entries:183 discovered *_test.rb files plus one explicit manual
+concurrency runner. Both newly introduced test files are reviewed; historical pinned
+case indexes stay historical. No deletion/consolidation, skips, permanent permission
+expansion or production/paid-provider claim. Final complete handoff follows verified
+candidate and actual-main CI.

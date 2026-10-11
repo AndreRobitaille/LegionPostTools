@@ -656,4 +656,19 @@ End role form variants reproduce the wrong submitted date and then save the appr
 Post-local date. Two real browser journeys retain original expiry/navigation assertions
 and add end-role controls plus sign-out/subsequent denial at1400/390.
 [Design, exact evidence and limitations](../OFFICER_AUTHORITY_LOCAL_DATE.md) distinguish
-these executions from fixture/harness corrections and pending final-candidate CI.
+these executions from fixture/harness corrections. PR #144 candidate/main CI passed
+all four jobs with ordinary1316/12758 then system77/1811; #78/#93 closed after verification.
+
+## Approved transcript retention lifecycle (#79)
+
+Andre selected final corrected attestation for pending corrections. Thirteen actual-job
+cases cover both source kinds/policies, ordinary final approval, delayed corrections,
+just-before/exact/late deadline, old final records/later intake, repeat execution and
+storage/shared-object/transaction failures with recovery. Actual bytes, locator rows,
+metadata and official graphs are inspected separately from source availability. The
+original missing-path regression, three restored clock/storage/pending-read faults,
+current source JSON, retained proposals and offline provider refusal are recorded in
+[the lifecycle review](TRANSCRIPT_RETENTION_LIFECYCLE_REVIEW.md) and ledger. Original
+manual-purge, input/privacy and generation components remain. Real reader/intake/member
+refusal journeys and six rendered status images at1400/390 are inspected; live scheduler,
+production storage/provider behavior and external backup erasure remain unverified.

@@ -21,3 +21,7 @@ production:
     class: EndeavorHistoryReconcileJob
     queue: background
     schedule: every 15 minutes
+  purge_meeting_transcripts:
+    class: PurgeMeetingTranscriptsJob
+    queue: background
+    schedule: every hour at minute 37

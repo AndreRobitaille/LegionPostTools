@@ -1162,6 +1162,9 @@ CREATE TABLE public.meeting_transcripts (
     lock_version integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
+    purge_started_at timestamp(6) without time zone,
+    purged_by_service character varying,
+    CONSTRAINT meeting_transcripts_automatic_purge_provenance CHECK (((purged_by_service IS NULL) OR (((purged_by_service)::text = 'transcript_retention'::text) AND (purged_by_id IS NULL) AND (purged_at IS NOT NULL) AND (purge_started_at IS NOT NULL)))),
     CONSTRAINT meeting_transcripts_byte_size_check CHECK ((byte_size >= 0)),
     CONSTRAINT meeting_transcripts_retention_policy_check CHECK (((retention_policy)::text = ANY (ARRAY[('delete_after_acceptance'::character varying)::text, ('retain_restricted'::character varying)::text]))),
     CONSTRAINT meeting_transcripts_source_kind_check CHECK (((source_kind)::text = ANY (ARRAY[('pasted_text'::character varying)::text, ('text_upload'::character varying)::text])))
@@ -5934,6 +5937,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261011030000'),
 ('20261011020000'),
 ('20261011010000'),
 ('20261004010000'),

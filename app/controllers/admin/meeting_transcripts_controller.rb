@@ -1,5 +1,8 @@
 module Admin
   class MeetingTranscriptsController < ApplicationController
+    include CalendarTimeZone
+
+    before_action :prevent_source_caching
     before_action :require_transcript_access
     before_action -> { require_capability("manage_minutes") }, only: %i[new create]
     before_action :set_meeting
@@ -30,6 +33,10 @@ module Admin
     end
 
     private
+
+    def prevent_source_caching
+      response.cache_control.replace(no_store: true)
+    end
 
     def require_transcript_access
       require_any_capability("manage_minutes", "view_internal_records")

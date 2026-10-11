@@ -344,7 +344,7 @@ workflow.
 - plain UTF-8 `content` for pasted text or one Active Storage attachment for upload;
 - original filename, byte size, media type, and SHA-256 digest metadata;
 - `retention_policy`: `delete_after_acceptance` or `retain_restricted`;
-- creator, creation time, optional `purge_scheduled_at`, `purged_at`, and purger;
+- creator, creation time, `purge_started_at`, `purged_at`, and human or automatic-service purger;
 - optimistic `lock_version`; and
 - timestamps.
 
@@ -359,14 +359,21 @@ transcript endpoint with `include_content=true`.
 
 At creation, the officer must choose a retention policy:
 
-- **Delete after membership approval** is the recommended default. Membership approval schedules content
-  deletion after a 30-day recovery window. The digest and non-content audit metadata
-  remain.
-- **Retain as restricted source** keeps the source under the same restricted access until
-  an authorized person deliberately deletes it.
+- **Delete after membership approval** is the recommended default. The 30-day recovery
+  window begins when the minutes become final: ordinary membership approval, or final
+  Adjutant attestation of pending corrections. The original meeting decision keeps its
+  recorded date. The hourly background job removes due pasted text or uploaded storage
+  content, preserving the digest and non-content audit metadata. The deadline is computed
+  from immutable approval/attestation evidence rather than a mutable scheduled field.
+- **Retain as restricted source** keeps the source under the same restricted access and
+  does not schedule automatic removal.
 
-An authorized officer may deliberately purge source content earlier with a destructive
-confirmation and audit event. Purging source never deletes or changes a minutes draft,
+An early manual purge with destructive confirmation remains planned; there is no current
+manual purge control or API. Automatic removal blocks reads once removal starts, retains
+the upload locator through failed storage/transaction completion, and retries safely.
+See [retention design](TRANSCRIPT_RETENTION_DECISION_DRAFT.md) and
+[synthetic verification](testing/TRANSCRIPT_RETENTION_LIFECYCLE_REVIEW.md).
+Purging source never deletes or changes a minutes draft,
 revision, membership approval, amendment, or PDF. This is record-source retention, not an assertion
 about any external audio file from which the transcript came.
 

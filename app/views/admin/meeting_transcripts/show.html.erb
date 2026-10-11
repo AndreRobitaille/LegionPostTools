@@ -13,8 +13,16 @@
 <dl class="transcript-facts">
   <div><dt>Source</dt><dd><%= @transcript.pasted_text? ? "Pasted text" : @transcript.original_filename %></dd></div>
   <div><dt>Size</dt><dd><%= number_to_human_size(@transcript.byte_size) %></dd></div>
-  <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete after membership approval and recovery window" : "Retain as restricted source" %></dd></div>
+  <div><dt>Retention</dt><dd><%= @transcript.retention_policy == "delete_after_acceptance" ? "Delete 30 days after the minutes become final" : "Retain as restricted source" %></dd></div>
   <div><dt>Added</dt><dd><%= legion_datetime(@transcript.created_at) %></dd></div>
+  <% if (scheduled_at = @transcript.scheduled_purge_at) %>
+    <div><dt>Scheduled removal</dt><dd><%= legion_datetime(scheduled_at.in_time_zone(@meeting.organization.calendar_time_zone)) %> (Post time)</dd></div>
+  <% elsif @transcript.retention_policy == "delete_after_acceptance" %>
+    <div><dt>Recovery window</dt><dd>Starts when the minutes become final, after any pending corrections are attested.</dd></div>
+  <% end %>
+  <% if @transcript.purged_at.present? %>
+    <div><dt>Removed</dt><dd><%= legion_datetime(@transcript.purged_at.in_time_zone(@meeting.organization.calendar_time_zone)) %> (Post time)<%= " by automatic retention" if @transcript.purged_by_service.present? %></dd></div>
+  <% end %>
 </dl>
 
 <section class="transcript-reader" aria-labelledby="transcript-content-heading">
@@ -24,7 +32,11 @@
   </div>
   <% if @transcript.source_available? %>
     <pre><%= @transcript.source_text %></pre>
-  <% else %>
+  <% elsif @transcript.purged_at.present? %>
     <p class="minutes-empty-note">The transcript content has been purged. Its non-content audit metadata remains.</p>
+  <% elsif @transcript.purge_started_at.present? %>
+    <p class="minutes-empty-note">Removal is pending. The source is unavailable while this app retries removal. Its non-content audit metadata remains.</p>
+  <% else %>
+    <p class="minutes-empty-note">The source is unavailable. Its non-content audit metadata remains.</p>
   <% end %>
 </section>

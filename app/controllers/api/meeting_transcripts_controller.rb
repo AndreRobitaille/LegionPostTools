@@ -1,5 +1,6 @@
 module Api
   class MeetingTranscriptsController < BaseController
+    before_action :prevent_private_data_caching
     before_action :require_transcript_access
     authorize_with -> { require_capability("manage_minutes") }, only: :create
     before_action :set_meeting
@@ -12,7 +13,7 @@ module Api
       end
       render json: { transcript: payload }
     rescue MeetingTranscript::SourcePurgedError
-      render_error("The transcript source has been purged.", status: :gone)
+      render_error("The transcript source is unavailable.", status: :gone)
     end
 
     def create

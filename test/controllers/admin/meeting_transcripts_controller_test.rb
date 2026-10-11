@@ -23,6 +23,7 @@ class Admin::MeetingTranscriptsControllerTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name='meeting_transcript[pasted_text]']"
     assert_select "input[type='file'][accept='.txt,text/plain']"
     assert_select ".transcript-privacy-note", text: /does not send anything to OpenAI/
+    assert_equal "no-store", response.headers["Cache-Control"]
 
     assert_difference -> { MeetingTranscript.count }, 1 do
       post admin_meeting_transcript_path(@meeting), params: {
@@ -79,6 +80,7 @@ class Admin::MeetingTranscriptsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".error-summary", text: /Retention policy is not included in the list/
     assert_not_includes css_select(".error-summary").sole.text, source
     assert_select "textarea[name='meeting_transcript[pasted_text]']", text: source
+    assert_equal "no-store", response.headers["Cache-Control"]
   end
 
   test "internal record viewers can read source but cannot add it" do
@@ -94,6 +96,7 @@ class Admin::MeetingTranscriptsControllerTest < ActionDispatch::IntegrationTest
     get admin_meeting_transcript_path(@meeting)
     assert_response :success
     assert_select ".transcript-reader pre", text: /The factual source/
+    assert_equal "no-store", response.headers["Cache-Control"]
 
     get new_admin_meeting_transcript_path(@meeting)
     assert_redirected_to root_path

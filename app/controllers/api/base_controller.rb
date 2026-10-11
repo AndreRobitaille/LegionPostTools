@@ -399,7 +399,10 @@ module Api
         source_available: transcript.source_available?,
         created_by: directory_person_payload(transcript.created_by.person),
         created_at: transcript.created_at.iso8601,
-        purged_at: transcript.purged_at&.iso8601
+        scheduled_purge_at: transcript.scheduled_purge_at&.iso8601,
+        purge_started_at: transcript.purge_started_at&.iso8601,
+        purged_at: transcript.purged_at&.iso8601,
+        purged_by_service: transcript.purged_by_service
       }
     end
 

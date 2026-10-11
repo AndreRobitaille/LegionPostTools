@@ -86,5 +86,8 @@ with that explicit database override. No other database was reset.
   multiplicity and uppercase browser-text expectations were corrected, not credited as
   product regressions. No test was removed, skipped or given permanent broader grants.
 
-Full committed-candidate serial suites, security and exact-SHA/actual-main CI are still
-required; their final results will be recorded in the issue/PR and review ledger.
+PR #144 candidate `c1b748f3d78282cfd672bc49ed4a0f4ed3693bc4` merged normally as
+`860373344afc002d66f43ab17f83958a10be85b9`, with an identical tree. Committed local
+ordinary 1316/12758 then system 77/1811, zero failures/errors/skips; full lint/security
+passed. Exact candidate CI38135025374 and actual-main CI38135710941 pass all four
+jobs and the same serial suite totals. #78 and #93 closed after actual-main verification.
