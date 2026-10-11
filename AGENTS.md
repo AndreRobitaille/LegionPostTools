@@ -96,6 +96,15 @@ Cloud agents use `.cursor/environment.json`. The image installs the Ruby in `.ru
 
 Before claiming work is complete, run relevant checks and report exact results.
 
+For meaningful behavior changes and test-quality reviews, read
+[Testing and workflow validation](docs/TESTING.md). Derive expectations from current
+product policy before judging implementation/tests, exercise realistic affected
+workflow variants, and verify persisted, visible, and subsequent behavior. Include
+relevant denial, stale authority, interruption, and recovery boundaries. Preserve
+useful component tests and establish meaningful regression detection; TDD and passing
+counts alone do not prove the user's workflow works. Keep intended behavior, source
+review, test execution, defect detection, CI, and production evidence distinct.
+
 Choose checks for affected behavior; the commands below are not a mandatory suite for
 every edit. Documentation/configuration changes need parsing, reference checks, and diff
 review. Code changes need relevant existing tests and focused lint. Broaden to full-suite,
@@ -169,6 +178,8 @@ member data; use the test database for automated checks and never infer permissi
 reset development data. Simplicity guidance does not waive authorization or audit controls.
 
 - `docs/AGENT_ENVIRONMENT.md` — Astra migration, environment boundaries, and verification.
+- `docs/TESTING.md` — independent workflow validation, useful test levels, regression detection, and precise evidence claims.
+- `docs/APPLICATION_MAP.md` — interfaces, stable workflow contracts, discovery, and maintenance evidence.
 
 - `README.md` — overview for operators and repo visitors.
 - `docs/PURPOSE.md` — why the app exists.

@@ -52,6 +52,7 @@ Most ordinary post members are not expected to log in during early versions. The
 ## Documentation
 
 - `AGENTS.md` and `CLAUDE.md` — general agent instructions and Claude-specific collaboration guidance.
+- [Testing and workflow validation](docs/TESTING.md) — standing testing strategy, independent behavior expectations, and regression evidence.
 - `docs/APPLICATION_MAP.md` — application discovery, interface inventory, behavioral workflow contracts, source discrepancies, and the reference for future test-quality review.
 - `docs/PURPOSE.md` — why the app exists.
 - `docs/USERS.md` — user and organization context.
@@ -129,7 +130,10 @@ Required production auth environment variables:
 
 ## Verification
 
-Run the main checks before claiming work is complete:
+Follow [Testing and workflow validation](docs/TESTING.md): define the user's expected
+outcome independently of the implementation, exercise relevant workflow variants,
+and report what the assertions establish. Choose checks for the affected behavior
+and risk; common application checks are:
 
 ```bash
 bin/rails test
