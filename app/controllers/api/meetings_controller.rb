@@ -1,7 +1,7 @@
 module Api
   class MeetingsController < BaseController
     before_action :require_authentication, only: %i[index show]
-    before_action -> { require_capability("manage_agendas") }, only: %i[create update destroy]
+    authorize_with -> { require_capability("manage_agendas") }, only: %i[create update destroy]
     before_action :set_meeting, only: %i[show update destroy]
     after_action :prevent_private_data_caching
 

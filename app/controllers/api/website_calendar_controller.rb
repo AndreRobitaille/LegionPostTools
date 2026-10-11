@@ -1,6 +1,6 @@
 module Api
   class WebsiteCalendarController < BaseController
-    before_action -> { require_capability("publish_public_content") }
+    authorize_with -> { require_capability("publish_public_content") }
     before_action -> { response.set_header("Cache-Control", "no-store") }
     rescue_from WebsitePublication::Forbidden do |error|
       render_error(error.message, status: :forbidden)

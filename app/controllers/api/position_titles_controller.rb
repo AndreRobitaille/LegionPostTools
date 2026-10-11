@@ -1,6 +1,6 @@
 module Api
   class PositionTitlesController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
 
     def index
       titles = organization.position_titles.where(active: true).order(:display_order, :name)

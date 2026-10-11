@@ -1,6 +1,6 @@
 module Api
   class MinutesBaseController < BaseController
-    before_action -> { require_capability("manage_minutes") }
+    authorize_with -> { require_capability("manage_minutes") }
     before_action :set_meeting_and_minutes
     before_action :ensure_draft_minutes
 

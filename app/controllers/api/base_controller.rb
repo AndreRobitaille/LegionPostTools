@@ -3,6 +3,18 @@ module Api
     UNAUTHORIZED_MESSAGE = "This is a private post operations app. Sign in, then open /api."
     MUTATION_METHODS = %w[POST PATCH PUT DELETE].freeze
     SENSITIVE_PARAMETER_PATTERN = /token|secret|password|code|authenticity/i
+    class_attribute :api_authorization_callbacks, default: []
+
+    # Reuse current authority on replay without rerunning lookups or mutation checks.
+    def self.authorize_with(filter = nil, only: nil, except: nil, &block)
+      filter ||= block
+      options = {}
+      options[:only] = only unless only.nil?
+      options[:except] = except unless except.nil?
+      before_action(filter, **options)
+      actions = only.nil? ? nil : Array(only).map(&:to_s)
+      self.api_authorization_callbacks += [ { filter:, only: actions, except: Array(except).map(&:to_s) } ]
+    end
 
     skip_forgery_protection
     before_action :prefer_json
@@ -143,7 +155,12 @@ module Api
           unless matching_execution?(execution, fingerprint)
             return render_error("That Idempotency-Key was already used for a different request.", status: :conflict)
           end
-          return replay_execution(execution) if execution.completed?
+          if execution.completed?
+            authorize_replay
+            return if performed?
+
+            return replay_execution(execution)
+          end
 
           return render_error("That request is still processing. Retry it with the same Idempotency-Key.", status: :conflict)
         end
@@ -214,9 +231,50 @@ module Api
     end
 
     def replay_execution(execution)
-      render body: execution.response_body,
+      render body: visible_replay_body(execution.response_body),
         status: execution.response_status,
         content_type: "application/json; charset=utf-8"
+    end
+
+    def visible_replay_body(body)
+      return body if body.blank?
+
+      visibility = { "transcript" => transcript_read_access?, "minutes" => minutes_read_access? }
+      return body if visibility.values.all?
+
+      payload = JSON.parse(body)
+      meeting = payload["meeting"] if payload.is_a?(Hash)
+      return body unless meeting.is_a?(Hash)
+
+      changed = false
+      visibility.each do |field, allowed|
+        next if allowed || meeting[field].nil?
+
+        meeting[field] = nil
+        changed = true
+      end
+      changed ? JSON.generate(payload) : body
+    end
+
+    def transcript_read_access?
+      current_user.can_any?("manage_minutes", "view_internal_records")
+    end
+
+    def minutes_read_access?
+      current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
+    end
+
+    def authorize_replay
+      checks = api_authorization_callbacks.select do |check|
+        (check[:only].nil? || check[:only].include?(action_name)) && !check[:except].include?(action_name)
+      end
+      return render_error("You do not have permission to open that.", status: :forbidden) if checks.empty?
+
+      checks.each do |check|
+        filter = check[:filter]
+        filter.is_a?(Proc) ? instance_exec(&filter) : send(filter)
+        break if performed?
+      end
     end
 
     def prefer_json
@@ -298,8 +356,8 @@ module Api
           id: meeting.dated_agenda.id,
           status: meeting.dated_agenda.status
         } : nil,
-        transcript: meeting.transcript && current_user.can_any?("manage_minutes", "view_internal_records") ? transcript_summary_payload(meeting.transcript) : nil,
-        minutes: meeting.minutes && current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records") ? minutes_summary_payload(meeting.minutes) : nil,
+        transcript: meeting.transcript && transcript_read_access? ? transcript_summary_payload(meeting.transcript) : nil,
+        minutes: meeting.minutes && minutes_read_access? ? minutes_summary_payload(meeting.minutes) : nil,
         member_documents: {
           agenda: meeting.dated_agenda&.published? ? member_agenda_summary_payload(meeting.dated_agenda) : nil,
           minutes: member_minutes_summary_payload(meeting.minutes)

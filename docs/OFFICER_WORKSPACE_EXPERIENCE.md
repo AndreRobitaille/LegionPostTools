@@ -22,8 +22,8 @@ administrators when they are not.
 
   | Position | Membership access | Position-provided capabilities |
   | --- | --- | --- |
-  | Commander | Full membership and renewal information | `manage_agendas`, `approve_minutes` |
-  | Adjutant | Full membership and renewal information | `manage_agendas`, `manage_minutes`, `attest_minutes` |
+  | Commander | Full membership and renewal information | `manage_agendas`, `manage_minutes`, `approve_minutes`, `record_minutes_approval` |
+  | Adjutant | Full membership and renewal information | `manage_agendas`, `manage_minutes`, `attest_minutes`, `record_minutes_approval` |
   | 1st Vice Commander | Full membership and renewal information | None |
   | Every other standard position | Member directory | None |
 
@@ -74,13 +74,20 @@ MEETING WORK
 - Mobile and desktop layouts retain 16-pixel interactive text, 44-pixel targets, visible
   focus, and no horizontal overflow.
 
-## Clarice Hagen correction
+The current [minutes policy](MINUTES_APPROVAL_AND_ATTESTATION.md) allows either officer
+to prepare/edit minutes and record the real later-Meeting approval. Commander handoff
+preserves a drafting milestone; Adjutant attestation shares the reviewed copy with members.
+The policy and [turnover verification](OFFICER_AUTHORITY_VERIFICATION.md) supersede the
+older table's omission of Commander drafting and both officers' approval recording.
 
-Clarice's current Adjutant assignment already supplies full membership access. Her
-current assignment also supplies `manage_agendas`, `manage_minutes`, and
+## Original Clarice Hagen correction
+
+The original installation correction recorded that Clarice's then-current Adjutant
+assignment supplied full membership access, `manage_agendas`, `manage_minutes`, and
 `attest_minutes`. Those capabilities end with the Adjutant assignment; her account does
 not retain duplicate manual grants and does not receive `manage_settings` or
-`manage_people`.
+`manage_people`. This is historical installation context, not verification of current
+production assignments. The standard policy now also includes `record_minutes_approval`.
 
 ## Manage Endeavors
 

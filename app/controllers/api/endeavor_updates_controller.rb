@@ -1,6 +1,6 @@
 module Api
   class EndeavorUpdatesController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
     before_action :set_endeavor
 
     def create

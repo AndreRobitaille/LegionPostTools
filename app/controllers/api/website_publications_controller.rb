@@ -4,11 +4,8 @@ require "stringio"
 module Api
   class WebsitePublicationsController < BaseController
     prepend_before_action :prevent_private_data_caching
-    before_action -> { require_capability("publish_public_content") }
+    authorize_with -> { require_capability("publish_public_content") }
     before_action :set_publication, except: %i[index create featured feature]
-    # Check current editorial authority even when returning a stored retry response.
-    skip_around_action :with_agent_idempotency
-    around_action :with_agent_idempotency
 
     rescue_from WebsitePublication::Conflict, ActiveRecord::StaleObjectError, with: :render_conflict
     rescue_from ArgumentError, ActionController::ParameterMissing, ActiveRecord::RecordInvalid, with: :render_invalid

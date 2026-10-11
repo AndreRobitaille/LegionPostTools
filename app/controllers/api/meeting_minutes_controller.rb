@@ -1,7 +1,7 @@
 module Api
   class MeetingMinutesController < BaseController
     before_action :require_minutes_read_access
-    before_action -> { require_capability("manage_minutes") }, only: %i[create update]
+    authorize_with -> { require_capability("manage_minutes") }, only: %i[create update]
     before_action :set_meeting
     before_action :set_minutes, only: %i[show update print]
     before_action :ensure_draft_minutes, only: :update
@@ -43,7 +43,7 @@ module Api
     def require_minutes_read_access
       require_authentication
       return if performed?
-      return if current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
+      return if minutes_read_access?
 
       render_error("You do not have permission to open that.", status: :forbidden)
     end

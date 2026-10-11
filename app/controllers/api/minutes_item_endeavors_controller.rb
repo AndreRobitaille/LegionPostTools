@@ -1,7 +1,7 @@
 module Api
   class MinutesItemEndeavorsController < MinutesBaseController
     before_action :set_item
-    before_action :require_creation_permission
+    authorize_with :require_creation_permission
 
     def create
       endeavor = MinutesEndeavors::Confirm.call(

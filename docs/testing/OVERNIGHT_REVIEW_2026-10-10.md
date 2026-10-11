@@ -33,10 +33,10 @@ Push/merge does not invoke repository deployment. Recheck before first push/merg
 
 | Issue | Contract and review unit | Current status |
 | --- | --- | --- |
-| #77 | Member Meeting and immutable document reads, personal token parity and handbook | Current issue read; policy/source investigation pending |
-| #78 | Independent Commander/Adjutant duties through assignment transitions | Current issue read; policy/source investigation pending |
+| #77 | Member Meeting and immutable document reads, personal token parity and handbook | Complete: PR #91 merged; candidate and actual-main CI passed |
+| #78 | Independent Commander/Adjutant duties through assignment transitions | Focused/request/browser proof prepared; final candidate verification pending; related date-boundary decision #93 remains separate |
 | #79 | 30-day recovery after final approval; source removal and retained record/audit | Current issue read; policy/source investigation pending |
-| #80 | Final occurrence context protected independently from agenda state | Current issue read; policy/source investigation pending |
+| #80 | Final occurrence context protected independently from agenda state | Complete: PR #90 merged; candidate and actual-main CI passed |
 | #81 | Current handbook, delegated official acts and Post website credential boundaries | Current issue read; policy/source investigation pending |
 | #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
 | #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
@@ -318,3 +318,96 @@ Controlled mutation of only the member document's payload source to mutable work
 No experimental source fault remains. Metadata/detail now share one selected revision.
 RuboCop 497 files clean; Brakeman zero errors/warnings; dependency audits clean.
 Full committed-candidate suites/CI and actual-main verification remain required.
+
+#77 final candidate `63bbaa67ab79617391ae04f5407f2fc084cf2465`: local ordinary
+1241 / 10158 / 0 (seed 24820, 104.19s), then system 65 / 1160 / 0 (159.19s).
+Candidate CI 38105684973 passed all four jobs with the same actual counts on PostgreSQL
+17.11. PR #91 merged as `b47d10ee25788f01e4d497200b69b545d17a29be`, identical tree.
+Actual-main CI 38106040386 passed all four jobs and those serial ordinary/system steps.
+#77 closed with completion evidence; no production inspection, mutation or deployment.
+
+## #78/#92 current duties and cached response authority
+
+Designs: [officer authority](../OFFICER_AUTHORITY_VERIFICATION.md) and
+[delegated retry authority](../DELEGATED_RETRY_AUTHORITY.md), written before their
+respective implementation. Existing User, position-grant, assignment CRUD, API and
+last-administrator protections remain. Normal dated resolution already satisfies the
+independent Commander/Adjutant/1st Vice matrix at a consistent date; the older table
+was stale. The named original Post installation correction remains historical context.
+
+On unchanged main `b47d10e`, the initial corrected request matrix ran 4 / 202 / one
+failure: an exact cached minutes write returned its private heading after the same
+token owner's Commander term expired. Persisted minutes did not mutate on retry.
+#92 records this disclosure; inactive-token coverage alone could not detect duty loss.
+`authorize_with` registers the existing current-authority callback for normal execution
+and replay. Lookups, optimistic locks, state checks and official consumption are not
+repeated. All routed mutation actions are inventoried; an unregistered replay fails closed.
+The former website-only callback ordering workaround is replaced by this shared guard.
+
+Existing calendar, Endeavor creation and Adjutant attestation tests now retain their
+previous assertions and add exact lost-authority retries, unchanged execution/records,
+and restored-authority receipts. A deleted calendar target still returns its permitted
+original receipt. Calendar normal/replay checks explicitly share the Post local date.
+The broader cross-controller date decision is separate #93: near UTC/local midnight,
+dashboard/calendar and minutes editing currently have differing Date.current contexts.
+No broad date resolver or authority policy was silently changed.
+
+New real-request matrices cover future/start/inclusive-end/expired/inactive/renamed
+positions, manual drafting exceptions, honorary offices, opposite official duties,
+and actual human later-Meeting approval by each configured officer without manual grants.
+The existing full browser correction/PDF journey now uses configured office duties.
+Same-session subsequent expiry denial and member navigation pass at 1400px/390px;
+screenshots inspected, readable wrapping/no horizontal overflow. Corrected focused
+browser run: 3 / 131 / 0 (seed 55474, 21.18s). An initial new fixture used yesterday in
+the server date while it was still today in the Post date; this exposed #93 and was
+corrected to a genuinely past date in both contexts. No navigation assertion was removed.
+
+Test-helper review: JSON GET-with-params mutates the supplied integration headers with
+X-Http-Method-Override GET in the installed Rails runner. Reusing those headers made later
+official POSTs become GETs. Membership reads now use query-string input; actual route
+expectations and duties are unchanged. Earlier helper/fixture failures are excluded from
+product-regression evidence. One exploratory short browser invocation overlapped the tail
+of a focused request run; the serial corrected browser run and final full suites qualify.
+
+Controlled expiry fault removed only the first assignment end-date SQL predicate.
+Both Commander and Adjutant scenarios fail on changed persisted draft attributes after
+an expired-office API PATCH, before checking the response: 2 / 73 / two failures
+(1.87s). Python finally restored exact User bytes, SHA-256
+`a8d8de63cd4522a00867abbe0202baa242753eddb0fb9d98deb0588ca697e1f9`.
+Logs `/tmp/legion-officer-expiry-content-fault.log` and restored clean run below.
+An earlier probe also caught the formerly forbidden editor opening; the stronger probe
+demonstrates record mutation detection. No experimental application fault remains.
+
+Expanded API/role/official-confirmation neighbor run: 198 / 2095 / 0 (seed 25822,
+19.47s). RuboCop 499 files / no offenses; Brakeman zero errors/warnings; both dependency
+audits clean. The final restored focused run and committed-candidate full serial suites,
+exact-SHA CI, fresh review and actual-main verification are still required before merge.
+
+Restored focused request/inventory/calendar run after the stronger fault: 26 / 444 / 0
+(seed 64008, 5.81s), then changed-test lint passes. All previous assertions are retained.
+Fresh review confirms 21 controller edits are exact existing-guard declaration changes;
+the three special controllers implement replay, calendar date preservation and removal
+of the old editorial callback workaround. Ten local Markdown references resolve.
+
+First committed candidate `6045eb2`: local ordinary 1250 / 10453 / 0 (seed 42258,
+101.08s), then system 66 / 1187 / 0 (seed 6064, 163.91s), serially. Exact-SHA CI
+38106906481 passed all four jobs. PR #94 remains draft: fresh review then found a
+partial-authority receipt case before merge. A manual agenda grant may survive office
+expiry, so action authorization remains valid while its old Meeting receipt still exposes
+restricted transcript/minutes summaries. Reproduction at `6045eb2`: 1 / 4 / one failure
+(seed 17260, 1.38s), with actual transcript creator/source metadata returned. No full
+transcript text or repeated mutation is claimed.
+
+Fresh Meeting responses, direct workspace read guards and cached Meeting receipts now
+reuse the same minutes/transcript visibility predicates. Redaction affects the returned
+copy only; stored execution, source graphs and safe historical receipt fields stay intact.
+The added partial/selected/restored authority case checks original byte-identical receipt
+restoration without another write. A deleted unreferenced agenda receipt also remains
+available with surviving agenda authority while hiding the expired minutes summary.
+The new fixture initially changed the Meeting type without matching draft-minutes context,
+so its subsequent minutes save correctly failed validation; the synthetic fixture now
+sets matching draft context. No application validation was weakened.
+
+Focused changed replay/API neighbors: 70 / 866 / 0 (seed 29799, 12.28s); four changed
+Ruby files pass lint. This source change requires a new committed candidate, serial full
+suites and exact-SHA CI; the earlier passing candidate is not substituted as final proof.

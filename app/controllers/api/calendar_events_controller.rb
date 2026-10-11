@@ -2,7 +2,7 @@ module Api
   class CalendarEventsController < BaseController
     include CalendarTimeZone
     include Concerns::ActivityContract
-    before_action :require_calendar_management, only: %i[create update destroy]
+    authorize_with :require_calendar_management, only: %i[create update destroy]
     before_action :set_event, only: %i[show update destroy]
 
     def index
@@ -57,7 +57,7 @@ module Api
     private
 
     def require_calendar_management
-      render_error("You do not have permission to manage the calendar.", status: :forbidden) unless current_user.can_manage_calendar?
+      render_error("You do not have permission to manage the calendar.", status: :forbidden) unless current_user.can_manage_calendar?(on: organization.calendar_time_zone.today)
     end
 
     def set_event

@@ -9,12 +9,17 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1000)
     @organization = Organization.create!(name: "Example American Legion Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
-    @body = @organization.meeting_bodies.create!(name: "PEC", slug: "pec")
+    AmericanLegionPostPreset.apply_to(@organization)
+    @body = @organization.meeting_bodies.find_by!(slug: "pec")
+    @body.update!(name: "PEC")
     @meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.month.ago, title: "PEC Meeting")
     @approving_meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.day.ago, title: "Later PEC Meeting")
     @minutes = MeetingMinutes.create_from_meeting!(meeting: @meeting)
-    @commander = officer("Commander", "manage_minutes", "approve_minutes", "record_minutes_approval")
-    @adjutant = officer("Adjutant", "manage_minutes", "attest_minutes", "record_minutes_approval")
+    @commander = officer("Commander")
+    @adjutant = officer("Adjutant")
+    [ @commander, @adjutant ].each do |user|
+      @organization.position_titles.find_by!(name: user.person.last_name).position_assignments.create!(person: user.person, starts_on: Date.current - 1.year)
+    end
   end
 
   test "Commander handoff Adjutant edits and meeting corrections reach a locked record without extra approval clicks" do
@@ -70,7 +75,8 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     visit admin_meeting_path(@meeting)
     assert_selector ".minutes-status-card h2", text: "Approved and locked"
     assert_no_link "Record meeting approval"
-    @adjutant.permission_grants.create!(capability: "manage_agendas")
+    assert_empty @commander.permission_grants
+    assert_empty @adjutant.permission_grants
     original_meeting = @meeting.reload.attributes
     revision = @minutes.member_revision
     original_revision = revision.attributes
@@ -120,6 +126,38 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
     assert_equal 1, @minutes.reload.revisions.count
     assert_nil @minutes.current_revision.approved_by_id
+  ensure
+    page.current_window.resize_to(1400, 1000)
+  end
+
+  test "ending officer duties denies a subsequent save in the same browser while member navigation remains" do
+    system_sign_in(@adjutant)
+    session_id = @adjutant.sessions.sole.id
+    assignment = @adjutant.person.position_assignments.sole
+    [ 1400, 390 ].each do |width|
+      assignment.update!(ends_on: nil)
+      page.current_window.resize_to(width, 1000)
+      visit edit_admin_meeting_minutes_path(@meeting)
+      fill_in "Document title", with: "Officer-reviewed heading #{width}"
+      click_button "Save heading"
+      assert_selector ".minutes-status-card h2", text: "Draft", exact_text: true
+      assert_equal "Officer-reviewed heading #{width}", @minutes.reload.title
+      visit edit_admin_meeting_minutes_path(@meeting)
+      fill_in "Document title", with: "Expired officer rewrite"
+      original = @minutes.reload.attributes
+      assignment.update!(ends_on: @organization.calendar_time_zone.today - 1)
+      click_button "Save heading"
+      assert_current_path root_path
+      assert_selector ".app-flash-alert", text: "You do not have permission to open that page."
+      assert_equal original, @minutes.reload.attributes
+      assert_no_link "Officer tools"
+      assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+      capture_system_screenshot("officer-expiry-#{width}")
+      visit meeting_path(@meeting)
+      assert_selector "h1", text: "PEC Meeting"
+      assert_equal session_id, @adjutant.sessions.sole.id
+      assert_empty @adjutant.permission_grants
+    end
   ensure
     page.current_window.resize_to(1400, 1000)
   end

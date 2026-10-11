@@ -1,6 +1,6 @@
 module Api
   class MinutesAttestationsController < BaseController
-    before_action -> { require_capability("attest_minutes") }
+    authorize_with -> { require_capability("attest_minutes") }
 
     def create
       minutes = organization.meetings.find(params[:meeting_id]).minutes || raise(ActiveRecord::RecordNotFound)
