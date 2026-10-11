@@ -4,7 +4,9 @@ Bounded #124/#84 component slice, source79bf811, October11,2026. Read the actual
 MeetingTranscript model, MeetingTranscripts::Create and all seven existing component
 cases. MINUTES_LIFECYCLE and the real intake form promise UTF-8 text up to5MB; use
 the existing Rails five-megabyte byte boundary as an independent test expectation.
-This changes no application behavior, retention schedule, MIME policy or official record.
+The initial size-expectation slice preserves policy. Its new uploaded-byte read exposes
+a separate UTF-8 defect; the extended design below governs the one-line repair.
+Retention schedule, MIME policy and official records remain unchanged.
 #79/PR#98 still own the unanswered recovery-start and actual deletion lifecycle.
 
 The old oversized pasted fixture uses MeetingTranscript::MAX_BYTES+1. A raised app
@@ -72,4 +74,16 @@ model SHA2565810c53d8209d3684dfea147b3f654ee62ccc67f08331c97ace93b1ab3557695.
 Restored same neighbors62/674 seed32829,4.69s pass, no failures/errors/skips.
 Three changed Ruby files lint clean. All old assertions remain; the independent5MB
 fixture changes only an application-coupled expectation. The new real-upload browser
-variant and final main integration/qualification remain pending before any merge.
+variant is now verified below; final committed qualification remains required before merge.
+
+
+Real file-upload browser evidence: both retained privacy/readability and new Unicode
+upload journeys pass2/167 seed29413,6.72s, no failures/errors/skips. Actual magic-link
+sign-in/file control/retention choice/save preserve original BOM/accented/CRLF bytes,
+fixed digest/byte size/creator and unchanged minutes. Later reader displays José at
+1400/390 with16px body and no horizontal overflow. Both new captures inspected;
+the original six error/retention/reader captures remain. After grant loss, restricted
+source refuses access while own Profile works and all source/storage/minutes remain
+unchanged. This proves uploaded source reading, not deletion scheduling or provider
+acceptance. Main5c54e39 integrated with typography and every prior assertion retained.
+Final ordinary/system suites serially, applicable security and exact/main CI pending.

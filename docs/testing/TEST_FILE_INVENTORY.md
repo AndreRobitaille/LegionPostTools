@@ -5,7 +5,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 
 | File | Level | Slice | Priority | Review status / reason |
 | --- | --- | --- | --- | --- |
-| `test/system/transcript_source_privacy_test.rb` | system | Restricted source / #79, #84 | P0 | Real invalid input/retry recovery/authorized reader/grant loss/Profile/sign-out journey at desktop-phone; source privacy and saved records preserved, actual purge timing deferred |
+| `test/system/transcript_source_privacy_test.rb` | system | Restricted source / #79, #84 | P0 | Two real pasted refusal/recovery and Unicode file-upload journeys at desktop-phone; source privacy, raw bytes, digest and saved records preserved; grant loss/Profile/sign-out and font floors retained, actual purge timing deferred |
 | `test/system/loops_roster_syncs_test.rb` | system | Offline email audience reading / #109 | P1 | Actual offline service partial output, real sign-in, desktop/narrow source/failure, preview/later result and settings-grant loss denial; no live dispatch |
 | `test/system/roster_email_reviews_test.rb` | system | Member email identity / #108 | P1 | Real invalid form, saved identity/grants/session, all three choices, own Profile, sign-out/denial/new-sign-in remind; desktop/narrow |
 | `test/integration/last_administrator_concurrency_test.rb` | integration | Enabled settings administration / #112 | P0 | Three real independent PG/request overlap cases, original zero-admin stored failure, shared locking repair and truthful refusal/later access; no predicate mocks |
@@ -115,7 +115,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/models/meeting_body_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_minutes_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Reviewed #80 draft/final/website neighbors; full variants outside this slice deferred to #84 |
-| `test/models/meeting_transcript_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
+| `test/models/meeting_transcript_test.rb` | models | Restricted source / #79, #84, #124 | P0 | All seven original components retained; independent multibyte 5MB boundary, refusal/storage graph and real UTF-8 upload reading added; original Unicode error and raised-limit fault detected/restored; deletion timing remains deferred |
 | `test/models/meeting_type_agenda_item_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_type_agenda_section_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/models/meeting_type_test.rb` | models | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
