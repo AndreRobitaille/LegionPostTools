@@ -537,7 +537,7 @@ class ApiOfficerApiTest < ActionDispatch::IntegrationTest
     assert_response :created
   end
 
-  test "bearer retries are safe across every current API mutation family" do
+  test "bearer retries preserve the eight original agenda and Endeavor mutations" do
     token, plaintext = AgentAccessToken.issue!(user: @commander, name: "Grok", expires_in: 30.days)
 
     meeting = create_meeting!(
