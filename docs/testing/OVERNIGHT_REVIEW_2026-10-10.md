@@ -537,3 +537,31 @@ remaining files stay deferred. #99 separately reproduces/documents finite cached
 behavior; cleanup is not a hard API expiry timer or infinite once-only guarantee.
 This committed slice still needs final serial suites, security, exact-SHA CI and
 actual-main verification before completion. #84 remains open.
+
+
+## Finite bearer receipt guidance (#99)
+
+Design: `docs/FINITE_RECEIPT_GUIDANCE.md`. Strengthen the existing same-request retry
+scenario without removing its assertions: actual saved creator/business fields, frozen
+exact 30-day cleanup retention, 31-day retained replay before cleanup, actual receipt
+removal and subsequent second distinct Endeavor/new receipt under the original key.
+A 90-day token isolates receipt cleanup from credential expiry; the original record
+remains unchanged. Current authority/visibility filtering remains the separate #92 contract.
+
+Original live guidance fails the independent duration expectation (2 / 40 / one failure,
+2.42s), while the actual finite runtime behavior passes. Revised shared JSON/Markdown
+prose and standing instructions direct older uncertain mutations to current saved state
+and the human. No retention or mutation behavior changes. Revised two contracts:
+2 / 58 / 0 (seed30718, 3.35s). Neighboring authority/retry/concurrency/inventory matrix:
+51 / 852 / 0 (seed32818, 7.76s); after integrating actual main `b852211`:
+51 / 852 / 0 (seed38320, 7.71s). Changed three Ruby files lint clean; diff checks pass.
+An initial command named nonexistent files; corrected to the actual inventoried paths,
+without changing tests. Full candidate serial suites/security/CI remain required.
+
+Configuration candidate `2eb7d6c98ff39fe5bd43441a36a864534b15788c` passed ordinary
+1283 / 11367 / 0 (seed55877, 103.68s), then serial system 66 / 1187 / 0 (seed29389,
+162.52s). RuboCop 502 files clean, Brakeman zero warnings, audits clean. Exact-SHA
+CI38110200711 passes all four jobs with matching PG17.11 counts. Fresh review retained
+all old cases/assertions and restored sources. PR #101 merged as
+`b8522118fe1b2b4a5d8b7ac6675aeb51f7a8e09c`, exact tree; actual-main verification follows.
+#84 remains open; #99's scoped officer API retry review does not establish full-file review.

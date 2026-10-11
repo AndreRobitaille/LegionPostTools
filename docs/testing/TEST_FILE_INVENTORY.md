@@ -54,7 +54,7 @@ Runner execution and assertion/fault review are separate evidence. No file is de
 | `test/controllers/api/minutes_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed official/creation retry and retained record contracts; other variants deferred |
 | `test/controllers/api/minutes_draft_api_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/minutes_item_endeavors_controller_test.rb` | controllers | Meeting / documents / #77, #79–#83 | P0 | Reviewed conditional creation authority and exact retry/preservation; all prior assertions retained |
-| `test/controllers/api/officer_api_test.rb` | controllers | Runner / component contracts | P2 | Deferred: awaiting bounded slice review |
+| `test/controllers/api/officer_api_test.rb` | controllers | Delegated mutations / #99 | P0 | Scoped exact-retry assertions reviewed/strengthened across retained/cleaned receipts; original missing guidance detected; remaining variants explicitly deferred |
 | `test/controllers/api/people_api_test.rb` | controllers | Member / navigation / roster | P1 | Deferred: awaiting bounded slice review |
 | `test/controllers/api/token_management_boundary_test.rb` | controllers | Authentication / authority / #81 | P0 | Both tests reviewed and retained: missing APIs preserve counts; bearer screens and revocation preserve tokens |
 | `test/controllers/api/user_accounts_api_test.rb` | controllers | Authentication / authority / #78, #81 | P0 | Deferred: awaiting bounded slice review |
