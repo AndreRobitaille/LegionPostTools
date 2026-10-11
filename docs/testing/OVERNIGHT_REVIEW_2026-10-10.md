@@ -602,3 +602,35 @@ Integrate #106 main into finite-retry PR #103. The two append-only ledger/matrix
 conflicts preserve both sections; inventory merges retain each distinct reviewed row.
 No application fault, dropped prior assertion or green-seeking CI rerun is included.
 The new combined committed candidate must repeat final serial suites and fresh CI.
+
+
+## Configured Post title update and retained officer/account contracts (#107)
+
+Original new foreign update request on `b852211`: 1 / 1 / one saved-graph failure
+(seed22537, 2.08s), before 404. Fix only global title lookup to the configured first
+Organization association, matching index/create/reorder and assignment creation. Corrected
+8 / 53 / 0 (seed10714); integrated main `66e8c8a` neighboring authority/account checks
+87 / 626 / 0 (seed9012, 4.71s). Every original assertion remains; no new authority policy.
+
+Real browser initially assumed a static error page for Turbo (actual 404 retained old
+screen), then encountered configured Rails detailed test exceptions for native submission.
+Record both 1 / 3 / failures; don't change application error handling to fit the harness.
+Only this test hides/restores exception details with :rescuable unchanged, and only its
+foreign form uses native submission. Corrected native-public-404/unchanged saved authority
+plus later ordinary Turbo controls pass 1 / 31 / 0 (seed51262, 4.54s). Restored positions
+screens manually inspected at 1400/390px, readable and no overflow. Three Ruby files lint
+clean; complete intended diff reviewed. Design/source limits in POSITION_TITLE_UPDATE_SCOPE.
+Final committed serial suites/security/exact-SHA CI remain required before merge.
+
+Finite receipt candidate `209f9e01c9b681974a3e0a61f4fbd7512113991e` passes ordinary
+1283 / 11409 / 0 (seed52822, 102.80s), then serial system 66 / 1188 / 0 (seed57558,
+161.64s); lint502/security clean. Exact CI38112043877 passes all four jobs, matching
+PG17.11 counts. PR #103 merged as `66e8c8a51dab2251f20d9c0932773abfeb58d603`, exact
+tree; actual-main CI38112280346 remains pending at this recording. #99 stays open until
+that verification. Prior inspector error/cause and clipboard gap remain #105, not hidden.
+
+
+Receipt actual-main CI38112280346 now passes all four jobs on `66e8c8a`, matching
+PG17.11 ordinary 1283 / 11409 / 0 then system 66 / 1188 / 0. #99 completion comment
+records exact local/candidate/main evidence and remaining #84/#105 limits; #99 closed
+only after this verification. No release or production action.

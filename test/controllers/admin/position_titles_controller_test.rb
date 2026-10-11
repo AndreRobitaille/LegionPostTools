@@ -111,4 +111,42 @@ class Admin::PositionTitlesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_equal 1, a.reload.display_order
   end
+
+  test "update rejects a foreign Post title without changing its authority or assignments" do
+    prepare_setup_complete_state
+    sign_in_admin
+    own = @org.position_titles.create!(name: "Configured Adjutant", display_order: 1)
+    other = Organization.create!(name: "Separate synthetic Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.position_titles.create!(name: "Separate Post Adjutant", display_order: 1)
+    foreign.position_capability_grants.create!(capability: "manage_minutes")
+    person = Person.create!(first_name: "Separate", last_name: "Officer")
+    foreign.position_assignments.create!(person: person, starts_on: Date.new(2026, 1, 1))
+    original = position_graph(own, foreign)
+
+    patch admin_position_title_path(foreign), params: {
+      position_title: { name: "Changed foreign title", active: "0", grants_full_membership_access: "1" }
+    }
+    assert_equal original, position_graph(own, foreign)
+    assert_response :not_found
+
+    get admin_position_titles_path
+    assert_response :success
+    assert_select ".pos .pn", text: "Configured Adjutant"
+    assert_select ".pos .pn", text: "Separate Post Adjutant", count: 0
+    assert_select ".pos .pn", text: "Changed foreign title", count: 0
+    patch admin_position_title_path(own), params: { position_title: { name: "Renamed configured Adjutant", active: "0" } }
+    assert_equal "Renamed configured Adjutant", own.reload.name
+    assert_not own.active?
+    assert_redirected_to admin_position_titles_path
+    assert_equal original.last, position_graph(foreign).last
+  end
+
+  private
+
+  def position_graph(*titles)
+    titles.map do |title|
+      [ title.reload.attributes, title.position_capability_grants.order(:id).map(&:attributes),
+        title.position_assignments.order(:id).map(&:attributes) ]
+    end
+  end
 end
