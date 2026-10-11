@@ -478,3 +478,14 @@ restored queued state, grant-loss status/protected denial and later own Profile.
 original draft API cases are retained/indexed with distinct direct state/single-attendance
 limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
 and actual provider acceptance are separate. No test deletion, app authority or policy change.
+
+## Whole PDF component source slice (#84)
+
+Seven complete files /40 exact cases at b965cf76 distinguish filename/signature/transport,
+loopback/CSP/organization/filter boundaries, real immutable officer/member revisions and
+actual native resource blocking. Read every helper/fixture/assertion; exact names, lines
+and blobs pinned in [PDF_COMPONENT_SOURCE_CASES.md](PDF_COMPONENT_SOURCE_CASES.md).
+[Located outcomes and limits](PDF_COMPONENT_SOURCE_REVIEW.md) preserve fake transport
+versus real bytes, source HTML versus repeated page folios, filtered hidden content,
+status-only refusals and optional artifacts. All tests remain; no safe deletion or
+consolidation established. Recorded main CI is separate from source/fault evidence.

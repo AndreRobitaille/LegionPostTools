@@ -974,3 +974,15 @@ sessions/gated starts/identical201 bodies, exactly one saved Endeavor and receip
 with nontransactional visibility/synthetic cleanup. Its exact b965cf76 source link and
 held-lock/backend/authority limitations are in the variant matrix. Combined source
 review now26 files/225 cases; no test removal, new fault or runtime claim belongs here.
+
+## Further whole PDF component source review (#84)
+
+Read all seven PDF service/source/resource-system files and forty exact cases at
+b965cf76, including fixtures/helpers/assertions. Retain separate signature/filename,
+content/filter/private-member revision, CSP and real native rendering detectors;
+record source-only and transport/parsed-content/folio/authority limits. Exact case/blob
+pins in [PDF_COMPONENT_SOURCE_CASES.md](PDF_COMPONENT_SOURCE_CASES.md), analysis in
+[PDF_COMPONENT_SOURCE_REVIEW.md](PDF_COMPONENT_SOURCE_REVIEW.md). No tests/app changed,
+new run or universal fault proof. This unmerged source branch now reviews33 complete
+files /265 indexed cases across its slices;36 literal Deferred inventory rows remain,
+alongside still-scoped files. #84 remains open; no safe consolidation is demonstrated.
