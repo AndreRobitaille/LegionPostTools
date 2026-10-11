@@ -1,21 +1,21 @@
-# Transcript retention lifecycle — decision draft
+# Transcript retention lifecycle — approved implementation design
 
-Draft for #79, October 10, 2026. This is a proposed implementation contract, not
-implemented deletion or a production retention claim. Current minutes lifecycle and
-approval/attestation policy govern; the existing transcript form promises deletion
-after membership approval with a 30-day recovery window.
+Design for #79, begun October 10 and approved October 11, 2026. The implemented
+repair follows the contract below. Local synthetic evidence and exact-revision CI
+qualify the code; they do not establish production scheduling, storage or backup erasure.
+Current minutes lifecycle and approval/attestation policy govern.
 
-## Missing decision
+## Approved recovery clock (October 11, 2026)
 
 Approval with pending corrections records the later Meeting's real decision before
-the corrected text receives final Adjutant attestation and becomes locked. Choose
-whether the recovery window begins at that recorded decision or at final corrected
-attestation. Proposed choice: final approval/locking, so restricted source remains
-available while the authorized officer finishes corrections. The decision is pending;
-no dependent purge scheduling, data deletion or altered UI promise has been implemented.
-Ordinary approval without pending corrections would start at its recorded final approval.
+the corrected text receives final Adjutant attestation and becomes locked. Andre chose
+that final corrected attestation as the start of the 30-day recovery window. Source
+remains available while authorized corrections are pending. Ordinary approval starts
+at final membership approval. The prior meeting decision retains its original timestamp;
+no official row or event is rewritten to move the clock. The implementation below is
+authorized, but is not a production deletion claim.
 
-## Current evidence
+## Original source evidence (historical)
 
 Source `0a5686a92bc0203085497fc4f3e75a8c6d8b5215` (local source review, not production).
 The transcript model/services, drafting generator and recurrence are unchanged since
@@ -38,26 +38,42 @@ the original `6045eb2` review:
   Provider output/proposals and already-reviewed narrative are distinct retained records,
   not proof that the underlying transcript still exists.
 
-## Proposed implementation after the decision
+## Implementation contract
 
-Persist the computed due time from the exact final/pending approval event chosen above.
-Use one bounded recurring job to find due delete-after-acceptance transcripts and a
-single idempotent service for actual removal. Recheck the selected policy, source state
-and governing approval under locks when performing work, rather than trusting an old
-queue argument. Delayed execution must remove a still-due source on the next run; repeat
-execution must leave records/audit intact. Retain-restricted never enters automatic purge.
+The immutable final approval and its revision's attestation supply the durable clock:
+the later of approval.recorded_at and attestation.attested_at, only for locked final
+minutes. This is ordinary final approval or final corrected attestation, respectively.
+Compute the due time as thirty full 24-hour periods after that instant, consistently
+across request zones and daylight-saving changes. A second mutable schedule timestamp
+is unnecessary. Do not move an old finalization date to the eventual deployment date.
 
-Clear pasted text. For uploads, delete both attachment/blob records and the private
-storage object, with retry-safe failure handling: do not announce successful purge
-while a retained file is merely detached or a storage deletion failed. Define the
-failure/reconciliation state explicitly before coding. Keep source digest, byte size,
-kind, creator, policy, schedule and true completion metadata; preserve every minutes
-row, revision, attestation, recorded approval and lifecycle event byte-for-byte.
+Use one hourly background recurrence, a bounded batch of at most 500 due sources, and a
+single idempotent service. Query only final, delete-after-acceptance, unpurged sources;
+recheck policy, source state and finalization under the transcript lock. Existing final
+records and sources attached later participate from their actual finalization time.
+Delayed execution removes a still-due source on a later run; repeated execution preserves
+completion metadata. Retain-restricted never enters automatic purge. A failed source
+must not prevent other due sources in that batch from being processed, while the job
+still reports a safe failure and leaves the source eligible for the next recurrence.
+
+Persist purge_started_at before external deletion and block further source reads. Freeze
+source identity/policy/metadata once removal starts. For uploads, keep the attachment,
+blob and key until storage deletion succeeds; reject a shared blob instead of deleting
+another attachment's data. Perform external storage IO outside a database transaction.
+Then lock again and atomically delete attachment/blob rows, clear pasted content and
+record completion. If storage fails, retain the key/rows and pending state. If the final
+database transaction fails after object deletion, its rollback preserves that same key
+and pending state; the next attempt idempotently deletes the key and finishes. Never
+mark purged_at merely because a file was detached or a failed attempt began. Do not use
+Active Storage's database-first purge path, which loses the locator on storage failure.
+Keep source digest, byte size, filename/kind, creator, policy, started time and true
+completion provenance; preserve all official minutes graphs byte-for-byte.
 
 Record automatic service provenance truthfully, separately from the human who chose the
 policy or approved the record. Do not set the creator/Adjutant as `purged_by` and imply
 they personally executed an automatic job. The current human-only purge validation will
-need an explicit, narrowly scoped provenance extension. A manual early-purge UI/API is
+need an explicit, narrowly scoped purged_by_service extension with a fixed known value;
+human purge provenance remains supported separately. A manual early-purge UI/API is
 outside this initial repair; it must not be invented as an approval shortcut.
 
 Review cached private responses and exports for retained source copies when implementing
@@ -79,14 +95,25 @@ storage failure followed by recovery. Check retained official graphs and non-con
 provenance, controlled subsequent restricted/member reads, missing excerpts and rejection
 of a new draft using an offline provider that must not be called.
 
-When policy is resolved, use the existing 1919 restricted-source form/status treatment
-with plain schedule/removal text and 16px readable controls. Invoke the frontend design
-skill, inspect desktop/narrow screenshots, and retain current transcript-upload and
+Use the frontend-design skill and existing 1919 restricted-source form/status treatment
+with plain finalization/30-day recovery text and 16px readable controls. Show a computed
+removal date, a truthful unavailable/removal-pending state when retrying, and completion
+only after storage and database removal. Retain-restricted truthfully has no automatic
+schedule; no unavailable manual purge control is promised. Inspect desktop/narrow
+screenshots and retain current transcript-upload and
 minutes lifecycle browser coverage. Full serial ordinary/system suites, lint/security
 and exact candidate/actual-main CI are required before merge. No production operations,
 real data, paid AI or deletion outside synthetic test records is authorized here.
 
-## Restricted source-copy review while the decision is pending
+Visual direction: retain The 1919 navy source header, gold labels and paper facts panel.
+Use two fact columns on desktop and one on phones, allowing the longer recovery wording
+and Post-local dates to wrap. Keep status messages and fact values at 16px, labels at
+13px. Keep status copy upright and padded like the source text. All HTML source dates
+follow the saved Post time zone. Pending removal must visibly differ from completed removal; no new destructive
+control is needed. Source HTML and explicit-content JSON responses must use no-store,
+including cookie-authenticated reads and intake errors containing recoverable input.
+
+## Initial restricted-source review (historical)
 
 Local source and existing assertion review at `0a5686a`; no new execution or production
 claim. The transcript/drafting files below remain unchanged on `b852211`:
@@ -118,7 +145,7 @@ later reads with original official graphs and real uploaded storage deletion/rec
 External SDK/provider retention, proxy/access logging, backups, downloads and storage
 configuration remain unverified and are not established by this source review.
 
-## Verified independent work after the initial draft
+## Independent work completed before the decision (historical)
 
 At actual main `99371bde2c5e5963d11be0a614ff255b56a3960b`, the policy decision and
 automatic removal are still outstanding. A fresh service/job/recurrence review finds
@@ -141,7 +168,7 @@ CI38122104236 passed all four jobs. These completed checks concern source handli
 not the recovery-clock choice, actual scheduled deletion, backup erasure or provider
 retention. #79 stays open. No production or paid AI was used.
 
-## Independent ordinary-approval reproduction design
+## Original ordinary-approval reproduction (historical)
 
 Ordinary approval without pending corrections has the same recorded final event under
 both proposed clocks. It can be investigated now without choosing the pending-correction
@@ -171,9 +198,16 @@ content is still present; uploaded attachment and actual Disk storage object sti
 No deletion job is enqueued/performed. Test teardown removes only its own synthetic file
 after observation; that cleanup is not application purge evidence.
 
-The new reproduction deliberately stays failing and unmerged with this decision draft.
-It is a current-path diagnostic, not a final scheduler test: future implementation must
-wire the real chosen recurrence/job and extend storage-error/idempotency/pending-correction
-coverage. No application fault is injected and no expected behavior is weakened. One-file
+At that revision, the reproduction remained deliberately failing and unmerged. It was
+a diagnostic of the original approval path. The implemented regression now invokes the
+actual recurring job and adds storage failure, retry, delayed execution, historical
+finalization and pending-correction variants. No application fault is injected and no expected behavior is weakened. One-file
 RuboCop, Ruby parsing and diff/reference checks pass. Successful older docs-only CI does
 not qualify this changed draft; its expected failed regression CI is reported separately.
+
+## Implementation evidence
+
+See [lifecycle verification](testing/TRANSCRIPT_RETENTION_LIFECYCLE_REVIEW.md). Original
+missing-path failures and the historical draft CI above remain distinct from the final
+implemented candidate. The configured hourly task has been parsed and its actual job
+executed with the test adapter; no production or live Solid Queue scheduler was run.

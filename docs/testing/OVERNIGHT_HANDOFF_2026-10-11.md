@@ -10,13 +10,13 @@ copies were included in PR #85.
 | Issue | Status | Merged work and evidence |
 | --- | --- | --- |
 | #77 | Complete, closed | PR #91, main `b47d10ee`: actual member/token read parity, last-attested immutable selection, private evidence exclusion, grant loss and HTML/PDF; working-copy fault caught/restored. |
-| #78 | Open, decision required | PR #94, main `0a5686a9`: actual Commander/Adjutant duties, transitions, inclusive expiry, manual exceptions, issued-token replay and later member access. #93 retains the near-midnight Post/app date disagreement and proposed governing-date decision. |
-| #79 | Open, decision required | PRs #123/#126/#129 verify source privacy, truthful errors, independent upload limit and actual Unicode bytes/reader. Draft PR #98 proposes final approval/lock as the recovery-clock start. Real ordinary approval reproduces missing deletion for both source kinds; both retain controls pass. Scheduling/deletion and storage failure recovery remain unimplemented. |
+| #78 | Complete, closed | PRs #94/#144: original policy/transitions plus approved saved-Post-date authority/labels/End role at positive/negative offsets, real same-session/token actions, manual exceptions and midnight expiry. Main86037334 CI38135710941 passes all four jobs. See OFFICER_AUTHORITY_LOCAL_DATE.md. |
+| #79 | Final candidate awaiting verification | Approved final-corrected-attestation clock implemented on draft PR #98, including real byte deletion, safe pending state, storage/transaction retries, both policies and immutable graphs. Original missing-path and restored faults retained. Final candidate/actual-main checks remain required; earlier independent source privacy/Unicode work remains merged. |
 | #80 | Complete, closed | PR #90, main `c3985b45`: all seven final occurrence fields protected independently of agenda state; actual PostgreSQL overlap experiment is separately recorded and is not CI-discovered. |
 | #81 | Complete, closed | PR #97, main `08a7094e`: independent handbook expectations and actual delegated/official/website actions/refusals; retained private graphs and no private content before authentication. |
 | #82 | Complete, closed | PR #85, main `b092bf67`: actual protected Meeting Type deletion, truthful refusal, immutable content and later member reading. |
 | #83 | Complete, closed | PR #85, main `b092bf67`: linked agenda/child deletion protection, AI lineage, saved history and subsequent HTML/PDF. |
-| #84 | Open | Inventory, bounded component/assertion reviews and independent cleanup complete. No safe removal/consolidation established. PR #136 publishes remaining source review and this handoff; authority/retention concerns above stay open. |
+| #84 | Open pending final retention verification | Inventory, bounded component/assertion reviews and independent cleanup complete. No safe removal/consolidation established. PR #136 publishes remaining source review and this handoff; bounded review and cleanup are complete; final retention candidate/main verification remains. |
 
 Additional repairs cover SQL guards, delayed confirmation cookies, cached authority,
 foreign-position mutation, the last-administrator race, UTF-8 reading and rejected job
@@ -56,7 +56,7 @@ scheduler ran. The draft cannot merge; future tests must invoke the real impleme
 scheduler and cover the unresolved correction clock, retries and storage failure.
 
 [The inventory](TEST_FILE_INVENTORY.md) separates review scope, runner discovery and
-execution:182 unique entries, including181 automatically discovered files and the
+execution:184 unique entries, including183 automatically discovered files and the
 separate manual concurrency runner. The remaining source slices review85 whole files
 and707 exact declarations; earlier slices and new runtime components remain separate.
 Immutable source case indexes preserve exact declarations and line numbers.
@@ -68,9 +68,9 @@ exceptions or accepted-record edits were introduced. Shared browser tests retain
 magic-link sign-in/sign-out, later protected denial, member navigation, officer lifecycle,
 HTML/PDF, authority loss, protected deletion and relevant publication boundaries.
 
-The two product choices remain: one date for officer authority and displayed roles
-(configured Post local date proposed), and whether the 30-day recovery window for pending
-corrections starts at recorded membership approval or final corrected attestation/lock
-(final lock proposed). Elapsed time is not approval. Deployment and all production
-verification remain for Andre’s separate review. The persistent goal remains unfinished
-while those requirements are open.
+The two product choices are resolved: saved Post local date for current duties/roles,
+and final corrected Adjutant attestation for the recovery window. Officer work is merged
+and verified; final retention verification and the completed handoff remain. The older
+draft/failure totals above are historical, not evidence that the new implementation
+passes. No production access or deployment occurred; release remains Andre's separate
+review. The persistent goal is unfinished until final required checks and #79/#84 closure.

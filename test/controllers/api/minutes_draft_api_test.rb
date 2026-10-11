@@ -119,6 +119,86 @@ class ApiMinutesDraftApiTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "membership discussed"
   end
 
+  test "actual scheduled purge preserves proposals while locked review and new drafting remain refused" do
+    @transcript.update!(content: "Commander opened the meeting.\n\n  The membership   discussed the event.\nA motion was made and passed.")
+    item = @minutes.sections.first.items.create!(title: "Breakfast", behavior_type: "business_item", position: 1)
+    run = succeeded_run
+    proposal = endeavor_proposal(run, item)
+    path = "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{run.id}"
+    _token, secret = AgentAccessToken.issue!(user: @manager, name: "Evidence review", expires_in: 90.days)
+    headers = { "Authorization" => "Bearer #{secret}" }
+    get path, headers: headers, as: :json
+    assert_response :success
+    assert_not response.parsed_body.dig("draft_run", "suggestions", 0).key?("source_excerpt")
+    get path, params: { include_source: true }, headers: headers, as: :json
+    assert_response :success
+    returned = response.parsed_body.dig("draft_run", "suggestions", 0)
+    assert_equal proposal.id, returned["id"]
+    assert_equal "L0002 The membership discussed the event.", returned["source_excerpt"]
+    assert_equal proposal.payload, returned["payload"]
+    assert_includes response.headers["Cache-Control"], "no-store"
+    patch "#{path}/suggestions/#{proposal.id}/discard", headers: headers.merge("Idempotency-Key" => "retention-review"), as: :json
+    assert_response :success
+    assert_equal "discarded", proposal.reload.review_state
+    %w[attest_minutes record_minutes_approval].each { |capability| @manager.permission_grants.create!(capability:) }
+    position = @organization.position_titles.create!(name: "Adjutant", active: true, display_order: 1)
+    position.position_assignments.create!(person: @manager.person, starts_on: 1.year.ago.to_date)
+    @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: @manager, action: "attest", evidence_note: "Synthetic retention test attestation."))
+    approving = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.hour.ago)
+    @minutes.record_membership_approval_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+      minutes: @minutes, user: @manager, action: "record_membership_approval",
+      action_payload: { approving_meeting_id: approving.id, disposition: "approved_as_presented" },
+      evidence_note: "Synthetic later-meeting approval for retention testing."))
+    saved_record = @minutes.member_revision.attributes
+    saved_run = run.reload.attributes
+    saved_proposal = proposal.reload.attributes
+    travel_to @minutes.membership_approval.recorded_at + 31.days
+    PurgeMeetingTranscriptsJob.perform_now
+    assert_nil @transcript.reload.content
+    assert_not @transcript.source_available?
+    assert_equal "transcript_retention", @transcript.purged_by_service
+    assert_nil @transcript.purged_by_id
+    get path, params: { include_source: true }, headers: headers, as: :json
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body.fetch("error"), "approved and locked"
+    assert_not_includes response.body, "Commander opened"
+    assert_nil proposal.reload.source_excerpt
+    assert_equal saved_run, run.reload.attributes
+    assert_equal saved_proposal, proposal.reload.attributes
+    assert_equal saved_record, @minutes.reload.member_revision.attributes
+    assert_equal "no-store", response.headers["Cache-Control"]
+    get "/api/meetings/#{@meeting.id}/transcript", params: { include_content: true }, headers: headers, as: :json
+    assert_response :success
+    assert_nil response.parsed_body.dig("transcript", "content")
+    assert_equal false, response.parsed_body.dig("transcript", "source_available")
+    assert_not_includes response.body, "Commander opened"
+    assert_equal "no-store", response.headers["Cache-Control"]
+    assert_no_difference "MinutesDraftRun.count" do
+      assert_no_enqueued_jobs(only: MinutesDraftGenerationJob) do
+        post "/api/meetings/#{@meeting.id}/minutes/draft_runs",
+          headers: headers.merge("Idempotency-Key" => "purged-source-new-draft"), as: :json
+      end
+    end
+    assert_response :unprocessable_entity
+    assert_includes response.parsed_body.fetch("error"), "approved and locked"
+    provider_calls = []
+    provider = Object.new
+    provider.define_singleton_method(:draft) { |**| provider_calls << :draft; raise "Unexpected provider call" }
+    failure = assert_raises(MinutesDrafting::Generate::DraftFailed) do
+      MinutesDrafting::Generate.call(minutes: @minutes.reload, requester: @manager, provider:)
+    end
+    assert_nil failure.run
+    assert_empty provider_calls
+    # Final-record and unavailable-source guards both apply; source_text separately refuses reads.
+    assert_raises(MeetingTranscript::SourcePurgedError) { @transcript.source_text }
+    assert_equal saved_record, @minutes.reload.member_revision.attributes
+    @manager.permission_grants.find_by!(capability: "manage_minutes").destroy!
+    get path, params: { include_source: true }, headers: headers, as: :json
+    assert_response :forbidden
+    assert_not_includes response.body, "membership discussed"
+  end
+
   test "bearer AI corrections and dismissal preserve original evidence and review provenance" do
     PermissionGrant.create!(user: @manager, capability: "manage_agendas")
     item = @minutes.sections.first.items.create!(title: "Breakfast", body: "Members agreed to recurring work.",

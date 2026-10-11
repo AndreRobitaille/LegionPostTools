@@ -40,6 +40,7 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     get "/api/meetings/#{@meeting.id}/transcript", params: { include_content: true }, as: :json
     assert_response :success
     assert_equal transcript.source_text, response.parsed_body.dig("transcript", "content")
+    assert_equal "no-store", response.headers["Cache-Control"]
 
     post "/api/meetings/#{@meeting.id}/minutes", as: :json
     assert_response :created

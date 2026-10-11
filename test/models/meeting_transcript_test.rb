@@ -190,7 +190,7 @@ class MeetingTranscriptTest < ActiveSupport::TestCase
     assert_includes transcript.errors[:meeting], "must belong to the same organization"
   end
 
-  test "purged source requires human provenance and cannot be read" do
+  test "manual purge requires human provenance and cannot be read" do
     transcript = MeetingTranscripts::Create.new(
       meeting: @meeting,
       created_by: @adjutant,
@@ -207,6 +207,67 @@ class MeetingTranscriptTest < ActiveSupport::TestCase
     transcript.save!
     assert_not transcript.source_available?
     assert_raises(MeetingTranscript::SourcePurgedError) { transcript.source_text }
+  end
+
+  test "automatic removal requires a known service completion time and cleared source without a human executor" do
+    transcript = MeetingTranscripts::Create.new(meeting: @meeting, created_by: @adjutant,
+      retention_policy: "delete_after_acceptance", pasted_text: "Fictional restricted source").call
+    transcript.assign_attributes(purge_started_at: Time.current, purged_at: Time.current,
+      purged_by_service: "transcript_retention")
+    assert_not transcript.valid?
+    assert_includes transcript.errors[:content], "must be cleared before automatic removal completes"
+    transcript.content = nil
+    assert transcript.valid?
+    transcript.purged_by = @adjutant
+    assert_not transcript.valid?
+    assert_includes transcript.errors[:purged_by], "must be blank for automatic removal"
+    transcript.purged_by = nil
+    transcript.purged_by_service = "imaginary_worker"
+    assert_not transcript.valid?
+    assert_includes transcript.errors[:purged_by_service], "must identify the automatic retention service"
+    transcript.purged_by_service = "transcript_retention"
+    transcript.purged_at = nil
+    assert_not transcript.valid?
+    assert_includes transcript.errors[:purged_at], "must be recorded with the purging service"
+    transcript.purged_at = Time.current
+    transcript.purge_started_at = nil
+    assert_not transcript.valid?
+    assert_includes transcript.errors[:purge_started_at], "must be recorded for automatic removal"
+  end
+
+  test "removal keeps source metadata and completion provenance immutable" do
+    transcript = MeetingTranscripts::Create.new(meeting: @meeting, created_by: @adjutant,
+      retention_policy: "delete_after_acceptance", pasted_text: "Fictional restricted source").call
+    transcript.update!(purge_started_at: Time.current)
+    original = transcript.attributes
+    %w[retention_policy sha256_digest purge_started_at].each do |field|
+      transcript.reload
+      transcript.public_send("#{field}=", field == "retention_policy" ? "retain_restricted" : nil)
+      assert_not transcript.valid?
+      assert_includes transcript.errors[:base], "Transcript source metadata cannot change after removal starts."
+      assert_equal original, transcript.reload.attributes
+    end
+    transcript.update!(content: nil, purged_at: Time.current, purged_by_service: "transcript_retention")
+    completed = transcript.attributes
+    transcript.purged_by_service = nil
+    assert_not transcript.valid?
+    assert_includes transcript.errors[:base], "Transcript removal evidence cannot change after completion."
+    assert_equal completed, transcript.reload.attributes
+  end
+
+  test "the database rejects fabricated automatic service provenance without altering the source" do
+    transcript = MeetingTranscripts::Create.new(meeting: @meeting, created_by: @adjutant,
+      retention_policy: "delete_after_acceptance", pasted_text: "Fictional restricted source").call
+    original = transcript.attributes
+    error = assert_raises(ActiveRecord::StatementInvalid) do
+      MeetingTranscript.transaction(requires_new: true) do
+        transcript.update_columns(content: nil, purge_started_at: Time.current,
+          purged_at: Time.current, purged_by_service: "imaginary_worker")
+      end
+    end
+    assert_kind_of PG::CheckViolation, error.cause
+    assert_equal original, transcript.reload.attributes
+    assert_predicate transcript, :source_available?
   end
 
   private
