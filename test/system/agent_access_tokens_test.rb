@@ -1,6 +1,8 @@
 require "application_system_test_case"
+require_relative "../support/token_clipboard_support"
 
 class AgentAccessTokensSystemTest < ApplicationSystemTestCase
+  include TokenClipboardSupport
   setup do
     Organization.create!(
       name: "Robert E. Burns Post 165",
@@ -28,6 +30,10 @@ class AgentAccessTokensSystemTest < ApplicationSystemTestCase
     plaintext = find("#issued-agent-token").value
     assert_match(/\Alpt_[0-9a-f]{24}_[0-9a-f]{64}\z/, plaintext)
     assert_text "This is the only time the complete token will be shown."
+    token = @user.agent_access_tokens.find_by!(name: "Grok meeting helper")
+    original_token = token.attributes
+    assert_token_copied_to_clipboard(plaintext)
+    assert_equal original_token, token.reload.attributes
 
     click_link "I have stored it"
     assert_selector ".agent-token-name", text: "Grok meeting helper"
