@@ -77,7 +77,7 @@ class Person < ApplicationRecord
   end
 
   def current_role_label
-    today = Date.current
+    today = Organization.current_local_date
     position_assignments
       .select { |assignment| assignment.active_on?(today) }
       .map(&:position_title)
@@ -102,7 +102,7 @@ class Person < ApplicationRecord
     ""
   end
 
-  def active_role_labels(today = Date.current)
+  def active_role_labels(today = Organization.current_local_date)
     position_assignments
       .select { |assignment| assignment.active_on?(today) }
       .sort_by { |assignment| [ assignment.position_title.display_order, assignment.position_title.name ] }

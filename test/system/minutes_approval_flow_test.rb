@@ -130,27 +130,35 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1000)
   end
 
-  test "ending officer duties denies a subsequent save in the same browser while member navigation remains" do
+  test "Post-local midnight ends officer duties in the same browser while member navigation remains" do
+    travel_to Time.utc(2026, 11, 13, 5, 59)
     system_sign_in(@adjutant)
     session_id = @adjutant.sessions.sole.id
     assignment = @adjutant.person.position_assignments.sole
     [ 1400, 390 ].each do |width|
-      assignment.update!(ends_on: nil)
+      travel_to Time.utc(2026, 11, 13, 5, 59)
+      assignment.update!(ends_on: Date.new(2026, 11, 12))
       page.current_window.resize_to(width, 1000)
       visit edit_admin_meeting_minutes_path(@meeting)
       fill_in "Document title", with: "Officer-reviewed heading #{width}"
       click_button "Save heading"
       assert_selector ".minutes-status-card h2", text: "Draft", exact_text: true
       assert_equal "Officer-reviewed heading #{width}", @minutes.reload.title
+      click_button "Menu"
+      assert_selector ".app-menu-id-role", text: "ADJUTANT", exact_text: true
+      capture_system_screenshot("officer-local-end-#{width}")
+      click_button "Menu"
       visit edit_admin_meeting_minutes_path(@meeting)
       fill_in "Document title", with: "Expired officer rewrite"
       original = @minutes.reload.attributes
-      assignment.update!(ends_on: @organization.calendar_time_zone.today - 1)
+      travel_to Time.utc(2026, 11, 13, 6)
       click_button "Save heading"
       assert_current_path root_path
       assert_selector ".app-flash-alert", text: "You do not have permission to open that page."
       assert_equal original, @minutes.reload.attributes
       assert_no_link "Officer tools"
+      click_button "Menu"
+      assert_no_selector ".app-menu-id-role"
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
       capture_system_screenshot("officer-expiry-#{width}")
       visit meeting_path(@meeting)
@@ -158,7 +166,14 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
       assert_equal session_id, @adjutant.sessions.sole.id
       assert_empty @adjutant.permission_grants
     end
+    click_button "Menu"
+    click_button "Sign out"
+    assert_no_selector ".app-menu-btn"
+    assert_not Session.exists?(session_id)
+    visit admin_meeting_minutes_path(@meeting)
+    assert_current_path new_session_path
   ensure
+    travel_back
     page.current_window.resize_to(1400, 1000)
   end
 

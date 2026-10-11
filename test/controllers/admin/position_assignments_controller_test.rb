@@ -1,6 +1,33 @@
 require "test_helper"
 
 class Admin::PositionAssignmentsControllerTest < ActionDispatch::IntegrationTest
+  {
+    "America/Chicago" => [ Time.utc(2026, 11, 13, 5, 59), Date.new(2026, 11, 12) ],
+    "Asia/Tokyo" => [ Time.utc(2026, 11, 12, 15), Date.new(2026, 11, 13) ]
+  }.each do |zone, (instant, expected_date)|
+    test "End role submits and saves the #{zone} Post date near midnight" do
+      travel_to instant do
+        prepare_setup_complete_state
+        Organization.first.update!(timezone: zone)
+        sign_in_admin
+        person = Person.create!(first_name: "Synthetic", last_name: "Officer")
+        title = Organization.first.position_titles.create!(name: "Local Officer", display_order: 1)
+        assignment = title.position_assignments.create!(person:, starts_on: Date.new(2026, 1, 1))
+        path = admin_person_position_assignment_path(person, assignment)
+        get person_path(person)
+        assert_response :success
+        form = css_select("form.inline[action='#{path}']").sole
+        submitted_date = form.at_css("input[name='position_assignment[ends_on]']")["value"]
+        assert_equal expected_date.iso8601, submitted_date
+        patch path, params: { position_assignment: { ends_on: submitted_date } }
+        assert_redirected_to person_path(person)
+        assert_equal expected_date, assignment.reload.ends_on
+        assert assignment.active_on?(expected_date)
+        assert_not assignment.active_on?(expected_date + 1)
+      end
+    end
+  end
+
   test "creates position assignment for person" do
     prepare_setup_complete_state
     user = sign_in_admin
