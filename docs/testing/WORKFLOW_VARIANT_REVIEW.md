@@ -425,3 +425,21 @@ attestation/event graph remains unchanged on refusal or rollback. Expiry fault2/
 detects both refusals; exact source restoration leads to47/658 neighbors and3/131
 real approval browsers clean. [Design and evidence](OFFICIAL_CONFIRMATION_CONTRACTS.md).
 Keep the separate existing detached Session, provenance, request and browser assertions.
+
+Queued progress readability (#130) extends that same browser recovery journey with
+independent fixed13px labels/14px supporting text/16px body and action floors, requiring
+each actual selector at1400/390. Original11px badge failure2/68/1 detects the gap;
+Five font values produce2/128 clean. The actual no-JavaScript fallback then catches
+its original13px body below16px:2/128/1 failure, seed23385. Its sixth font correction
+and actual script-disable/ensure-restore variant pass2/139, seed59695; the complete
+instruction and existing progression/actions were inspected at1400/390 without overflow.
+All previous assertions remain. [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md).
+
+Real browser PDF delivery (#134) keeps every existing approval/member/document/agenda
+byte/content/identity/immutable graph assertion. Scoped35-second PDF async helper
+matches the30-second renderer budget with margin and asserts ordinary wait restores.
+Original3-second real-fetch delay1/62/1error becomes1/95 clean; wrong HTML reaches
+the existing readable-String assertion1/64/1 with a temporary message result, then
+exact scripts restore. Clean neighbors16/437 and final approval3/133 retain actual
+PDF/refusal/private resource boundaries. [Evidence](PDF_BROWSER_WAIT_CONTRACT.md).
+No general timeout increase, retries, skips, app or authority changes.
