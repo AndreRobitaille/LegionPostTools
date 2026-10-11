@@ -93,6 +93,20 @@ class MinutesBackgroundDraftingTest < ApplicationSystemTestCase
     [ 1400, 390 ].each do |width|
       page.current_window.resize_to(width, 1200)
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+      {
+        ".ai-draft-dispatch-badge" => 13,
+        ".ai-draft-dispatch-track li > span" => 13,
+        ".ai-draft-dispatch-track strong" => 13,
+        ".ai-draft-dispatch-track small" => 14,
+        ".ai-draft-dispatch-note p" => 16,
+        ".ai-draft-dispatch-return" => 16,
+        ".ai-draft-dispatch-message" => 16,
+        "[data-draft-run-monitor-target='checkButton']" => 16
+      }.each do |selector, floor|
+        all(selector, minimum: 1).each do |element|
+          assert_operator element.evaluate_script("parseFloat(getComputedStyle(this).fontSize)"), :>=, floor, selector
+        end
+      end
       capture_system_screenshot("minutes-enqueue-recovered-#{width}")
     end
 

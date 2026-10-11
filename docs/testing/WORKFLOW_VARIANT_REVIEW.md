@@ -417,3 +417,9 @@ restored queued state, grant-loss status/protected denial and later own Profile.
 original draft API cases are retained/indexed with distinct direct state/single-attendance
 limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
 and actual provider acceptance are separate. No test deletion, app authority or policy change.
+
+Queued progress readability (#130) extends that same browser recovery journey with
+independent fixed13px labels/14px supporting text/16px body and action floors, requiring
+each actual selector at1400/390. Original11px badge failure2/68/1 detects the gap;
+five font values produce2/128 clean. All previous assertions remain and fresh layouts
+were inspected. [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md).

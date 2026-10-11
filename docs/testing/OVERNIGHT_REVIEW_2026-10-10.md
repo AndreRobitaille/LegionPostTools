@@ -898,3 +898,13 @@ exact candidatef4cc577/all-four CI38121785815 passes1293/11869 then73/1544, merg
 as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate that
 source repair here, preserve both histories and all original tests; qualify final
 committed queue-recovery revision serially. No production operation.
+
+## Queued minutes readability follow-up (#130)
+
+The recovered real-browser journey detects the original queued badge at11px below
+the fixed13px floor:2/68/1 failure, seed35279. Five existing font-size corrections
+raise labels to13px, secondary text to14px and body/actions to16px. The original
+disclosure and saved-graph/rejection/retry/permission-loss/Profile assertions all remain.
+Rebuilt browser2/128 seed31493 passes; fresh1400/390 captures inspected with clean
+wrapping, stacked phone steps and no horizontal overflow. Focused lint/diff clean.
+[Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md). Final full suites and CI pending.
