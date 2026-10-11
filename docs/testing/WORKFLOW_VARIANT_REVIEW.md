@@ -450,6 +450,11 @@ normalized/nonempty sections and rich/private copied wording/local overrides/sou
 scope distinct from protected linked-type, dated/minutes snapshots and real PDF/authority.
 Combined source slice24 files/205 cases; no code/test edits or consolidation.
 
+Template seeder19 extends catalog/template index to9 files/91 cases and the combined
+source slice to25 files/224. Preserve fixed concrete Legion titles/section occupancy,
+local rich edits/active/order, referenced dated title/section, repeat/default/second-Post
+and reset detectors. Custom-row existence and title-only snapshots have explicit limits.
+
 ## Rejected initial minutes enqueue and recovery (#128)
 
 Actual Active Job before_enqueue abort reaches all four routed create/retry paths.

@@ -6,7 +6,7 @@ cues and fixes catalog -> template -> dated agenda -> minutes snapshot boundarie
 Catalog defaults and active choices affect future copies; historical records remain.
 American Legion ceremony wording and local officer edits retain their concrete meaning.
 
-Read every case, fixture, helper and assertion in eight files / 72 exact cases. Names,
+Read every case, fixture, helper and assertion in nine files / 91 exact cases. Names,
 source lines and file blobs are pinned in [AGENDA_CATALOG_SOURCE_CASES.md](AGENDA_CATALOG_SOURCE_CASES.md).
 Actual-main b965cf76 CI38122975568 passes all four jobs: PostgreSQL17.11 ordinary
 1297/11980 then system74/1598, zero failures/errors/skips. This recorded execution
@@ -23,6 +23,7 @@ new execution, deletion or consolidation belongs to this source-only review.
 | `test/models/meeting_type_test.rb` /11 | Derived slug/collision, organization-scoped name/slug/position uniqueness, blank provenance, fixed order, destruction of an unused type, actual contiguous reorder and foreign/duplicate refusal. The unused destroy fixture does not establish protected linked-type behavior; #82's independent refusal/continuity cases remain. Duplicate reorder checks the exception, while the foreign variant also preserves own positions. |
 | `test/models/meeting_type_agenda_section_test.rb` /4 | New type has fixed default section/title/order; normalized unique titles; actual selected-type reorder leaves another type's default title; direct destruction of a nonempty section refuses and retains its row. It does not assert every cross-type or invalid reorder variant. |
 | `test/models/meeting_type_agenda_item_test.rb` /9 | Exact rich catalog wording, title/summary, document switches and private cue copy; saved local template edits retain original catalog content; duplicate source/position validation; same catalog in another type allowed; foreign Post source rejected; actual item reorder and foreign-type refusal. These component copies and invalid object checks are separate from dated/minutes historical snapshots, human authority and rendered private/public projections. |
+| `test/services/meeting_type_template_seeder_test.rb` /19 | Independent fixed28 catalog/two suggested types, exact Legion membership/PEC ordered titles, meeting-shaped sections and item distributions; saved local name/active/body/position overrides survive; literal lists upgrade; inactive item stays inactive; referenced placeholder retires while dated title/old section survives; repeat counts; removed catalog stays removed on reset; fallback section upgrades; second Post; missing defaults; custom occupied positions; new opening/closing items get fixed sequence; suggested resets versus custom/non-suggested types. The custom-reset case proves the custom row survives, not every custom attribute/item; the referenced snapshot checks title/section, not every rich body. Preserve separate full historical snapshot components. |
 
 The actual catalog controller scopes entries through the installation's organization;
 its move/reorder/remove paths preserve existing narrow exceptions and messages.

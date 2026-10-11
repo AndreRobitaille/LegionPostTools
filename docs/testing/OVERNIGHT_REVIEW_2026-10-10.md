@@ -961,3 +961,10 @@ and rich wording/private controls/source scope/local-edit item copies. The catal
 now has8 files/72 cases; together with minutes16/133 this source-only slice records
 24 files/205 exact cases. Protected linked-type and full historical/PDF/authority
 proof remain distinct; no model-only name is promoted to whole workflow evidence.
+
+Whole template seeder19 adds independent exact American Legion membership/PEC titles,
+meeting-shaped sections/counts, local rich overrides/active/order continuity, referenced
+placeholder dated title/section preservation, repeat/default/second-Post and reset cases.
+The catalog/template index is9 files/91 cases; combined minutes source25 files/224
+cases. Custom-row survival is separate from all custom-field preservation, and dated
+title/section proof is separate from every historical body. No test or app changes.

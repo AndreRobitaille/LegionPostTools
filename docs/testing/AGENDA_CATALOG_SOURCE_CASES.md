@@ -115,3 +115,27 @@ Reviewed file blob: `ad389dc39a91663543688e32c4cae836fa82288c`.
 - [rejects catalog entries from another organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L90)
 - [reorder! rewrites item position to the given 1-based sequence](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L106)
 - [reorder! rejects ids from another meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/models/meeting_type_agenda_item_test.rb#L120)
+
+## test/services/meeting_type_template_seeder_test.rb
+
+Reviewed file blob: `784513ca8ab26a8cb9fbe5dea853267c96098f11`.
+
+- [seeds default meeting types for an unseeded organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L9)
+- [seeds membership meeting with exact ordered titles](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L25)
+- [seeds pec meeting with exact ordered titles](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L60)
+- [seeds meeting-shaped sections for the supplied templates](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L73)
+- [reseeding does not overwrite local edits](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L95)
+- [reseeding upgrades untouched literal bullets in template items](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L114)
+- [reseeding does not reactivate a removed seeded template item](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L127)
+- [retires a referenced placeholder without changing its dated agenda snapshot](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L141)
+- [reseeding does not change meeting type or template item counts](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L191)
+- [template reset does not restore a removed catalog entry](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L201)
+- [reseeding upgrades existing seeded items from the migration fallback section](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L215)
+- [seeding is independent by organization](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L243)
+- [defaults_missing? is true when a seeded meeting type is missing template items](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L254)
+- [seeding appends defaults when preferred positions are taken by custom meeting types](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L262)
+- [reseeding a missing template item appends when its canonical position is occupied locally](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L271)
+- [inserts newly introduced ceremony items into an older template order](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L299)
+- [reset_for! restores suggested meeting types to defaults and leaves custom types](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L335)
+- [reset_agenda_for! restores one suggested type's items to default](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L350)
+- [reset_agenda_for! is a no-op for a non-suggested meeting type](https://github.com/AndreRobitaille/LegionPostTools/blob/b965cf76ea7e8228db074e5df6d2e886df40cc30/test/services/meeting_type_template_seeder_test.rb#L363)
