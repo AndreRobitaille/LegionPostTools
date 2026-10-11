@@ -417,3 +417,12 @@ restored queued state, grant-loss status/protected denial and later own Profile.
 original draft API cases are retained/indexed with distinct direct state/single-attendance
 limits. [Design and evidence](MINUTES_ENQUEUE_RECOVERY_REVIEW.md); queued font gap#130
 and actual provider acceptance are separate. No test deletion, app authority or policy change.
+
+Real browser PDF delivery (#134) keeps every existing approval/member/document/agenda
+byte/content/identity/immutable graph assertion. Scoped35-second PDF async helper
+matches the30-second renderer budget with margin and asserts ordinary wait restores.
+Original3-second real-fetch delay1/62/1error becomes1/95 clean; wrong HTML reaches
+the existing readable-String assertion1/64/1 with a temporary message result, then
+exact scripts restore. Clean neighbors16/437 and final approval3/133 retain actual
+PDF/refusal/private resource boundaries. [Evidence](PDF_BROWSER_WAIT_CONTRACT.md).
+No general timeout increase, retries, skips, app or authority changes.

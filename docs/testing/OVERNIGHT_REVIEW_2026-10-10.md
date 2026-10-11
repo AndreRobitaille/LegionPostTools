@@ -898,3 +898,19 @@ exact candidatef4cc577/all-four CI38121785815 passes1293/11869 then73/1544, merg
 as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate that
 source repair here, preserve both histories and all original tests; qualify final
 committed queue-recovery revision serially. No production operation.
+
+## Bounded browser PDF delivery (#134)
+
+Typography PR#133 exact CI38123404349 fails only the existing real minutes PDF async
+helper (ScriptTimeoutError, Chrome154, seed53468); preserve its artifact/draft state.
+Locked Capybara sets a2-second async wait while the renderer allows30 seconds. An
+isolated3-second delayed real fetch reproduces1/62/1error, seed44796, then exact source
+restores. A PDF-only35-second helper retains all three fetch scripts/content/identity/
+immutable-graph assertions and verifies immediate ordinary-wait restoration. Same
+delayed real fetch passes1/95 seed11482. Wrong HTML first errors in native delivery,
+not credited to assertions; a temporary message-field result reaches the existing
+String assertion1/64/1 seed18145. Both experiments restore exactly. Neighbors16/437
+and final restored approval3/133 pass; lint4/diff clean. Desktop/phone member captures
+inspected. [Design and exact evidence](PDF_BROWSER_WAIT_CONTRACT.md). Actual original
+CI request duration remains unmeasured; no retries or app/renderer/authority change.
+Final committed full suites/CI pending; no production or paid AI.
