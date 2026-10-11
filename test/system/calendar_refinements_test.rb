@@ -18,6 +18,7 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
   end
 
   teardown do
+    page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "screen")
     page.current_window.resize_to(1400, 1000)
   end
 
