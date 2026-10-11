@@ -1419,7 +1419,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .ai-draft-dispatch-return { color: var(--color-navy); font-size: 16px; font-weight: 800; text-decoration: underline; text-decoration-color: #9caaba; text-underline-offset: 3px; }
 .ai-draft-dispatch-return:hover { color: var(--color-officer-blue); text-decoration-color: currentColor; }
 .ai-draft-dispatch-return:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 3px; }
-.ai-draft-dispatch-noscript { margin: -10px 25px 22px; color: var(--color-legionred); font-size: 13px; }
+.ai-draft-dispatch-noscript { margin: -10px 25px 22px; color: var(--color-legionred); font-size: 16px; }
 .ai-review-lead { align-items: flex-start; margin-bottom: 22px; }
 .ai-review-counter { display: inline-flex; padding: 9px 13px; color: var(--color-navy); background: #f3e9d0; border: 1px solid #d7c087; border-radius: 999px; font-size: 13px; font-weight: 850; }
 .ai-review-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, var(--w-rail)); align-items: start; gap: 24px; max-width: var(--w-main); }

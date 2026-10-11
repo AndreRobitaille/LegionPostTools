@@ -908,3 +908,14 @@ disclosure and saved-graph/rejection/retry/permission-loss/Profile assertions al
 Rebuilt browser2/128 seed31493 passes; fresh1400/390 captures inspected with clean
 wrapping, stacked phone steps and no horizontal overflow. Focused lint/diff clean.
 [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md). Final full suites and CI pending.
+
+No-JavaScript fallback review extends that same bounded #130 slice. The actual Chromium
+script-disabled view renders the existing instruction at13px; fixed independent16px
+body floor fails2/128/1, seed23385,5.57s. Change only the sixth font value, preserve all
+copy/status/queue/authority behavior, and restore script execution in ensure before
+existing grant-loss/status/Profile checks. Rebuilt normal/fallback focus2/139 seed6021
+passes; final full-instruction captures/focus2/139 seed59695,6.62s pass with no failures,
+errors or skips. Fresh1400/390 views were inspected: complete warning wraps within
+paper panel, readable phone steps/actions, no overflow. PR#133 stays draft after its
+unrelated real-PDF harness CI failure38123404349; integrate verified PR#135 before
+final committed serial full suites and new exact-SHA CI. No test removed or fault left.

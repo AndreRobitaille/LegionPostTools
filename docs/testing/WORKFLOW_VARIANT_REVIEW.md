@@ -421,5 +421,8 @@ and actual provider acceptance are separate. No test deletion, app authority or 
 Queued progress readability (#130) extends that same browser recovery journey with
 independent fixed13px labels/14px supporting text/16px body and action floors, requiring
 each actual selector at1400/390. Original11px badge failure2/68/1 detects the gap;
-five font values produce2/128 clean. All previous assertions remain and fresh layouts
-were inspected. [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md).
+Five font values produce2/128 clean. The actual no-JavaScript fallback then catches
+its original13px body below16px:2/128/1 failure, seed23385. Its sixth font correction
+and actual script-disable/ensure-restore variant pass2/139, seed59695; the complete
+instruction and existing progression/actions were inspected at1400/390 without overflow.
+All previous assertions remain. [Design and evidence](MINUTES_MONITOR_TYPE_FLOORS.md).

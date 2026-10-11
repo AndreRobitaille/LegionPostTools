@@ -110,6 +110,24 @@ class MinutesBackgroundDraftingTest < ApplicationSystemTestCase
       capture_system_screenshot("minutes-enqueue-recovered-#{width}")
     end
 
+    begin
+      page.driver.browser.execute_cdp("Emulation.setScriptExecutionDisabled", value: true)
+      visit admin_meeting_minutes_draft_run_path(@meeting, retry_run)
+      [ 1400, 390 ].each do |width|
+        page.current_window.resize_to(width, 1200)
+        assert_selector ".ai-draft-dispatch-noscript", text: "Automatic status checks require JavaScript. Refresh this page to check the draft."
+        assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+        assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+        assert_operator find(".ai-draft-dispatch-noscript").evaluate_script("parseFloat(getComputedStyle(this).fontSize)"), :>=, 16
+        find("body").scroll_to(find(".ai-draft-dispatch-noscript"), align: :center)
+        capture_system_screenshot("minutes-enqueue-noscript-#{width}")
+      end
+    ensure
+      page.driver.browser.execute_cdp("Emulation.setScriptExecutionDisabled", value: false)
+    end
+    visit admin_meeting_minutes_draft_run_path(@meeting, retry_run)
+    assert_selector ".ai-draft-dispatch", text: "Your draft is in line"
+
     @grant.destroy!
     click_button "Check status now"
     assert_selector ".ai-draft-dispatch-message", text: "The status check was interrupted."
