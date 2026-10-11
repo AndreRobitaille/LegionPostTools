@@ -27,6 +27,7 @@ class WebsiteCalendarSystemTest < ApplicationSystemTestCase
     assert_nil CalendarEvent.find_by!(title: "Synthetic community supper").endeavor_id
     visit admin_website_calendar_path
     click_button "Review defaults"
+    assert_current_path preview_admin_website_calendar_path
     assert_text "Synthetic community supper"
     assert_text "1 shown; 0 hidden"
     assert_no_horizontal_overflow
