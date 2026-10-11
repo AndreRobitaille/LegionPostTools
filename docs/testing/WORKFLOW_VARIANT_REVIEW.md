@@ -509,3 +509,14 @@ selection remain distinct. Fixed exact case/blob pins and implementation-coupled
 increment, inactive-fixture/status-only/fake-renderer and unlinked-destruction limits
 are recorded in the same source review. All assertions remain; no runtime or cleanup
 claim follows from source reading alone.
+
+## Whole publication component source slice (#84)
+
+Five complete files /26 exact cases at b965cf76 and the shared fictional publication
+fixtures separate real website bearer/conditional snapshots, human consent/withdrawal,
+source callbacks, native portrait/browser controls and actual observed PG held-lock
+commit orders. [Exact case/blob pins](PUBLICATION_COMPONENT_SOURCE_CASES.md),
+[located outcomes and limits](PUBLICATION_COMPONENT_SOURCE_REVIEW.md) distinguish
+inactive legacy editorial state from automatic activation, status-only/exception-only
+parts, direct session/token fixtures and unverified live publishing. All retained;
+source reading and recorded CI remain separate from representative defect evidence.

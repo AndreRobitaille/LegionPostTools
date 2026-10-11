@@ -1002,3 +1002,12 @@ with rich snapshot/real transition/member-document outcomes and concrete limits.
 Combined unmerged whole source review43files/344cases;26 literal Deferred rows remain
 plus still-scoped files. Preserve every test and separate located/runtime/fault evidence;
 linked-minutes deletion refusal remains #83's independent contract. No production work.
+
+Whole publication component source review reads five files /26 exact cases plus shared
+fictional portrait/story fixture support at b965cf76. Record consumer conditional
+content, exact consent/snapshot/restriction/tombstone, actual held-PG-lock both commit
+orders and real browser controls with explicit legacy/active-policy and metadata/authority
+limits. All assertions remain; no app/test change or new run. Case/source analysis in
+[PUBLICATION_COMPONENT_SOURCE_REVIEW.md](PUBLICATION_COMPONENT_SOURCE_REVIEW.md).
+Combined unmerged whole source review48files/370cases;21 literal Deferred rows remain,
+plus still-scoped files. #84 stays open. No production publishing, real consent or paid AI.
