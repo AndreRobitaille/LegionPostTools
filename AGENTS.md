@@ -153,7 +153,7 @@ Andre's explicit authorization.
 
 ## Production and deploys
 
-Deploy only when Andre explicitly asks. A merge to main is not a deploy. Production updates only when Kamal runs.
+Deploy only when Andre explicitly asks. A merge to master is not a deploy. Production updates only when Kamal runs.
 
 Follow `docs/DEPLOYMENT.md` exactly. Use `bin/release check` for the preflight and `bin/release push-deploy` to deploy.
 
