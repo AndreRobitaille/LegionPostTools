@@ -734,3 +734,21 @@ Complete credential/API focus43/286, seed33457,3.31s passes; final committed ser
 suites/security/candidate/main CI remain required. Whole source/assertion scopes and
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
+
+## Native calendar browser navigation and retained publication components (#105)
+
+PR #118 candidatea8989831 passed exact CI38115989210, PostgreSQL17.11 ordinary1289/11583
+then browser69/1259. Normal merge produced main55e091f. Actual-main38116220723 passed
+ordinary but browser69/1243 had one Chrome154 inspector error in the unchanged calendar
+journey. No failed-job retry; #102 remains open and further independent code merges held.
+Exact artifact shows expected desktop preview; native form posts to a distinct preview
+path. Add one exact-path assertion after that click, retaining every old assertion. This
+is bounded navigation evidence, not a precise Chrome-cause diagnosis or a changed app flow.
+
+Whole six request/nine policy cases reviewed with explicit privacy/authority/token/ETag/
+official-document distinctions and limitations; focus15/97 seed59451 clean. Browser1/21
+seed54187 clean, desktop/narrow actual screenshots inspected. Wrong redirect fault1/4/
+1 failure seed25561 at new path assertion; finally restores exact controller SHA256
+f91f243e6e6eb0f33f56f6bec8cdb5f783e501b60a7186f57f7102210ea375f5.
+Final committed serial suites/security/exact candidate and actual-main CI remain required.
+No production operations, provider calls, dependency upgrades or exception suppression.
