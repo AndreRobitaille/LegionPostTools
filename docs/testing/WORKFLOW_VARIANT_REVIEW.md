@@ -256,3 +256,25 @@ phone sign-in/sign-out, continued enrollment with virtual authenticator and toke
 reveal/back/revoke journeys are separately executed; neither source review nor a test
 count establishes external delivery or clipboard content. Official-action confirmation
 and invitation files remain outside this bounded full-file review.
+
+
+## Empty National roster refusal and actual upload recovery (#111)
+
+Original suspected nil-header defect is disproved by actual locked CSV::Table behavior
+and clean parser/attached empty-file route checks; there is no application repair.
+The original `missing required headers is fatal` retains partial-header assertions and
+adds empty/BOM-only inputs. New `empty uploaded CSV preserves people and sign in then a
+valid upload succeeds` verifies the actual saved failed import, unchanged people/users/
+grants/earlier completed history, rendered error and subsequent successful upload with
+same member identity and unchanged private login address. Bypassing only empty-header
+validation fails both invalid-result and stored failed-import outcomes; exact restoration
+returns all roster checks to green.
+
+New real browser `empty file upload preserves members and a later valid upload works`
+uses actual file controls, rendered refusal and “Import another roster” before valid
+recovery. Old named account/deceased-warning journey and all thirty importer/thirty
+original upload controller/seven parser/seven model cases stay. Desktop/390 failed and
+completed layouts inspected; global header-problem heading is recorded as an existing
+incidental wording limit. Full source/assertion contracts, fault hash, commands and
+execution boundaries are in [empty-roster review](EMPTY_ROSTER_INPUT.md). No consolidation,
+National source copy, broad rescue or concurrency claim.
