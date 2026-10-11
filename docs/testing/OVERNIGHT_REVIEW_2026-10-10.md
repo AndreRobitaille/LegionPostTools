@@ -735,6 +735,25 @@ suites/security/candidate/main CI remain required. Whole source/assertion scopes
 limits are in PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md; no application change or safe
 removal/consolidation is demonstrated.
 
+## Independent raw-source privacy contracts (#79/#84)
+
+Retain all old cookie/HTML/provider/structured-generation assertions. Both source retention
+choices now have real bearer durable receipt/replay/error/current-grant-loss expectations;
+nonblank HTML error input proves safe summary plus intentional authorized retry text.
+Actual adapter with supplied offline SDK error proves safe failed-run metadata and unchanged
+minutes/source. Initial fixture precondition54/494/2 fails because the locked SDK default
+message omits nested source; inspect constructor and explicitly supply raw message, keeping
+all safe-message/category assertions. Corrected focus54/531 seed7173 clean, restored
+focus54/531 seed29075 clean, real browser1/33 seed18317 clean at1400/390. No paid call.
+
+Four faults detect raw creation receipt1/9/1 seed50823, HTML summary1/14/1 seed55779,
+provider message1/5/1 seed30626, persisted failed run1/5/1 seed59110. Finally restores
+exact API/form/provider bytes; hashes in TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md. All old
+component cases stay, large API/generation files are scoped rather than fully certified.
+Existing smaller transcript typography is separately linked #120 with rendered-size
+reproduction required; no visual-floor pass claimed. #79/PR#98 still require the unresolved
+recovery-start decision and actual scheduling/deletion. Main integration/final suites/CI
+remain required before merge. No production, member-data copy, deployment or provider call.
 
 ## Optional passkey invitation saved-state and browser proof (#117)
 
@@ -781,6 +800,21 @@ f91f243e6e6eb0f33f56f6bec8cdb5f783e501b60a7186f57f7102210ea375f5.
 Final committed serial suites/security/exact candidate and actual-main CI remain required.
 No production operations, provider calls, dependency upgrades or exception suppression.
 
+
+## Actual synthetic token copying (#121/#105)
+
+Retain both credential journeys and every old assertion. Real clipboard readback plus
+actual denied-write manual fallback pass2/49 seed44498; full stored token attributes
+remain unchanged. Success-label-without-write fault fails2/24/2 seed56311 at exact
+copied bytes, then restores JS SHA2562b62abaf98f9a2df5af834c2c563674caa8157e8cf4ae89265a33e783e0b4f9b.
+Created/list desktop1400/390 captures inspected; synthetic redaction follows copy proof.
+Native-navigation exact-path evidence remains separate from unknown Chrome internals.
+Three changed Ruby files lint clean. Final main integration, committed serial suites,
+security/exact candidate/main CI pending; #121/#105 remain open. No app or production change.
+Integrate calendar merge42a3154 after exact candidate24769f2/all-four CI38117274225
+passes PG17.11 ordinary1289/11583 then69/1260. Preserve both evidence sections and
+all privacy tests; original source/API/provider fault-target bytes remain unchanged.
+Actual-main38117583145 and this candidate's final qualification remain pending.
 Roster candidate07aa328 passed committed local ordinary1290/11644, seed18337,104.84s,
 then browser71/1364,178.55s, no failures/errors/skips. Full lint507, Brakeman0/0, gem
 and importmap audits passed. Later main55e091f browser CI failed as recorded above;
@@ -791,7 +825,75 @@ ledger sections; service/controller fault-target hashes still match their exact 
 Repeat final committed serial suites and exact candidate/main CI before roster merge.
 
 
+Integrated roster main15ce51b with all-four exact main CI38118516754, PG17.11
+1290/11644 then71/1365, no failures/errors/skips; #108/#109 completed. Preserve both
+review sections and distinct inventory rows. Final clipboard qualifying serial suites
+and exact candidate/main CI remain required; no app fault remains.
+## Whole-source review navigation and retained component distinctions
+
+Twenty-nine directory/account/roster/display/privileged-confirmation/Dashboard files
+reviewed in bounded groups are mapped in two source-only documents and a pinned exact
+case-name/source-line index. Remaining Deferred rows stay open with their priorities.
+Actual-main15ce51b CI38118516754 executes the unchanged reviewed components, PG17.11
+ordinary1290/11644 then system71/1365. This documents execution separately from fault
+proof; no blanket failure-detection or redundancy claim. Completed #108/#109/#111/#112
+have linked independent evidence. Local provenance#115/invitation#117 and Post-date#93
+remain open. No test removal, app edit or production/provider operation in this slice.
+Calendar main42a3154/all-four CI38117583145 now passes PG17.11 ordinary1289/11583
+then69/1260. Personal-token #102 completed afterward (comment6106216389), preserving
+the failed55e091f run. Roster PR#122 exact candidate30fb41b/all-four CI38118111332
+passes1290/11644 then71/1365, merged as15ce51b with identical tree. Actual-main
+CI38118516754 remains pending; #108/#109 stay open. Integrate that roster merge here,
+preserving both evidence sections and all three new browser inventory rows; no app fault
+remains. Final privacy candidate qualification/CI still required. No production operation.
+
+Roster actual-main15ce51b/all-four CI38118516754 passes PG17.11 ordinary1290/11644
+then71/1365, no failures/errors/skips. This completes the bounded #108/#109 criteria;
+the prior failed main55e091f run remains preserved. Privacy integrationc653d70 retains
+both ledger sections and unique inventory rows. Qualify this final committed privacy
+candidate serially; #79 timing/purge decisions remain open and PR#98 stays draft.
+
+
+Privacy PR#123 candidate4675856/all-four CI38119147815 and actual-main79bf811
+CI38119436435 pass PG17.11 ordinary1292/11778 then72/1398; identical merge tree.
+#79 remains open with timing/purge decisions and draftPR#98. Typography PR#126
+candidate239baf1/all-four CI38119589531 and actual-main38d6582 CI38119824001 pass
+1292/11778 then72/1506; identical tree, #120 completed after main verification.
+Source-only PR#125 exact integratedd7bf95f/all-four CI38119906775 passes same counts,
+merged5c54e39 with identical tree; actual-main38120256442 pending and #84 stays open.
+Integrate all three here, preserve both histories and unique inventory rows. Final
+clipboard serial qualification/exact candidate/main CI still required; #121/#105 open.
+New source-input#124 independently reproduces valid uploaded UTF-8 read failure and
+coupled limit expectation; its work remains isolated/unmerged. No production operation.
+
+## Independent transcript byte boundary and actual Unicode upload (#124)
+
+Whole original seven-case component source review identifies a coupled oversize fixture.
+Original raised10MB limit leaves its old test passing1/15 seed4918; fixed existing5MB+1
+and a new exact multibyte-byte boundary catch the same restored experiment2/25/2
+seed55628 after clean62/674 baseline. Storage/identity preservation, later exact-size
+retry and every old assertion remain. Unicode file reading exposes a real original
+Encoding::UndefinedConversionError1/10/1 seed64339 after stored raw bytes already agree.
+The one-line UTF-8 interpretation repair preserves raw bytes/digest and normalization.
+Finally restored repaired model SHA2565810c53d8209d3684dfea147b3f654ee62ccc67f08331c97ace93b1ab3557695;
+restored neighbors62/674 seed32829 pass. Three changed Ruby files lint clean.
+Actual file controls/read/grant-loss/Profile browser plus retained pasted/privacy/font
+journey2/167 seed29413 pass; uploaded reader1400/390 captures inspected. Source5c54e39
+integrated; committed final serial suites/security/exact and actual-main CI still pending.
+#79 recovery-date decision and actual deletion remain open; no paid AI or production.
+
+Clipboard PR#127 exact candidate7930c76/all-four CI38120823673 passes PG17.11
+ordinary1292/11778 then72/1518. Normal merge2b9bf51 has identical tree; actual-main
+CI38121399155 remains pending. Integrate it here without changing any original
+source-input assertions. Qualify this final committed Unicode candidate serially.
+
 Invitation integration retains both evidence sections and all distinct browser rows.
 Calendar main42a3154 CI38117583145 and roster main15ce51b CI38118516754 pass all four
 jobs; the latter PG17.11 ordinary1290/11644 then71/1365. Bounded #108/#109 completed,
 previous failed55e091f run retained. Final invitation candidate qualification/CI required.
+
+Invitation integrates current actual-main e53238f/all-four CI38122104236: PG17.11
+ordinary1293/11869 then73/1544. Preserve newer source review and earlier invitation
+proofs, including distinct transcript/invitation inventory rows and original source pins.
+#124/#121/#105 now complete; #117 remains pending final committed qualification/CI.
+Queue#128 and minutes source review remain separate unmerged work. No production.

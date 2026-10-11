@@ -37,7 +37,7 @@ class MeetingTranscript < ApplicationRecord
     raise SourcePurgedError, "Transcript source has been purged" unless source_available?
 
     raw = pasted_text? ? content.to_s : text_file.download
-    raw.encode("UTF-8").sub(/\A\uFEFF/, "").gsub("\r\n", "\n").gsub("\r", "\n")
+    raw.dup.force_encoding(Encoding::UTF_8).sub(/\A\uFEFF/, "").gsub("\r\n", "\n").gsub("\r", "\n")
   end
 
   def pasted_text? = source_kind == "pasted_text"

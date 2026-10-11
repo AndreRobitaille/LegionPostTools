@@ -323,6 +323,36 @@ website credential model and real token browser tests remain separate retained c
 Current integrated focus43/286 passes on877c18e; this scoped API case does not certify every
 mutation in OfficerApiTest. Details: [personal credential review](PERSONAL_TOKEN_AUTHENTICATION_REVIEW.md).
 
+## Restricted transcript receipts, retry errors and offline provider failure (#79/#84)
+
+Preserve the existing cookie create/explicit-read/seed and blank-input cases. New real
+bearer source/replay for both retention choices checks actual durable receipt attributes
+for fixed raw-source sentinels before status/key absence; duplicate/invalid-policy errors
+preserve source/minutes and retain safe receipts. Explicit authorized reads create no
+receipts; current grant loss refuses both reads and completed replay. Existing HTML
+error case now includes nonblank source with invalid retention: safe error summary,
+no insertion, unchanged minutes and intentionally preserved authorized retry textarea.
+
+Retain all nine offline provider cases; strengthen supplied server/quota/configuration
+error messages with a proven raw-source fixture. New actual-adapter/service path preserves
+minutes/source and stores safe failure category/request ID without echoed source. Real
+browser1/33 follows invalid submission, valid recovery, restricted reader, permission loss,
+Profile and actual sign-out/protected denial at desktop/phone widths. Four controlled
+fault executions catch durable receipt/HTML summary/provider message/failed-run leaks,
+finally restore exact bytes, clean focus54/531 passes. The thirty-day scheduling decision
+and actual deletion remain #79/PR#98; this is independent privacy evidence, not purge
+completion. See [scope and evidence](TRANSCRIPT_SOURCE_PRIVACY_REVIEW.md).
+
+## Real copied token bytes and permission denial (#121)
+
+Both existing personal/Post-website journeys keep their distinct authority, issuance,
+reveal-once/back and revocation assertions. Shared browser support sets a fixed stale
+synthetic clipboard value, performs the real copy and reads exact actual copied bytes.
+Actual denied-write permission then produces the manual fallback with source focus and
+full exact selection. Stored credential attributes stay unchanged. Omitting only the
+application clipboard write preserves its success label yet fails both byte assertions;
+finally restores exact JS. Browser permissions reset in nested ensure; no stubbed
+clipboard, broad rescue, skip or consolidation. See [design and evidence](TOKEN_CLIPBOARD_REVIEW.md).
 
 ## Optional passkey invitation continuity (#117)
 
@@ -356,3 +386,34 @@ service/browser read navigates source/partial results/preview and loses settings
 while ordinary Profile remains. No provider opt-out state or Solid Queue dispatch claim.
 Details: [email identity](ROSTER_EMAIL_IDENTITY_REVIEW.md),
 [offline audience](OFFLINE_ROSTER_SYNC_REVIEW.md). No test deletion/consolidation.
+
+
+## Whole-source directory, roster and privileged-confirmation variants
+
+The [directory/roster review](DIRECTORY_AND_ROSTER_SOURCE_REVIEW.md) records separate
+HTML index/detail, private bulk/summary JSON, Person/User representation, own Profile,
+menu destinations, membership report, roster transactions/preview/source and offline
+HTTP/audience/service contracts. The [confirmation review](PRIVILEGED_CONFIRMATION_SOURCE_REVIEW.md)
+retains purpose/session/code, link GET versus consuming POST, changed-text refusal,
+stubbed passkey orchestration, sign-out provenance and independent invitation boundaries.
+[Exact case names and pinned source lines](SOURCE_REVIEW_CASES.md) associate each retained
+case with its reviewed assertions. Actual-main15ce51b all-four CI executes those files;
+that unchanged-suite execution does not demonstrate a representative fault for every
+assertion. Separately completed #108/#109/#111/#112 have their own runtime/fault evidence;
+#115/#117 and #93 decisions remain open. No safe test consolidation was established.
+
+
+## Independent source size and uploaded UTF-8 reading (#124)
+
+All seven original transcript components remain. Old oversized input followed the app
+constant; a raised-limit control leaves it passing. Fixed five-megabyte plus one input
+and a separate exact-byte multibyte case now detect the same raised-limit fault in both
+pasted/upload paths. Refusals preserve source/blob/attachment and identity; later exact-
+size retry saves actual bytes, digest, creator and retention selection. Uploaded Unicode
+originally raises on binary-to-UTF-8 transcoding after raw storage agrees. One-line copy/
+encoding interpretation preserves bytes and existing BOM/CRLF normalization; small
+original reproduction fails, repaired component/request/provider neighbors pass62/674.
+Real uploaded-file browser variant reads accented source at1400/390, then loses source
+authority while own Profile works and source/minutes stay intact. Both existing privacy
+and new upload journeys pass2/167; no claim about automatic purge/provider completion.
+See [design and exact evidence](TRANSCRIPT_SOURCE_INPUT_REVIEW.md). No test removal.
