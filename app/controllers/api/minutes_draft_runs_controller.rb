@@ -94,7 +94,7 @@ module Api
 
     def enqueue!(run)
       job = MinutesDraftGenerationJob.perform_later(run)
-      return if job.successfully_enqueued?
+      return if job && job.successfully_enqueued?
 
       mark_enqueue_failed!(run)
       raise MinutesDrafting::Generate::DraftFailed, run

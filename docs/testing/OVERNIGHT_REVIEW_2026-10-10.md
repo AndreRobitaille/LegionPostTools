@@ -908,3 +908,32 @@ safe actual SDK failure, submit-once/same-ID polling, deadlines/cancellation, so
 changes and terminal redelivery. Preserve every distinct component; no consolidation,
 new execution or new regression demonstration belongs to this source-only increment.
 Offline fake-provider evidence and application-relative timeouts are stated explicitly.
+
+## Durable initial/retry queue rejection (#128)
+
+After fixing the new graph helper's nonexistent outcomes association, all four original
+HTML/API request paths error on false.successfully_enqueued?:4/0/4 seed57679. Temporary
+rethrowing diagnostic4/0/4 seed7811 inspects actual new pending/nil-category/no-completion
+rows, zero suggestions and unchanged source/minutes/prior attempts; exact support restored.
+Three existing job && guards now use the established failed-run helpers. Proper nil
+assertion corrects Minitest-only fixture failure; full request/job focus39/453 seed8253
+passes, lint8 clean. Real existing disclosure plus new recovery/authority-loss browser
+2/72 seed53472 pass. Four1400/390 failure/queued captures inspected; failure body16px,
+no overflow. #130 records smaller queued status/support/body type, keeping typography
+separate. Whole9 original draft API cases source-reviewed and retained with exact pins.
+Final committed serial suites/security/main integration/exact and actual-main CI pending.
+No production, paid provider call, source deletion or official-record application.
+
+Clipboard actual-main2b9bf51/all-four CI38121399155 passes1292/11778 then72/1518.
+#121/#105 closed with restored clipboard/native navigation evidence. Unicode PR#129
+exact candidatef4cc577/all-four CI38121785815 passes1293/11869 then73/1544, merged
+as e53238f with identical tree. Actual-main CI38122104236 pending. Integrate that
+source repair here, preserve both histories and all original tests; qualify final
+committed queue-recovery revision serially. No production operation.
+
+Queue PR#132 exact1161fff/CI38122622338 and actual-main b965cf7/CI38122975568
+both pass all four jobs: PG17.11 ordinary1297/11980 then system74/1598 with zero
+failures/errors/skips. Merge has identical tree; #128 closed with full saved-state,
+restored fault/request/browser and later recovery evidence. This source-only branch
+integrates that verified main, retains every original assertion and both review histories.
+Queued type#130 and confirmation#131 remain separate; #78/#93 and #79 stay open.

@@ -30,7 +30,7 @@ module Admin
       )
       job = MinutesDraftGenerationJob.perform_later(retry_run)
 
-      unless job.successfully_enqueued?
+      unless job && job.successfully_enqueued?
         mark_enqueue_failed!(retry_run)
         return redirect_to admin_jobs_path(filter: "attention"), alert: "The retry was recorded, but the draft worker could not be started."
       end
