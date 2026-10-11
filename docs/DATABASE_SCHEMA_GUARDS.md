@@ -44,12 +44,18 @@ This establishes local/CI schema fidelity. It does not inspect, alter or prove t
 currently deployed database's state. #80's new occurrence-context safeguard must use
 this faithful schema path before claiming database protection.
 
-CI baseline actually ran PostgreSQL 18.6 and already used libpq 18.6. Pin the service major to 18 and explicitly install client 18 for SQL dump/load; this preserves the observed major rather than upgrading dependencies. Standard Rails PostgreSQL dump output is retained; Rails 8.1 strips dump header/restriction meta commands. No custom dump flags or guard installers are added.
+The initial CI baseline ran PostgreSQL 18.6 and already used libpq 18.6; local checks
+also run on 18.6. Repository deployment and Cloud development configuration use 17,
+and the Dockerfile already installs PostgreSQL client tools. Pin CI's service/client
+to the repository's configured major 17 to prove this standard dump loads there as
+well. This changes CI only, without inspecting or altering production configuration.
+Standard Rails PostgreSQL dump output is retained; Rails 8.1 strips dump header/restriction
+meta commands. No custom dump flags or guard installers are added.
 
 The first candidate CI failed during package setup: libpq 18 was preinstalled, but
 the runner's enabled apt sources could not locate client 18. Configure PostgreSQL's
 [official signed Ubuntu repository](https://www.postgresql.org/download/linux/ubuntu/)
-for the runner's actual distribution before installing the client. This affects CI
+for the runner's actual distribution before installing the selected client. This affects CI
 only and requires a successful new candidate run; no production package operation.
 
 The first migration-built test comparison also failed because Rails test schema maintenance reloaded the Ruby schema (schema SHA metadata was absent), dropping its eleven triggers before tests ran. This reinforces the need to repair the real preparation path rather than inject guards only in test setup.

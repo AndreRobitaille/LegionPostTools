@@ -241,3 +241,10 @@ new exact-SHA CI are required for the combined candidate. No test removed or wea
 Inspected desktop and 390px confirmation screenshots: action/record identity and code
 entry remain readable, wrapping correctly with ordinary vertical scrolling and no
 horizontal overflow. Existing 1919 visual layout is unchanged.
+
+Final source review found deployment and Cloud development specify PostgreSQL 17, while
+the baseline floating CI service and this machine use 18.6. The Dockerfile already has
+PostgreSQL client tools. Align the CI service/client with the repository's configured
+major 17 to verify standard SQL-schema loading on that target; keep the local 18.6
+verification separate. No deployment configuration, container or production data is
+inspected/changed. This requires fresh candidate CI and final serial local verification.

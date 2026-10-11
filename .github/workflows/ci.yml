@@ -70,7 +70,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:18
+        image: postgres:17
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -92,7 +92,7 @@ jobs:
           . /etc/os-release
           printf 'Types: deb\nURIs: https://apt.postgresql.org/pub/repos/apt\nSuites: %s-pgdg\nComponents: main\nSigned-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc\n' "$VERSION_CODENAME" | sudo tee /etc/apt/sources.list.d/pgdg.sources > /dev/null
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libpq-dev postgresql-client-18 libvips poppler-utils
+          sudo apt-get install --no-install-recommends -y libpq-dev postgresql-client-17 libvips poppler-utils
 
       - name: Checkout code
         uses: actions/checkout@v7
