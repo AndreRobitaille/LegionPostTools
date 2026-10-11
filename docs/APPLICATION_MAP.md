@@ -14,6 +14,7 @@ Post 165 grounds product policy without becoming a hard-coded installation assum
 
 | Reference | Job |
 | --- | --- |
+| [Testing and workflow validation](TESTING.md) | Standing method for independent expectations, realistic variants, useful assertions, and regression detection |
 | [Interfaces](application_map/INTERFACES.md) | Pages, forms, controls, API families, navigation, and their authority boundaries |
 | [Workflows](application_map/WORKFLOWS.md) | Stable behavior IDs, starting states, actions, results, later interactions, and failure cases |
 | [Source inventory](application_map/SOURCE_INVENTORY.md) | Exhaustive local controller, view, JavaScript, and job discovery ledger |
@@ -29,6 +30,11 @@ has passed a runtime check. **Discrepancy** means policy and source differ or ol
 documents conflict. **Planned** means a desired capability has no current mapped
 interface. Every workflow below is source-located, runtime-unverified, and
 coverage-not-assessed unless its entry says otherwise. These dimensions remain separate.
+
+The [October 11 review report](testing/OVERNIGHT_HANDOFF_2026-10-11.md) records later
+scoped testing and corrections. Read its evidence and linked variant reviews alongside
+this initial discovery baseline; it does not make every mapped variant or production
+behavior verified.
 
 Current [minutes approval and attestation](MINUTES_APPROVAL_AND_ATTESTATION.md),
 [roles](ROLES.md), [automatic website calendar](AUTOMATIC_WEBSITE_CALENDAR.md), and

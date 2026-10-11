@@ -90,6 +90,11 @@ discovery, not proof that those tests ran or detect each mapped defect.
 
 ## Maintaining the reference
 
+Use the standing [Testing and workflow validation](../TESTING.md) method for behavior
+changes and test-quality reviews. The [October 11 completion report](../testing/OVERNIGHT_HANDOFF_2026-10-11.md)
+records the subsequent scoped review; the initial discovery and handoff below remain
+dated evidence, not an assertion that those follow-up tasks are still outstanding.
+
 1. Start with the user job and governing policy, before reading a proposed implementation/test. State new behavior and unresolved decisions distinctly.
 2. For a behavior/permission/navigation/async/publication change, update its interface row and workflow contract, including denied/stale/interrupted cases and later interactions. Keep stable IDs; retire old IDs with reason/replacement instead of silently reusing them.
 3. Reconcile source-route/controller/view/Stimulus/job additions with the source ledger. Add every new file or explicitly classify it as technical/planned; a file count alone does not establish behavior completeness.
