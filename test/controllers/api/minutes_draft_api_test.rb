@@ -1,6 +1,8 @@
 require "test_helper"
+require_relative "../../support/minutes_enqueue_support"
 
 class ApiMinutesDraftApiTest < ActionDispatch::IntegrationTest
+  include MinutesEnqueueSupport
   include ActiveJob::TestHelper
 
   setup do
@@ -276,6 +278,62 @@ class ApiMinutesDraftApiTest < ActionDispatch::IntegrationTest
     assert_equal failed.id, response.parsed_body.dig("minutes_draft_runs", 0, "id")
     assert_equal 1, response.parsed_body["attention_count"]
     assert_not_includes response.body, @transcript.source_text
+  end
+
+  test "rejected enqueue exposes a safe persisted initial failure and later retry" do
+    original = saved_minutes_source_graph(@minutes, @transcript)
+    assert_difference "MinutesDraftRun.count", 1 do
+      with_rejected_minutes_enqueue { post "/api/meetings/#{@meeting.id}/minutes/draft_runs", as: :json }
+    end
+    failed = @minutes.draft_runs.recent.first
+    assert_rejected_minutes_run(failed, requester: @manager, transcript: @transcript)
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_response :unprocessable_entity
+    assert_equal failed.id, response.parsed_body.dig("draft_run", "id")
+    assert_equal "failed", response.parsed_body.dig("draft_run", "status")
+    assert_not_includes response.body, @transcript.source_text
+    stored_failure = failed.reload.attributes
+
+    assert_enqueued_with(job: MinutesDraftGenerationJob) do
+      post "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{failed.id}/retry", as: :json
+    end
+    retry_run = @minutes.draft_runs.recent.first
+    assert_equal failed.id, retry_run.retry_of_id
+    assert_equal "pending", retry_run.status
+    assert_equal stored_failure, failed.reload.attributes
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_response :accepted
+    assert_equal retry_run.id, response.parsed_body.dig("draft_run", "id")
+  end
+
+  test "rejected enqueue preserves the old API failure and a later retry enqueues" do
+    failed = prepared_run
+    failed.update!(status: "failed", error_category: "timeout", completed_at: Time.current)
+    stored_original = failed.reload.attributes
+    original = saved_minutes_source_graph(@minutes, @transcript)
+    assert_difference "MinutesDraftRun.count", 1 do
+      with_rejected_minutes_enqueue { post "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{failed.id}/retry", as: :json }
+    end
+    rejected = @minutes.draft_runs.recent.first
+    assert_rejected_minutes_run(rejected, requester: @manager, transcript: @transcript, retry_of: failed)
+    assert_equal stored_original, failed.reload.attributes
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_response :unprocessable_entity
+    assert_equal rejected.id, response.parsed_body.dig("draft_run", "id")
+    assert_equal "failed", response.parsed_body.dig("draft_run", "status")
+    stored_rejected = rejected.reload.attributes
+
+    assert_enqueued_with(job: MinutesDraftGenerationJob) do
+      post "/api/meetings/#{@meeting.id}/minutes/draft_runs/#{failed.id}/retry", as: :json
+    end
+    retry_run = @minutes.draft_runs.recent.first
+    assert_equal failed.id, retry_run.retry_of_id
+    assert_equal "pending", retry_run.status
+    assert_equal stored_original, failed.reload.attributes
+    assert_equal stored_rejected, rejected.reload.attributes
+    assert_equal original, saved_minutes_source_graph(@minutes, @transcript)
+    assert_response :accepted
+    assert_equal retry_run.id, response.parsed_body.dig("draft_run", "id")
   end
 
   private

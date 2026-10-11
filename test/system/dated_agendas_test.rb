@@ -344,7 +344,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     previous_port = ENV["PDF_RENDER_PORT"]
     ENV["PDF_RENDER_PORT"] = URI.parse(page.current_url).port.to_s
 
-    page.evaluate_async_script(<<~JAVASCRIPT, path)
+    evaluate_pdf_async_script(<<~JAVASCRIPT, path)
       const path = arguments[0];
       const done = arguments[arguments.length - 1];
 
