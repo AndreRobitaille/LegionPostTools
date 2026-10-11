@@ -854,3 +854,24 @@ Integrate all three here, preserve both histories and unique inventory rows. Fin
 clipboard serial qualification/exact candidate/main CI still required; #121/#105 open.
 New source-input#124 independently reproduces valid uploaded UTF-8 read failure and
 coupled limit expectation; its work remains isolated/unmerged. No production operation.
+
+## Independent transcript byte boundary and actual Unicode upload (#124)
+
+Whole original seven-case component source review identifies a coupled oversize fixture.
+Original raised10MB limit leaves its old test passing1/15 seed4918; fixed existing5MB+1
+and a new exact multibyte-byte boundary catch the same restored experiment2/25/2
+seed55628 after clean62/674 baseline. Storage/identity preservation, later exact-size
+retry and every old assertion remain. Unicode file reading exposes a real original
+Encoding::UndefinedConversionError1/10/1 seed64339 after stored raw bytes already agree.
+The one-line UTF-8 interpretation repair preserves raw bytes/digest and normalization.
+Finally restored repaired model SHA2565810c53d8209d3684dfea147b3f654ee62ccc67f08331c97ace93b1ab3557695;
+restored neighbors62/674 seed32829 pass. Three changed Ruby files lint clean.
+Actual file controls/read/grant-loss/Profile browser plus retained pasted/privacy/font
+journey2/167 seed29413 pass; uploaded reader1400/390 captures inspected. Source5c54e39
+integrated; committed final serial suites/security/exact and actual-main CI still pending.
+#79 recovery-date decision and actual deletion remain open; no paid AI or production.
+
+Clipboard PR#127 exact candidate7930c76/all-four CI38120823673 passes PG17.11
+ordinary1292/11778 then72/1518. Normal merge2b9bf51 has identical tree; actual-main
+CI38121399155 remains pending. Integrate it here without changing any original
+source-input assertions. Qualify this final committed Unicode candidate serially.
