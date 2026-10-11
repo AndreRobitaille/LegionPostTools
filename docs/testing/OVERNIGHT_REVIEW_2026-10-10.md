@@ -34,13 +34,13 @@ Push/merge does not invoke repository deployment. Workflow content and empty hoo
 | Issue | Contract and review unit | Current status |
 | --- | --- | --- |
 | #77 | Member Meeting and immutable document reads, personal token parity and handbook | Complete: PR #91 merged; candidate and actual-main CI passed |
-| #78 | Independent Commander/Adjutant duties through assignment transitions | PR #94 current-role/action/refusal proof and candidate/main CI passed; open pending material date-boundary decision #93 |
-| #79 | Promised 30-day recovery; source removal and retained record/audit | Draft PR #98 records the unresolved correction-clock/storage/provenance design and actual ordinary-approval missing-deletion reproduction; no purge runtime implemented |
+| #78 | Independent Commander/Adjutant duties through assignment transitions | Complete: PRs #94/#144 and actual-main CI passed; approved saved Post local date resolves #93 |
+| #79 | Promised 30-day recovery; source removal and retained record/audit | Complete: approved finalization clock and actual deletion/retry lifecycle merged in PR #98; exact candidate and actual-main CI passed |
 | #80 | Final occurrence context protected independently from agenda state | Complete: PR #90 merged; candidate and actual-main CI passed |
 | #81 | Current handbook, delegated official acts and Post website credential boundaries | Complete: PR #97 merged; independent handbook/actions and candidate/actual-main CI passed |
 | #82 | Referenced Meeting Type delete refusal and later document reads | Complete: PR #85 merged; candidate and actual main CI successful |
 | #83 | Referenced agenda/child delete refusal without historical loss | Complete: PR #85 merged, including AI lineage; candidate and actual main CI successful |
-| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Open: all current files have bounded review entries; independent cleanup is verified and source review/handoff published in PR #136; policy-dependent #78/#79 lifecycle/authority concerns remain explicit |
+| #84 | All-file inventory, workflow variants, assertions and demonstrated detection | Acceptance review/cleanup complete:184 inventory entries, bounded source/runtime/fault evidence and all #77–#83 repairs merged; final report publication/CI is the only remaining coordination step |
 
 The initial inventory alone completes no acceptance criterion. No test removed,
 consolidated or weakened. Discovery documentation committed as `002f41e`; subsequent
@@ -1277,3 +1277,37 @@ concurrency runner. Both newly introduced test files are reviewed; historical pi
 case indexes stay historical. No deletion/consolidation, skips, permanent permission
 expansion or production/paid-provider claim. Final complete handoff follows verified
 candidate and actual-main CI.
+
+## Final code acceptance and completion report
+
+Retention candidate4c7bc3b429f306d882b759c8517a6ee5aa356113 merged normally in PR #98
+as f56bd35b9d3fe2a8fce45efa3dc1c5490deef126 at2026-10-11T12:04:21Z. Both trees are
+49fa0d7223901cc178b4b189a502fd6d279a2b01. Committed local ordinary1334/13206/0
+(seed65370,104.934150s), then serial system78/2041/0 (seed52932,193.590050s); full
+RuboCop518 clean, Brakeman0 errors/0 warnings, gem/importmap audits clear. Exact
+CI38137509223 passes all four jobs: ordinary51.831243s, system120.625493s, same totals.
+Actual-main CI38137887001 passes all four jobs: ordinary74.989290s, system160.613544s,
+same totals. #79 closed afterward with comment6108871120; title/body/labels/assignees/
+milestone preserved. The original failing cfd1f52 draft CI remains historical evidence.
+
+Original source-cache failures, three restored faults and six rendered source states
+remain separate from final clean behavior; every experimental file byte is restored.
+All184 inventory entries match183 discovered tests plus the manual concurrency runner.
+Runner/support entries are listed separately without inflating that count. Newly added
+lifecycle13/job1/API1/model3/system1 cases are reviewed; no tests/assertions removed, no
+skips or permission expansion. Existing source-only slices remain85 whole files/707
+pinned declarations rather than universal fault proof.
+
+The reporting-only branch codex/overnight-completion-report updates the morning handoff,
+full33-PR candidate/merge index, current inventory notes and final evidence. It changes
+no application, tests, dependency, CI or production configuration. Local documentation
+checks and its exact candidate/actual-main CI precede #84 closure. All previous linked
+follow-ups created under this task are closed; older #43/#60–#62 and roadmap work remain
+separate. No product decision or required implementation/review remains.
+
+The original root remains main5adda175d67e9603f58fdf8574ad6f7a0313d6b9 with only its
+modified README and untracked discovery map/directory; never reset, staged, overwritten
+or pulled over them. Production was never accessed/deployed/mutated and no real member
+data or paid AI was used. Already-due historical final sources become eligible on a
+separate release; no new recovery window is inferred from deployment. External backup,
+download, recording/provider and live scheduler/storage behavior is unverified.

@@ -81,3 +81,19 @@ proposals, external recordings, downloaded copies, provider-held data or indepen
 managed backups. Production scheduling/storage, external services and backup erasure
 were not tested. No production access, deployment, real member-data copy or paid AI call
 was performed.
+
+## Final accepted code revision
+
+Candidate `4c7bc3b429f306d882b759c8517a6ee5aa356113` merged normally in PR #98 as
+`f56bd35b9d3fe2a8fce45efa3dc1c5490deef126`, identical tree. Committed local ordinary
+1334/13206 then system78/2041, zero failures/errors/skips. RuboCop518 clean, Brakeman
+zero errors/warnings, both audits clear. Exact CI38137509223 and actual-main
+CI38137887001 pass all four jobs with the same serial totals. #79 closed only afterward.
+
+Earlier-decision clock fault4/96/2 (seed34209), omitted storage-delete fault1/23/1
+(seed39473), pending-read fault1/8/1 (seed47742), all zero errors/skips; exact source
+bytes restored. Restored neighbors137/1812/0 and final API file12/195/0, with original
+components preserved. Whole source browser3/397/0; all six final scheduled/pending/
+completed desktop/phone views inspected. The first unpadded italic status was refined
+to padded upright16px body copy; Added and deadline/completion dates now agree in the
+Post zone. CLI/fixture-copy/uppercase corrections are not product-failure evidence.

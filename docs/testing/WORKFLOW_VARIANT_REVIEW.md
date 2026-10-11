@@ -672,3 +672,12 @@ current source JSON, retained proposals and offline provider refusal are recorde
 manual-purge, input/privacy and generation components remain. Real reader/intake/member
 refusal journeys and six rendered status images at1400/390 are inspected; live scheduler,
 production storage/provider behavior and external backup erasure remain unverified.
+
+Final #79 acceptance: PR #98 candidate4c7bc3b merged as f56bd35b (identical tree),
+local and exact candidate/actual-main CI ordinary1334/13206 then system78/2041, zero
+failures/errors/skips; all four jobs and full local lint/security pass. #79 closed after
+actual-main38137887001 verification. #78/#93 are already closed after #144 main CI.
+All original #77–#83 acceptance work is merged; the final report consolidates #84's
+completed source/assertion review, independent cleanup and preserved defect detection.
+Existing external/live-provider/publisher roadmap limits remain explicit and are not
+claimed as new completed product features.

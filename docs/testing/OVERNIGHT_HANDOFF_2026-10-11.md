@@ -1,76 +1,83 @@
 # Overnight issue handoff — October 11, 2026
 
-Source baseline: `5adda175d67e9603f58fdf8574ad6f7a0313d6b9`. Work used repository-locked
-Ruby/gems, disposable synthetic test databases and real Chromium browser controls.
+All acceptance work for #77–#84 is merged and verified. The two requested choices are
+implemented: current officer duties and role labels use the saved Post local date;
+30-day transcript recovery begins at final minutes approval, including final corrected
+Adjutant attestation. The original earlier membership decision remains immutable.
+
 Production was not accessed, deployed, restarted or mutated. No real member data was
-copied and no paid AI or external member email was sent. The original checkout’s
-README/application-discovery files remain untouched; their reviewed documentation
-copies were included in PR #85.
+copied, paid AI called or external member email sent. The original checkout's modified
+README and untracked application-discovery artifacts remain untouched; reviewed copies
+were already merged in PR #85. Work used isolated codex branches, locked dependencies,
+synthetic records, disposable test databases and real Chromium controls.
 
-| Issue | Status | Merged work and evidence |
-| --- | --- | --- |
-| #77 | Complete, closed | PR #91, main `b47d10ee`: actual member/token read parity, last-attested immutable selection, private evidence exclusion, grant loss and HTML/PDF; working-copy fault caught/restored. |
-| #78 | Complete, closed | PRs #94/#144: original policy/transitions plus approved saved-Post-date authority/labels/End role at positive/negative offsets, real same-session/token actions, manual exceptions and midnight expiry. Main86037334 CI38135710941 passes all four jobs. See OFFICER_AUTHORITY_LOCAL_DATE.md. |
-| #79 | Final candidate awaiting verification | Approved final-corrected-attestation clock implemented on draft PR #98, including real byte deletion, safe pending state, storage/transaction retries, both policies and immutable graphs. Original missing-path and restored faults retained. Final candidate/actual-main checks remain required; earlier independent source privacy/Unicode work remains merged. |
-| #80 | Complete, closed | PR #90, main `c3985b45`: all seven final occurrence fields protected independently of agenda state; actual PostgreSQL overlap experiment is separately recorded and is not CI-discovered. |
-| #81 | Complete, closed | PR #97, main `08a7094e`: independent handbook expectations and actual delegated/official/website actions/refusals; retained private graphs and no private content before authentication. |
-| #82 | Complete, closed | PR #85, main `b092bf67`: actual protected Meeting Type deletion, truthful refusal, immutable content and later member reading. |
-| #83 | Complete, closed | PR #85, main `b092bf67`: linked agenda/child deletion protection, AI lineage, saved history and subsequent HTML/PDF. |
-| #84 | Open pending final retention verification | Inventory, bounded component/assertion reviews and independent cleanup complete. No safe removal/consolidation established. PR #136 publishes remaining source review and this handoff; bounded review and cleanup are complete; final retention candidate/main verification remains. |
+Baseline `5adda175d67e9603f58fdf8574ad6f7a0313d6b9` passed ordinary 1190/8881 then
+system 64/1014, zero failures/errors/skips, after installing missing repository-locked
+gems. Ruby 4.0.7, Rails 8.1.4, local PostgreSQL 18.6 and Chromium/driver 152 were used;
+final system runs explicitly use one worker. Dependency versions were not upgraded.
 
-Additional repairs cover SQL guards, delayed confirmation cookies, cached authority,
-foreign-position mutation, the last-administrator race, UTF-8 reading and rejected job
-enqueue. Offline roster recovery, passkey/token boundaries, actual clipboard content,
-PDF delivery and readable progress/source controls retain separate coverage. All scoped
-commits, PRs, merged SHAs, original failures, restored faults and neighboring journeys
-are recorded in [the matrix](WORKFLOW_VARIANT_REVIEW.md) and
-[the ledger](OVERNIGHT_REVIEW_2026-10-10.md).
+| Issue | Result and merged evidence |
+| --- | --- |
+| #77 | Complete. PR #91, main b47d10ee: member/token Meeting parity, last-attested/final immutable selection, private-source exclusion, grant loss and actual HTML/PDF. Working-copy fault caught/restored. |
+| #78 | Complete. PRs #94/#144, main 86037334: independent Commander/Adjutant policy, actual start/inclusive end/expiry, inactive/renamed positions, surviving manual grants and issued-token replay. Approved Post-local midnight consistency verified in Chicago/Tokyo, End role controls and real sign-out/member reading. Original disagreement and separate date faults caught/restored. |
+| #79 | Complete. PR #98, main f56bd35b: actual scheduled-job removal of pasted text and uploaded storage after ordinary/final corrected approval, both policies, exact/delayed/historical deadlines, retained official graphs/metadata, failed-storage/transaction recovery and repeated execution. Original missing-deletion, wrong-clock, omitted-byte-delete and pending-read faults detected. Prior privacy/receipt/UTF-8 work remains. |
+| #80 | Complete. PR #90, main c3985b45: all seven final occurrence fields protected independently of agenda state; saved official graphs and subsequent member reads. Separate real PostgreSQL overlap experiment is explicit/manual, not CI-discovered. |
+| #81 | Complete. PR #97, main 08a7094e: independent handbook expectations, real delegated/official/website permitted and refused actions, private graphs preserved and no private content before authentication. |
+| #82 | Complete. PR #85, main b092bf67: real protected Meeting Type deletion refusal, truthful UI, preserved immutable content and later member reading. |
+| #83 | Complete. PR #85, main b092bf67: linked agenda/child deletion protection, AI lineage, saved history and subsequent HTML/PDF. |
+| #84 | Complete. All 184 inventory entries reviewed: 183 discovered test files plus one explicit concurrency runner. Seven bounded review slices, exact pinned cases, linked gaps and independently verified repairs are recorded. Source review, execution and fault detection remain distinct. No test deletion/consolidation was justified; unique component coverage remains. |
 
-Last code merge: PR #142, candidate `31ca5ecba3d7f71e7a764042702331c86ed6c23b`,
-main `d14f6c3ce12c3a3fa50f3e16a6219a3bb0a255c2`, identical tree. Final committed local
-`bin/rails test` passes 1307/12215 (seed25207), followed serially by
-`CI=true PARALLEL_WORKERS=1 bin/rails test:system`:76/1789 (seed24606), zero
-failures/errors/skips. RuboCop513 clean, Brakeman0 errors/0 warnings, gem and importmap
-audits clear. [Exact code CI38128908321](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/38128908321)
-and [actual code-main CI38129287632](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/38129287632)
-pass all four jobs and the same serial suite totals. These include actual browser
-journeys, saved-state and denial/recovery checks; counts alone are not their evidence.
+[The change index](OVERNIGHT_CHANGE_INDEX_2026-10-11.md) lists every scoped PR,
+candidate commit and merged SHA. [The ledger](OVERNIGHT_REVIEW_2026-10-10.md) records
+original failures, restored experiments, exact commands/seeds/environment and CI.
+[The workflow matrix](WORKFLOW_VARIANT_REVIEW.md) and
+[inventory](TEST_FILE_INVENTORY.md) distinguish bounded source review from demonstrated
+behavior. Remaining source-only slices review 85 whole files / 707 exact declarations;
+those pinned historical indexes are not blanket fault proof.
 
-| Recent bounded work | PR / actual main | Result |
-| --- | --- | --- |
-| Official confirmation expiry/atomic rollback | #138 / `99371bde` | Expiry-guard fault fails both refusal detectors; persisted writes roll back and the same confirmation actually recovers. |
-| Failed print media / honest retry name | #140 / `31e7d7e` | Actual inherited-print failure repaired by one teardown line; unchanged retry body still detects duplicate saved updates. |
-| Optional passkey continuity | #141 / `b1ead665` | Real dismissal/later Profile/sign-out/denial/fresh-sign-in; nonempty identity and foreign session preserved. |
-| Local/National provenance | #142 / `d14f6c3c` | Original false source wording reproduced; real setup/account controls and source reading at1400/390 inspected. |
+Final code candidate 4c7bc3b429f306d882b759c8517a6ee5aa356113 (PR #98) merged normally
+as f56bd35b9d3fe2a8fce45efa3dc1c5490deef126 with an identical tree. Committed local `bin/rails test`:
+1334 runs/13206 assertions, zero failures/errors/skips (seed65370,104.934150s).
+Then serially `CI=true PARALLEL_WORKERS=1 bin/rails test:system`:78/2041, zero
+failures/errors/skips (seed52932,193.590050s). Full RuboCop 518 clean, Brakeman 0 errors/
+0 warnings, gem/importmap audits clear. [Exact code CI38137509223](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/38137509223)
+and [actual code-main CI38137887001](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/38137887001) pass all four jobs with the same ordinary/system totals.
+These counts accompany persisted-state, later-action and original/fault evidence; they
+are not a claim that every user workflow or external dependency is proven.
 
-The unmerged [retention draft PR #98](https://github.com/AndreRobitaille/LegionPostTools/pull/98)
-is `cfd1f52cf389143d20038ea5edb0700c86220664`.
-[Its exact CI38129393451](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/38129393451)
-intentionally fails only the two missing-removal regressions: ordinary1311/12291,
-2 failures,0 errors/skips; its three lint/security jobs pass and browser step does not
-run after failure. Four focused cases yield4/76/2 locally and on the integrated repeat.
-At31 days real pasted text or the upload/storage object remains, no deletion job is
-queued/performed, and every captured official graph is unchanged. This is the existing
-approval/enqueued-job path, not proof that a nonexistent recurrence or production
-scheduler ran. The draft cannot merge; future tests must invoke the real implemented
-scheduler and cover the unresolved correction clock, retries and storage failure.
+Browser evidence retains real magic-link sign-in/sign-out and later protected denial,
+member navigation, officer agenda/minutes/confirmation workflows, relevant native PDFs,
+grant loss, protected deletion and publication boundaries. The new source reader covers
+actual Unicode upload, pending corrections, final local deadline, failed deletion,
+unavailable reader, actual storage retry/completion, current source JSON and unchanged
+final member minutes. Scheduled/pending/completed states are visually inspected at 1400/390; values and status
+copy are 16px, labels 13px, with no horizontal overflow. The officer-date
+journeys and End role controls were also inspected at both widths.
 
-[The inventory](TEST_FILE_INVENTORY.md) separates review scope, runner discovery and
-execution:184 unique entries, including183 automatically discovered files and the
-separate manual concurrency runner. The remaining source slices review85 whole files
-and707 exact declarations; earlier slices and new runtime components remain separate.
-Immutable source case indexes preserve exact declarations and line numbers.
-Local PostgreSQL18.6 and CI PostgreSQL17.11 both pass. Live paid-provider acceptance,
-production storage and separately managed backup erasure were not tested. Source reading
-and test counts are not blanket fault or production proof.
-All temporary experimental faults were removed/restored; no skips, broadened permissions, swallowed
-exceptions or accepted-record edits were introduced. Shared browser tests retained real
-magic-link sign-in/sign-out, later protected denial, member navigation, officer lifecycle,
-HTML/PDF, authority loss, protected deletion and relevant publication boundaries.
+Cleanup clarified finite receipt lifetimes and the retry scenario's actual contract,
+replaced racy native-page reads with meaningful waits, centralized the renderer's browser
+time budget while preserving ordinary waits, and restored print media even after failure.
+Original relevant components and assertions remain; representative faults still fail
+before exact restoration and clean neighboring runs. Additional actual repairs include
+immutable SQL guards, confirmation cookie continuity/expiry/rollback, cached current
+authority, foreign-position mutation, the last-administrator race, upload encoding and
+rejected queue enqueue. Exact before/after evidence is linked from each matrix slice.
 
-The two product choices are resolved: saved Post local date for current duties/roles,
-and final corrected Adjutant attestation for the recovery window. Officer work is merged
-and verified; final retention verification and the completed handoff remain. The older
-draft/failure totals above are historical, not evidence that the new implementation
-passes. No production access or deployment occurred; release remains Andre's separate
-review. The persistent goal is unfinished until final required checks and #79/#84 closure.
+No product choices or required scope work remain. All experimental faults were restored;
+no skips, broadened permanent grants, official-record editing shortcuts or indiscriminate
+exception suppression were introduced. The storage adapter's varied IO errors are
+translated only at its narrow boundary; the job still reports failure and retries safely.
+Local PostgreSQL 18.6 and CI PostgreSQL 17.11 both pass; Chrome versions differ as recorded
+in the ledger.
+
+Release review remains separate. Deploying this code will make already-due historical
+final sources eligible from their original finalization date; it will not grant them a
+new 30-day window. The hourly task can remove them on its next run, in batches of 500.
+Synthetic application deletion does not prove erasure of external recordings, downloads,
+provider-held data or independently managed backups. Live production scheduling/storage,
+paid-provider behavior and backup erasure remain unverified. Existing #43/#60–#62 and
+other roadmap work stay open; they are separate from this completed review. Production
+remains on its existing release.
+
+The reporting-only PR and its final main verification are recorded in the
+[#84 completion evidence](https://github.com/AndreRobitaille/LegionPostTools/issues/84).
