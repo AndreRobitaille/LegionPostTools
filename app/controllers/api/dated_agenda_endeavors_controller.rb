@@ -1,6 +1,6 @@
 module Api
   class DatedAgendaEndeavorsController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
     before_action :set_dated_agenda
 
     def create

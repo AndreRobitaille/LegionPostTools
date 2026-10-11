@@ -1,6 +1,6 @@
 module Api
   class AgendaItemCatalogEntriesController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
     before_action :set_entry, only: %i[update destroy]
 
     def index

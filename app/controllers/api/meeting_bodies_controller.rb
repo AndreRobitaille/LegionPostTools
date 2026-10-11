@@ -1,6 +1,6 @@
 module Api
   class MeetingBodiesController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
 
     def index
       bodies = organization.meeting_bodies.order(:name)

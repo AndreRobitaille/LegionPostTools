@@ -1,7 +1,7 @@
 module Api
   class MeetingTranscriptsController < BaseController
     before_action :require_transcript_access
-    before_action -> { require_capability("manage_minutes") }, only: :create
+    authorize_with -> { require_capability("manage_minutes") }, only: :create
     before_action :set_meeting
 
     def show

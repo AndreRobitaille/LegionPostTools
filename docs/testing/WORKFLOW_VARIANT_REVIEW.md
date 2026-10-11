@@ -96,3 +96,26 @@ assertion removed. Handbook member contract is compared to real list requests an
 Controlled working-copy substitution passes routing but fails the saved heading assertion
 after reopening. Exact controller bytes restored; all five lifecycle scenarios pass again.
 Commands, counts and limits are in [Member API design/evidence](../MEMBER_MEETING_API_READS.md).
+
+## Current offices and completed retries (#78/#92)
+
+`OfficerTurnoverAuthorityTest`: independent configured Commander/Adjutant/1st Vice duties,
+same-token future/start/inclusive-end/expiry/inactive/rename, manual drafting exceptions,
+honorary office, allowed/opposite official acts, and actual later-Meeting human confirmation
+by both officers. Persistent graph checks precede denied-write response checks. An isolated
+end-date-predicate fault changes the saved heading and fails both officer scenarios; exact
+source restored. The old preset/document table mismatch is distinct from the reproduced
+cached private response disclosure on unchanged main.
+
+Existing `MinutesApprovalFlowTest` keeps all previous handoff/correction/attestation,
+later approval, final occurrence refusal, member navigation and real PDF assertions; office
+authority now comes from configured assignments. A new same-session browser denial proves
+expired duties cannot save while ordinary member reading remains at desktop/phone widths.
+Broader date-context consistency is #93, with the midnight decision pending.
+
+Existing calendar, minutes-item Endeavor and attestation retry tests retain every prior
+assertion and add lost-authority content/record/receipt checks and permitted restored
+receipts. New calendar deletion and local-midnight cases prove replay preserves valid
+state-changing operations and the calendar's own date context. Routed mutation inventory
+checks registration of current authority; it does not claim all action contracts are
+fully reviewed. All file/variant reviews outside this slice remain deferred under #84.

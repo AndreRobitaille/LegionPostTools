@@ -1,6 +1,6 @@
 module Api
   class UserAccountsController < BaseController
-    before_action -> { require_capability("manage_settings") }
+    authorize_with -> { require_capability("manage_settings") }
     before_action :set_person
 
     def show

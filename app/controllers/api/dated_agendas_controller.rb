@@ -1,6 +1,6 @@
 module Api
   class DatedAgendasController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
     before_action :set_dated_agenda, only: %i[show destroy approve publish reopen]
 
     def index

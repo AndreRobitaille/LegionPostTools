@@ -1,6 +1,6 @@
 module Api
   class DatedAgendaRollCallsController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
     before_action :set_records
     before_action :ensure_draft_agenda
 

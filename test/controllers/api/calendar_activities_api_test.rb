@@ -254,9 +254,10 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
     post "/api/calendar_events", params: event_input, headers: headers, as: :json
     assert_response :unprocessable_entity
     headers["Idempotency-Key"] = "new-event"
+    original_input = event_input
     assert_difference "CalendarEvent.count", 1 do
       2.times do
-        post "/api/calendar_events", params: event_input, headers: headers, as: :json
+        post "/api/calendar_events", params: original_input, headers: headers, as: :json
         assert_response :created
         assert_equal "no-store", response.headers["Cache-Control"]
       end
@@ -266,7 +267,15 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
       2.times { post tasks_path, params: { title: "Arrange supplies" }, headers: headers, as: :json }
     end
     assert_equal @manager.id, token.agent_api_executions.last.user_id
+    execution = token.agent_api_executions.find_by!(idempotency_key: "new-event")
+    original_execution = execution.attributes
+    original_events = CalendarEvent.order(:id).map(&:attributes)
     @manager.permission_grants.destroy_all
+    post "/api/calendar_events", params: original_input, headers: headers.merge("Idempotency-Key" => "new-event"), as: :json
+    assert_response :forbidden
+    assert_not_includes response.body, original_input.fetch(:title)
+    assert_equal original_events, CalendarEvent.order(:id).map(&:attributes)
+    assert_equal original_execution, execution.reload.attributes
     headers["Idempotency-Key"] = "no-longer-allowed"
     post "/api/calendar_events", params: event_input, headers: headers, as: :json
     assert_response :forbidden
@@ -284,6 +293,56 @@ class ApiCalendarActivitiesApiTest < ActionDispatch::IntegrationTest
     assert_response :created
   ensure
     Api::BaseController.allow_forgery_protection = previous
+  end
+
+  test "authorized deletion retries return the original receipt after the target is gone" do
+    token, plaintext = AgentAccessToken.issue!(user: @manager, name: "Calendar deletion", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{plaintext}", "Idempotency-Key" => "delete-private-event" }
+    path = "/api/calendar_events/#{@private_event.id}"
+    input = { lock_version: @private_event.lock_version }
+    delete path, params: input, headers:, as: :json
+    assert_response :no_content
+    assert_not CalendarEvent.exists?(@private_event.id)
+    execution = token.agent_api_executions.find_by!(idempotency_key: "delete-private-event")
+    original_execution = execution.attributes
+    assert_no_difference "CalendarEvent.count" do
+      delete path, params: input, headers:, as: :json
+    end
+    assert_response :no_content
+    assert_equal original_execution, execution.reload.attributes
+    @manager.permission_grants.destroy_all
+    delete path, params: input, headers:, as: :json
+    assert_response :forbidden
+    assert_equal original_execution, execution.reload.attributes
+  end
+
+  test "calendar retries use the same Post date as the original authority check near midnight" do
+    travel_to Time.utc(2026, 11, 11, 2)
+    @manager.permission_grants.destroy_all
+    position = @organization.position_titles.create!(name: "Commander", display_order: 1)
+    position.position_capability_grants.create!(capability: "approve_minutes")
+    position.position_assignments.create!(person: @manager.person, starts_on: Date.new(2026, 11, 10), ends_on: Date.new(2026, 11, 10))
+    token, secret = AgentAccessToken.issue!(user: @manager, name: "Post-date calendar", expires_in: 1.day)
+    headers = { "Authorization" => "Bearer #{secret}", "Idempotency-Key" => "local-end-day-calendar" }
+    input = event_input
+    assert_difference "CalendarEvent.count", 1 do
+      post "/api/calendar_events", params: input, headers:, as: :json
+      assert_response :created
+    end
+    receipt = response.body
+    execution = token.agent_api_executions.find_by!(idempotency_key: "local-end-day-calendar")
+    original_execution = execution.attributes
+    original_events = CalendarEvent.order(:id).map(&:attributes)
+    post "/api/calendar_events", params: input, headers:, as: :json
+    assert_response :created
+    assert_equal receipt, response.body
+    travel_to Time.utc(2026, 11, 11, 7)
+    post "/api/calendar_events", params: input, headers:, as: :json
+    assert_response :forbidden
+    assert_equal original_events, CalendarEvent.order(:id).map(&:attributes)
+    assert_equal original_execution, execution.reload.attributes
+  ensure
+    travel_back
   end
 
   test "calendar filters categories and exposes Sunday bounds with safe public categories" do

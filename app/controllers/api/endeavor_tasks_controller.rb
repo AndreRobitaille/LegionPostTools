@@ -1,7 +1,7 @@
 module Api
   class EndeavorTasksController < BaseController
     include Concerns::ActivityContract
-    before_action -> { require_capability("manage_agendas") }, only: %i[create update]
+    authorize_with -> { require_capability("manage_agendas") }, only: %i[create update]
     before_action :set_endeavor
     before_action :set_task, only: %i[show update]
 

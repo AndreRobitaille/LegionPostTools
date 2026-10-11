@@ -2,7 +2,7 @@ module Api
   class EndeavorsController < BaseController
     include Concerns::ActivityContract
 
-    before_action -> { require_capability("manage_agendas") }, only: %i[create update complete reopen]
+    authorize_with -> { require_capability("manage_agendas") }, only: %i[create update complete reopen]
     before_action :set_endeavor, only: %i[show update complete reopen]
 
     def index

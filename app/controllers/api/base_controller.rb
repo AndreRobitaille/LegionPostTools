@@ -3,6 +3,18 @@ module Api
     UNAUTHORIZED_MESSAGE = "This is a private post operations app. Sign in, then open /api."
     MUTATION_METHODS = %w[POST PATCH PUT DELETE].freeze
     SENSITIVE_PARAMETER_PATTERN = /token|secret|password|code|authenticity/i
+    class_attribute :api_authorization_callbacks, default: []
+
+    # Reuse current authority on replay without rerunning lookups or mutation checks.
+    def self.authorize_with(filter = nil, only: nil, except: nil, &block)
+      filter ||= block
+      options = {}
+      options[:only] = only unless only.nil?
+      options[:except] = except unless except.nil?
+      before_action(filter, **options)
+      actions = only.nil? ? nil : Array(only).map(&:to_s)
+      self.api_authorization_callbacks += [ { filter:, only: actions, except: Array(except).map(&:to_s) } ]
+    end
 
     skip_forgery_protection
     before_action :prefer_json
@@ -143,7 +155,12 @@ module Api
           unless matching_execution?(execution, fingerprint)
             return render_error("That Idempotency-Key was already used for a different request.", status: :conflict)
           end
-          return replay_execution(execution) if execution.completed?
+          if execution.completed?
+            authorize_replay
+            return if performed?
+
+            return replay_execution(execution)
+          end
 
           return render_error("That request is still processing. Retry it with the same Idempotency-Key.", status: :conflict)
         end
@@ -217,6 +234,19 @@ module Api
       render body: execution.response_body,
         status: execution.response_status,
         content_type: "application/json; charset=utf-8"
+    end
+
+    def authorize_replay
+      checks = api_authorization_callbacks.select do |check|
+        (check[:only].nil? || check[:only].include?(action_name)) && !check[:except].include?(action_name)
+      end
+      return render_error("You do not have permission to open that.", status: :forbidden) if checks.empty?
+
+      checks.each do |check|
+        filter = check[:filter]
+        filter.is_a?(Proc) ? instance_exec(&filter) : send(filter)
+        break if performed?
+      end
     end
 
     def prefer_json

@@ -1,6 +1,6 @@
 module Api
   class DatedAgendaItemsController < BaseController
-    before_action -> { require_capability("manage_agendas") }
+    authorize_with -> { require_capability("manage_agendas") }
     before_action :set_dated_agenda
     before_action :set_item, only: %i[update destroy]
     before_action :set_section, only: :reorder

@@ -145,8 +145,22 @@ class ApiMinutesItemEndeavorsControllerTest < ActionDispatch::IntegrationTest
     post @path, params: payload, headers: headers, as: :json
     assert_response :conflict
     @manager.permission_grants.find_by!(capability: "manage_agendas").destroy!
+    original_item = @item.reload.attributes
+    original_execution = execution.reload.attributes
+    post @path, params: payload, headers: headers.merge("Idempotency-Key" => "confirmed-breakfast"), as: :json
+    assert_response :forbidden
+    assert_not_includes response.body, "Community breakfast"
+    assert_equal original_item, @item.reload.attributes
+    assert_equal original_execution, execution.reload.attributes
     post @path, params: creation, headers: headers.merge("Idempotency-Key" => "lost-authority"), as: :json
     assert_response :forbidden
+    @manager.permission_grants.create!(capability: "manage_agendas")
+    assert_no_difference "Endeavor.count" do
+      post @path, params: payload, headers: headers.merge("Idempotency-Key" => "confirmed-breakfast"), as: :json
+    end
+    assert_response :created
+    assert_equal original_response, response.parsed_body
+    assert_equal original_execution, execution.reload.attributes
   end
 
   private

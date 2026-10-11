@@ -274,11 +274,28 @@ class ApiMinutesApiTest < ActionDispatch::IntegrationTest
     assert_nil response.parsed_body.dig("minutes", "lifecycle", "revision", "approved_at")
     assert_equal token.id, response.parsed_body.dig("execution", "agent_access_token_id")
     assert_equal "Reviewed heading", minutes.reload.member_revision.payload.fetch("title")
+    receipt = response.body
+    execution = token.agent_api_executions.find_by!(idempotency_key: "attest-reviewed-copy")
+    original_execution = execution.attributes
     assert_no_difference "MinutesAttestation.count" do
       post "/api/meetings/#{@meeting.id}/minutes/attestation", headers:, as: :json
     end
     assert_response :success
     assert_equal 2, minutes.reload.revisions.count
+    original_records = [ minutes.attributes, minutes.revisions.map(&:attributes), minutes.lifecycle_events.map(&:attributes), minutes.current_revision.attestation.attributes ]
+    adjutant.permission_grants.find_by!(capability: "attest_minutes").destroy!
+    post "/api/meetings/#{@meeting.id}/minutes/attestation", headers:, as: :json
+    assert_response :forbidden
+    assert_not_includes response.body, "Reviewed heading"
+    assert_equal original_records, [ minutes.reload.attributes, minutes.revisions.map(&:attributes), minutes.lifecycle_events.map(&:attributes), minutes.current_revision.attestation.attributes ]
+    assert_equal original_execution, execution.reload.attributes
+    adjutant.permission_grants.create!(capability: "attest_minutes")
+    assert_no_difference "OfficialActionConfirmation.count" do
+      post "/api/meetings/#{@meeting.id}/minutes/attestation", headers:, as: :json
+    end
+    assert_response :success
+    assert_equal receipt, response.body
+    assert_equal original_execution, execution.reload.attributes
   end
 
   private
