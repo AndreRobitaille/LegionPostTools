@@ -231,9 +231,37 @@ module Api
     end
 
     def replay_execution(execution)
-      render body: execution.response_body,
+      render body: visible_replay_body(execution.response_body),
         status: execution.response_status,
         content_type: "application/json; charset=utf-8"
+    end
+
+    def visible_replay_body(body)
+      return body if body.blank?
+
+      visibility = { "transcript" => transcript_read_access?, "minutes" => minutes_read_access? }
+      return body if visibility.values.all?
+
+      payload = JSON.parse(body)
+      meeting = payload["meeting"] if payload.is_a?(Hash)
+      return body unless meeting.is_a?(Hash)
+
+      changed = false
+      visibility.each do |field, allowed|
+        next if allowed || meeting[field].nil?
+
+        meeting[field] = nil
+        changed = true
+      end
+      changed ? JSON.generate(payload) : body
+    end
+
+    def transcript_read_access?
+      current_user.can_any?("manage_minutes", "view_internal_records")
+    end
+
+    def minutes_read_access?
+      current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records")
     end
 
     def authorize_replay
@@ -328,8 +356,8 @@ module Api
           id: meeting.dated_agenda.id,
           status: meeting.dated_agenda.status
         } : nil,
-        transcript: meeting.transcript && current_user.can_any?("manage_minutes", "view_internal_records") ? transcript_summary_payload(meeting.transcript) : nil,
-        minutes: meeting.minutes && current_user.can_any?("manage_minutes", "approve_minutes", "attest_minutes", "view_internal_records") ? minutes_summary_payload(meeting.minutes) : nil,
+        transcript: meeting.transcript && transcript_read_access? ? transcript_summary_payload(meeting.transcript) : nil,
+        minutes: meeting.minutes && minutes_read_access? ? minutes_summary_payload(meeting.minutes) : nil,
         member_documents: {
           agenda: meeting.dated_agenda&.published? ? member_agenda_summary_payload(meeting.dated_agenda) : nil,
           minutes: member_minutes_summary_payload(meeting.minutes)

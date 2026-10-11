@@ -34,7 +34,7 @@ module Api
     def require_transcript_access
       require_authentication
       return if performed?
-      return if current_user.can_any?("manage_minutes", "view_internal_records")
+      return if transcript_read_access?
 
       render_error("You do not have permission to open that.", status: :forbidden)
     end

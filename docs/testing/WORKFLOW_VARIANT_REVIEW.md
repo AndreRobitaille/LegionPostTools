@@ -119,3 +119,9 @@ receipts. New calendar deletion and local-midnight cases prove replay preserves 
 state-changing operations and the calendar's own date context. Routed mutation inventory
 checks registration of current authority; it does not claim all action contracts are
 fully reviewed. All file/variant reviews outside this slice remain deferred under #84.
+
+Fresh pre-merge review also reproduces a cached Meeting summary after partial duty loss
+while agenda editing remains authorized. The returned copy now uses the same fresh-read
+visibility predicates; selected/restored grants and actual deleted-agenda receipts retain
+safe content and unchanged execution/records. Passing `6045eb2` suites preceded this
+additional repair; the final changed revision must be verified separately.

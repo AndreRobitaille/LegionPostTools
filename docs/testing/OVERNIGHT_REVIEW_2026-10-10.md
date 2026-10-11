@@ -388,3 +388,26 @@ Restored focused request/inventory/calendar run after the stronger fault: 26 / 4
 Fresh review confirms 21 controller edits are exact existing-guard declaration changes;
 the three special controllers implement replay, calendar date preservation and removal
 of the old editorial callback workaround. Ten local Markdown references resolve.
+
+First committed candidate `6045eb2`: local ordinary 1250 / 10453 / 0 (seed 42258,
+101.08s), then system 66 / 1187 / 0 (seed 6064, 163.91s), serially. Exact-SHA CI
+38106906481 passed all four jobs. PR #94 remains draft: fresh review then found a
+partial-authority receipt case before merge. A manual agenda grant may survive office
+expiry, so action authorization remains valid while its old Meeting receipt still exposes
+restricted transcript/minutes summaries. Reproduction at `6045eb2`: 1 / 4 / one failure
+(seed 17260, 1.38s), with actual transcript creator/source metadata returned. No full
+transcript text or repeated mutation is claimed.
+
+Fresh Meeting responses, direct workspace read guards and cached Meeting receipts now
+reuse the same minutes/transcript visibility predicates. Redaction affects the returned
+copy only; stored execution, source graphs and safe historical receipt fields stay intact.
+The added partial/selected/restored authority case checks original byte-identical receipt
+restoration without another write. A deleted unreferenced agenda receipt also remains
+available with surviving agenda authority while hiding the expired minutes summary.
+The new fixture initially changed the Meeting type without matching draft-minutes context,
+so its subsequent minutes save correctly failed validation; the synthetic fixture now
+sets matching draft context. No application validation was weakened.
+
+Focused changed replay/API neighbors: 70 / 866 / 0 (seed 29799, 12.28s); four changed
+Ruby files pass lint. This source change requires a new committed candidate, serial full
+suites and exact-SHA CI; the earlier passing candidate is not substituted as final proof.

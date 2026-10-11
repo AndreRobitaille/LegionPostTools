@@ -95,6 +95,74 @@ class OfficerTurnoverAuthorityTest < ActionDispatch::IntegrationTest
     assert_response :forbidden, "#{request.method} #{request.path}: #{response.body}"
   end
 
+  test "a still permitted Meeting retry omits restricted summaries when only manual agenda authority survives" do
+    actor, assignment, headers = assigned_user("Commander", starts_on: Date.current, ends_on: Date.current)
+    actor.permission_grants.create!(capability: "manage_agendas")
+    @minutes.update!(title: "Private cached working heading")
+    transcript = MeetingTranscripts::Create.new(meeting: @meeting, created_by: actor, retention_policy: "retain_restricted", pasted_text: "Restricted synthetic source").call
+    token = actor.agent_access_tokens.sole
+    headers = headers.merge("Idempotency-Key" => "meeting-partial-authority-retry")
+    input = { title: "Deliberately updated occurrence", lock_version: @meeting.lock_version }
+    patch "/api/meetings/#{@meeting.id}", params: input, headers:, as: :json
+    assert_response :success
+    receipt = response.body
+    assert_equal transcript.id, response.parsed_body.dig("meeting", "transcript", "id")
+    assert_equal "Private cached working heading", response.parsed_body.dig("meeting", "minutes", "title")
+    execution = token.agent_api_executions.find_by!(idempotency_key: "meeting-partial-authority-retry")
+    original_execution = execution.attributes
+    original_records = [ @meeting.reload.attributes, @minutes.reload.attributes, transcript.reload.attributes ]
+    travel_to Time.zone.local(2026, 11, 11, 12)
+    patch "/api/meetings/#{@meeting.id}", params: input, headers:, as: :json
+    assert_nil response.parsed_body.dig("meeting", "transcript")
+    assert_nil response.parsed_body.dig("meeting", "minutes")
+    assert_not_includes response.body, "Private cached working heading"
+    assert_response :success
+    assert_equal "Deliberately updated occurrence", response.parsed_body.dig("meeting", "title")
+    assert_equal original_records, [ @meeting.reload.attributes, @minutes.reload.attributes, transcript.reload.attributes ]
+    assert_equal original_execution, execution.reload.attributes
+    exception = actor.permission_grants.create!(capability: "approve_minutes")
+    patch "/api/meetings/#{@meeting.id}", params: input, headers:, as: :json
+    assert_nil response.parsed_body.dig("meeting", "transcript")
+    assert_equal "Private cached working heading", response.parsed_body.dig("meeting", "minutes", "title")
+    assert_response :success
+    assert_equal original_records, [ @meeting.reload.attributes, @minutes.reload.attributes, transcript.reload.attributes ]
+    assert_equal original_execution, execution.reload.attributes
+    exception.destroy!
+    assignment.update!(ends_on: nil)
+    patch "/api/meetings/#{@meeting.id}", params: input, headers:, as: :json
+    assert_response :success
+    assert_equal receipt, response.body
+    assert_equal original_records, [ @meeting.reload.attributes, @minutes.reload.attributes, transcript.reload.attributes ]
+    assert_equal original_execution, execution.reload.attributes
+  end
+
+  test "a deleted agenda receipt remains available with current agenda authority and hides expired minutes authority" do
+    actor, _assignment, headers = assigned_user("Commander", starts_on: Date.current, ends_on: Date.current)
+    actor.permission_grants.create!(capability: "manage_agendas")
+    template = @organization.meeting_types.create!(name: "Retry template", slug: "retry-template", position: 1)
+    @meeting.update!(meeting_type: template)
+    agenda = DatedAgenda.create_from_template!(meeting: @meeting)
+    @minutes.update!(meeting_type: template, title: "Private deleted-agenda receipt heading")
+    headers = headers.merge("Idempotency-Key" => "delete-unused-agenda-retry")
+    path = "/api/dated_agendas/#{agenda.id}"
+    delete path, headers:, as: :json
+    assert_response :success
+    assert_equal "Private deleted-agenda receipt heading", response.parsed_body.dig("meeting", "minutes", "title")
+    assert_not DatedAgenda.exists?(agenda.id)
+    original_records = [ @meeting.reload.attributes, @minutes.reload.attributes ]
+    execution = actor.agent_access_tokens.sole.agent_api_executions.find_by!(idempotency_key: "delete-unused-agenda-retry")
+    original_execution = execution.attributes
+    travel_to Time.zone.local(2026, 11, 11, 12)
+    delete path, headers:, as: :json
+    assert_nil response.parsed_body.dig("meeting", "minutes")
+    assert_not_includes response.body, "Private deleted-agenda receipt heading"
+    assert_response :success
+    assert_equal agenda.id, response.parsed_body.dig("deleted_dated_agenda", "id")
+    assert_not DatedAgenda.exists?(agenda.id)
+    assert_equal original_records, [ @meeting.reload.attributes, @minutes.reload.attributes ]
+    assert_equal original_execution, execution.reload.attributes
+  end
+
   %w[Commander Adjutant].each do |office|
     test "#{office} records actual later Meeting approval with a human confirmation and no manual grant" do
       actor, _assignment, headers = assigned_user(office, starts_on: Date.current)

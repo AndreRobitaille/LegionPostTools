@@ -23,6 +23,14 @@ official-confirmation consumption remain part of first execution only. Replaying
 checks would incorrectly reject a valid receipt after deletion, attestation, or a changed
 lock version and could defeat once-only behavior.
 
+A Meeting-write receipt may contain optional restricted summaries beyond the action's
+agenda-editing authority. Reapply the same transcript/minutes visibility predicates used
+by fresh Meeting responses before returning that receipt. Remove inaccessible summaries
+from the returned copy only; leave the saved execution and historical occurrence receipt
+unchanged. Retained authority still receives byte-identical receipts, and restored
+authority can retrieve the original summaries without reexecution. Do not look up a
+deleted target or replace historical receipt fields with current mutable data.
+
 Calendar authority explicitly supplies the configured Post date in both paths: a replay
 does not enter CalendarTimeZone's action wrapper, so it must not accidentally evaluate
 the same guard using the server date. The broader differing date contexts on other
