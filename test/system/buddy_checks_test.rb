@@ -30,12 +30,15 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     check "I reviewed attendance for every member listed"
     click_button "Save attendance revision"
     assert_text "General-member attendance saved. Minutes are unchanged."
+    assert_selector "input[name='expected_revision'][value='1']", visible: :all
     assert BuddyAttendanceRegister.sole.complete?
     assert_equal "absent", BuddyAttendanceRegister.sole.entries.fetch(@member.id.to_s)
     uncheck "I reviewed attendance for every member listed"
     select "Not recorded", from: "Alex Member"
     click_button "Save attendance revision"
     assert_text "General-member attendance saved"
+    # The first save's identical notice can still be visible while this POST runs.
+    assert_selector "input[name='expected_revision'][value='2']", visible: :all
     assert_equal 2, BuddyAttendanceRegister.count
     assert_not BuddyAttendanceRegister.latest.sole.complete?
     assert_equal 0, MeetingMinutes.count
@@ -144,6 +147,7 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     assert_no_horizontal_overflow
     click_button "Save permissions"
     assert_text "Permissions updated."
+    assert_selector "input[value='export_buddy_contacts'][checked]"
     assert_equal %w[export_buddy_contacts use_mobile_buddy_checks], @other.permission_grants.order(:capability).pluck(:capability)
     assert_not @other.full_membership_access?
     api.get(path, headers:)
@@ -151,6 +155,8 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     uncheck "Copy permitted Buddy Check contacts to personal Contacts"
     click_button "Save permissions"
     assert_text "Permissions updated."
+    # Wait for the server-rendered grant, rather than the locally toggled checkbox.
+    assert_selector "input[value='export_buddy_contacts']:not([checked])"
     api.get(path, headers:)
     assert_equal 403, api.response.status
     assert_equal "export_not_permitted", api.response.parsed_body.dig("error", "code")

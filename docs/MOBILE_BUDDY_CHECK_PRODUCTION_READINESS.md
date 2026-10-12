@@ -86,6 +86,16 @@ RuboCop: **603 files, no offenses**. Brakeman: **zero errors/warnings**. Bundler
 Zeitwerk, shell syntax, JSON examples, document references and diff checks passed.
 Tests and fault checks used synthetic data; no real outreach was fabricated.
 
+The initial release CI browser job exposed a timing race in the second attendance
+save assertion: its identical previous success notice remained visible before the
+new write completed. An isolated 500ms pre-write delay reproduced that failure and
+the same premature assertion after export-grant removal. The tests now wait for
+the server-rendered attendance revision and permission checkbox attribute, then
+retain their database counts, effective state and subsequent API denial assertions.
+Both delayed cases passed: **2 tests, 35 assertions**. The delays were removed and
+are not repository or production behavior. This follow-up changes tests only;
+the deployed application revision remains `54eb03d`.
+
 ## Release evidence
 
 `BUDDY_CHECK_ACTIVATE_EMAIL=commander@wipost165.org bin/release push-deploy`
