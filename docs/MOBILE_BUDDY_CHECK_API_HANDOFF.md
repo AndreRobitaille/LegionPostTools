@@ -358,6 +358,36 @@ of “never contacted” or “known empty.” With permitted candidates but no 
 contact/attendance evidence, the state is `insufficient_history`; when none remain
 eligible, it is `exhausted`. The mobile adapter must preserve this distinction.
 
+The insufficient-history response additionally includes `random_candidates`: up
+to three distinct identity-only objects (`id`, `first_name`, `last_name`). The
+server samples the same permitted, eligible population after caller exclusions,
+self exclusion, personal hiding, pauses, assignment coordination, recency and all
+open-follow-up checks. Small populations return fewer choices. Missing evidence
+remains unknown; this field supplies no history reason or contact details.
+Ranked `candidate` and `exhausted` responses omit the field. Repeated reads can
+produce different samples and never create a check, follow-up, snooze, assignment
+or receipt. Existing clients may ignore it; new clients must tolerate omission,
+validate identities/count/exclusions, and fetch a fresh preparation card before
+contact. No new scope, authorization flow or schema is required.
+
+```json
+{
+  "state": "insufficient_history",
+  "coverage": {
+    "contact_history": "partial", "missing_history": "unknown",
+    "attendance": "explicit_registers_only", "checked_at": "2026-10-12T18:00:00Z"
+  },
+  "random_candidates": [
+    {"id": 42, "first_name": "Alex", "last_name": "Example"},
+    {"id": 43, "first_name": "Taylor", "last_name": "Example"}
+  ]
+}
+```
+
+See the [October 12 change and clock handoff](MOBILE_BUDDY_CHECK_RANDOM_CHOICES_HANDOFF.md)
+for verification and deployment status; repository implementation is not proof of
+production availability.
+
 Candidate example:
 
 ```json

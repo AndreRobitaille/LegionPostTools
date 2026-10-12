@@ -1,7 +1,8 @@
 module BuddyChecks
   class Suggestions
-    def initialize(access)
+    def initialize(access, random: Random)
       @access = access
+      @random = random
     end
 
     def eligibility(person)
@@ -25,12 +26,12 @@ module BuddyChecks
     def suggest(exclude_ids: [])
       raise ArgumentError, "invalid_exclusions" unless exclude_ids.size <= 50 && exclude_ids.all? { |id| id.to_s.match?(/\A[1-9]\d*\z/) }
       excluded = @access.snoozes.where(cancelled_at: nil).where("until_at > ?", Time.current).pluck(:person_id) + exclude_ids.map(&:to_i)
-      eligible_count = 0
+      eligible_people = []
       candidates = []
       @access.people.where.not(id: excluded + [ @access.user.person_id ]).find_each do |person|
         next unless eligibility(person)[:eligible]
         next if follow_up_state(person)
-        eligible_count += 1
+        eligible_people << person
         history = contacts(person)
         absence = absence_evidence(person)
         next if history.empty? && absence.empty?
@@ -38,7 +39,11 @@ module BuddyChecks
         candidates << [ absence.any? ? 0 : 1, latest || Date.new(2100), person.id, person, absence ]
       end
       candidate = candidates.min_by { |row| row.first(3) }
-      return { state: eligible_count.zero? ? "exhausted" : "insufficient_history", coverage: coverage } unless candidate
+      unless candidate
+        return { state: "exhausted", coverage: coverage } if eligible_people.empty?
+        return { state: "insufficient_history", coverage: coverage,
+          random_candidates: eligible_people.sample(3, random: @random).map { |person| { id: person.id, first_name: person.first_name, last_name: person.last_name } } }
+      end
       person, absence = candidate.last(2)
       reason_on = if absence.any?
         Time.iso8601(absence.first[:starts_at]).in_time_zone(@access.organization.calendar_time_zone).to_date
