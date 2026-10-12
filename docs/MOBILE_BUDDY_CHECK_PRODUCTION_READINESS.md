@@ -69,11 +69,11 @@ Review mailing address; Your profile → Mobile sessions; and People → Login A
 
 Final full ordinary suite on current GitHub master plus the pilot patch:
 **1,425 tests, 14,096 assertions, zero failures/errors/skips**. Focused mobile/pilot
-checks: **42 tests, 362 assertions**, all passing. Full browser baseline before the
-pilot restriction: **92 tests, 5,369 assertions**, all passing. Final consent, code
-sign-in, pilot visibility and permissions browser checks: **8 tests, 123 assertions**,
-all passing. Screenshots were inspected at desktop and 390px; readable controls and
-no horizontal overflow.
+checks: **42 tests, 362 assertions**, all passing. Final full browser suite after
+the timing correction: **93 tests, 5,387 assertions, zero failures/errors/skips**.
+This includes consent, code sign-in, pilot visibility, permissions, attendance and
+address review. Screenshots were inspected at desktop and 390px; readable controls
+and no horizontal overflow.
 
 The export regression first failed against the old implementation (ungranted
 export returned 200), then passed with current-grant enforcement. A separate real
@@ -95,6 +95,11 @@ retain their database counts, effective state and subsequent API denial assertio
 Both delayed cases passed: **2 tests, 35 assertions**. The delays were removed and
 are not repository or production behavior. This follow-up changes tests only;
 the deployed application revision remains `54eb03d`.
+
+[GitHub CI for `46080f6`](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/38284968113)
+passed all jobs: ordinary tests, full browser workflows, lint, Ruby security/dependency
+scans and JavaScript dependency audit. Application code matches deployed `54eb03d`;
+the later commits contain this handoff and the browser-test wait correction.
 
 ## Release evidence
 
