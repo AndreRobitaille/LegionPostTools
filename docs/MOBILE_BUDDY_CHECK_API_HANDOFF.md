@@ -5,6 +5,11 @@ The original local evidence below predates production activation. The current
 release and iPhone connection handoff is
 [Production readiness](MOBILE_BUDDY_CHECK_PRODUCTION_READINESS.md).
 
+The separately authorized October 12 [remembered sign-in extension](MOBILE_REMEMBERED_SIGN_IN.md)
+adds explicit 180-day opt-in, refresh rotation and bounded response recovery.
+Its [synthetic handoff](MOBILE_REMEMBERED_SIGN_IN_HANDOFF.md) records current
+validation and release status. The legacy flow below remains supported.
+
 The later [private LAN integration handoff](MOBILE_BUDDY_CHECK_LOCAL_INTEGRATION.md)
 records the running synthetic HTTPS origin, the mobile project's exact callback,
 public client ID, test-certificate trust steps and observed live protocol results.
@@ -78,16 +83,17 @@ Use `ASWebAuthenticationSession` and the existing passkey/email browser sign-in:
    `{"error":"invalid_grant", ...}`. Invalid public client returns 401
    `invalid_client`; disabled configuration/wrong issuer returns 503.
 
-**Deliberate proposal change: no refresh tokens in this version.** Access lasts
+**Legacy flow (no remembered opt-in): no refresh tokens.** Access lasts
 15 minutes. Reopen the external-browser authorization flow when it expires; the
 existing browser session may avoid another passkey/email ceremony, but consent is
 still explicit. There is no custom refresh-family protocol or 30-day mobile
 credential. Keep unfinished work while ordinary expiry is resolved for the same
-installation and human. A later refresh design requires separate implementation
-and replay-family verification; the mobile adapter must not assume it exists.
+installation and human. For the explicit remembered opt-in, follow the linked
+extension contract, including `exchange_id` on initial and renewal exchanges.
 
 `POST /oauth/revoke` accepts form fields `client_id` and `token`. It returns 200
-`{}` for a valid client's revoked/unknown token and revokes that token only.
+`{}` for a valid client's revoked/unknown token. A legacy credential revokes that
+token only; any remembered access/refresh credential revokes its entire family.
 Browser **Your profile → Mobile sessions** lists unexpired sessions by ID and
 connection time; CSRF-protected `DELETE /mobile/sessions/:id` revokes an owned
 session and redirects 303. Native `GET /api/mobile/v1/session` reports the matching
@@ -572,7 +578,8 @@ and pilot capabilities in the existing database constraints and grants nobody au
 explicit activation. The operator task registers the exact public client and
 adds only that human's export grant. Ordinary releases never regrant it.
 
-Not implemented/verified: refresh tokens, complete historical contact coverage,
+At the original handoff, not implemented/verified: refresh tokens (now addressed
+by the separately tracked extension above), complete historical contact coverage,
 historical membership reconstruction, automatic messaging/phone outcome detection,
 notifications or delivery, mobile protected storage/adapters, device Keychain and
 journal purging, native Contacts account conflict handling, Apple entitlements,

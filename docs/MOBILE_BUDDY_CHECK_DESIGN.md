@@ -20,6 +20,11 @@ family replay semantics. The existing browser session makes reauthorization poss
 without necessarily repeating sign-in. Device token revocation and browser token
 management are required. The mobile client validates state and original origin.
 
+The separately authorized October 12 [remembered sign-in extension](MOBILE_REMEMBERED_SIGN_IN.md)
+adds an explicit 180-day opt-in with rotation, bounded retry recovery and immediate
+account-access enforcement. It preserves this original flow for legacy clients;
+its synthetic acceptance and production-release status are tracked separately.
+
 `MOBILE_BUDDY_CHECK_ENABLED` is off by default. `MOBILE_CONTACT_EXPORT_ENABLED`
 is separately off pending Post policy on personal copies. Client/callback and issuer
 registration are deployment prerequisites. Suggestions use configurable 7/60-day

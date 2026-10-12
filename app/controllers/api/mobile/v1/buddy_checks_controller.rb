@@ -3,11 +3,12 @@ module Api
     module V1
       class BuddyChecksController < BaseController
         def session
-          render json: { installation: { id: @access.organization.id, issuer: BuddyChecks::Configuration.issuer,
+          body = { installation: { id: @access.organization.id, issuer: BuddyChecks::Configuration.issuer,
             name: @access.organization.name, timezone: @access.organization.calendar_time_zone.tzinfo.identifier },
             user: { id: @access.user.id, name: @access.user.person.full_name }, session_id: @token.id,
             expires_at: (@token.created_at + @token.expires_in).iso8601(6),
-            capabilities: { buddy_checks: true, contacts_export: @access.export_enabled?, refresh: false } }
+            capabilities: { buddy_checks: true, contacts_export: @access.export_enabled?, refresh: @remembered_session.present? } }
+          render json: body.merge(@remembered_session ? @remembered_session.identity : {})
         end
 
         def people

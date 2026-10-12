@@ -49,6 +49,7 @@ class User < ApplicationRecord
   normalizes :email_address, with: ->(value) { value.strip.downcase }
 
   before_validation :assign_webauthn_id, on: :create
+  after_update :revoke_mobile_account_access, if: -> { saved_change_to_disabled_at? && disabled_at.present? }
 
   validates :email_address, presence: true, uniqueness: true
   validates :person_id, uniqueness: true
@@ -247,6 +248,12 @@ class User < ApplicationRecord
   end
 
   private
+
+  def revoke_mobile_account_access
+    Mobile::RememberedSession.where(user_id: id).find_each { |connection| connection.revoke!(reason: "account_unavailable") }
+    Doorkeeper::AccessToken.where(resource_owner_id: id, scopes: "buddy_check", revoked_at: nil).update_all(revoked_at: Time.current)
+    Doorkeeper::AccessGrant.where(resource_owner_id: id, scopes: "buddy_check", revoked_at: nil).update_all(revoked_at: Time.current)
+  end
 
   def apply_roster_access_without_override_check!
     if roster_access_should_enable?

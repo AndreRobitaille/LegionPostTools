@@ -4,6 +4,7 @@ Rails.application.routes.draw do
     skip_controllers :applications, :authorized_applications, :token_info
   end
   namespace :mobile do
+    delete "remembered_sessions/:id", to: "sessions#destroy_remembered", as: :remembered_session
     resources :sessions, only: %i[index destroy]
   end
   scope "/public/v1", controller: "public/v1/publications", format: false do

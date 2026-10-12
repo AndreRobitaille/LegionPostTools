@@ -2191,6 +2191,119 @@ ALTER SEQUENCE public.minutes_sections_id_seq OWNED BY public.minutes_sections.i
 
 
 --
+-- Name: mobile_refresh_credentials; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mobile_refresh_credentials (
+    id bigint NOT NULL,
+    remembered_session_id bigint NOT NULL,
+    token_digest character varying NOT NULL,
+    consumed_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: mobile_refresh_credentials_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mobile_refresh_credentials_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mobile_refresh_credentials_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mobile_refresh_credentials_id_seq OWNED BY public.mobile_refresh_credentials.id;
+
+
+--
+-- Name: mobile_remembered_sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mobile_remembered_sessions (
+    id bigint NOT NULL,
+    public_id uuid NOT NULL,
+    user_id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    application_id bigint NOT NULL,
+    authorized_at timestamp(6) without time zone NOT NULL,
+    expires_at timestamp(6) without time zone NOT NULL,
+    revoked_at timestamp(6) without time zone,
+    revocation_reason character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT fixed_mobile_session_lifetime CHECK ((expires_at = (authorized_at + '4320:00:00'::interval))),
+    CONSTRAINT mobile_session_revocation_pair CHECK (((revoked_at IS NULL) = (revocation_reason IS NULL)))
+);
+
+
+--
+-- Name: mobile_remembered_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mobile_remembered_sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mobile_remembered_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mobile_remembered_sessions_id_seq OWNED BY public.mobile_remembered_sessions.id;
+
+
+--
+-- Name: mobile_token_exchanges; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mobile_token_exchanges (
+    id bigint NOT NULL,
+    remembered_session_id bigint NOT NULL,
+    authorization_grant_id bigint,
+    refresh_credential_id bigint,
+    issued_refresh_credential_id bigint NOT NULL,
+    access_token_id bigint NOT NULL,
+    exchange_id uuid NOT NULL,
+    request_digest character varying NOT NULL,
+    recoverable_until timestamp(6) without time zone NOT NULL,
+    response_ciphertext text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT one_mobile_exchange_source CHECK (((authorization_grant_id IS NULL) <> (refresh_credential_id IS NULL)))
+);
+
+
+--
+-- Name: mobile_token_exchanges_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mobile_token_exchanges_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mobile_token_exchanges_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mobile_token_exchanges_id_seq OWNED BY public.mobile_token_exchanges.id;
+
+
+--
 -- Name: oauth_access_grants; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2205,7 +2318,8 @@ CREATE TABLE public.oauth_access_grants (
     revoked_at timestamp(6) without time zone,
     scopes character varying DEFAULT ''::character varying NOT NULL,
     code_challenge character varying,
-    code_challenge_method character varying
+    code_challenge_method character varying,
+    remembered_session_id bigint
 );
 
 
@@ -2241,7 +2355,8 @@ CREATE TABLE public.oauth_access_tokens (
     expires_in integer,
     revoked_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    scopes character varying
+    scopes character varying,
+    remembered_session_id bigint
 );
 
 
@@ -3282,6 +3397,27 @@ ALTER TABLE ONLY public.minutes_sections ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- Name: mobile_refresh_credentials id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_refresh_credentials ALTER COLUMN id SET DEFAULT nextval('public.mobile_refresh_credentials_id_seq'::regclass);
+
+
+--
+-- Name: mobile_remembered_sessions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_remembered_sessions ALTER COLUMN id SET DEFAULT nextval('public.mobile_remembered_sessions_id_seq'::regclass);
+
+
+--
+-- Name: mobile_token_exchanges id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges ALTER COLUMN id SET DEFAULT nextval('public.mobile_token_exchanges_id_seq'::regclass);
+
+
+--
 -- Name: oauth_access_grants id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3828,6 +3964,30 @@ ALTER TABLE ONLY public.minutes_revisions
 
 ALTER TABLE ONLY public.minutes_sections
     ADD CONSTRAINT minutes_sections_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mobile_refresh_credentials mobile_refresh_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_refresh_credentials
+    ADD CONSTRAINT mobile_refresh_credentials_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mobile_remembered_sessions mobile_remembered_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_remembered_sessions
+    ADD CONSTRAINT mobile_remembered_sessions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mobile_token_exchanges mobile_token_exchanges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges
+    ADD CONSTRAINT mobile_token_exchanges_pkey PRIMARY KEY (id);
 
 
 --
@@ -5475,6 +5635,90 @@ CREATE INDEX index_minutes_sections_on_source_dated_agenda_section_id ON public.
 
 
 --
+-- Name: index_mobile_refresh_credentials_on_remembered_session_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_refresh_credentials_on_remembered_session_id ON public.mobile_refresh_credentials USING btree (remembered_session_id);
+
+
+--
+-- Name: index_mobile_refresh_credentials_on_token_digest; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mobile_refresh_credentials_on_token_digest ON public.mobile_refresh_credentials USING btree (token_digest);
+
+
+--
+-- Name: index_mobile_remembered_sessions_on_application_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_remembered_sessions_on_application_id ON public.mobile_remembered_sessions USING btree (application_id);
+
+
+--
+-- Name: index_mobile_remembered_sessions_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_remembered_sessions_on_organization_id ON public.mobile_remembered_sessions USING btree (organization_id);
+
+
+--
+-- Name: index_mobile_remembered_sessions_on_public_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mobile_remembered_sessions_on_public_id ON public.mobile_remembered_sessions USING btree (public_id);
+
+
+--
+-- Name: index_mobile_remembered_sessions_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_remembered_sessions_on_user_id ON public.mobile_remembered_sessions USING btree (user_id);
+
+
+--
+-- Name: index_mobile_token_exchanges_on_access_token_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_token_exchanges_on_access_token_id ON public.mobile_token_exchanges USING btree (access_token_id);
+
+
+--
+-- Name: index_mobile_token_exchanges_on_authorization_grant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mobile_token_exchanges_on_authorization_grant_id ON public.mobile_token_exchanges USING btree (authorization_grant_id);
+
+
+--
+-- Name: index_mobile_token_exchanges_on_issued_refresh_credential_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_token_exchanges_on_issued_refresh_credential_id ON public.mobile_token_exchanges USING btree (issued_refresh_credential_id);
+
+
+--
+-- Name: index_mobile_token_exchanges_on_recoverable_until; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_token_exchanges_on_recoverable_until ON public.mobile_token_exchanges USING btree (recoverable_until);
+
+
+--
+-- Name: index_mobile_token_exchanges_on_refresh_credential_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mobile_token_exchanges_on_refresh_credential_id ON public.mobile_token_exchanges USING btree (refresh_credential_id);
+
+
+--
+-- Name: index_mobile_token_exchanges_on_remembered_session_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mobile_token_exchanges_on_remembered_session_id ON public.mobile_token_exchanges USING btree (remembered_session_id);
+
+
+--
 -- Name: index_mt_agenda_items_on_type_and_catalog_entry; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5493,6 +5737,13 @@ CREATE UNIQUE INDEX index_mt_agenda_items_on_type_and_source_key ON public.meeti
 --
 
 CREATE INDEX index_oauth_access_grants_on_application_id ON public.oauth_access_grants USING btree (application_id);
+
+
+--
+-- Name: index_oauth_access_grants_on_remembered_session_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_oauth_access_grants_on_remembered_session_id ON public.oauth_access_grants USING btree (remembered_session_id);
 
 
 --
@@ -5521,6 +5772,13 @@ CREATE INDEX index_oauth_access_tokens_on_application_id ON public.oauth_access_
 --
 
 CREATE UNIQUE INDEX index_oauth_access_tokens_on_refresh_token ON public.oauth_access_tokens USING btree (refresh_token);
+
+
+--
+-- Name: index_oauth_access_tokens_on_remembered_session_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_oauth_access_tokens_on_remembered_session_id ON public.oauth_access_tokens USING btree (remembered_session_id);
 
 
 --
@@ -5818,10 +6076,24 @@ CREATE UNIQUE INDEX one_active_endeavor_history_run ON public.endeavor_history_r
 
 
 --
+-- Name: one_current_mobile_refresh_credential; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX one_current_mobile_refresh_credential ON public.mobile_refresh_credentials USING btree (remembered_session_id) WHERE (consumed_at IS NULL);
+
+
+--
 -- Name: unique_endeavor_edition_source; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX unique_endeavor_edition_source ON public.endeavor_source_links USING btree (endeavor_history_edition_id, minutes_revision_id, record_key);
+
+
+--
+-- Name: unique_mobile_exchange_id_per_session; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX unique_mobile_exchange_id_per_session ON public.mobile_token_exchanges USING btree (remembered_session_id, exchange_id);
 
 
 --
@@ -5966,6 +6238,14 @@ ALTER TABLE ONLY public.meeting_type_agenda_sections
 
 
 --
+-- Name: mobile_token_exchanges fk_rails_00bce95147; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges
+    ADD CONSTRAINT fk_rails_00bce95147 FOREIGN KEY (remembered_session_id) REFERENCES public.mobile_remembered_sessions(id);
+
+
+--
 -- Name: dated_agendas fk_rails_03be9462a4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6054,6 +6334,22 @@ ALTER TABLE ONLY public.endeavor_history_events
 
 
 --
+-- Name: oauth_access_tokens fk_rails_0eb9d29498; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_tokens
+    ADD CONSTRAINT fk_rails_0eb9d29498 FOREIGN KEY (remembered_session_id) REFERENCES public.mobile_remembered_sessions(id);
+
+
+--
+-- Name: mobile_token_exchanges fk_rails_0f20879ef8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges
+    ADD CONSTRAINT fk_rails_0f20879ef8 FOREIGN KEY (access_token_id) REFERENCES public.oauth_access_tokens(id);
+
+
+--
 -- Name: endeavor_history_events fk_rails_101cccec62; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6099,6 +6395,14 @@ ALTER TABLE ONLY public.minutes_items
 
 ALTER TABLE ONLY public.official_action_confirmations
     ADD CONSTRAINT fk_rails_1a0205fec4 FOREIGN KEY (agent_access_token_id) REFERENCES public.agent_access_tokens(id);
+
+
+--
+-- Name: oauth_access_grants fk_rails_1add5f8b45; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_grants
+    ADD CONSTRAINT fk_rails_1add5f8b45 FOREIGN KEY (remembered_session_id) REFERENCES public.mobile_remembered_sessions(id);
 
 
 --
@@ -6171,6 +6475,14 @@ ALTER TABLE ONLY public.endeavor_history_runs
 
 ALTER TABLE ONLY public.meeting_type_agenda_items
     ADD CONSTRAINT fk_rails_2832353389 FOREIGN KEY (meeting_type_agenda_section_id) REFERENCES public.meeting_type_agenda_sections(id);
+
+
+--
+-- Name: mobile_remembered_sessions fk_rails_28903a86ef; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_remembered_sessions
+    ADD CONSTRAINT fk_rails_28903a86ef FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -6254,6 +6566,14 @@ ALTER TABLE ONLY public.endeavors
 
 
 --
+-- Name: mobile_refresh_credentials fk_rails_3675a2f70a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_refresh_credentials
+    ADD CONSTRAINT fk_rails_3675a2f70a FOREIGN KEY (remembered_session_id) REFERENCES public.mobile_remembered_sessions(id);
+
+
+--
 -- Name: position_assignments fk_rails_37704d324e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6315,6 +6635,14 @@ ALTER TABLE ONLY public.dated_agenda_roll_call_entries
 
 ALTER TABLE ONLY public.agent_api_executions
     ADD CONSTRAINT fk_rails_421734d1e5 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: mobile_remembered_sessions fk_rails_43c816d088; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_remembered_sessions
+    ADD CONSTRAINT fk_rails_43c816d088 FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -6510,6 +6838,14 @@ ALTER TABLE ONLY public.endeavor_history_guidances
 
 
 --
+-- Name: mobile_token_exchanges fk_rails_66e4bafa38; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges
+    ADD CONSTRAINT fk_rails_66e4bafa38 FOREIGN KEY (issued_refresh_credential_id) REFERENCES public.mobile_refresh_credentials(id);
+
+
+--
 -- Name: minutes_draft_suggestions fk_rails_69579d1cf7; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6595,6 +6931,14 @@ ALTER TABLE ONLY public.sessions
 
 ALTER TABLE ONLY public.minutes_attestations
     ADD CONSTRAINT fk_rails_75aa095ac0 FOREIGN KEY (minutes_revision_id) REFERENCES public.minutes_revisions(id);
+
+
+--
+-- Name: mobile_remembered_sessions fk_rails_75c1d67c3e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_remembered_sessions
+    ADD CONSTRAINT fk_rails_75c1d67c3e FOREIGN KEY (application_id) REFERENCES public.oauth_applications(id);
 
 
 --
@@ -6998,6 +7342,14 @@ ALTER TABLE ONLY public.minutes_draft_suggestions
 
 
 --
+-- Name: mobile_token_exchanges fk_rails_bfc1d97b21; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges
+    ADD CONSTRAINT fk_rails_bfc1d97b21 FOREIGN KEY (refresh_credential_id) REFERENCES public.mobile_refresh_credentials(id);
+
+
+--
 -- Name: minutes_draft_suggestions fk_rails_c32150ea65; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7182,6 +7534,14 @@ ALTER TABLE ONLY public.buddy_snoozes
 
 
 --
+-- Name: mobile_token_exchanges fk_rails_e5099325b5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mobile_token_exchanges
+    ADD CONSTRAINT fk_rails_e5099325b5 FOREIGN KEY (authorization_grant_id) REFERENCES public.oauth_access_grants(id);
+
+
+--
 -- Name: dated_agenda_sections fk_rails_e70ffa8b9f; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7316,6 +7676,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261012190000'),
 ('20261012120000'),
 ('20261011211000'),
 ('20261011210000'),

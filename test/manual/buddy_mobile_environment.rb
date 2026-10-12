@@ -1,6 +1,6 @@
 require "uri"
 
-buddy_databases = %w[legion_buddy_mobile_test legion_buddy_authority_test legion_buddy_authority_verify_test]
+buddy_databases = %w[legion_buddy_mobile_test legion_buddy_authority_test legion_buddy_authority_verify_test legion_buddy_remembered_test]
 raise "Synthetic test database required" unless Rails.env.test? && buddy_databases.map { |name| "postgresql:///#{name}" }.include?(ENV["DATABASE_URL"])
 buddy_origin = URI.parse(ENV.fetch("MOBILE_BUDDY_CHECK_ISSUER"))
 raise "An exact HTTPS origin is required" unless buddy_origin.scheme == "https" && buddy_origin.host.present? &&
