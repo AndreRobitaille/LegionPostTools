@@ -171,6 +171,13 @@ Do not run repeated fresh SSH or Kamal commands directly against the Hetzner hos
 the OpenSSH master by itself. Agent sessions should use that command instead of manually
 repeating the steps below.
 
+For explicitly authorized work spanning multiple release or host-maintenance steps,
+set `RELEASE_KEEP_SSH_MASTER=true` on each `bin/release` invocation. The wrapper
+then retains the same control master on exit, including after a failure; this does
+not authorize an automatic retry. Route subsequent host commands through that
+master, verify it remains active, and close it with `ssh -O exit` only after all
+production work is finished. Without this option, the wrapper closes it on exit.
+
 ## Postgres accessory
 
 The Postgres accessory uses `config/postgres/init.sh`, not `init.sql`, to create the cache and queue databases from environment variables.
@@ -217,9 +224,12 @@ before/after read-only readiness probes share its persistent SSH master. Probes
 print public configuration and server-computed table fingerprints, never member
 rows or tokens. They verify the three mobile migrations and compatible secretless
 registration. This optional activation never runs on an ordinary release and
-therefore cannot silently restore a revoked permission. The application keeps
-900-second access, explicit consent and no refresh tokens. See the
-[current mobile handoff](MOBILE_BUDDY_CHECK_PRODUCTION_READINESS.md).
+therefore cannot silently restore a revoked permission. The initial activation
+used 900-second access, explicit consent and no refresh tokens; that legacy flow
+remains supported. The separately authorized [remembered sign-in extension](MOBILE_REMEMBERED_SIGN_IN.md)
+adds explicit 180-day opt-in while retaining short access tokens. Its
+[release handoff](MOBILE_REMEMBERED_SIGN_IN_HANDOFF.md) records migration, validation
+and approval status. See also the [initial activation handoff](MOBILE_BUDDY_CHECK_PRODUCTION_READINESS.md).
 
 ## First deploy checklist: Post 165
 

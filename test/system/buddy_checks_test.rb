@@ -162,6 +162,81 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     assert_equal "export_not_permitted", api.response.parsed_body.dig("error", "code")
   end
 
+  test "remembered browser consent and whole-connection revocation work at desktop and phone widths" do
+    previous = ActionController::Base.allow_forgery_protection
+    previous_origin = ActionController::Base.forgery_protection_origin_check
+    ActionController::Base.allow_forgery_protection = true
+    ActionController::Base.forgery_protection_origin_check = true
+    system_sign_in(@other)
+    uri = URI.parse(page.current_url)
+    issuer = "#{uri.scheme}://#{uri.host}:#{uri.port}"
+    ENV["MOBILE_BUDDY_CHECK_ISSUER"] = issuer
+    verifier = SecureRandom.urlsafe_base64(48)
+    query = { client_id: @mobile_client.uid, redirect_uri: @mobile_client.redirect_uri, response_type: "code", scope: "buddy_check",
+      remember_session: "180_days", state: SecureRandom.hex(32), code_challenge_method: "S256",
+      code_challenge: Base64.urlsafe_encode64(Digest::SHA256.digest(verifier), padding: false) }
+    visit "/oauth/authorize?#{query.to_query}"
+    assert_text "Remember this sign-in for up to 180 days"
+    assert_button "Connect and remember this sign-in"
+    capture_system_screenshot("buddy-remembered-consent-desktop")
+    assert_no_horizontal_overflow
+    page.current_window.resize_to(390, 844)
+    capture_system_screenshot("buddy-remembered-consent-phone")
+    assert_no_horizontal_overflow
+    submissions = Queue.new
+    observer = ->(event) do
+      payload = event.payload
+      if payload[:controller] == "Mobile::AuthorizationsController" && payload[:action] == "create"
+        submissions << { origin: payload[:request].origin, location: payload[:response]&.location }
+      end
+    end
+    submitted = nil
+    ActiveSupport::Notifications.subscribed(observer, "process_action.action_controller") do
+      click_button "Connect and remember this sign-in"
+      submitted = submissions.pop(timeout: 10)
+    end
+    assert submitted
+    assert_equal issuer, submitted[:origin]
+    code = URI.decode_www_form(URI.parse(submitted.fetch(:location)).query).to_h.fetch("code")
+    api = ActionDispatch::Integration::Session.new(Rails.application)
+    api.host! "#{uri.host}:#{uri.port}"
+    api.post "/oauth/token", params: { grant_type: "authorization_code", client_id: @mobile_client.uid,
+      redirect_uri: @mobile_client.redirect_uri, code: code, code_verifier: verifier, exchange_id: SecureRandom.uuid }
+    assert_equal 200, api.response.status
+    credentials = api.response.parsed_body
+    connection = Mobile::RememberedSession.sole
+    assert_equal connection.public_id, credentials["remembered_session_id"]
+    assert credentials["refresh_token"].present?
+    Doorkeeper::AccessToken.find(credentials.fetch("session_id")).update!(created_at: 16.minutes.ago)
+    # Chromium cannot open the native callback. Use a separate human web session
+    # for revocation, avoiding its unhandled external-protocol browser prompt.
+    Capybara.using_session(:remembered_revocation) do
+      system_sign_in(@other)
+      visit mobile_sessions_path
+      assert_button "Revoke remembered session #{connection.id}"
+      assert_text "Remembered until"
+      page.current_window.resize_to(1400, 1000)
+      capture_system_screenshot("buddy-remembered-sessions-desktop")
+      assert_no_horizontal_overflow
+      page.current_window.resize_to(390, 844)
+      capture_system_screenshot("buddy-remembered-sessions-phone")
+      assert_no_horizontal_overflow
+      click_button "Revoke remembered session #{connection.id}"
+      assert_text "No active mobile sessions."
+    end
+    api.post "/oauth/token", params: { grant_type: "refresh_token", client_id: @mobile_client.uid,
+      refresh_token: credentials["refresh_token"], exchange_id: SecureRandom.uuid }
+    assert_equal 400, api.response.status
+    assert_equal "revoked_session", api.response.parsed_body["error_code"]
+    api.get "/api/mobile/v1/session", headers: { "Authorization" => "Bearer #{credentials.fetch('access_token')}" }
+    assert_equal 401, api.response.status
+    assert_equal "revoked_session", api.response.parsed_body.dig("error", "code")
+    assert_equal 0, BuddyOperation.count
+  ensure
+    ActionController::Base.allow_forgery_protection = previous
+    ActionController::Base.forgery_protection_origin_check = previous_origin
+  end
+
   test "pilot removal hides phone controls for a membership manager at desktop and narrow widths" do
     system_sign_in(@officer)
     visit profile_path

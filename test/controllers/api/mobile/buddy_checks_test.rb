@@ -263,18 +263,25 @@ class MobileBuddyChecksTest < ActionDispatch::IntegrationTest
       BuddyAttendanceRegister.record!(meeting: buddy_meeting(days_ago: days), user: @officer,
         expected_revision: 0, entries:, complete: true, coverage_note: "Synthetic complete attendance.")
     end
-    assert_no_difference [ "MembershipAssignment.count", "MembershipContact.count", "BuddyFollowUp.count", "BuddyOperation.count" ] do
+    assert_no_difference [ "MembershipAssignment.count", "MembershipContact.count", "BuddyFollowUp.count", "BuddyOperation.count", "BuddySnooze.count" ] do
       get "#{BASE}/suggestion", headers: mobile_headers
       assert_response 200
       assert_equal "two_recorded_absences", response.parsed_body["reason"]
       assert_equal @member.id, response.parsed_body.dig("person", "id")
       assert_equal 2, response.parsed_body.dig("attendance", "meetings").size
+      assert_not response.parsed_body.key?("random_candidates")
       get "#{BASE}/suggestion", params: { exclude_ids: [ @member.id ] }, headers: mobile_headers
       assert_response 200
       assert_equal "insufficient_history", response.parsed_body["state"]
+      choices = response.parsed_body.fetch("random_candidates")
+      assert_equal 3, choices.size
+      assert_equal [ @unassigned.id, @officer.person_id, @volunteer.person_id ].sort, choices.pluck("id").sort
+      choices.each { |identity| assert_equal %w[first_name id last_name], identity.keys.sort }
+      assert_equal "unknown", response.parsed_body.dig("coverage", "missing_history")
       get "#{BASE}/suggestion", params: { exclude_ids: [ @member.id, @unassigned.id, @officer.person_id, @volunteer.person_id ] }, headers: mobile_headers
       assert_response 200
       assert_equal "exhausted", response.parsed_body["state"]
+      assert_empty response.parsed_body.fetch("random_candidates", [])
     end
   end
 end

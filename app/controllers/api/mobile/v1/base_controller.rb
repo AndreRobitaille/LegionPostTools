@@ -22,11 +22,18 @@ module Api
           unless @token && @token.scopes.to_s == "buddy_check" && BuddyChecks::Configuration.client?(@token.application)
             return error("invalid_session", :unauthorized)
           end
-          return error("revoked_session", :unauthorized) if @token.revoked?
           return error("account_unavailable", :unauthorized) unless user
+          if @token.remembered_session_id
+            @remembered_session = ::Mobile::RememberedSession.find_by(id: @token.remembered_session_id,
+              user_id: user.id, application_id: @token.application_id)
+            return error("invalid_session", :unauthorized) unless @remembered_session
+            code = @remembered_session.authentication_error
+            return error(code, :unauthorized) if code
+          end
+          return error("revoked_session", :unauthorized) if @token.revoked?
           return error("expired_session", :unauthorized) if @token.expired?
           return error("account_unavailable", :forbidden) unless user.mobile_buddy_checks_access?
-          @access = BuddyChecks::Access.new(user:, organization: Organization.first!)
+          @access = BuddyChecks::Access.new(user:, organization: @remembered_session&.organization || Organization.first!)
           @operations = BuddyChecks::Operations.new(@access)
         end
 

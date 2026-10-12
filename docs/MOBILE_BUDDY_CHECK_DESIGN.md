@@ -20,6 +20,11 @@ family replay semantics. The existing browser session makes reauthorization poss
 without necessarily repeating sign-in. Device token revocation and browser token
 management are required. The mobile client validates state and original origin.
 
+The separately authorized October 12 [remembered sign-in extension](MOBILE_REMEMBERED_SIGN_IN.md)
+adds an explicit 180-day opt-in with rotation, bounded retry recovery and immediate
+account-access enforcement. It preserves this original flow for legacy clients;
+its synthetic acceptance and production-release status are tracked separately.
+
 `MOBILE_BUDDY_CHECK_ENABLED` is off by default. `MOBILE_CONTACT_EXPORT_ENABLED`
 is separately off pending Post policy on personal copies. Client/callback and issuer
 registration are deployment prerequisites. Suggestions use configurable 7/60-day
@@ -41,6 +46,22 @@ operation receipts audit creation, reschedule, completion and cancellation. Clos
 one never creates a contact. Snoozes are personal, expiring and undoable with the same
 retry/conflict rules. Cross-caller assignments, pauses, recent contact and open work
 exclude suggestions. Search is server-filtered and capped; no roster bulk endpoint.
+
+### Random choices with insufficient history — October 12, 2026
+
+When no eligible person has rankable evidence, preserve `insufficient_history` and
+include up to three distinct `random_candidates`, containing only `id`,
+`first_name`, and `last_name`. Sample only after the existing access, self, caller
+exclusion, personal snooze, eligibility and open-follow-up checks. Missing history
+remains unknown; sampling never supplies an evidence reason or creates work.
+An exhausted population has no choices. An evidence-ranked candidate keeps its
+existing response and priority. This is an additive response field; no scope,
+schema, permission, expiry or CSRF change is needed. The mobile app owns rendering
+and must fetch a fresh preparation card before contact.
+
+Use an injectable random source for deterministic synthetic regression tests.
+Verify small and empty pools, distinct bounded identity-only choices, all existing
+access/exclusion boundaries, unchanged evidence ranking, and read-only behavior.
 
 Contacts projection uses explicit fields and separate names. Address components are
 reviewed against a digest of the original flat roster address and source import;

@@ -5,6 +5,11 @@ The original local evidence below predates production activation. The current
 release and iPhone connection handoff is
 [Production readiness](MOBILE_BUDDY_CHECK_PRODUCTION_READINESS.md).
 
+The separately authorized October 12 [remembered sign-in extension](MOBILE_REMEMBERED_SIGN_IN.md)
+adds explicit 180-day opt-in, refresh rotation and bounded response recovery.
+Its [synthetic handoff](MOBILE_REMEMBERED_SIGN_IN_HANDOFF.md) records current
+validation and release status. The legacy flow below remains supported.
+
 The later [private LAN integration handoff](MOBILE_BUDDY_CHECK_LOCAL_INTEGRATION.md)
 records the running synthetic HTTPS origin, the mobile project's exact callback,
 public client ID, test-certificate trust steps and observed live protocol results.
@@ -78,16 +83,17 @@ Use `ASWebAuthenticationSession` and the existing passkey/email browser sign-in:
    `{"error":"invalid_grant", ...}`. Invalid public client returns 401
    `invalid_client`; disabled configuration/wrong issuer returns 503.
 
-**Deliberate proposal change: no refresh tokens in this version.** Access lasts
+**Legacy flow (no remembered opt-in): no refresh tokens.** Access lasts
 15 minutes. Reopen the external-browser authorization flow when it expires; the
 existing browser session may avoid another passkey/email ceremony, but consent is
 still explicit. There is no custom refresh-family protocol or 30-day mobile
 credential. Keep unfinished work while ordinary expiry is resolved for the same
-installation and human. A later refresh design requires separate implementation
-and replay-family verification; the mobile adapter must not assume it exists.
+installation and human. For the explicit remembered opt-in, follow the linked
+extension contract, including `exchange_id` on initial and renewal exchanges.
 
 `POST /oauth/revoke` accepts form fields `client_id` and `token`. It returns 200
-`{}` for a valid client's revoked/unknown token and revokes that token only.
+`{}` for a valid client's revoked/unknown token. A legacy credential revokes that
+token only; any remembered access/refresh credential revokes its entire family.
 Browser **Your profile → Mobile sessions** lists unexpired sessions by ID and
 connection time; CSRF-protected `DELETE /mobile/sessions/:id` revokes an owned
 session and redirects 303. Native `GET /api/mobile/v1/session` reports the matching
@@ -358,6 +364,36 @@ of “never contacted” or “known empty.” With permitted candidates but no 
 contact/attendance evidence, the state is `insufficient_history`; when none remain
 eligible, it is `exhausted`. The mobile adapter must preserve this distinction.
 
+The insufficient-history response additionally includes `random_candidates`: up
+to three distinct identity-only objects (`id`, `first_name`, `last_name`). The
+server samples the same permitted, eligible population after caller exclusions,
+self exclusion, personal hiding, pauses, assignment coordination, recency and all
+open-follow-up checks. Small populations return fewer choices. Missing evidence
+remains unknown; this field supplies no history reason or contact details.
+Ranked `candidate` and `exhausted` responses omit the field. Repeated reads can
+produce different samples and never create a check, follow-up, snooze, assignment
+or receipt. Existing clients may ignore it; new clients must tolerate omission,
+validate identities/count/exclusions, and fetch a fresh preparation card before
+contact. No new scope, authorization flow or schema is required.
+
+```json
+{
+  "state": "insufficient_history",
+  "coverage": {
+    "contact_history": "partial", "missing_history": "unknown",
+    "attendance": "explicit_registers_only", "checked_at": "2026-10-12T18:00:00Z"
+  },
+  "random_candidates": [
+    {"id": 42, "first_name": "Alex", "last_name": "Example"},
+    {"id": 43, "first_name": "Taylor", "last_name": "Example"}
+  ]
+}
+```
+
+See the [October 12 change and clock handoff](MOBILE_BUDDY_CHECK_RANDOM_CHOICES_HANDOFF.md)
+for verification and deployment status; repository implementation is not proof of
+production availability.
+
 Candidate example:
 
 ```json
@@ -542,7 +578,8 @@ and pilot capabilities in the existing database constraints and grants nobody au
 explicit activation. The operator task registers the exact public client and
 adds only that human's export grant. Ordinary releases never regrant it.
 
-Not implemented/verified: refresh tokens, complete historical contact coverage,
+At the original handoff, not implemented/verified: refresh tokens (now addressed
+by the separately tracked extension above), complete historical contact coverage,
 historical membership reconstruction, automatic messaging/phone outcome detection,
 notifications or delivery, mobile protected storage/adapters, device Keychain and
 journal purging, native Contacts account conflict handling, Apple entitlements,
