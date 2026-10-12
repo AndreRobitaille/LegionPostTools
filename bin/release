@@ -12,6 +12,7 @@ readonly SSH_CONFIG="/home/andre/.ssh/config"
 
 release_temp_config=""
 release_activation_email="${BUDDY_CHECK_ACTIVATE_EMAIL:-}"
+release_keep_ssh_master="${RELEASE_KEEP_SSH_MASTER:-false}"
 
 cd "$APP_ROOT"
 
@@ -26,7 +27,11 @@ fail() {
 }
 
 cleanup_release() {
-  ssh -F "$SSH_CONFIG" -O exit "$PROD_HOST" >/dev/null 2>&1 || true
+  if [[ "$release_keep_ssh_master" == "true" ]]; then
+    echo "Keeping the Post 165 SSH control master open for continued production work."
+  else
+    ssh -F "$SSH_CONFIG" -O exit "$PROD_HOST" >/dev/null 2>&1 || true
+  fi
   [[ -z "$release_temp_config" ]] || rm -f "$release_temp_config"
 }
 
@@ -176,11 +181,12 @@ with_production_connection() {
   assert_http_status "$PROD_URL/up" 200
   assert_http_status "$PROD_URL/session/new" 200
   assert_http_status "$COHOSTED_URL/" 200
-  echo "Production verified at $head; the SSH control master will now close."
+  echo "Production verified at $head."
 }
 
 command="${1:-}"
 [[ $# -eq 1 ]] || usage
+[[ "$release_keep_ssh_master" == "true" || "$release_keep_ssh_master" == "false" ]] || fail "RELEASE_KEEP_SSH_MASTER must be true or false"
 if [[ -n "$release_activation_email" ]]; then
   [[ "$release_activation_email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || fail "invalid activation email"
 fi
