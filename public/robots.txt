@@ -1,1 +1,4 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# Let crawlers fetch pages. The pages themselves say noindex so existing results can be dropped.
+
+User-agent: *
+Allow: /

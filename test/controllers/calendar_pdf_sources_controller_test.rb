@@ -21,6 +21,7 @@ class CalendarPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "private, no-store", response.headers["Cache-Control"]
     assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+    assert_select "meta[name='robots'][content='noindex, nofollow']", count: 1
     assert_select "body.print-body .app-main .calendar-workspace"
     assert_select ".calendar-month .calendar-print-section", text: "Month overview"
     assert_select ".calendar-schedule .calendar-print-section", text: "Detailed schedule"
