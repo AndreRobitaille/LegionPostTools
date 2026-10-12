@@ -12,9 +12,7 @@ module Api
         end
 
         def people
-          query = params[:q].to_s.strip
-          raise ArgumentError unless query.length.between?(2, 80)
-          scope = @access.people.where("first_name ILIKE :q OR last_name ILIKE :q", q: "%#{Person.sanitize_sql_like(query)}%")
+          scope = BuddyChecks::PeopleSearch.new(@access.people).call(params[:q])
           render json: page(scope) { |person| identity(person) }
         end
 
