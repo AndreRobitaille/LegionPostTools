@@ -6,3 +6,5 @@
     <%= link_to "Post checks", membership_post_checks_path(membership_year: @membership_year), aria: { current: current == :checks ? "page" : nil } %>
   <% end %>
 </nav>
+
+<% if @access.manager? && current_user.mobile_buddy_checks_access? %><%= link_to "General-member attendance", membership_buddy_attendances_path, class: "btn-secondary" %><% end %>

@@ -196,6 +196,31 @@ Treat this as the accessory's persistent directory. Active Storage uses the Dock
 
 Passkeys require HTTPS and do not work by IP address.
 
+### Buddy Checks for iPhone
+
+Post 165's mobile profile uses the permanent `https://members.wipost165.org`
+issuer, public client `org.wipost165.buddychecks`, exact callback
+`org.wipost165.buddychecks:/oauth/callback` and `buddy_check` scope. The clear
+settings in `config/deploy.yml` enable Buddy Checks and Contacts projection;
+each exporting human additionally needs `export_buddy_contacts`, maintained
+under the person's Permissions. Administration and assignments do not imply it.
+The current `use_mobile_buddy_checks` pilot grant is required for mobile sign-in,
+API access and phone-related website controls. Initial launch grants both only to
+Andre; other members and officers see no phone-related links. Current membership
+authority is still required for evidence maintenance. Existing role-grant controls
+can deliberately assign the pilot capability later.
+
+For explicitly authorized initial activation, run
+`BUDDY_CHECK_ACTIVATE_EMAIL=commander@wipost165.org bin/release push-deploy`.
+The wrapper's preflight, deployment, client registration, narrow user grant and
+before/after read-only readiness probes share its persistent SSH master. Probes
+print public configuration and server-computed table fingerprints, never member
+rows or tokens. They verify the three mobile migrations and compatible secretless
+registration. This optional activation never runs on an ordinary release and
+therefore cannot silently restore a revoked permission. The application keeps
+900-second access, explicit consent and no refresh tokens. See the
+[current mobile handoff](MOBILE_BUDDY_CHECK_PRODUCTION_READINESS.md).
+
 ## First deploy checklist: Post 165
 
 1. Confirm DNS for `members.wipost165.org` points at `178.156.250.235`.

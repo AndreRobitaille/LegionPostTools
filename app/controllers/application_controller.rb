@@ -51,7 +51,9 @@ class ApplicationController < ActionController::Base
   end
 
   def start_new_session_for(user)
+    mobile_return_to = self.session[:mobile_authorization_return_to]
     reset_session
+    self.session[:mobile_authorization_return_to] = mobile_return_to if mobile_return_to
     session = Session.create!(
       user: user,
       ip_address: request.remote_ip,
@@ -61,6 +63,11 @@ class ApplicationController < ActionController::Base
     )
     cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax, secure: Rails.env.production? }
     Current.session = session
+  end
+
+  def after_human_sign_in_path
+    destination = session.delete(:mobile_authorization_return_to)
+    destination.to_s.start_with?("/oauth/authorize?") ? destination : root_path
   end
 
   def terminate_current_session

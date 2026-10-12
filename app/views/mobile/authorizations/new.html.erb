@@ -1,0 +1,13 @@
+<% content_for :title, "Connect Buddy Checks" %>
+<div class="page-lead"><h1 class="page-title">Connect Buddy Checks</h1><p class="page-sub"><%= Organization.first!.name %></p></div>
+<section class="panel form-panel">
+  <p>Connect this app as <strong><%= current_user.person.full_name %></strong> to choose permitted people, record your Buddy Checks, and manage your follow-ups.</p>
+  <p>Other callers’ private notes and renewal information stay private. Saving someone to your personal Contacts is a separate choice when the Post permits it.</p>
+  <%= form_with url: oauth_authorization_path, class: "stacked-form", data: { turbo: false } do %>
+    <% %i[client_id redirect_uri response_type scope state code_challenge code_challenge_method].each do |field| %>
+      <%= hidden_field_tag field, params[field] %>
+    <% end %>
+    <div class="btnrow"><%= submit_tag "Connect Buddy Checks", class: "btn-primary" %><%= link_to "Cancel", root_path, class: "btn-secondary" %></div>
+  <% end %>
+  <p class="membership-secondary">Access lasts 15 minutes. You can revoke a mobile session from Your profile at any time.</p>
+</section>

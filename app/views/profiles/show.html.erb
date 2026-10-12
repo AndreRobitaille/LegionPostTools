@@ -78,3 +78,7 @@
     <%= link_to "Manage agent access", agent_access_tokens_path, class: "btn-secondary" %>
   </div>
 </section>
+
+<% if current_user.mobile_buddy_checks_access? %>
+  <%= link_to "Mobile sessions", mobile_sessions_path, class: "btn-secondary" %>
+<% end %>

@@ -34,6 +34,12 @@ env:
     RAILS_LOG_LEVEL: info
     APP_HOST: members.wipost165.org
     APP_TIME_ZONE: America/Chicago
+    MOBILE_BUDDY_CHECK_ENABLED: "true"
+    MOBILE_BUDDY_CHECK_ISSUER: https://members.wipost165.org
+    MOBILE_BUDDY_CHECK_CLIENT_ID: org.wipost165.buddychecks
+    MOBILE_BUDDY_CHECK_REDIRECT_URI: org.wipost165.buddychecks:/oauth/callback
+    MOBILE_CONTACT_EXPORT_ENABLED: "true"
+    MOBILE_CONTACT_COMPANY: American Legion Post 165
     MAIL_PROVIDER: loops
     MAIL_FROM: no-reply@wipost165.org
     WEBAUTHN_ORIGIN: https://members.wipost165.org

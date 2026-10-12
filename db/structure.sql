@@ -11,6 +11,25 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: advance_buddy_address_source(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.advance_buddy_address_source() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.roster_address IS DISTINCT FROM OLD.roster_address OR
+     NEW.roster_imported_at IS DISTINCT FROM OLD.roster_imported_at THEN
+    NEW.buddy_address_source_version := OLD.buddy_address_source_version + 1;
+  ELSE
+    NEW.buddy_address_source_version := OLD.buddy_address_source_version;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: lock_final_minutes_meeting_context(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -22,6 +41,19 @@ BEGIN
     PERFORM 1 FROM meetings WHERE id = NEW.meeting_id FOR UPDATE;
   END IF;
   RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: preserve_buddy_evidence(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.preserve_buddy_evidence() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RAISE EXCEPTION 'Buddy Check evidence is append-only';
 END;
 $$;
 
@@ -393,6 +425,185 @@ CREATE TABLE public.ar_internal_metadata (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
 );
+
+
+--
+-- Name: buddy_address_reviews; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.buddy_address_reviews (
+    id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    reviewed_by_id bigint NOT NULL,
+    source_digest character varying NOT NULL,
+    components jsonb DEFAULT '{}'::jsonb NOT NULL,
+    source_note text NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: buddy_address_reviews_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.buddy_address_reviews_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: buddy_address_reviews_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.buddy_address_reviews_id_seq OWNED BY public.buddy_address_reviews.id;
+
+
+--
+-- Name: buddy_attendance_registers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.buddy_attendance_registers (
+    id bigint NOT NULL,
+    meeting_id bigint NOT NULL,
+    recorded_by_id bigint NOT NULL,
+    revision integer NOT NULL,
+    complete boolean DEFAULT false NOT NULL,
+    entries jsonb DEFAULT '{}'::jsonb NOT NULL,
+    coverage_note text NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: buddy_attendance_registers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.buddy_attendance_registers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: buddy_attendance_registers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.buddy_attendance_registers_id_seq OWNED BY public.buddy_attendance_registers.id;
+
+
+--
+-- Name: buddy_follow_ups; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.buddy_follow_ups (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    membership_contact_id bigint,
+    due_at timestamp(6) without time zone NOT NULL,
+    entry_zone character varying NOT NULL,
+    status character varying DEFAULT 'open'::character varying NOT NULL,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: buddy_follow_ups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.buddy_follow_ups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: buddy_follow_ups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.buddy_follow_ups_id_seq OWNED BY public.buddy_follow_ups.id;
+
+
+--
+-- Name: buddy_operations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.buddy_operations (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    operation_id uuid NOT NULL,
+    fingerprint character varying NOT NULL,
+    receipt jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: buddy_operations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.buddy_operations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: buddy_operations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.buddy_operations_id_seq OWNED BY public.buddy_operations.id;
+
+
+--
+-- Name: buddy_snoozes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.buddy_snoozes (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    until_at timestamp(6) without time zone NOT NULL,
+    cancelled_at timestamp(6) without time zone,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: buddy_snoozes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.buddy_snoozes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: buddy_snoozes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.buddy_snoozes_id_seq OWNED BY public.buddy_snoozes.id;
 
 
 --
@@ -1405,7 +1616,14 @@ CREATE TABLE public.membership_contacts (
     paper_reference character varying,
     submission_key character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    occurred_at timestamp(6) without time zone,
+    entry_zone character varying,
+    revision integer DEFAULT 1 NOT NULL,
+    supersedes_contact_id bigint,
+    logical_contact_id bigint,
+    CONSTRAINT contact_precision_pair CHECK (((occurred_at IS NULL) = (entry_zone IS NULL))),
+    CONSTRAINT positive_contact_revision CHECK ((revision > 0))
 );
 
 
@@ -1973,6 +2191,116 @@ ALTER SEQUENCE public.minutes_sections_id_seq OWNED BY public.minutes_sections.i
 
 
 --
+-- Name: oauth_access_grants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_access_grants (
+    id bigint NOT NULL,
+    resource_owner_id bigint NOT NULL,
+    application_id bigint NOT NULL,
+    token character varying NOT NULL,
+    expires_in integer NOT NULL,
+    redirect_uri text NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    revoked_at timestamp(6) without time zone,
+    scopes character varying DEFAULT ''::character varying NOT NULL,
+    code_challenge character varying,
+    code_challenge_method character varying
+);
+
+
+--
+-- Name: oauth_access_grants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oauth_access_grants_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth_access_grants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oauth_access_grants_id_seq OWNED BY public.oauth_access_grants.id;
+
+
+--
+-- Name: oauth_access_tokens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_access_tokens (
+    id bigint NOT NULL,
+    resource_owner_id bigint,
+    application_id bigint,
+    token character varying NOT NULL,
+    refresh_token character varying,
+    expires_in integer,
+    revoked_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    scopes character varying
+);
+
+
+--
+-- Name: oauth_access_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oauth_access_tokens_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth_access_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oauth_access_tokens_id_seq OWNED BY public.oauth_access_tokens.id;
+
+
+--
+-- Name: oauth_applications; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_applications (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    uid character varying NOT NULL,
+    secret character varying,
+    redirect_uri text NOT NULL,
+    scopes character varying DEFAULT ''::character varying NOT NULL,
+    confidential boolean DEFAULT false NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: oauth_applications_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oauth_applications_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth_applications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oauth_applications_id_seq OWNED BY public.oauth_applications.id;
+
+
+--
 -- Name: official_action_confirmations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2122,7 +2450,8 @@ CREATE TABLE public.people (
     roster_paid_through_year integer,
     roster_member_status character varying,
     roster_imported_at timestamp(6) without time zone,
-    roster_removed_at timestamp(6) without time zone
+    roster_removed_at timestamp(6) without time zone,
+    buddy_address_source_version bigint DEFAULT 0 NOT NULL
 );
 
 
@@ -2155,7 +2484,7 @@ CREATE TABLE public.permission_grants (
     capability character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT permission_grants_capability_check CHECK (((capability)::text = ANY (ARRAY[('manage_settings'::character varying)::text, ('manage_people'::character varying)::text, ('manage_meeting_bodies'::character varying)::text, ('manage_agendas'::character varying)::text, ('manage_minutes'::character varying)::text, ('approve_minutes'::character varying)::text, ('attest_minutes'::character varying)::text, ('record_minutes_approval'::character varying)::text, ('view_internal_records'::character varying)::text, ('publish_public_content'::character varying)::text])))
+    CONSTRAINT permission_grants_capability_check CHECK (((capability)::text = ANY ((ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying, 'use_mobile_buddy_checks'::character varying, 'export_buddy_contacts'::character varying])::text[])))
 );
 
 
@@ -2223,7 +2552,7 @@ CREATE TABLE public.position_capability_grants (
     capability character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT position_capability_grants_capability_check CHECK (((capability)::text = ANY (ARRAY[('manage_people'::character varying)::text, ('manage_meeting_bodies'::character varying)::text, ('manage_agendas'::character varying)::text, ('manage_minutes'::character varying)::text, ('approve_minutes'::character varying)::text, ('attest_minutes'::character varying)::text, ('record_minutes_approval'::character varying)::text, ('view_internal_records'::character varying)::text, ('publish_public_content'::character varying)::text])))
+    CONSTRAINT position_capability_grants_capability_check CHECK (((capability)::text = ANY ((ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying, 'use_mobile_buddy_checks'::character varying, 'export_buddy_contacts'::character varying])::text[])))
 );
 
 
@@ -2645,6 +2974,41 @@ ALTER TABLE ONLY public.agent_api_executions ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: buddy_address_reviews id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_address_reviews ALTER COLUMN id SET DEFAULT nextval('public.buddy_address_reviews_id_seq'::regclass);
+
+
+--
+-- Name: buddy_attendance_registers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_attendance_registers ALTER COLUMN id SET DEFAULT nextval('public.buddy_attendance_registers_id_seq'::regclass);
+
+
+--
+-- Name: buddy_follow_ups id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_follow_ups ALTER COLUMN id SET DEFAULT nextval('public.buddy_follow_ups_id_seq'::regclass);
+
+
+--
+-- Name: buddy_operations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_operations ALTER COLUMN id SET DEFAULT nextval('public.buddy_operations_id_seq'::regclass);
+
+
+--
+-- Name: buddy_snoozes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_snoozes ALTER COLUMN id SET DEFAULT nextval('public.buddy_snoozes_id_seq'::regclass);
+
+
+--
 -- Name: calendar_events id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2918,6 +3282,27 @@ ALTER TABLE ONLY public.minutes_sections ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- Name: oauth_access_grants id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_grants ALTER COLUMN id SET DEFAULT nextval('public.oauth_access_grants_id_seq'::regclass);
+
+
+--
+-- Name: oauth_access_tokens id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_tokens ALTER COLUMN id SET DEFAULT nextval('public.oauth_access_tokens_id_seq'::regclass);
+
+
+--
+-- Name: oauth_applications id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_applications ALTER COLUMN id SET DEFAULT nextval('public.oauth_applications_id_seq'::regclass);
+
+
+--
 -- Name: official_action_confirmations id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3091,6 +3476,46 @@ ALTER TABLE ONLY public.agent_api_executions
 
 ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: buddy_address_reviews buddy_address_reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_address_reviews
+    ADD CONSTRAINT buddy_address_reviews_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: buddy_attendance_registers buddy_attendance_registers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_attendance_registers
+    ADD CONSTRAINT buddy_attendance_registers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: buddy_follow_ups buddy_follow_ups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_follow_ups
+    ADD CONSTRAINT buddy_follow_ups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: buddy_operations buddy_operations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_operations
+    ADD CONSTRAINT buddy_operations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: buddy_snoozes buddy_snoozes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_snoozes
+    ADD CONSTRAINT buddy_snoozes_pkey PRIMARY KEY (id);
 
 
 --
@@ -3406,6 +3831,30 @@ ALTER TABLE ONLY public.minutes_sections
 
 
 --
+-- Name: oauth_access_grants oauth_access_grants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_grants
+    ADD CONSTRAINT oauth_access_grants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oauth_access_tokens oauth_access_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_tokens
+    ADD CONSTRAINT oauth_access_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oauth_applications oauth_applications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_applications
+    ADD CONSTRAINT oauth_applications_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: official_action_confirmations official_action_confirmations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3661,6 +4110,13 @@ CREATE UNIQUE INDEX idx_on_organization_id_source_key_ecf47169eb ON public.agend
 
 
 --
+-- Name: idx_on_organization_id_user_id_operation_id_c4d86f0525; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_on_organization_id_user_id_operation_id_c4d86f0525 ON public.buddy_operations USING btree (organization_id, user_id, operation_id);
+
+
+--
 -- Name: idx_on_person_id_membership_year_occurred_on_aa883f18d5; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3791,6 +4247,111 @@ CREATE INDEX index_agent_api_executions_on_state_and_created_at ON public.agent_
 --
 
 CREATE INDEX index_agent_api_executions_on_user_id ON public.agent_api_executions USING btree (user_id);
+
+
+--
+-- Name: index_buddy_address_reviews_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_address_reviews_on_person_id ON public.buddy_address_reviews USING btree (person_id);
+
+
+--
+-- Name: index_buddy_address_reviews_on_reviewed_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_address_reviews_on_reviewed_by_id ON public.buddy_address_reviews USING btree (reviewed_by_id);
+
+
+--
+-- Name: index_buddy_attendance_registers_on_meeting_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_attendance_registers_on_meeting_id ON public.buddy_attendance_registers USING btree (meeting_id);
+
+
+--
+-- Name: index_buddy_attendance_registers_on_meeting_id_and_revision; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_buddy_attendance_registers_on_meeting_id_and_revision ON public.buddy_attendance_registers USING btree (meeting_id, revision);
+
+
+--
+-- Name: index_buddy_attendance_registers_on_recorded_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_attendance_registers_on_recorded_by_id ON public.buddy_attendance_registers USING btree (recorded_by_id);
+
+
+--
+-- Name: index_buddy_follow_ups_on_membership_contact_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_follow_ups_on_membership_contact_id ON public.buddy_follow_ups USING btree (membership_contact_id);
+
+
+--
+-- Name: index_buddy_follow_ups_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_follow_ups_on_organization_id ON public.buddy_follow_ups USING btree (organization_id);
+
+
+--
+-- Name: index_buddy_follow_ups_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_follow_ups_on_person_id ON public.buddy_follow_ups USING btree (person_id);
+
+
+--
+-- Name: index_buddy_follow_ups_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_follow_ups_on_user_id ON public.buddy_follow_ups USING btree (user_id);
+
+
+--
+-- Name: index_buddy_operations_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_operations_on_organization_id ON public.buddy_operations USING btree (organization_id);
+
+
+--
+-- Name: index_buddy_operations_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_operations_on_person_id ON public.buddy_operations USING btree (person_id);
+
+
+--
+-- Name: index_buddy_operations_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_operations_on_user_id ON public.buddy_operations USING btree (user_id);
+
+
+--
+-- Name: index_buddy_snoozes_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_snoozes_on_organization_id ON public.buddy_snoozes USING btree (organization_id);
+
+
+--
+-- Name: index_buddy_snoozes_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_snoozes_on_person_id ON public.buddy_snoozes USING btree (person_id);
+
+
+--
+-- Name: index_buddy_snoozes_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_snoozes_on_user_id ON public.buddy_snoozes USING btree (user_id);
 
 
 --
@@ -4452,6 +5013,13 @@ CREATE INDEX index_membership_assignments_on_person_id ON public.membership_assi
 
 
 --
+-- Name: index_membership_contacts_on_logical_contact_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_membership_contacts_on_logical_contact_id ON public.membership_contacts USING btree (logical_contact_id);
+
+
+--
 -- Name: index_membership_contacts_on_membership_assignment_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4491,6 +5059,13 @@ CREATE INDEX index_membership_contacts_on_recorded_by_id ON public.membership_co
 --
 
 CREATE UNIQUE INDEX index_membership_contacts_on_submission_key ON public.membership_contacts USING btree (submission_key);
+
+
+--
+-- Name: index_membership_contacts_on_supersedes_contact_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_membership_contacts_on_supersedes_contact_id ON public.membership_contacts USING btree (supersedes_contact_id);
 
 
 --
@@ -4914,6 +5489,62 @@ CREATE UNIQUE INDEX index_mt_agenda_items_on_type_and_source_key ON public.meeti
 
 
 --
+-- Name: index_oauth_access_grants_on_application_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_oauth_access_grants_on_application_id ON public.oauth_access_grants USING btree (application_id);
+
+
+--
+-- Name: index_oauth_access_grants_on_resource_owner_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_oauth_access_grants_on_resource_owner_id ON public.oauth_access_grants USING btree (resource_owner_id);
+
+
+--
+-- Name: index_oauth_access_grants_on_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_oauth_access_grants_on_token ON public.oauth_access_grants USING btree (token);
+
+
+--
+-- Name: index_oauth_access_tokens_on_application_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_oauth_access_tokens_on_application_id ON public.oauth_access_tokens USING btree (application_id);
+
+
+--
+-- Name: index_oauth_access_tokens_on_refresh_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_oauth_access_tokens_on_refresh_token ON public.oauth_access_tokens USING btree (refresh_token);
+
+
+--
+-- Name: index_oauth_access_tokens_on_resource_owner_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_oauth_access_tokens_on_resource_owner_id ON public.oauth_access_tokens USING btree (resource_owner_id);
+
+
+--
+-- Name: index_oauth_access_tokens_on_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_oauth_access_tokens_on_token ON public.oauth_access_tokens USING btree (token);
+
+
+--
+-- Name: index_oauth_applications_on_uid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_oauth_applications_on_uid ON public.oauth_applications USING btree (uid);
+
+
+--
 -- Name: index_official_action_confirmations_on_agent_access_token_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5201,6 +5832,13 @@ CREATE UNIQUE INDEX website_featured_positions ON public.website_publications US
 
 
 --
+-- Name: people advance_buddy_address_source; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER advance_buddy_address_source BEFORE UPDATE ON public.people FOR EACH ROW EXECUTE FUNCTION public.advance_buddy_address_source();
+
+
+--
 -- Name: endeavor_history_editions endeavor_history_editions_immutable; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -5292,6 +5930,34 @@ CREATE TRIGGER minutes_revisions_append_only BEFORE DELETE OR UPDATE ON public.m
 
 
 --
+-- Name: membership_contacts preserve_buddy_contacts; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER preserve_buddy_contacts BEFORE DELETE OR UPDATE ON public.membership_contacts FOR EACH ROW WHEN (((old.purpose)::text = 'buddy_check'::text)) EXECUTE FUNCTION public.preserve_buddy_evidence();
+
+
+--
+-- Name: buddy_address_reviews preserve_buddy_evidence; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER preserve_buddy_evidence BEFORE DELETE OR UPDATE ON public.buddy_address_reviews FOR EACH ROW EXECUTE FUNCTION public.preserve_buddy_evidence();
+
+
+--
+-- Name: buddy_attendance_registers preserve_buddy_evidence; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER preserve_buddy_evidence BEFORE DELETE OR UPDATE ON public.buddy_attendance_registers FOR EACH ROW EXECUTE FUNCTION public.preserve_buddy_evidence();
+
+
+--
+-- Name: buddy_operations preserve_buddy_evidence; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER preserve_buddy_evidence BEFORE DELETE OR UPDATE ON public.buddy_operations FOR EACH ROW EXECUTE FUNCTION public.preserve_buddy_evidence();
+
+
+--
 -- Name: meeting_type_agenda_sections fk_rails_006a9028b4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5356,6 +6022,14 @@ ALTER TABLE ONLY public.endeavor_tasks
 
 
 --
+-- Name: buddy_attendance_registers fk_rails_066f835570; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_attendance_registers
+    ADD CONSTRAINT fk_rails_066f835570 FOREIGN KEY (recorded_by_id) REFERENCES public.users(id);
+
+
+--
 -- Name: dated_agendas fk_rails_07b5b12e09; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5385,6 +6059,14 @@ ALTER TABLE ONLY public.endeavor_history_events
 
 ALTER TABLE ONLY public.endeavor_history_events
     ADD CONSTRAINT fk_rails_101cccec62 FOREIGN KEY (endeavor_id) REFERENCES public.endeavors(id);
+
+
+--
+-- Name: buddy_snoozes fk_rails_127be99587; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_snoozes
+    ADD CONSTRAINT fk_rails_127be99587 FOREIGN KEY (person_id) REFERENCES public.people(id);
 
 
 --
@@ -5425,6 +6107,14 @@ ALTER TABLE ONLY public.official_action_confirmations
 
 ALTER TABLE ONLY public.minutes_outcomes
     ADD CONSTRAINT fk_rails_1c2f86c356 FOREIGN KEY (minutes_item_id) REFERENCES public.minutes_items(id);
+
+
+--
+-- Name: buddy_attendance_registers fk_rails_20a5922153; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_attendance_registers
+    ADD CONSTRAINT fk_rails_20a5922153 FOREIGN KEY (meeting_id) REFERENCES public.meetings(id);
 
 
 --
@@ -5524,6 +6214,14 @@ ALTER TABLE ONLY public.endeavor_history_results
 
 
 --
+-- Name: oauth_access_grants fk_rails_330c32d8d9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_grants
+    ADD CONSTRAINT fk_rails_330c32d8d9 FOREIGN KEY (resource_owner_id) REFERENCES public.users(id);
+
+
+--
 -- Name: dated_agenda_items fk_rails_336847096d; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5577,6 +6275,14 @@ ALTER TABLE ONLY public.endeavor_history_editions
 
 ALTER TABLE ONLY public.permission_grants
     ADD CONSTRAINT fk_rails_3bca93d0dd FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: buddy_snoozes fk_rails_3c9c1ea8cc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_snoozes
+    ADD CONSTRAINT fk_rails_3c9c1ea8cc FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -5652,11 +6358,27 @@ ALTER TABLE ONLY public.membership_dues_records
 
 
 --
+-- Name: buddy_follow_ups fk_rails_4fe27d16d2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_follow_ups
+    ADD CONSTRAINT fk_rails_4fe27d16d2 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: minutes_draft_runs fk_rails_507f09b832; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.minutes_draft_runs
     ADD CONSTRAINT fk_rails_507f09b832 FOREIGN KEY (retry_of_id) REFERENCES public.minutes_draft_runs(id);
+
+
+--
+-- Name: buddy_address_reviews fk_rails_508431a7d7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_address_reviews
+    ADD CONSTRAINT fk_rails_508431a7d7 FOREIGN KEY (reviewed_by_id) REFERENCES public.users(id);
 
 
 --
@@ -5724,6 +6446,14 @@ ALTER TABLE ONLY public.dated_agenda_roll_call_entries
 
 
 --
+-- Name: buddy_operations fk_rails_5f526408ad; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_operations
+    ADD CONSTRAINT fk_rails_5f526408ad FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: endeavors fk_rails_60e6eacb75; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5753,6 +6483,22 @@ ALTER TABLE ONLY public.minutes_items
 
 ALTER TABLE ONLY public.membership_drives
     ADD CONSTRAINT fk_rails_64102a71d8 FOREIGN KEY (created_by_id) REFERENCES public.users(id);
+
+
+--
+-- Name: buddy_operations fk_rails_6528b96412; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_operations
+    ADD CONSTRAINT fk_rails_6528b96412 FOREIGN KEY (person_id) REFERENCES public.people(id);
+
+
+--
+-- Name: buddy_address_reviews fk_rails_65df506cfc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_address_reviews
+    ADD CONSTRAINT fk_rails_65df506cfc FOREIGN KEY (person_id) REFERENCES public.people(id);
 
 
 --
@@ -5796,6 +6542,14 @@ ALTER TABLE ONLY public.dated_agendas
 
 
 --
+-- Name: buddy_operations fk_rails_6b49c7df26; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_operations
+    ADD CONSTRAINT fk_rails_6b49c7df26 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: meeting_types fk_rails_6ccee74691; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5820,6 +6574,14 @@ ALTER TABLE ONLY public.membership_summaries
 
 
 --
+-- Name: oauth_access_tokens fk_rails_732cb83ab7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_tokens
+    ADD CONSTRAINT fk_rails_732cb83ab7 FOREIGN KEY (application_id) REFERENCES public.oauth_applications(id);
+
+
+--
 -- Name: sessions fk_rails_758836b4f0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5833,6 +6595,14 @@ ALTER TABLE ONLY public.sessions
 
 ALTER TABLE ONLY public.minutes_attestations
     ADD CONSTRAINT fk_rails_75aa095ac0 FOREIGN KEY (minutes_revision_id) REFERENCES public.minutes_revisions(id);
+
+
+--
+-- Name: membership_contacts fk_rails_75cdb9da5f; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT fk_rails_75cdb9da5f FOREIGN KEY (logical_contact_id) REFERENCES public.membership_contacts(id);
 
 
 --
@@ -5868,6 +6638,14 @@ ALTER TABLE ONLY public.dated_agenda_items
 
 
 --
+-- Name: buddy_follow_ups fk_rails_7f68e5fa1b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_follow_ups
+    ADD CONSTRAINT fk_rails_7f68e5fa1b FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: dated_agenda_items fk_rails_82c208cf20; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5897,6 +6675,14 @@ ALTER TABLE ONLY public.dated_agenda_sections
 
 ALTER TABLE ONLY public.membership_assignments
     ADD CONSTRAINT fk_rails_86629e7ccc FOREIGN KEY (assigned_to_id) REFERENCES public.users(id);
+
+
+--
+-- Name: membership_contacts fk_rails_86fa2e0b57; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.membership_contacts
+    ADD CONSTRAINT fk_rails_86fa2e0b57 FOREIGN KEY (supersedes_contact_id) REFERENCES public.membership_contacts(id);
 
 
 --
@@ -6188,6 +6974,14 @@ ALTER TABLE ONLY public.meeting_bodies
 
 
 --
+-- Name: oauth_access_grants fk_rails_b4b53e07b8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_grants
+    ADD CONSTRAINT fk_rails_b4b53e07b8 FOREIGN KEY (application_id) REFERENCES public.oauth_applications(id);
+
+
+--
 -- Name: meeting_minutes fk_rails_bba1117957; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6332,6 +7126,14 @@ ALTER TABLE ONLY public.minutes_revisions
 
 
 --
+-- Name: buddy_follow_ups fk_rails_d54176b96b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_follow_ups
+    ADD CONSTRAINT fk_rails_d54176b96b FOREIGN KEY (person_id) REFERENCES public.people(id);
+
+
+--
 -- Name: website_access_tokens fk_rails_d68c2688b8; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6372,6 +7174,14 @@ ALTER TABLE ONLY public.minutes_draft_suggestions
 
 
 --
+-- Name: buddy_snoozes fk_rails_e3691e0015; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_snoozes
+    ADD CONSTRAINT fk_rails_e3691e0015 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: dated_agenda_sections fk_rails_e70ffa8b9f; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6396,6 +7206,14 @@ ALTER TABLE ONLY public.membership_drives
 
 
 --
+-- Name: oauth_access_tokens fk_rails_ee63f25419; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_access_tokens
+    ADD CONSTRAINT fk_rails_ee63f25419 FOREIGN KEY (resource_owner_id) REFERENCES public.users(id);
+
+
+--
 -- Name: membership_summaries fk_rails_f2a040f583; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6409,6 +7227,14 @@ ALTER TABLE ONLY public.membership_summaries
 
 ALTER TABLE ONLY public.minutes_membership_approvals
     ADD CONSTRAINT fk_rails_f2e5a11f98 FOREIGN KEY (approving_meeting_id) REFERENCES public.meetings(id);
+
+
+--
+-- Name: buddy_follow_ups fk_rails_f4cb29db2d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_follow_ups
+    ADD CONSTRAINT fk_rails_f4cb29db2d FOREIGN KEY (membership_contact_id) REFERENCES public.membership_contacts(id);
 
 
 --
@@ -6490,6 +7316,9 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261012120000'),
+('20261011211000'),
+('20261011210000'),
 ('20261011200000'),
 ('20261011030000'),
 ('20261011020000'),

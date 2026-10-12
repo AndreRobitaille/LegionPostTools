@@ -1,9 +1,10 @@
 require "test_helper"
 
 class ApiMutationAuthorizationInventoryTest < ActiveSupport::TestCase
-  test "every routed API mutation has a current authority guard for completed retries" do
+  test "every routed agent API mutation has a current authority guard for completed retries" do
     mutations = Rails.application.routes.routes.select do |route|
-      route.defaults[:controller].to_s.start_with?("api/") && route.verb.match?(/POST|PATCH|PUT|DELETE/)
+      route.defaults[:controller].to_s.start_with?("api/") &&
+        !route.defaults[:controller].to_s.start_with?("api/mobile/") && route.verb.match?(/POST|PATCH|PUT|DELETE/)
     end
     assert mutations.any?, "The mutation route inventory must not silently become empty."
     unguarded = mutations.filter_map do |route|

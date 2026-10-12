@@ -1,0 +1,8 @@
+<% content_for :title, "Mobile sessions" %>
+<div class="page-lead"><h1 class="page-title">Mobile sessions</h1><p class="page-sub">Revoke a Buddy Checks connection to end its access. Your browser stays signed in.</p></div>
+<% if @tokens.empty? %><p class="empty">No active mobile sessions.</p><% end %>
+<div class="mrow-list">
+<% @tokens.each do |token| %>
+  <div class="mrow"><div class="mrow-main">Session <%= token.id %><p class="membership-secondary">Connected <%= legion_datetime(token.created_at) %></p></div><%= button_to "Revoke session #{token.id}", mobile_session_path(token), method: :delete, class: "btn-secondary" %></div>
+<% end %>
+</div>

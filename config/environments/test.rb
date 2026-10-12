@@ -51,3 +51,6 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 end
+
+# Opt-in only for the isolated, human-operated synthetic HTTPS integration server.
+require_relative "../../test/manual/buddy_mobile_environment" if ENV["BUDDY_MOBILE_INTEGRATION"] == "true"

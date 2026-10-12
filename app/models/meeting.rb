@@ -11,6 +11,8 @@ class Meeting < ApplicationRecord
   belongs_to :meeting_body
   belongs_to :meeting_type, optional: true
 
+  has_many :buddy_attendance_registers, dependent: :restrict_with_exception
+
   has_one :dated_agenda, dependent: :restrict_with_exception
   has_one :minutes,
     class_name: "MeetingMinutes",
@@ -58,7 +60,7 @@ class Meeting < ApplicationRecord
   end
 
   def empty_record?
-    dated_agenda.nil? && minutes.nil? && transcript.nil?
+    dated_agenda.nil? && minutes.nil? && transcript.nil? && !buddy_attendance_registers.exists?
   end
 
   private

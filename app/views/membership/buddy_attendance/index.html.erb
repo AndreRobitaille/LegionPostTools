@@ -1,0 +1,8 @@
+<% content_for :title, "General-member attendance" %>
+<div class="page-lead"><h1 class="page-title">General-member attendance</h1><p class="page-sub">Choose an actual meeting to record or review attendance. These registers support Buddy Checks and do not change minutes or officer roll call.</p></div>
+<div class="mrow-list">
+<% @meetings.each do |meeting| %>
+  <div class="mrow"><div class="mrow-main"><strong><%= meeting.title %></strong><p class="membership-secondary"><%= legion_datetime(meeting.starts_at) %></p></div><%= link_to "Review attendance", membership_buddy_attendance_path(meeting), class: "btn-secondary" %></div>
+<% end %>
+</div>
+<% if @meetings.empty? %><p class="empty">No past meetings are available. Create the actual meeting before recording attendance.</p><% end %>

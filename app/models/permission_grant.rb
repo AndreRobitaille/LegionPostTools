@@ -3,6 +3,8 @@ class PermissionGrant < ApplicationRecord
     publish_public_content
     manage_settings
     manage_people
+    use_mobile_buddy_checks
+    export_buddy_contacts
     manage_meeting_bodies
     manage_agendas
     manage_minutes
@@ -14,6 +16,7 @@ class PermissionGrant < ApplicationRecord
 
   GROUPS = [
     [ "Administration", %w[manage_settings manage_people] ],
+    [ "Buddy Checks", %w[use_mobile_buddy_checks export_buddy_contacts] ],
     [ "Meetings", %w[manage_meeting_bodies manage_agendas manage_minutes] ],
     [ "Approvals", %w[approve_minutes attest_minutes record_minutes_approval] ],
     [ "Records", %w[view_internal_records] ],
@@ -24,6 +27,8 @@ class PermissionGrant < ApplicationRecord
     "publish_public_content" => "Publish public website content",
     "manage_settings" => "Manage app settings",
     "manage_people" => "Manage people and accounts",
+    "use_mobile_buddy_checks" => "Use the Buddy Checks iPhone pilot",
+    "export_buddy_contacts" => "Copy permitted Buddy Check contacts to personal Contacts",
     "manage_meeting_bodies" => "Manage meeting types",
     "manage_agendas" => "Prepare agendas",
     "manage_minutes" => "Draft minutes",

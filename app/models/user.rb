@@ -110,6 +110,10 @@ class User < ApplicationRecord
       .where("LOWER(TRIM(COALESCE(people.roster_member_status, ''))) != ?", "deceased").exists?
   end
 
+  def mobile_buddy_checks_access?
+    disabled_at.nil? && BuddyChecks::Configuration.enabled? && can?("use_mobile_buddy_checks")
+  end
+
   def roster_email_mismatch?
     person.roster_email_address.present? && person.roster_email_address != email_address
   end

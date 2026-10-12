@@ -1,4 +1,11 @@
 Rails.application.routes.draw do
+  use_doorkeeper do
+    controllers authorizations: "mobile/authorizations", tokens: "mobile/tokens"
+    skip_controllers :applications, :authorized_applications, :token_info
+  end
+  namespace :mobile do
+    resources :sessions, only: %i[index destroy]
+  end
   scope "/public/v1", controller: "public/v1/publications", format: false do
     match "featured_members", action: :featured, via: :all
     match "member_stories/:id", action: :story, via: :all
@@ -195,6 +202,12 @@ Rails.application.routes.draw do
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
   namespace :membership do
+    resources :buddy_attendances, path: "buddy-attendance", controller: "buddy_attendance", only: %i[index show] do
+      post :create, on: :member, path: ""
+    end
+    resources :buddy_addresses, path: "buddy-addresses", only: %i[show] do
+      post :create, on: :member, path: ""
+    end
     root to: "overview#index"
     get "report", to: "reports#index"
     get "post-checks", to: "post_checks#index", as: :post_checks
@@ -214,6 +227,28 @@ Rails.application.routes.draw do
   end
   get "internal/membership-pdf-source", to: "membership_pdf_sources#show"
   namespace :api do
+    namespace :mobile do
+      namespace :v1 do
+        get "session", to: "buddy_checks#session"
+        scope "buddy-checks", controller: "buddy_checks" do
+          get "people", action: :people
+          get "people/:id", action: :person
+          get "suggestion", action: :suggestion
+          get "receipts/:operation_id", action: :receipt
+          get "mine", action: :mine
+          get "follow-ups", action: :follow_ups
+          post "follow-ups", action: :schedule
+          post "follow-ups/:id/changes", action: :change_follow_up
+          get "snoozes", action: :snoozes
+          post "snoozes", action: :snooze
+          delete "snoozes/:id", action: :undo_snooze
+          get ":id/revisions", action: :revisions
+          post ":id/corrections", action: :correct
+          post "", action: :create
+        end
+        get "people/:id/contact-export", to: "buddy_checks#contact_export"
+      end
+    end
     resource :website_calendar, only: %i[show update], controller: "website_calendar" do
       post :preview
     end

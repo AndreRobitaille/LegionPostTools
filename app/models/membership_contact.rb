@@ -3,12 +3,16 @@ class MembershipContact < ApplicationRecord
 
   CHANNELS = { "phone" => "Phone", "in_person" => "In person", "email" => "Email", "postal_mail" => "Postal mail", "website" => "Website", "text" => "Text message", "administrative_review" => "Officer review of a recorded result" }.freeze
   OUTCOMES = {
+    "wrong_number" => "Wrong number", "not_attempted" => "Not attempted",
     "no_answer" => "No answer", "message_left" => "Message left", "reached" => "Reached",
     "callback_requested" => "Callback requested", "already_paid_online" => "Reports paid through National",
     "wants_to_renew" => "Wants help renewing", "declined_renewal" => "Declined renewal",
     "do_not_contact" => "Do not contact for this purpose", "officer_review" => "Officer review needed",
     "contact_permission_restored" => "Contact permission restored by officer"
   }.freeze
+
+  belongs_to :supersedes_contact, class_name: "MembershipContact", optional: true
+  belongs_to :logical_contact, class_name: "MembershipContact", optional: true
 
   belongs_to :organization
   belongs_to :person
@@ -30,11 +34,13 @@ class MembershipContact < ApplicationRecord
   validate :contact_dates
   validate :assignment_matches_contact
 
+  scope :effective, -> { where.not(id: MembershipContact.where.not(supersedes_contact_id: nil).select(:supersedes_contact_id)) }
+  scope :for_workspace_year, ->(year) { where(membership_year: year).or(where(purpose: "buddy_check")) }
   scope :recent, -> { order(occurred_on: :desc, created_at: :desc, id: :desc) }
   # A returned sheet lacks the time needed to replace digital work from that day.
   scope :for_current_work, -> {
-    order(occurred_on: :desc).order(Arel.sql("CASE WHEN paper_reference IS NULL THEN 0 ELSE 1 END ASC"))
-      .order(created_at: :desc, id: :desc)
+    effective.order(occurred_on: :desc).order(Arel.sql("CASE WHEN paper_reference IS NULL THEN 0 ELSE 1 END ASC"))
+      .order(Arel.sql("COALESCE(occurred_at, created_at) DESC")).order(id: :desc)
   }
 
   private
@@ -44,7 +50,7 @@ class MembershipContact < ApplicationRecord
       errors.add(:follow_up_on, "must be a valid date")
     end
     errors.add(:occurred_on, "cannot be in the future") if occurred_on && occurred_on > Organization.current_local_date
-    if follow_up_on && occurred_on && follow_up_on < occurred_on
+    if follow_up_on && occurred_on && follow_up_on < occurred_on && supersedes_contact_id.nil?
       errors.add(:follow_up_on, "must be on or after the contact date")
     end
   end

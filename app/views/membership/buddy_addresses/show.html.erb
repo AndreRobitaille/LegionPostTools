@@ -1,0 +1,14 @@
+<% content_for :title, "Review mailing address" %>
+<div class="page-lead"><h1 class="page-title">Review mailing address</h1><p class="page-sub"><%= @person.full_name %></p></div>
+<section class="panel form-panel">
+<p><strong>Original roster address</strong><br><%= @person.roster_address.presence || "Not recorded" %></p>
+<p class="membership-secondary">Enter only components supported by a reviewed source. Leave unknown fields blank. This preserves the original roster address; a later source change invalidates these components.</p>
+<%= form_with url: membership_buddy_address_path(@person), method: :post, class: "stacked-form" do %>
+  <%= hidden_field_tag :source_digest, BuddyAddressReview.source_digest(@person) %>
+  <% BuddyAddressReview::FIELDS.each do |field| %>
+    <div class="fl"><%= label_tag "address_#{field}", field.humanize %><%= text_field_tag "components[#{field}]", @components[field], id: "address_#{field}", class: "f", maxlength: 200 %></div>
+  <% end %>
+  <div class="fl"><%= label_tag :source_note, "Source checked" %><%= text_area_tag :source_note, @source_note, class: "f", rows: 3, maxlength: 1000, required: true %></div>
+  <%= submit_tag "Save reviewed address", class: "btn-primary" %>
+<% end %>
+</section>

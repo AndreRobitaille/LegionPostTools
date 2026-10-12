@@ -109,6 +109,7 @@ class PasskeysController < ApplicationController
       session.delete(:reauthentication_purpose)
     else
       start_new_session_for(stored_credential.user)
+      redirect_url = after_human_sign_in_path if session[:mobile_authorization_return_to].present?
     end
 
     render json: { status: "authenticated", redirect_url: }.compact

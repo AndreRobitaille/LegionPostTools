@@ -48,6 +48,8 @@ class OfficialRecordDatabaseGuardsTest < ActiveSupport::TestCase
 
   test "fresh preparation preserves every existing custom database guard" do
     expected = %w[
+      advance_buddy_address_source preserve_buddy_contacts
+      preserve_buddy_evidence preserve_buddy_evidence preserve_buddy_evidence
       endeavor_history_editions_immutable endeavor_history_events_immutable endeavor_history_guidances_immutable
       endeavor_history_results_immutable endeavor_history_run_protected endeavor_source_links_immutable
       meeting_minutes_final_context_lock meeting_minutes_membership_approved_immutable meetings_final_context_immutable

@@ -76,3 +76,5 @@
     <%= render "membership/dues_records", records: @dues_records %>
   <% end %>
 <% end %>
+
+<% if @access.manager? && current_user.mobile_buddy_checks_access? %><%= link_to "Review mailing address", membership_buddy_address_path(@person), class: "btn-secondary" %><% end %>

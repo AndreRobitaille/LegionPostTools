@@ -11,6 +11,7 @@ readonly COHOSTED_URL="https://tworiversmatters.com"
 readonly SSH_CONFIG="/home/andre/.ssh/config"
 
 release_temp_config=""
+release_activation_email="${BUDDY_CHECK_ACTIVATE_EMAIL:-}"
 
 cd "$APP_ROOT"
 
@@ -107,6 +108,17 @@ assert_http_status() {
   fail "$url returned $status; expected $expected"
 }
 
+probe_mobile_readiness() {
+  [[ -n "$release_activation_email" ]] || return 0
+  local require_ready="${1:-false}" container
+  container="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
+    "docker ps --filter label=service=$PROD_SERVICE --filter label=role=web --format '{{.Names}}'")"
+  [[ "$container" =~ ^legion_post_165_wi_tools-web-[a-f0-9]+$ ]] || fail "expected one running Post 165 web container for readiness probe"
+  ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
+    "docker exec -i -e BUDDY_CHECK_ACTIVATE_EMAIL=$release_activation_email -e BUDDY_CHECK_REQUIRE_READY=$require_ready $container bin/rails runner -" \
+    < script/mobile_buddy_check_readiness.rb
+}
+
 with_production_connection() {
   local action="$1" control_path identity_file
 
@@ -139,6 +151,7 @@ with_production_connection() {
   prepare_kamal_config "$release_temp_config" "$control_path" "$identity_file"
   bin/kamal config -c "$release_temp_config" >/dev/null
   bin/kamal server exec 'hostname' -c "$release_temp_config"
+  probe_mobile_readiness
 
   if [[ "$action" == "check" ]]; then
     echo "Release transport preflight passed; production was not changed."
@@ -149,6 +162,11 @@ with_production_connection() {
   head="$(git rev-parse HEAD)"
   echo "Deploying $head to Post 165 production..."
   bin/kamal deploy -c "$release_temp_config"
+
+  if [[ -n "$release_activation_email" ]]; then
+    bin/kamal app exec --reuse "bin/rails 'buddy_checks:activate[$release_activation_email]'" -c "$release_temp_config"
+    probe_mobile_readiness true
+  fi
 
   container_names="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
     "docker ps --filter label=service=$PROD_SERVICE --filter label=role=web --format '{{.Names}}'")"
@@ -163,6 +181,9 @@ with_production_connection() {
 
 command="${1:-}"
 [[ $# -eq 1 ]] || usage
+if [[ -n "$release_activation_email" ]]; then
+  [[ "$release_activation_email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || fail "invalid activation email"
+fi
 
 case "$command" in
   check)

@@ -40,11 +40,11 @@ class MembershipWorkspace
   end
 
   def contacts_for(person)
-    access.contacts.where(person:, membership_year: report.membership_year).recent
+    access.contacts.effective.where(person:).for_workspace_year(report.membership_year).recent
   end
 
   def last_contact(person)
-    @last_contacts ||= access.contacts.where(membership_year: report.membership_year).for_current_work.to_a.group_by(&:person_id).transform_values(&:first)
+    @last_contacts ||= access.contacts.for_workspace_year(report.membership_year).for_current_work.to_a.group_by(&:person_id).transform_values(&:first)
     @last_contacts[person.id]
   end
 
@@ -62,7 +62,7 @@ class MembershipWorkspace
   end
 
   def contact_choice(person, purpose:)
-    access.organization.membership_contacts.where(person:, purpose:,
+    access.organization.membership_contacts.effective.where(person:, purpose:,
       outcome: %w[do_not_contact contact_permission_restored]).recent.first
   end
 
@@ -198,7 +198,7 @@ class MembershipWorkspace
     reason = outreach_exclusion(person)
     return item.merge(next_step: reason) if reason
 
-    @work_contacts ||= access.contacts.where(membership_year: report.membership_year).for_current_work.to_a.group_by(&:person_id)
+    @work_contacts ||= access.contacts.for_workspace_year(report.membership_year).for_current_work.to_a.group_by(&:person_id)
     contact = Array(@work_contacts[person.id]).find do |entry|
       entry.purpose == purpose && (assignment.nil? || entry.membership_assignment_id == assignment.id)
     end
@@ -213,6 +213,17 @@ class MembershipWorkspace
         return item.merge(next_step: step, needs_attention: access.manager?, priority: 2)
       when "review"
         return item.merge(next_step: "Check the membership record", needs_attention: true, priority: 1)
+      end
+    end
+
+    if purpose == "buddy_check"
+      follow_ups = BuddyFollowUp.where(organization: access.organization, person:, status: "open")
+      follow_ups = follow_ups.where(user: access.user) unless access.manager?
+      follow_up = follow_ups.order(:due_at).first
+      if follow_up
+        due = follow_up.due_at <= Time.current
+        return item.merge(follow_up_on: follow_up.due_at.in_time_zone(access.organization.calendar_time_zone).to_date,
+          next_step: due ? "Make the agreed callback" : "Callback scheduled", needs_attention: due, outreach_needed: due, priority: due ? 0 : 4)
       end
     end
 

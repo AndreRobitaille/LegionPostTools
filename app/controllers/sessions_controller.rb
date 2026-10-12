@@ -74,7 +74,7 @@ class SessionsController < ApplicationController
     if user
       cookies.delete(PENDING_SIGN_IN_COOKIE)
       start_new_session_for(user)
-      redirect_to root_path, notice: "You are signed in."
+      redirect_to after_human_sign_in_path, notice: "You are signed in."
     else
       redirect_to code_session_path, alert: "That code is invalid or expired. Request a new email and try again."
     end
@@ -93,7 +93,7 @@ class SessionsController < ApplicationController
 
     if user
       start_new_session_for(user)
-      redirect_to root_path, notice: "You are signed in."
+      redirect_to after_human_sign_in_path, notice: "You are signed in."
     else
       redirect_to new_session_path, alert: "That login link is invalid or expired."
     end

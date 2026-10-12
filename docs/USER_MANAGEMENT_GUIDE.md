@@ -211,6 +211,15 @@ Important distinctions:
 - **Manage people and accounts** grants full membership access without making the person a technical
   administrator.
 - Meeting and records permissions should match the person's real duties.
+- **Use the Buddy Checks iPhone pilot** enables mobile sign-in and the phone-related
+  Mobile sessions, general-member attendance and reviewed-address controls. The
+  pilot is initially granted only to Andre. Other members, officers and application
+  administrators do not receive it automatically. Evidence controls additionally
+  require current full membership access.
+- **Copy permitted Buddy Check contacts to personal Contacts** is a separate grant
+  for personal copies. It adds no membership access and does not export a hidden
+  assignment-only person's address. Removing either mobile grant takes effect on
+  the next request; the existing website permissions remain intact.
 - Approval, attestation, and acceptance permissions are personal official-record powers.
   Administrator status does not supply them automatically. A configured current Commander
   or Adjutant assignment may supply the corresponding personal act.

@@ -236,7 +236,7 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     sign_in_officer
     person = build_person
     person.update!(roster_imported_at: nil)
-    original = person.attributes
+    original = person.reload.attributes
 
     get person_path(person)
 
@@ -254,7 +254,7 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     sign_in_officer
     person = build_person
     person.update!(roster_imported_at: Time.utc(2026, 10, 10, 18), roster_removed_at: Time.utc(2026, 10, 11, 18))
-    original = person.attributes
+    original = person.reload.attributes
 
     get person_path(person)
 
