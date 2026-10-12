@@ -1,110 +1,123 @@
 # Buddy Checks production connection handoff
 
-Prepared October 12, 2026. Release verification is pending until the release record
-below is filled in; local tests alone do not establish readiness.
+Deployed and activated October 12, 2026. **The backend is ready for the mobile agent
+to configure the iPhone and sign in as `commander@wipost165.org`.** Real email/code
+sign-in returned to the production consent screen. Andre must approve that consent
+in the phone app; native installation and final device verification remain Apple work.
 
-## iPhone configuration
+## Confirmed connection settings
 
-| Setting | Value |
+| Setting | Production value |
 | --- | --- |
-| HTTPS origin and exact issuer | `https://members.wipost165.org` |
+| HTTPS origin / exact issuer | `https://members.wipost165.org` |
 | Public OAuth client ID / bundle ID | `org.wipost165.buddychecks` |
 | Exact callback | `org.wipost165.buddychecks:/oauth/callback` |
 | Scope | `buddy_check` |
-| Client authentication | Public; no secret |
-| Flow | Authorization code, S256 PKCE, human browser sign-in and explicit consent |
-| Access lifetime | 900 seconds; `capabilities.refresh=false`; no refresh token |
-| Post / time zone | Robert E. Burns Post 165 / `America/Chicago`; installation ID verified during release |
+| Client / flow | Public, no secret; authorization code with S256 PKCE and explicit human consent |
+| Access / refresh | 900 seconds; `capabilities.refresh=false`; no refresh token |
+| Installation | ID `1`, Robert E. Burns Post 165 |
+| Time zone | `America/Chicago` |
+| First human | Account ID `2`, `commander@wipost165.org` |
 | Contacts company | `American Legion Post 165` |
+| Deployed revision | `54eb03d7f963ac1ec4a250ebbe390303dda77d70` |
 
-Configure the existing Swift app with this origin and client ID. Normal TLS
-validation applies. The API and token endpoints require the exact origin and do
-not depend on a temporary certificate, LAN server or SSH tunnel on the Mac.
-The browser consent response retains `Referrer-Policy: strict-origin` and normal
-CSRF/origin verification. API reads return 200, mutations and accepted retries 201,
-exchange and revocation 200. See the [complete contract](MOBILE_BUDDY_CHECK_API_HANDOFF.md).
+Normal certificate validation passes. No temporary certificate, LAN test server or
+Mac SSH tunnel is involved. Configure the existing Swift app with this origin and
+public client ID; reauthorize for this installation and keep synthetic records separate.
 
-No Apple source change is required. The new explicit Contacts export permission
-uses the existing `contacts_export` capability and `export_not_permitted` error.
-Only configuration changes from the synthetic installation are needed. Reauthorize
-for this installation; do not carry synthetic records or credentials into it.
+**Apple contract differences:** no route, JSON schema, token lifetime or refresh
+change is required. The existing 403 `account_unavailable` authority error also
+applies when pilot access is removed. `contacts_export` now reflects the current
+human's explicit grant. The configured pilot account has both grants. See the
+[complete API contract](MOBILE_BUDDY_CHECK_API_HANDOFF.md).
 
-## Backend and staff support
+## Pilot and website access
 
-All requested routes are implemented, including receipt recovery, immutable
-corrections, caller-owned history, follow-up changes and closed-status collection
-pagination, and prior-suggestion snooze recovery. Browsing creates no outreach,
-assignment or follow-up. Missing history remains unknown; incomplete general-member
-registers cannot support an absence suggestion. Renewal, financial and accepted
-minutes evidence stay separate from mobile actions.
+Only account ID `2` has `use_mobile_buddy_checks`. No office-level pilot grant exists.
+OAuth consent, code exchange, every mobile request and the phone-related website
+controls require that current capability. Commander status, other offices and
+administration do not imply it. The existing role system can deliberately delegate
+it later; dated role authority expires with the assignment.
 
-Initial launch is restricted to Andre through the explicit `use_mobile_buddy_checks`
-pilot grant. It gates human consent, token exchange, all mobile requests and the
-phone-related website controls. Neither Commander status, other offices nor
-administration implies pilot access; the role system can deliberately grant it later.
-Other users see no Mobile sessions, general-member attendance or address-review links,
-and direct URLs are denied. Removing pilot access returns the existing 403
-`account_unavailable` authority error; no JSON schema or Swift code change is required.
+Other users see no Mobile sessions, general-member attendance or address-review
+links, and direct URLs are denied. Evidence editing additionally requires current
+full membership access. Existing membership drives, imports, renewal and financial
+workflows retain their existing permissions.
 
-Contacts export requires both the installation flag and the separate
-`export_buddy_contacts` grant. Initial activation grants it to Andre only.
-`manage_settings`, membership leadership and assignment access do not imply export.
-Existing current membership authority additionally controls reviewed address fields.
-The server exports reviewed structured components only; unreviewed or stale sources
-produce unknown address coverage. Actual Post addresses/attendance must be reviewed
-by the authorized officer using the new staff controls, never inferred or seeded.
+`export_buddy_contacts` was granted only to the pilot account. Assignment access
+alone does not authorize export. Current membership authority additionally controls
+reviewed address fields. Export includes only permitted structured components with
+current source provenance; unreviewed/stale addresses remain unknown. Real attendance
+and mailing sources still require an officer's review; activation guesses neither.
 
-Staff controls are under Membership → General-member attendance, Membership → a
-person → reviewed address, and People → a login account → Permissions → Buddy Checks.
-Grant revocation affects the next request made with an existing token.
+Staff controls: Membership → General-member attendance; Membership → a person →
+Review mailing address; Your profile → Mobile sessions; and People → Login Account
+→ Permissions → Buddy Checks. The two grants can be removed independently.
 
-## Verification
+## Feature verification
 
-- Focused synthetic checks after pilot restriction: 42 tests, 362 assertions, zero failures/errors/skips.
-  Cover human code/PKCE/consent continuation, disabled/revoked/expired sessions,
-  ownership and current authority, receipt retries and conflicts, corrections,
-  follow-up reschedule/complete/cancel, snooze recovery, export restrictions and
-  incomplete/revised attendance. Assertions include persisted and later-read state.
-- Export regression first failed against the original implementation (ungranted
-  officer got 200), then passed with separate current-grant enforcement.
-- Independent PostgreSQL retry race passed on a newly created synthetic database:
-  a second writer waited on the real lock, both received identical receipts, one
-  contact/receipt persisted, and changed-payload reuse conflicted without mutation.
-- RuboCop on current master plus this patch: 603 files, no offenses. Brakeman: zero errors/warnings. Bundler audit:
-  no vulnerabilities, advisory revision `a6847b0651a702488f5844081e848dd1ec9dbf1d`.
-  Zeitwerk eager loading passed. Final full ordinary suite on current master plus the pilot patch: 1,425 tests,
-  14,096 assertions, zero failures/errors/skips. Full browser suite before the pilot restriction: 92 tests, 5,369 assertions,
-  zero failures/errors/skips. Final browser checks on current master plus the pilot
-  patch: 8 tests, 123 assertions, zero failures/errors/skips, covering consent with
-  browser-generated Origin/referrer, email-code sign-in, pilot visibility and grant
-  changes. Desktop and 390px screenshots were inspected; controls stayed readable
-  and pages had no horizontal overflow.
+| Feature | Verified evidence |
+| --- | --- |
+| Authentication | Synthetic S256/code replay/expiry/CSRF/origin tests and real browser consent submission pass. Production email arrived; its code signed in and returned to consent with 200, `strict-origin`, `no-store` and a CSRF token. Consent was left unsubmitted. |
+| Session and authority | Stable identities/time zone confirmed by production probe. Synthetic checks distinguish expiry, revocation, disabled accounts and removed pilot authority; current dated grants apply to existing credentials. |
+| People and privacy | Synthetic bounded search, fresh cards, assignments, hidden-recipient denial and separation from other callers' notes/renewal/financial fields pass. |
+| Suggestions | Synthetic exclusions, unknown history, explicit complete attendance and revised/incomplete attendance pass. Reads create no check, assignment or reminder. No history was backfilled in production. |
+| Checks, corrections and receipts | Synthetic exact/lost-response retries, changed-payload conflicts, immutable originals, stable logical IDs, later history/revisions and database rollback checks pass. |
+| Follow-ups and snoozes | Synthetic linked/independent creation, reschedule, completion/cancellation, stale-revision denial, receipt recovery, closed-status pagination and snooze recovery pass without inventing a conversation. |
+| Contacts export | Synthetic current-grant enforcement, assignment-only denial, field tiers and changed/restored source invalidation pass. Production company, grant and existing reviewed-address authority confirmed. |
+| Website and database | Desktop/390px rendered controls and nonpilot hiding/denial pass. Three production migrations applied; all 12 protected-table counts/fingerprints remained unchanged. |
 
-## Release record
+Final full ordinary suite on current GitHub master plus the pilot patch:
+**1,425 tests, 14,096 assertions, zero failures/errors/skips**. Focused mobile/pilot
+checks: **42 tests, 362 assertions**, all passing. Full browser baseline before the
+pilot restriction: **92 tests, 5,369 assertions**, all passing. Final consent, code
+sign-in, pilot visibility and permissions browser checks: **8 tests, 123 assertions**,
+all passing. Screenshots were inspected at desktop and 390px; readable controls and
+no horizontal overflow.
 
-Activation is blocked pending explicit commit/push/deploy authorization required by
-automatic approval review. No commit, push, deployment or production grant/migration
-was performed. The production mobile session route currently returns HTTP 404;
-the permanent origin passes normal TLS validation with no redirect.
+The export regression first failed against the old implementation (ungranted
+export returned 200), then passed with current-grant enforcement. A separate real
+PostgreSQL writer race returned identical receipts with one contact/operation;
+changed-payload reuse conflicted without mutation. Activation and readiness CLI
+checks passed on a separate synthetic database without creating contacts or tokens.
 
-After release, record the deployment revision, production installation/user IDs,
-applied migrations, enabled settings, preserved-table fingerprint comparison and
-public endpoint checks here. The intended public configuration above is prepared,
-not a registered production-client claim.
+RuboCop: **603 files, no offenses**. Brakeman: **zero errors/warnings**. Bundler audit:
+**no vulnerabilities**, advisory revision `a6847b0651a702488f5844081e848dd1ec9dbf1d`.
+Zeitwerk, shell syntax, JSON examples, document references and diff checks passed.
+Tests and fault checks used synthetic data; no real outreach was fabricated.
 
-Required migrations:
+## Release evidence
+
+`BUDDY_CHECK_ACTIVATE_EMAIL=commander@wipost165.org bin/release push-deploy`
+pushed/verified the exact revision, deployed it, registered the client and granted
+only that account pilot/export access. Preflight, activation and read-only probes
+shared one persistent SSH connection, closed by the wrapper at completion.
+A clean release copy preserved the unrelated local handoff file.
+
+Applied migrations:
 
 - `20261011210000_add_mobile_buddy_checks`
 - `20261011211000_preserve_buddy_evidence`
 - `20261012120000_add_buddy_contact_export_permission`
 
-The readiness probe additionally verifies that only Andre has the pilot grant and
-that no office-level pilot grant exists. The normal release wrapper performs transport
-preflight, deployment, narrow activation and read-only probes within its persistent SSH session. No production
-contacts, conversations, follow-ups, address reviews or attendance are fabricated.
+Enabled settings: `MOBILE_BUDDY_CHECK_ENABLED=true`,
+`MOBILE_CONTACT_EXPORT_ENABLED=true`, and the exact issuer/client/callback/company
+above. Existing `MAIL_PROVIDER=loops` and its configured credentials/template remain
+in use. No user, roster, renewal or official-record access was broadened.
 
-Real email inbox delivery/browser sign-in still requires Andre's participation.
-Automatic approval review rejected sending the sign-in email without separate
-explicit authorization. No email was sent by that blocked action. Native
-ASWebAuthenticationSession, iPhone installation and device verification belong to
-the mobile agent.
+The server-computed before/after counts and fingerprints matched for all twelve
+roster/import, membership/financial and official-minutes tables. The 124 people,
+five imports and existing minutes/revisions/attestations/approval were preserved.
+No production member rows were copied out.
+
+Live HTTP checks: Post health and sign-in 200; co-hosted application 200; anonymous
+mobile session 401 `invalid_session`; token without a grant 400 `invalid_grant`;
+revocation of an unissued token 200 `{}`. All mobile/token/revocation probes passed
+TLS validation with **zero redirects**. Successful token exchange is verified by
+synthetic integration tests; the first native production exchange follows Andre's
+explicit phone consent.
+
+The temporary verification browser signed out and closed. Mobile sessions showed
+no active bearer session; no phone consent or mobile record was created by the check.
+No backend blocker remains. Native sign-in, Contacts writes and notifications still
+need the mobile agent's final iPhone verification.
