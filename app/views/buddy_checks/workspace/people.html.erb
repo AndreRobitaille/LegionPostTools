@@ -1,0 +1,11 @@
+<% content_for :title, "Find a member for a Buddy Check" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Find a member</h1><p class="page-sub">Choose someone, then review their current contact availability.</p></div>
+  <%= render "buddy_checks/navigation", current: :people %>
+  <% if @search_error %><div class="error-summary" role="alert"><%= @search_error %></div><% end %>
+  <%= form_with url: buddy_checks_people_path, method: :get, class: "membership-toolbar" do |form| %>
+    <div class="fl"><%= form.label :q, "Member name" %><%= form.search_field :q, value: params[:q], class: "f" %></div><%= form.submit "Find members", class: "btn-secondary" %>
+  <% end %>
+  <div class="mrow-list"><% @people.each do |person| %><%= render "shared/workspace_destination", label: person.full_name, description: "Prepare a Buddy Check", path: buddy_checks_person_path(person) %><% end %></div>
+  <% if @people.empty? %><div class="empty"><p>No permitted members match this name. Try a different name.</p></div><% elsif @people.size == 50 %><p class="membership-secondary">Showing the first 50 matches. Enter a name to narrow the list.</p><% end %>
+</div>

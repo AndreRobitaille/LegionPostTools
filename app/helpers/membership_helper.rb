@@ -1,4 +1,18 @@
 module MembershipHelper
+  def membership_workspace_groups
+    groups = [ { key: "member-work", label: "Member work", destinations: [
+      { label: @access.manager? ? "Renewal follow-up" : "Your assigned members", description: @access.manager? ? "Make renewal calls, verify reported payments, and review member records." : "Follow your drive instructions and record the contacts you make.", path: membership_follow_up_path(membership_year: @membership_year) },
+      { label: "Drives", description: @access.manager? ? "Coordinate callers, assign members, and print call sheets." : "Read your instructions and open your call sheets.", path: membership_drives_path(membership_year: @membership_year) }
+    ] } ]
+    if @access.manager?
+      groups << { key: "post-accounting", label: "Reports and Post receipts", destinations: [
+        { label: "Adjutant report", description: "Review membership figures and save a dated summary for a meeting.", path: membership_report_path(membership_year: @membership_year) },
+        { label: "Post checks", description: "Record checks received after National renewals and review corrections.", path: membership_post_checks_path(membership_year: @membership_year) }
+      ] }
+    end
+    groups
+  end
+
   RENEWAL_LABELS = {
     "removed" => "Removed from imported roster", "deceased" => "Deceased in National roster",
     "lapsed" => "Expired in National roster", "unknown" => "Standing needs review",

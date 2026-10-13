@@ -56,7 +56,7 @@ acting for a person and inherits that person's current authority.
 | Current Adjutant in the standard preset | Full membership; agenda work, minutes drafting, attestation, recording later meeting approval; private notes and calendar management | Same sources |
 | Current 1st Vice Commander in the standard preset | Full membership without meeting-management or technical-administrator duties | Same sources |
 | Other officers, former officers, honorary status | Member baseline plus actual current assignments/manual grants; a display title never substitutes for authority | [Roles](ROLES.md), [assignments](../app/models/position_assignment.rb) |
-| Scoped duty holder | Only operations covered by effective capabilities; Officer tools hub when at least one hub capability applies | [Permission grants](../app/models/permission_grant.rb), [hub](../app/controllers/admin/dashboard_controller.rb) |
+| Scoped duty holder | Only operations covered by effective capabilities; Officer tools hub for current membership leadership or operational capabilities | [Permission grants](../app/models/permission_grant.rb), [hub](../app/controllers/officer_tools_controller.rb) |
 | Technical administrator | Account/grant/position/roster/website-connection administration and implied operational support | [Admin base](../app/controllers/admin/base_controller.rb), [Permission grants](../app/models/permission_grant.rb) |
 | Publisher | Separate `publish_public_content` grant: introduction/portrait/consent/editorial work and calendar defaults | [Publishing](PUBLIC_PUBLISHING.md) |
 | Personal agent token | Private `/api`; current enabled user's effective authority; expiry/revocation and idempotency checks | [API base](../app/controllers/api/base_controller.rb), [token](../app/models/agent_access_token.rb) |
@@ -101,15 +101,20 @@ flowchart TD
   Dashboard --> Menu[Account menu]
   Menu --> Profile[Profile, passkeys, agent access]
   Menu --> SignOut[Sign out]
-  Dashboard -->|Effective hub authority| Officer[Officer tools / Administration]
+  Dashboard -->|Current Post work authority| Officer[Officer tools]
+  Dashboard -->|Settings authority| Admin[Administration]
+  Dashboard -->|Pilot or assigned caller| Personal[Your work: Buddy Checks and assigned calls]
   Officer --> Work[Meetings, agendas, minutes, Jobs, history]
-  Officer -->|Technical administration| Accounts[Roster, accounts, grants, positions, connections]
+  Officer --> Buddy[Buddy Check activity, care coverage, monthly county count]
+  Admin -->|Technical administration| Accounts[Roster, accounts, grants, positions, connections]
   Officer -->|Editorial authority| Publish[Website publishing and defaults]
 ```
 
 Desktop tabs and the phone Menu share Dashboard, Calendar, Meetings, Endeavors,
-People. Profile and Sign out live in the account menu. Admin versus Officer tools
-depends on effective `manage_settings`. Each destination still checks its own
+People. Menu separates Your work, Post duties, Application settings, and Your account.
+Officer tools and Administration are separate hubs; people with both kinds of authority
+see both. Buddy Checks and assigned calls stay under Your work; Profile and Sign out
+stay under Your account. Each destination still checks its own
 authority; hiding a link is not the access control. Legacy `/dated_agendas` lists
 redirect to Meetings; officer agenda lists redirect to officer Meetings.
 Source: [navigation helper](../app/helpers/navigation_helper.rb),

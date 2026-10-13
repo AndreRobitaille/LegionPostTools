@@ -1,11 +1,14 @@
-<% content_for :title, "Mobile sessions" %>
-<div class="page-lead"><h1 class="page-title">Mobile sessions</h1><p class="page-sub">Revoke a Buddy Checks connection to end its access. Your browser stays signed in.</p></div>
-<% if @tokens.empty? && @remembered_sessions.empty? %><p class="empty">No active mobile sessions.</p><% end %>
-<div class="mrow-list">
-<% @remembered_sessions.each do |connection| %>
-  <div class="mrow"><div class="mrow-main">Remembered session <%= connection.id %><p class="membership-secondary">Connected <%= legion_datetime(connection.authorized_at) %><br>Remembered until <%= legion_datetime(connection.expires_at) %></p></div><%= button_to "Revoke remembered session #{connection.id}", mobile_remembered_session_path(connection.public_id), method: :delete, class: "btn-secondary" %></div>
-<% end %>
-<% @tokens.each do |token| %>
-  <div class="mrow"><div class="mrow-main">Session <%= token.id %><p class="membership-secondary">Connected <%= legion_datetime(token.created_at) %></p></div><%= button_to "Revoke session #{token.id}", mobile_session_path(token), method: :delete, class: "btn-secondary" %></div>
-<% end %>
+<% content_for :title, "Buddy Checks app connections" %>
+<div class="task-workspace">
+  <%= link_to "Your profile", profile_path(anchor: "connected-apps"), class: "back" %>
+  <div class="page-lead"><h1 class="page-title">Buddy Checks app connections</h1><p class="page-sub">Review the iPhone app's current access to your account.</p></div>
+  <p class="workspace-footnote">Disconnecting ends this app connection. Your saved checks and callbacks remain, and your browser stays signed in.</p>
+  <% if @tokens.empty? && @remembered_sessions.empty? %><div class="empty"><p>No active app connections. Start sign-in from the iPhone app when you want to connect.</p></div><% end %>
+  <div class="mrow-list">
+    <% @remembered_sessions.each do |connection| %>
+      <div class="mrow task-status-row"><div><h2 class="mrow-name">Buddy Checks iPhone app</h2><p class="membership-secondary">Connected <%= legion_datetime(connection.authorized_at) %><br>Remembered until <%= legion_datetime(connection.expires_at) %></p></div><%= button_to "Disconnect remembered app", mobile_remembered_session_path(connection.public_id), method: :delete, class: "btn-return", data: { turbo_confirm: "Disconnect this remembered sign-in? Saved checks and callbacks will remain." } %></div>
+    <% end %>
+    <% @tokens.each do |token| %>
+    <div class="mrow task-status-row"><div><h2 class="mrow-name">Buddy Checks iPhone app</h2><p class="membership-secondary">Connected <%= legion_datetime(token.created_at) %> · Access ends <%= legion_datetime(token.created_at + token.expires_in.seconds) %></p></div><%= button_to "Disconnect app", mobile_session_path(token), method: :delete, class: "btn-return", data: { turbo_confirm: "Disconnect this app connection? Saved checks and callbacks will remain." } %></div>
+  <% end %></div>
 </div>

@@ -1,0 +1,19 @@
+<%= render "buddy_checks/coordination/privacy" %>
+<% content_for :title, "Buddy Check county report" %>
+<div class="task-workspace buddy-county-report">
+  <div class="page-lead"><h1 class="page-title">Buddy Check county report</h1><p class="page-sub">The monthly number of Buddy Checks performed where the person was reached.</p></div>
+  <%= render "buddy_checks/navigation", current: :report %>
+  <%= form_with url: buddy_checks_report_path, method: :get, class: "membership-toolbar" do |form| %>
+    <div class="fl"><%= form.label :month_number, "Month" %><%= form.select :month_number, Date::MONTHNAMES.drop(1).each_with_index.map { |name, index| [name, index + 1] }, { selected: params[:month_number].presence || @month&.month }, class: "f", required: true %></div>
+    <div class="fl"><%= form.label :year, "Year" %><%= form.number_field :year, value: params[:year].presence || @month&.year || Organization.current_local_date.year, min: 2000, max: 2100, class: "f", required: true %></div>
+    <%= form.submit "Show county total", class: "btn-secondary" %>
+  <% end %>
+  <% if @error %><p class="error-summary" role="alert"><%= @error %></p><% else %>
+    <section class="panel buddy-monthly-total" aria-label="Monthly county total">
+      <h2><%= @organization.name %> · <%= @month.strftime("%B %Y") %></h2>
+      <p class="buddy-county-number"><strong><%= @count %></strong><span>Buddy Checks performed</span></p>
+      <p>Reached conversations, agreed callbacks, and conversations requesting no further contact count. Unanswered attempts and administrative reviews are excluded.</p>
+      <p class="membership-secondary">Calculated as of <%= buddy_time(Time.current) %>. Corrections to recorded checks can change this live total.</p>
+    </section>
+  <% end %>
+</div>

@@ -293,3 +293,20 @@ the source calendar. Dates and location remain source-owned. Calendar managers
 may cancel or restrict public output without acquiring publication authority;
 ordinary calendar edits never restore withdrawn content. See
 [Public publishing](PUBLIC_PUBLISHING.md) for the review and consent boundary.
+
+## Buddy Check coordination and private care follow-up
+
+Current full private-outreach authority also permits the dedicated Buddy Checks
+coordination workspace: Post activity/member history, internal coverage, the separate
+monthly county count, contact-preference reviews, and human-entered extra-care
+follow-up. This uses existing full-information role/grant boundaries, without creating
+another officer position. The personal pilot grant alone does not permit these views.
+Coordination reading does not grant mobile calling, contact export, settings, or
+personal official-record authority.
+
+Care notes and their dated, attributed reviews are private to current coordinators.
+An owner and review date are required for open care follow-up. Role expiry or account
+disabling removes access; earlier notes persist for successor coordinators. County
+reporting contains the single monthly count of checks where the person was reached,
+with no private care notes or membership/dues statistics. See
+[the Buddy Check guide](BUDDY_CHECKS_WORKSPACE.md).

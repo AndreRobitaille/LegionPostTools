@@ -6,11 +6,5 @@
     <% primary_destinations.each do |destination| %>
       <%= link_to destination[:label], destination[:path], nav_tab_attributes(destination[:section]) %>
     <% end %>
-    <span class="nav-spacer"></span>
-    <% if (admin = admin_destination) %>
-      <%= link_to admin[:path], nav_tab_attributes(admin[:section], extra_class: "nav-tab--admin") do %>
-        <span class="nav-dia">&#9670;</span> <%= admin[:label] %>
-      <% end %>
-    <% end %>
   </div>
 </nav>

@@ -341,7 +341,7 @@
 
 /* Primary navigation (navy-2 tab strip; tracked caps; gold active underline) --- */
 .nav-bar { background: var(--color-navy-2); border-bottom: 1px solid rgba(198,161,91,.35); overflow-x: clip; }
-.nav-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: stretch; padding: 0 12px; }
+.nav-inner { max-width: 1060px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: stretch; padding: 0 12px; }
 .nav-tab { display: flex; align-items: center; gap: 8px; padding: 0 18px; height: 48px; text-decoration: none; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c8d3e3; border-bottom: 3px solid transparent; }
 .nav-tab:hover { color: #fff; }
 .nav-tab:focus-visible { position: relative; z-index: 1; color: #fff; outline: 3px solid var(--color-gold-hi); outline-offset: -4px; }
@@ -361,14 +361,14 @@
    click only — hover menus are punishing with a tremor and meaningless on
    touch. */
 .app-menu { position: relative; }
-.app-menu-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 7px 15px; color: #fff; background: rgba(255,255,255,.08); border: 1.5px solid rgba(230,205,139,.55); border-radius: var(--radius-control); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.app-menu-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 7px 15px; color: #fff; background: rgba(255,255,255,.08); border: 1.5px solid rgba(230,205,139,.55); border-radius: var(--radius-control); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
 .app-menu-btn:hover { background: rgba(255,255,255,.16); border-color: var(--color-gold-hi); }
 .app-menu-btn:focus-visible { outline: 3px solid var(--color-gold-hi); outline-offset: 2px; }
 .app-menu-btn[aria-expanded="true"] { color: var(--color-navy-deep); background: var(--color-gold-hi); border-color: var(--color-gold-hi); }
 .app-menu-bars { display: inline-flex; flex-direction: column; justify-content: center; gap: 3px; width: 18px; }
 .app-menu-bars span { display: block; height: 2px; background: currentColor; border-radius: 1px; }
 
-.app-menu-panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 40; min-width: 268px; overflow: hidden; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 4px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 18px 40px rgba(8,26,52,.28); }
+.app-menu-panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 40; width: 300px; max-width: calc(100vw - 44px); max-height: calc(100dvh - 94px); overflow-y: auto; overscroll-behavior: contain; background: var(--color-paper); border: 1px solid var(--rule-strong); border-top: 4px solid var(--color-gold); border-radius: var(--radius-card); box-shadow: 0 18px 40px rgba(8,26,52,.28); }
 .app-menu-panel[hidden] { display: none; }
 .app-menu-id { display: flex; align-items: center; gap: 13px; padding: 16px 18px; background: #efe5cb; border-bottom: 1px solid var(--rule); }
 .app-menu-id-text { display: flex; flex-direction: column; min-width: 0; gap: 3px; }
@@ -377,10 +377,11 @@
 /* The destinations ride in the menu only at phone widths, where the tab strip
    is hidden. Never both at once, so assistive tech meets one set of links. */
 .app-menu-nav { display: none; }
+.app-menu-group { border-top: 1px solid var(--rule); padding: 6px 0; }
+.app-menu-heading { margin: 0; padding: 7px 18px 3px; color: var(--color-navy); font-size: 13px; font-weight: 750; letter-spacing: .1em; line-height: 1.5; text-transform: uppercase; }
 .app-menu-actions { display: flex; flex-direction: column; }
 .app-menu-actions form { margin: 0; }
-.app-menu-link { display: block; width: 100%; box-sizing: border-box; padding: 14px 18px; color: var(--color-navy); background: none; border: 0; border-top: 1px solid var(--rule-soft); font-family: inherit; font-size: 17px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
-.app-menu-nav > .app-menu-link:first-child, .app-menu-actions > :first-child .app-menu-link { border-top: 0; }
+.app-menu-link { display: flex; align-items: center; min-height: 44px; width: 100%; box-sizing: border-box; padding: 10px 18px; color: var(--color-navy); background: none; border: 0; font-family: inherit; font-size: 17px; font-weight: 600; line-height: 1.4; text-align: left; text-decoration: none; cursor: pointer; }
 .app-menu-link:hover { background: var(--color-ivory); text-decoration: underline; }
 .app-menu-link:focus-visible { outline: 3px solid var(--color-gold); outline-offset: -3px; }
 /* Where you are now, marked the way the tab strip marks it: gold edge, tinted
@@ -1691,7 +1692,7 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
      keeps roughly a hundred pixels of a small screen for actual content. */
   .nav-bar { display: none; }
   .app-menu-nav { display: block; }
-  .app-menu-panel { min-width: 244px; max-width: calc(100vw - 28px); }
+  .app-menu-panel { min-width: 244px; max-width: calc(100vw - 44px); }
 
   .app-main { min-width: 0; padding: 20px 16px 48px; }
   .workspace-destination { flex-wrap: nowrap; gap: 0; padding: 15px 16px; }
@@ -2597,6 +2598,52 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .membership-toolbar .fl { min-width: 150px; flex: 1; }
 .membership-toolbar .f { width: 100%; }
 .membership-secondary { color: var(--color-muted); font-size: 14px; line-height: 1.5; }
+/* Outreach and Membership use the same task directory as the officer hub. */
+.task-workspace { max-width: var(--w-main); }
+.task-workspace > .page-lead { margin-bottom: 26px; }
+.task-workspace .page-sub { color: var(--color-ink); }
+.task-workspace .workspace-groups .card { margin: 0; }
+.task-workspace .workspace-groups .card-body { padding: 18px; }
+.task-workspace .sec-head-label { margin: 0; }
+.task-workspace .f, .membership-toolbar .f, .membership-form .f, .buddy-form .f { min-height: 44px; }
+.workspace-group--outreach > .panel, .workspace-group--member-work .mrow-list { border-top: 3px solid var(--color-gold); }
+.buddy-suggestion { margin-bottom: 16px; }
+.buddy-suggestion h3 { color: var(--color-navy); font-size: 22px; margin: 0 0 12px; }
+.buddy-suggestion p { margin: 0 0 16px; font-size: 16px; line-height: 1.5; }
+.buddy-suggestion .membership-secondary { font-size: 14px; }
+.buddy-choice-list { display: grid; gap: 8px; }
+.buddy-choice-list .workspace-destination { border: 1px solid var(--rule); border-radius: var(--radius-control); }
+.workspace-footnote { max-width: var(--w-form); margin: 26px 0; font-size: 16px; line-height: 1.6; }
+.task-status-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 0; }
+.mrow.task-status-row { padding: 18px; }
+.task-status-row > div { min-width: 0; }
+.task-status-row p { margin: 6px 0 0; line-height: 1.5; }
+.task-status-row .mrow-name, .membership-contact h3 { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.5; }
+.task-row-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.task-secondary-action { margin-top: 22px; }
+.task-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 16px; }
+.task-facts { margin: 0 0 18px; }
+.task-facts > div { margin-bottom: 16px; }
+.task-facts dt { font-size: 14px; color: var(--color-muted); margin-bottom: 5px; }
+.task-facts dd { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+.attendance-register { max-width: var(--w-main); }
+.attendance-members { border: 1px solid var(--rule); border-radius: var(--radius-control); margin-bottom: 20px; }
+.attendance-member { display: grid; grid-template-columns: minmax(0, 1fr) 200px; align-items: center; gap: 20px; padding: 14px 16px; border-bottom: 1px solid var(--rule-soft); }
+.attendance-member:last-child { border-bottom: 0; }
+.attendance-member[hidden] { display: none; }
+.attendance-member label { font-size: 16px; color: var(--color-ink); letter-spacing: normal; text-transform: none; margin: 0; }
+.attendance-member select { min-height: 44px; margin: 0; }
+.membership-correction summary { min-height: 44px; box-sizing: border-box; padding: 12px 0; }
+.task-workspace a:focus-visible, .task-workspace button:focus-visible { outline: 3px solid var(--color-navy); outline-offset: 3px; }
+.task-workspace .workspace-destination:focus-visible { outline-offset: -3px; }
+@media (max-width: 560px) {
+  .task-status-row { align-items: stretch; flex-direction: column; }
+  .task-status-row form, .task-status-row button, .task-row-actions, .task-row-actions a { width: 100%; box-sizing: border-box; }
+  .task-row-actions { flex-direction: column; }
+  .task-row-actions a { text-align: center; }
+  .attendance-member { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .buddy-suggestion .btn-primary { display: block; text-align: center; }
+}
 .membership-back { display: inline-block; margin-bottom: 14px; font-size: 16px; }
 .membership-navigation { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 22px 0 24px; border-bottom: 1px solid var(--rule-strong); }
 .membership-navigation a { padding: 10px 0; color: var(--color-navy); font-size: 16px; text-decoration: none; border-bottom: 3px solid transparent; }
@@ -2663,3 +2710,25 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .membership-print { page: membership; padding: 0; }
   .membership-print .membership-counts > div { break-inside: avoid; }
 }
+
+/* Buddy Check coordination: check-ins, coverage, and a separate county total. */
+.buddy-post-check h2, .buddy-care-section h2, .buddy-coverage-row h2 { font-size: 20px; line-height: 1.4; margin: 0 0 12px; }
+.buddy-post-check p { font-size: 16px; line-height: 1.6; }
+.buddy-post-check .membership-secondary { font-size: 14px; }
+.buddy-coverage-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.buddy-coverage-row { margin: 0; }
+.buddy-care-callout { margin: 16px 0; padding: 14px 16px; background: #f3e9d0; border-left: 4px solid var(--color-gold-ink); border-radius: var(--radius-control); font-size: 16px; line-height: 1.6; }
+.buddy-care-callout p { margin: 8px 0 0; overflow-wrap: anywhere; }
+.buddy-monthly-total { max-width: var(--w-form); padding: 26px; border-top: 4px solid var(--color-gold); }
+.buddy-monthly-total h2 { font-size: 20px; line-height: 1.4; }
+.buddy-monthly-total > p { font-size: 16px; line-height: 1.6; }
+.buddy-monthly-total > .membership-secondary { font-size: 14px; }
+.buddy-county-number { display: flex; flex-direction: column; margin: 22px 0; color: var(--color-navy); }
+.buddy-county-number strong { font-size: 64px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.buddy-county-number span { font-size: 20px; font-weight: 700; margin-top: 10px; }
+@media (max-width: 900px) { .buddy-coverage-list { grid-template-columns: minmax(0, 1fr); } }
+.buddy-coverage-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 24px 0; padding: 18px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.buddy-coverage-summary dt { font-size: 14px; line-height: 1.5; color: var(--color-ink); }
+.buddy-coverage-summary dd { margin: 8px 0 0; font-size: 20px; font-weight: 700; color: var(--color-navy); }
+@media (max-width: 900px) { .buddy-coverage-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .buddy-coverage-summary { grid-template-columns: minmax(0, 1fr); gap: 16px; } }

@@ -1,0 +1,25 @@
+<% groups = officer_workspace_groups %>
+<% columns = groups.group_by { |group| group[:column] } %>
+<% content_for :title, "Officer tools" %>
+<div class="admin-workspace officer-workspace">
+  <div class="page-lead"><h1 class="page-title">Officer tools</h1><p class="page-sub">Choose the Post work you need to do.</p></div>
+  <% role_summary = current_user.person.active_role_labels.to_sentence.presence %>
+  <aside class="officer-workspace-context" aria-label="Post duties and access">
+    <p><span>Post duties</span><% if role_summary %> <%= role_summary %><% end %></p>
+    <small>These tasks follow your current roles and permissions. Account and application settings are in Administration.</small>
+  </aside>
+  <div class="workspace-groups<%= " workspace-groups--single" if columns.one? %>">
+    <% columns.each_value do |column_groups| %>
+      <div class="workspace-column">
+        <% column_groups.each do |group| %>
+          <section class="workspace-group workspace-group--<%= group[:key] %>" aria-labelledby="officer-<%= group[:key] %>">
+            <%= render "shared/section_header", label: group[:label], heading_tag: :h2, heading_id: "officer-#{group[:key]}" %>
+            <div class="mrow-list"><% group[:destinations].each do |destination| %>
+              <%= render "shared/workspace_destination", label: destination[:label], description: destination[:description], path: destination[:path] %>
+            <% end %></div>
+          </section>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

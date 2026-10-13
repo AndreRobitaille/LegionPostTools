@@ -19,9 +19,10 @@ The standard American Legion Post preset supplies this access automatically:
 | Application administrator or someone granted **Manage people and accounts** | Full workspace through application permissions. |
 
 Everyone needs an enabled website login account. Holding an office does not create
-that account or grant technical administration. The **Membership** destination
-appears in desktop navigation and Menu only while the person has current access;
-direct URLs and the private API enforce the same boundary.
+that account or grant technical administration. Managers open **Menu → Post duties → Officer tools → Membership**. Assigned
+volunteers open **Menu → Your work → Your assigned calls**. These destinations
+appear only while access is current; direct URLs and the private API enforce the
+same boundary.
 
 ### Assign or end an officer's membership access
 
@@ -37,7 +38,7 @@ its end date, using the Post's local date. Use **End role**, or enter **Ended** 
 select **Save dates**, to record the end of the term. Historical assignments stay
 in the person's record but no longer supply access.
 
-**Admin → Post Positions** controls which offices supply access. The
+**Menu → Administration → Post positions** controls which offices supply access. The
 **Full membership access** marker identifies the configured offices.
 **Grant membership access** and **Remove membership access** change the position's
 policy for everyone currently holding that position; they do not assign a person
@@ -57,12 +58,19 @@ for login eligibility and officer turnover.
 
 ## Find members who need attention
 
-Open **Membership** from the navigation or Menu. The assignment, drive dates,
+Managers open **Menu → Officer tools → Membership → Renewal follow-up**.
+Volunteers open **Menu → Your work → Your assigned calls**. The assignment, drive dates,
 enabled account, and selected membership year all limit volunteer access.
 Closing a drive or revoking an assignment ends assignment-derived access on the
 next request; a separate current officer role or manual grant can still supply access.
 
-The landing page is **Member follow-up**, defaulting to **Needs attention**. It puts
+The landing page is a task directory: **Renewal follow-up**, **Drives**, and, for
+managers, **Adjutant report** and **Post checks**. Check-ins and the separate monthly
+county count belong in [Buddy Checks](BUDDY_CHECKS_WORKSPACE.md), reached from
+**Menu → Your work**. Volunteers open
+**Your assigned members** instead of the officer renewal list.
+
+**Renewal follow-up** (or **Your assigned members**) defaults to **Needs attention**. It puts
 due callbacks first, followed by membership records to review, payment confirmation
 for officers, and renewal follow-up. Paid renewals, paused contact, declined renewal,
 future callbacks, and completed welcome/Buddy Check contacts stay out of this view.
@@ -107,7 +115,8 @@ receipt, so check existing history before entering a receipt again.
 
 ## Calls, drives, and paper results
 
-Record the actual contact date, channel, result, brief notes, and any agreed callback
+From the member's detail page choose **Record contact or review**. The focused entry
+page keeps the actual contact date, channel, result, brief notes, and any agreed callback
 date. Phone/email links open the person's device application; they do not send
 messages or record a completed contact. Website and text channels can record
 contacts that actually happened. There is no automated prompt or SMS sender yet.
@@ -172,7 +181,8 @@ named caller must still have an enabled website account, and assigning their
 members also grants scoped website access. There is no separate paper-only caller
 option that avoids creating or granting access to a login account.
 
-To enter returned results, open the drive, select the assigned member, record the
+To enter returned results, open the drive, select the assigned member, choose
+**Record contact or review**, record the
 actual contact date and result, and enter the block's reference under
 **Paper reference (when entering a call sheet)**. This prevents duplicate paper entry.
 The selected assignment identifies the caller; the signed-in person is separately

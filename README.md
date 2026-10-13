@@ -80,6 +80,8 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/MEMBER_SIGN_IN_GUIDE.md` — plain-language email sign-in instructions for Post members.
 - `docs/USER_MANAGEMENT_GUIDE.md` — Commander and Adjutant procedures for accounts, officers, and permissions.
+- [Buddy Checks website guide](docs/BUDDY_CHECKS_WORKSPACE.md) — welfare calls, shared
+  mobile/web history, callbacks, attendance evidence, and app connections.
 - [Membership workspace guide](docs/MEMBERSHIP_WORKSPACE.md) — automatic officer access,
   assigned volunteers, drive call sheet PDFs, returned paper results, dues, and reports.
 - `docs/ARCHITECTURE.md` — architecture and durable product decisions.

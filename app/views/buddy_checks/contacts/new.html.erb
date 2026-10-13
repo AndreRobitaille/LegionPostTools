@@ -1,0 +1,4 @@
+<% content_for :title, "Record a Buddy Check" %>
+<%= link_to "Back to #{@person.full_name}", buddy_checks_person_path(@person), class: "back" %>
+<div class="page-lead"><h1 class="page-title">Record a Buddy Check</h1><p class="page-sub"><%= @person.full_name %> · Record a contact that actually happened.</p></div>
+<%= render "form" %>

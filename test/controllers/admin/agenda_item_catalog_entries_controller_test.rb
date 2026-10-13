@@ -48,7 +48,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     assert_response :success
     assert_select "h1", text: /Agenda Item Catalog/
     assert_select "body", text: /Opening Ceremony/
-    assert_select "a.back[href=?]", admin_root_path, text: /Officer tools/
+    assert_select "a.back[href=?]", officer_tools_path, text: /Officer tools/
 
     # Rows have dedicated drag, move, and edit controls rather than nesting
     # controls inside a whole-row link.
@@ -171,7 +171,7 @@ class Admin::AgendaItemCatalogEntriesControllerTest < ActionDispatch::Integratio
     get admin_agenda_item_catalog_entries_path
 
     assert_response :success
-    assert_select "a.back[href=?]", admin_root_path, text: /Administration/
+    assert_select "a.back[href=?]", officer_tools_path, text: /Officer tools/
   end
 
   test "create entry" do

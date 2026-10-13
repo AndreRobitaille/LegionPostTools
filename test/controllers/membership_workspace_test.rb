@@ -8,7 +8,7 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
 
   test "officer completes local payment correction and frozen Adjutant summary through the website" do
     sign_in_as(@officer)
-    get membership_root_path, params: { membership_year: @year }
+    get membership_follow_up_path, params: { membership_year: @year }
     assert_response :success
     assert_select ".membership-task", count: 2
     assert_select ".membership-summary", count: 0
@@ -36,29 +36,32 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
     assert_equal "45.0", snapshot.reload.payload["post_dues_received"]
   end
 
-  test "Membership is absent from both navigation surfaces without current role or assigned access" do
+  test "menu routes assigned callers to their work and membership managers through Officer tools" do
     sign_in_as(@other)
     get root_path
     assert_response :success
-    assert_select "a[href='#{membership_root_path}']", count: 0
-    get membership_root_path
+    assert_select "a[href='#{officer_tools_path}']", count: 0
+    get membership_follow_up_path
     assert_response :forbidden
 
     @assignment.update!(assigned_to: @other)
     get root_path
     assert_response :success
-    assert_select "a[href='#{membership_root_path}']", count: 2
+    assert_select "a[href='#{membership_follow_up_path}']", text: "Your assigned calls"
+    assert_select "a[href='#{officer_tools_path}']", count: 0
     get membership_report_path
     assert_response :forbidden
     get membership_post_checks_path
     assert_response :forbidden
     @drive.update!(closed_at: Time.current)
     get root_path
-    assert_select "a[href='#{membership_root_path}']", count: 0
+    assert_select "a[href='#{membership_follow_up_path}']", count: 0
 
     sign_in_as(@officer)
     get root_path
-    assert_select "a[href='#{membership_root_path}']", count: 2
+    assert_select "a[href='#{officer_tools_path}']", text: "Officer tools"
+    get officer_tools_path
+    assert_select "a.workspace-destination[href='#{membership_root_path}']"
     @office.update!(ends_on: Organization.current_local_date - 1)
     get root_path
     assert_select "a[href='#{membership_root_path}']", count: 0
@@ -80,7 +83,7 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
     workspace.record_dues!(dues_attributes(person_id: received_member.id))
     workspace.record_dues!(dues_attributes(person_id: online_member.id, kind: "national_reported", amount: nil))
     sign_in_as(@officer)
-    get membership_root_path
+    get membership_follow_up_path
     assert_response :success
     assert_select "select[name='filter'] option[selected][value='attention']"
     names = css_select(".membership-task .mrow-name").map(&:text)
@@ -88,13 +91,13 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
     assert_select ".membership-task-action p", text: "Verify the member's online renewal"
     assert_includes response.body, "Confirm dues received here with National"
 
-    get membership_root_path, params: { filter: "all" }
+    get membership_follow_up_path, params: { filter: "all" }
     assert_response :success
     assert_select ".membership-task", count: 8
     [ @member, later_member, paused_member, declined_member ].each do |person|
       assert_select ".membership-task .mrow-name", text: person.roster_display_name
     end
-    get membership_root_path, params: { q: "Later" }
+    get membership_follow_up_path, params: { q: "Later" }
     assert_select ".membership-task", count: 0
     assert_select "a", text: "Show all members"
   end
@@ -128,10 +131,10 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@officer)
     [ { roster_member_status: "Deceased" }, { roster_member_status: "Active", roster_removed_at: Time.current } ].each do |change|
       @member.update!(change)
-      get membership_root_path
+      get membership_follow_up_path
       assert_response :success
       assert_select ".membership-task .mrow-name", text: @member.roster_display_name, count: 0
-      get membership_root_path, params: { filter: "all" }
+      get membership_follow_up_path, params: { filter: "all" }
       assert_select ".membership-task .mrow-name", text: @member.roster_display_name
       assert_includes response.body, "no outreach"
       get membership_person_path(@member)
@@ -193,7 +196,7 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
 
   test "volunteer records callback and officer transcribes older sheet without replacing newer work" do
     sign_in_as(@volunteer)
-    get membership_root_path, params: { membership_year: @year }
+    get membership_follow_up_path, params: { membership_year: @year }
     assert_response :success
     assert_includes response.body, @member.full_name
     assert_not_includes response.body, @unassigned.full_name
@@ -229,10 +232,10 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
       assert_response :forbidden
     end
     sign_in_as(@officer)
-    get membership_root_path
+    get membership_follow_up_path
     assert_response :success
     @office.update!(ends_on: Organization.current_local_date - 1)
-    get membership_root_path
+    get membership_follow_up_path
     assert_response :forbidden
     assert_not_includes response.body, @member.full_name
   end
@@ -241,7 +244,7 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
     workspace(@volunteer).record_contact!(contact_attributes(outcome: "do_not_contact"))
     @assignment.update!(revoked_at: Time.current)
     sign_in_as(@officer)
-    get membership_person_path(@member), params: { membership_year: @year }
+    get new_membership_person_contact_path(@member), params: { membership_year: @year }
     assert_response :success
     assert_select "option[value='#{@assignment.id}']", text: /Revoked \(returned sheet only\)/
     paper = contact_attributes(occurred_on: Organization.current_local_date - 1, outcome: "no_answer",
@@ -261,7 +264,7 @@ class MembershipWorkspaceControllerTest < ActionDispatch::IntegrationTest
   test "volunteer lands in their assigned year when it differs from the next renewal year" do
     @drive.update!(membership_year: @year - 1, purpose: "welcome")
     sign_in_as(@volunteer)
-    get membership_root_path
+    get membership_follow_up_path
     assert_response :success
     assert_select "input[name='membership_year'][value='#{@year - 1}']"
     get membership_drive_path(@drive)

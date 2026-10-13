@@ -1,0 +1,14 @@
+<% content_for :title, "Your Buddy Check callbacks" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Your callbacks</h1><p class="page-sub">Keep the dates and times you agreed with members.</p></div>
+  <%= render "buddy_checks/navigation", current: :callbacks %>
+  <div class="mrow-list"><% @follow_ups.each do |callback| %>
+    <article class="mrow task-status-row"><div><h2 class="mrow-name"><%= callback.person.full_name %></h2><p><%= buddy_time(callback.due_at) %><%= " · Due now" if callback.due_at <= Time.current %></p></div><div class="task-row-actions"><%= link_to "Prepare callback", buddy_checks_person_path(callback.person), class: "btn-primary" %><%= link_to "Manage callback", edit_buddy_checks_follow_up_path(callback), class: "btn-secondary" %></div></article>
+  <% end %></div>
+  <% if @follow_ups.empty? %><div class="empty"><p>No open callbacks. You can agree a callback while recording a check or from a member's preparation page.</p><%= link_to "Find a member", buddy_checks_people_path, class: "btn-secondary" %></div><% end %>
+  <% if @legacy_callbacks.any? %>
+    <%= render "shared/section_header", label: "Dates recorded on earlier checks", heading_tag: :h2 %>
+    <p class="membership-secondary">These date-only notes are preserved separately from timed callbacks. Review the original check and coordinate any changed plans.</p>
+    <div class="mrow-list"><% @legacy_callbacks.each do |contact| %><%= render "shared/workspace_destination", label: "#{contact.person.full_name} · #{legion_date(contact.follow_up_on)}", description: "Review the member and your original callback note.", path: buddy_checks_person_path(contact.person) %><% end %></div>
+  <% end %>
+</div>

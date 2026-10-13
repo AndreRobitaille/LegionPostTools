@@ -1,0 +1,19 @@
+  <%= form_with model: @contact, url: membership_person_contacts_path(@person), class: "stacked-form membership-form", data: { controller: "membership-contact" } do |form| %>
+    <% if no_outreach %><p class="panel-lead">This record is kept for history. Enter an officer review with notes, or include the paper reference when entering a returned call sheet.</p><% end %>
+    <% if @contact.errors.any? %><div class="error-summary" role="alert"><%= @contact.errors.full_messages.to_sentence %></div><% end %>
+    <%= hidden_field_tag :membership_year, @membership_year %>
+    <%= form.hidden_field :submission_key %>
+    <% if @assignments.any? %>
+      <div class="fl"><%= form.label :membership_assignment_id, "Drive and assigned caller" %><%= form.select :membership_assignment_id, @assignments.map { |assignment| [membership_assignment_label(assignment), assignment.id, { "data-purpose" => assignment.membership_drive.purpose }] }, { include_blank: @access.manager? ? "Individual officer outreach" : false }, class: "f", data: { membership_contact_target: "assignment", action: "membership-contact#update" } %></div>
+    <% end %>
+    <% if @buddy_task %><%= form.hidden_field :purpose, value: "buddy_check", data: { membership_contact_target: "purpose" } %><% elsif @access.manager? %><div class="fl"><%= form.label :purpose %><%= form.select :purpose, MembershipDrive::PURPOSES.except("buddy_check").map { |value, label| [label, value] }, {}, class: "f", data: { membership_contact_target: "purpose", action: "membership-contact#update" } %><p class="membership-secondary">A drive determines its own contact purpose.</p></div><% end %>
+    <div class="membership-form-grid">
+      <div class="fl"><%= form.label :occurred_on, @access.manager? ? "Contact or review date" : "Contact date" %><%= render "shared/editable_date_field", name: "membership_contact[occurred_on]", id: "membership_contact_occurred_on", value: @contact.occurred_on || @contact.occurred_on_before_type_cast %></div>
+      <div class="fl"><%= form.label :channel %><%= form.select :channel, membership_channel_options(manager: @access.manager?), {}, class: "f" %></div>
+    </div>
+    <div class="fl"><%= form.label :outcome, "What happened?" %><%= form.select :outcome, membership_contact_options(purpose: @buddy_task ? "buddy_check" : "renewal", manager: @access.manager?), { include_blank: "Choose a result" }, class: "f", required: true, data: { membership_contact_target: "outcome" } %></div>
+    <div class="fl"><%= form.label :follow_up_on, "Follow-up date (if needed)" %><%= render "shared/editable_date_field", name: "membership_contact[follow_up_on]", id: "membership_contact_follow_up_on", value: @contact.follow_up_on || @contact.follow_up_on_before_type_cast %></div>
+    <div class="fl"><%= form.label :notes, "Brief notes" %><%= form.text_area :notes, class: "f", rows: 3, maxlength: 2000 %><p class="membership-secondary">Record the next step. Keep sensitive health or financial details out of drive notes.</p></div>
+    <div class="fl"><%= form.label :paper_reference, "Paper reference (when entering a call sheet)" %><%= form.text_field :paper_reference, class: "f", maxlength: 100 %><p class="membership-secondary">Returned paper stays in history. It does not replace digital work from the same day. Officers can record a review with notes to confirm a different next step.</p></div>
+    <%= form.submit(@buddy_task ? "Record Buddy Check result" : "Record contact", class: "btn-primary") %>
+  <% end %>

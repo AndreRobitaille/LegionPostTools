@@ -1,9 +1,14 @@
-<% content_for :title, "Membership drives" %>
-<div class="page-lead"><h1 class="page-title">Membership drives</h1><p class="page-sub">Assign callers, open call sheets, and enter returned results.</p></div>
-<%= render "membership/navigation", current: :drives %>
-<%= render "membership/year_picker", url: membership_drives_path %>
-<%= render "shared/section_header", label: "Drives for #{@membership_year}", action: @access.manager? ? link_to("Create membership drive", new_membership_drive_path(membership_year: @membership_year), class: "sec-head-action") : nil, heading_tag: :h2 %>
-<% if @drives.empty? %><p class="empty">No drives for this membership year.</p><% end %>
+<% content_for :title, @buddy_task ? "Buddy Check drives" : "Membership drives" %>
+<div class="page-lead"><h1 class="page-title"><%= @purpose == "buddy_check" ? "Buddy Check drives" : "Membership drives" %></h1><p class="page-sub">Assign callers, open call sheets, and enter returned results.</p></div>
+<%= render @buddy_task ? "buddy_checks/navigation" : "membership/navigation", current: :drives %>
+<% unless @buddy_task %>
+<%= form_with url: membership_drives_path, method: :get, class: "membership-toolbar" do |form| %>
+  <div class="fl"><%= form.label :membership_year, "Membership year" %><%= form.number_field :membership_year, value: @membership_year, min: 2000, max: 2100, class: "f" %></div>
+  <div class="fl"><%= form.label :purpose, "Type of outreach" %><%= form.select :purpose, MembershipDrive::PURPOSES.except("buddy_check").map { |key, label| [label, key] }, { include_blank: "All membership outreach", selected: @purpose }, class: "f" %></div><%= form.submit "Show drives", class: "btn-secondary" %>
+<% end %>
+<% end %>
+<%= render "shared/section_header", label: @buddy_task ? "Buddy Check drives" : "Drives for #{@membership_year}", action: @access.manager? ? link_to(@buddy_task ? "Create Buddy Check drive" : "Create membership drive", new_membership_drive_path(membership_year: @membership_year, purpose: @purpose), class: "sec-head-action") : nil, heading_tag: :h2 %>
+<% if @drives.empty? %><p class="empty"><%= @buddy_task ? "No Buddy Check drives are recorded." : "No drives for this membership year." %></p><% end %>
 <div class="mrow-list">
   <% @drives.each do |drive| %>
     <div class="mrow"><div class="mrow-id"><h2 class="mrow-name"><%= link_to drive.title, membership_drive_path(drive, membership_year: drive.membership_year) %></h2><p class="membership-secondary"><%= MembershipDrive::PURPOSES.fetch(drive.purpose) %> · <%= legion_date(drive.starts_on) %> through <%= legion_date(drive.ends_on) %> · <%= drive.closed_at ? "Closed" : "Open" %></p></div></div>

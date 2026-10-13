@@ -12,5 +12,5 @@
     <% end %>
     <div class="btnrow"><%= submit_tag(remember_requested? ? "Connect and remember this sign-in" : "Connect Buddy Checks", class: "btn-primary") %><%= link_to "Cancel", root_path, class: "btn-secondary" %></div>
   <% end %>
-  <p class="membership-secondary"><%= "Access lasts 15 minutes. " unless remember_requested? %>You can revoke a mobile session from Your profile at any time.</p>
+  <p class="membership-secondary"><%= "Access lasts 15 minutes. " unless remember_requested? %>Review or disconnect it under Your profile → Connected apps.</p>
 </section>

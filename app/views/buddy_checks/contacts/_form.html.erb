@@ -1,0 +1,27 @@
+<section class="panel form-panel buddy-form">
+  <% if @error %><div class="error-summary" role="alert"><%= @error %></div><% end %>
+  <%= form_with url: @contact ? buddy_checks_contact_path(@contact) : buddy_checks_contacts_path, method: @contact ? :patch : :post, scope: :buddy_check, class: "stacked-form" do |form| %>
+    <%= form.hidden_field :person_id, value: @person.id %><%= form.hidden_field :operation_id, value: @form["operation_id"] %>
+    <% if @contact %><%= form.hidden_field :expected_revision, value: @form["expected_revision"] %><p class="membership-secondary">Corrections preserve the original check. They do not change an agreed callback.</p><% end %>
+    <% if !@contact && @assignments.any? %>
+      <div class="fl"><%= form.label :assignment_id, "Your assigned Buddy Check drive" %><%= form.select :assignment_id, @assignments.map { |assignment| [assignment.membership_drive.title, assignment.id] }, { include_blank: "Individual Buddy Check", selected: @form["assignment_id"] }, class: "f" %></div>
+    <% end %>
+    <div class="membership-form-grid">
+      <div class="fl"><%= form.label :channel, "How did you make contact?" %><%= form.select :channel, buddy_contact_choices(:channel, @contact), { selected: @form["channel"] }, class: "f" %></div>
+      <div class="fl"><%= form.label :outcome, "What happened?" %><%= form.select :outcome, buddy_contact_choices(:outcome, @contact), { selected: @form["outcome"] }, class: "f" %></div>
+    </div>
+    <% if @contact && (!BuddyChecks::Operations::CHANNELS.include?(@contact.channel) || !BuddyChecks::Operations::OUTCOMES.include?(@contact.outcome)) %>
+      <p class="membership-notice">This earlier record uses a different contact type. A physical-contact correction needs a phone, text, or in-person contact and its actual result. Ask a Buddy Check coordinator to review other kinds of corrections.</p>
+    <% end %>
+    <% if @contact && @contact.occurred_at.nil? %>
+      <div class="fl"><%= form.label :occurred_on, "Contact date" %><%= form.date_field :occurred_on, value: @form["occurred_on"], class: "f", required: true %></div>
+      <p class="membership-secondary">This check has only a date. A correction keeps that precision.</p>
+    <% else %>
+      <div class="fl"><%= form.label :occurred_at, "Contact date and time" %><%= form.datetime_local_field :occurred_at, value: @form["occurred_at"], class: "f", required: true %></div>
+    <% end %>
+    <p class="membership-secondary">Times use <%= @organization.timezone %>.</p>
+    <div class="fl"><%= form.label :notes, "Brief notes" %><%= form.text_area :notes, value: @form["notes"], class: "f", rows: 3, maxlength: 2000 %><p class="membership-secondary">Record the next step. Keep sensitive health or financial details out of these notes.</p></div>
+    <% unless @contact %><div class="fl"><%= form.label :due_at, "Agreed callback date and time (optional)" %><%= form.datetime_local_field :due_at, value: @form["due_at"], class: "f" %></div><% end %>
+    <div class="btnrow"><%= form.submit @contact ? "Save correction" : "Record Buddy Check", class: "btn-primary" %><%= link_to "Cancel", buddy_checks_person_path(@person), class: "btn-secondary" %></div>
+  <% end %>
+</section>

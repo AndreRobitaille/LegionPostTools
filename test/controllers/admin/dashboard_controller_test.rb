@@ -19,7 +19,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "You do not have permission to open that page.", flash[:alert]
   end
 
-  test "full admin sees all administration groups and their links" do
+  test "administrator sees settings separately from officer duties" do
     prepare_setup_complete_state
     admin = sign_in_member(can_manage_settings: true, can_manage_agendas: true)
     admin.permission_grants.create!(capability: "publish_public_content")
@@ -28,21 +28,21 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Administration"
-    assert_select "a.nav-tab--admin", text: /Admin\z/
+    assert_select ".app-menu-link[aria-current=page][href=?]", admin_root_path, text: "Administration"
+    assert_select ".app-menu-link[href=?]", officer_tools_path, text: "Officer tools"
     assert_select ".officer-workspace-context", count: 0
-    assert_equal [ "Meeting work", "Agenda setup", "Operations", "People and roster", "Public website", "Access" ],
+    assert_equal [ "People and roster", "Access", "Public website", "Operations" ],
       css_select(".workspace-group h2").map(&:text)
-    assert_workspace_destinations admin_meetings_path, admin_endeavors_path,
-      new_admin_roster_import_path, admin_roster_imports_path, new_admin_loops_roster_sync_path,
-      admin_position_titles_path, admin_agenda_item_catalog_entries_path, admin_meeting_types_path,
-      admin_website_publications_path, admin_website_access_tokens_path, admin_jobs_path,
-      admin_administrators_path, admin_agent_access_tokens_path
+    assert_workspace_destinations new_admin_roster_import_path, admin_roster_imports_path,
+      new_admin_loops_roster_sync_path, admin_position_titles_path,
+      admin_website_access_tokens_path, admin_jobs_path, admin_administrators_path, admin_agent_access_tokens_path
+    [ admin_meetings_path, admin_endeavors_path, admin_agenda_item_catalog_entries_path,
+      admin_meeting_types_path, admin_website_publications_path ].each do |path|
+      assert_select "a.workspace-destination[href=?]", path, count: 0
+    end
     assert_select "a[href=?]", new_admin_roster_import_path, text: /Import roster/
     assert_select "a[href=?]", new_admin_loops_roster_sync_path, text: /Sync email audience/
     assert_select "a[href=?]", admin_roster_imports_path, text: /Import history/
-    assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda catalog/
-    assert_select "a[href=?]", admin_meeting_types_path, text: /Meeting types/
-    assert_select "a[href=?]", admin_meetings_path, text: /Meetings/
     assert_select "a[href=?]", admin_jobs_path, text: /Background Jobs/
     assert_select "a[href=?]", admin_position_titles_path, text: /Post positions/
     assert_select "a[href=?]", admin_administrators_path, text: /Administrators/
@@ -55,12 +55,12 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     adjutant.position_capability_grants.create!(capability: "manage_agendas")
     PositionAssignment.create!(person: officer.person, position_title: adjutant, starts_on: Date.current)
 
-    get admin_root_path
+    get officer_tools_path
 
     assert_response :success
     assert_select "h1", "Officer tools"
-    assert_select "a.nav-tab--admin", text: /Officer tools\z/
-    assert_select ".officer-workspace-context", text: /Scoped officer access.*Adjutant.*remain with application administrators/m
+    assert_select ".app-menu-link[aria-current=page][href=?]", officer_tools_path, text: "Officer tools"
+    assert_select ".officer-workspace-context", text: /Post duties.*Adjutant.*current roles and permissions/m
     assert_select ".workspace-group h2", text: "Meeting work"
     assert_select "a[href=?]", admin_agenda_item_catalog_entries_path, text: /Agenda catalog/
     assert_select "a[href=?]", admin_meeting_types_path, text: /Meeting types/
@@ -78,17 +78,17 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     sign_in_member(can_manage_settings: false, can_manage_agendas: true)
 
     get admin_meeting_types_path
-    assert_select "a.back[href=?]", admin_root_path, text: /Officer tools/
+    assert_select "a.back[href=?]", officer_tools_path, text: /Officer tools/
 
     get admin_agenda_item_catalog_entries_path
-    assert_select "a.back[href=?]", admin_root_path, text: /Officer tools/
+    assert_select "a.back[href=?]", officer_tools_path, text: /Officer tools/
   end
 
   test "minutes manager reaches the hub and sees meeting records and background jobs" do
     prepare_setup_complete_state
     sign_in_member(can_manage_settings: false, can_manage_minutes: true)
 
-    get admin_root_path
+    get officer_tools_path
 
     assert_response :success
     assert_select "a[href=?]", admin_meetings_path, text: /Meetings/
@@ -148,7 +148,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     user = sign_in_member(can_manage_settings: false)
     user.permission_grants.create!(capability: "publish_public_content")
 
-    get admin_root_path
+    get officer_tools_path
     assert_response :success
     assert_workspace_destinations admin_website_publications_path
     assert_equal [ "Public website" ], css_select(".workspace-group h2").map(&:text)
@@ -158,7 +158,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     get admin_website_access_tokens_path
     assert_redirected_to root_path
-    get admin_root_path
+    get officer_tools_path
     assert_workspace_destinations admin_website_publications_path
   end
 
@@ -178,7 +178,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     user = sign_in_member(can_manage_settings: false)
     grant = user.permission_grants.create!(capability: "view_internal_records")
 
-    get admin_root_path
+    get officer_tools_path
     assert_response :success
     assert_workspace_destinations admin_meetings_path
     assert_select "a.workspace-destination[href=?]", admin_meetings_path, text: /Read internal meeting records/
@@ -189,7 +189,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
 
     grant.destroy!
-    get admin_root_path
+    get officer_tools_path
     assert_redirected_to root_path
     get admin_meetings_path
     assert_redirected_to root_path
@@ -209,16 +209,15 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "approval-only authority keeps a helpful empty workspace" do
+  test "approval-only authority reaches shared meeting actions" do
     prepare_setup_complete_state
     user = sign_in_member(can_manage_settings: false)
     user.permission_grants.create!(capability: "record_minutes_approval")
 
-    get admin_root_path
+    get officer_tools_path
     assert_response :success
-    assert_select ".workspace-group", count: 0
-    assert_select ".empty", text: /current permissions do not include workspace tools/
-    assert_select "a[href=?]", meetings_path, text: "View shared meeting records"
+    assert_workspace_destinations meetings_path
+    assert_select "a.workspace-destination", text: /View shared meeting records and the actions available to you/
   end
 
   private

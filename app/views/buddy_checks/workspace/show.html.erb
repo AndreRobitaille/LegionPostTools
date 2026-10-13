@@ -1,0 +1,45 @@
+<% content_for :title, "#{@person.full_name} · Buddy Checks" %>
+<div class="task-workspace">
+  <%= link_to "Buddy Checks home", buddy_checks_root_path, class: "back" %>
+  <div class="page-lead"><h1 class="page-title"><%= @person.full_name %></h1><p class="page-sub">Prepare a Buddy Check</p></div>
+  <div class="workspace-groups">
+    <div class="workspace-column">
+      <section class="panel buddy-preparation" aria-labelledby="buddy-contact-heading">
+        <%= render "shared/section_header", label: "Contact and next step", heading_tag: :h2, heading_id: "buddy-contact-heading" %>
+        <p class="membership-notice"><%= buddy_eligibility_message(@eligibility) %></p>
+        <% if @eligibility[:eligible] %>
+          <dl class="task-facts"><div><dt>Phone</dt><dd><% if @person.directory_phone_number.present? %><%= link_to @person.directory_phone_number, "tel:#{@person.directory_phone_number.gsub(/[^+\d]/, '')}" %><% else %>Not recorded<% end %></dd></div><div><dt>Email</dt><dd><%= @person.directory_email_address.present? ? mail_to(@person.directory_email_address) : "Not recorded" %></dd></div></dl>
+          <p>Introduce yourself, ask how they are doing, and offer help from the Post.</p>
+          <p class="membership-secondary">Opening a phone or email app does not record a contact.</p>
+        <% end %>
+        <% unless @eligibility[:reason] == "contact_paused" %>
+          <div class="mrow-list">
+            <%= render "shared/workspace_destination", label: "Record a Buddy Check", description: "Record what actually happened, including an earlier contact.", path: new_buddy_checks_contact_path(person_id: @person.id) %>
+            <% if @eligibility[:eligible] && @follow_ups.empty? %><%= render "shared/workspace_destination", label: "Schedule a callback", description: "Save a future date and time agreed with this member.", path: new_buddy_checks_follow_up_path(person_id: @person.id) %><% end %>
+          </div>
+          <% if @snooze %><p class="membership-secondary">Deferred from your suggestions until <%= buddy_time(@snooze.until_at) %>. Manage this under Deferred suggestions.</p><% else %>
+            <%= button_to "Defer suggestion for seven days", buddy_checks_snoozes_path, params: { person_id: @person.id, operation_id: SecureRandom.uuid }, class: "btn-secondary", form: { class: "task-secondary-action" } %>
+          <% end %>
+        <% end %>
+      </section>
+      <% if @follow_ups.any? %>
+        <section class="workspace-group" aria-labelledby="person-callbacks-heading">
+          <%= render "shared/section_header", label: "Your agreed callbacks", heading_tag: :h2, heading_id: "person-callbacks-heading" %>
+          <div class="mrow-list"><% @follow_ups.each do |callback| %><%= render "shared/workspace_destination", label: buddy_time(callback.due_at), description: "Change the time or mark this callback finished.", path: edit_buddy_checks_follow_up_path(callback) %><% end %></div>
+        </section>
+      <% end %>
+      <section class="panel workspace-group" aria-labelledby="buddy-evidence-heading">
+        <%= render "shared/section_header", label: "Recorded attendance", heading_tag: :h2, heading_id: "buddy-evidence-heading" %>
+        <% if @attendance_evidence.any? %>
+          <p>Two complete attendance registers record this member as absent.</p>
+          <ul class="membership-links"><% @attendance_evidence.each do |evidence| %><li><%= link_to buddy_time(Time.iso8601(evidence[:starts_at])), meeting_path(evidence[:meeting_id]) %></li><% end %></ul>
+        <% else %><p class="membership-secondary">No two covered meetings establish consecutive absences. Missing attendance remains unknown.</p><% end %>
+      </section>
+    </div>
+    <section class="panel workspace-group" aria-labelledby="person-history-heading">
+      <%= render "shared/section_header", label: "Your recent checks", heading_tag: :h2, heading_id: "person-history-heading" %>
+      <%= render "buddy_checks/history", contacts: @contacts %>
+      <%= link_to "View your full check history", buddy_checks_contacts_path, class: "task-link" %>
+    </section>
+  </div>
+</div>

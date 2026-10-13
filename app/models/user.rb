@@ -11,9 +11,12 @@ class User < ApplicationRecord
     record_minutes_approval
   ].freeze
   PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES = %w[approve_minutes attest_minutes].freeze
+  OFFICER_WORKSPACE_CAPABILITIES = (ADMIN_AREA_CAPABILITIES - %w[manage_settings] + %w[approve_minutes attest_minutes]).freeze
 
   belongs_to :person
   has_many :membership_assignments, foreign_key: :assigned_to_id, dependent: :restrict_with_exception
+  has_many :recorded_buddy_care_updates, class_name: "BuddyCareUpdate", foreign_key: :recorded_by_id, dependent: :restrict_with_exception
+  has_many :assigned_buddy_care_updates, class_name: "BuddyCareUpdate", foreign_key: :assigned_to_id, dependent: :restrict_with_exception
   has_many :recorded_membership_contacts, class_name: "MembershipContact", foreign_key: :recorded_by_id, dependent: :restrict_with_exception
   has_many :recorded_membership_dues_records, class_name: "MembershipDuesRecord", foreign_key: :recorded_by_id, dependent: :restrict_with_exception
   has_many :created_membership_drives, class_name: "MembershipDrive", foreign_key: :created_by_id, dependent: :restrict_with_exception
@@ -113,6 +116,14 @@ class User < ApplicationRecord
 
   def mobile_buddy_checks_access?
     disabled_at.nil? && BuddyChecks::Configuration.enabled? && can?("use_mobile_buddy_checks")
+  end
+
+  def buddy_check_coordination_access?
+    disabled_at.nil? && full_membership_access?
+  end
+
+  def officer_workspace_access?
+    disabled_at.nil? && (full_membership_access? || can_any?(*OFFICER_WORKSPACE_CAPABILITIES))
   end
 
   def roster_email_mismatch?

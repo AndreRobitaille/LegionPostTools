@@ -34,7 +34,8 @@ module Membership
 
     def load_member_context
       @person = @workspace.person(params[:person_id] || params[:id])
-      @contacts = @workspace.contacts_for(@person).includes(:recorded_by, membership_assignment: { assigned_to: :person }).limit(50)
+      @contacts = @workspace.contacts_for(@person)
+      @contacts = @contacts.includes(:recorded_by, membership_assignment: { assigned_to: :person }).limit(50)
       @assignments = @access.assignments.where(person: @person).includes(:membership_drive, assigned_to: :person)
       @dues_records = @organization.membership_dues_records.where(person: @person, membership_year: @membership_year).includes(:recorded_by, :reversal).recent if @access.manager?
       @contact ||= MembershipContact.new(occurred_on: Organization.current_local_date,
@@ -43,6 +44,13 @@ module Membership
       @contact.membership_assignment_id ||= @assignments.first&.id unless @access.manager?
       selected_assignment = @assignments.detect { |assignment| assignment.id == @contact.membership_assignment_id }
       @contact.purpose = selected_assignment.membership_drive.purpose if selected_assignment
+      @buddy_task = @contact.purpose == "buddy_check"
+      @assignments = @assignments.select { |assignment| (assignment.membership_drive.purpose == "buddy_check") == @buddy_task }
+      if @buddy_task
+        @contacts = @contacts.where(purpose: "buddy_check")
+      elsif @access.manager?
+        @contacts = @contacts.where.not(purpose: "buddy_check")
+      end
       @contact_work_item = @workspace.contact_work_item(@person, purpose: @contact.purpose, assignment: selected_assignment)
       @dues_record ||= MembershipDuesRecord.new(kind: "post_receipt", received_on: Organization.current_local_date, submission_key: SecureRandom.uuid)
     end

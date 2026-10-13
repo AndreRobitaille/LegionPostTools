@@ -1,16 +1,21 @@
 <% content_for :title, "Review general-member attendance" %>
 <%= link_to "Back to attendance", membership_buddy_attendances_path, class: "back" %>
-<div class="page-lead"><h1 class="page-title">Review general-member attendance</h1><p class="page-sub"><%= @meeting.title %> · <%= legion_datetime(@meeting.starts_at) %></p></div>
-<section class="panel form-panel">
+<div class="page-lead"><h1 class="page-title">Review general-member attendance</h1><p class="page-sub"><%= link_to @meeting.title, meeting_path(@meeting) %> · <%= legion_datetime(@meeting.starts_at) %></p></div>
+<section class="panel form-panel attendance-register" data-controller="attendance-register">
 <%= render "shared/section_header", label: "Coverage and completeness" %>
-<p>This register covers <strong><%= @entries.size %> named members</strong>. <%= @register ? "The original coverage list is preserved in later revisions." : "The initial list is the current directory-visible National roster. Confirm that it represents this meeting before marking it complete." %></p>
-<p class="membership-secondary">A missing record is unknown. Officer roll call and speaking in a meeting do not prove general-member attendance. Each save preserves a new revision; minutes stay unchanged.</p>
+<p>This register covers <strong><%= @entries.size %> named members</strong>. <%= @register ? "Later revisions keep this original member list." : "The list starts from the current member roster. Confirm that it covers this meeting before marking it complete." %></p>
+<p class="membership-secondary">Not recorded means unknown. Officer roll call and speaking do not prove attendance. Each save preserves a revision; minutes stay unchanged.</p>
 <%= form_with url: membership_buddy_attendance_path(@meeting), method: :post, class: "stacked-form" do %>
   <%= hidden_field_tag :expected_revision, @register&.revision || 0 %>
   <div class="fl"><%= label_tag :coverage_note, "How was this general-member list checked?" %><%= text_area_tag :coverage_note, @coverage_note, class: "f", required: true, maxlength: 2000, rows: 3 %></div>
+  <div class="fl"><%= label_tag :attendance_search, "Find a member in this register" %><%= search_field_tag :attendance_search, nil, class: "f", data: { action: "input->attendance-register#filter", attendance_register_target: "search" } %></div>
+  <p class="membership-notice" data-attendance-register-target="summary" role="status" aria-live="polite"></p>
+  <div class="attendance-members">
   <% @people.each do |person| %>
-    <div class="fl"><%= label_tag "attendance_#{person.id}", person.full_name %><%= select_tag "entries[#{person.id}]", options_for_select(BuddyAttendanceRegister::STATUSES.map { |status| [status.humanize, status] }, @entries[person.id.to_s]), id: "attendance_#{person.id}", class: "f" %></div>
+    <div class="attendance-member" data-attendance-register-target="row" data-member-name="<%= person.full_name.downcase %>"><%= label_tag "attendance_#{person.id}", person.full_name %><%= select_tag "entries[#{person.id}]", options_for_select(BuddyAttendanceRegister::STATUSES.map { |status| [status.humanize, status] }, @entries[person.id.to_s]), id: "attendance_#{person.id}", class: "f", data: { attendance_register_target: "entry", action: "change->attendance-register#summarize" } %></div>
   <% end %>
+  </div>
+  <p hidden data-attendance-register-target="empty">No members match that name. Clear the search to see the whole register.</p>
   <label class="calendar-checkbox"><%= check_box_tag :complete, "1", @complete %> I reviewed attendance for every member listed for this general-member meeting. No entries remain “Not recorded.”</label>
   <div class="btnrow"><%= submit_tag "Save attendance revision", class: "btn-primary" %></div>
 <% end %>

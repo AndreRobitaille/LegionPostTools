@@ -12,14 +12,21 @@ class OrganizationTest < ActiveSupport::TestCase
   end
 
   test "setup and an invalid legacy saved zone use the configured app zone across request contexts" do
+    previous_zone = Rails.application.config.time_zone
     travel_to Time.utc(2026, 11, 11, 1) do
-      Time.use_zone("Pacific/Honolulu") do
-        assert_equal Date.new(2026, 11, 11), Organization.current_local_date
-        organization = Organization.create!(name: "Legacy Post", unit_type: "american_legion_post", timezone: "Invalid/LegacyZone")
-        assert_equal "UTC", organization.calendar_time_zone.name
-        assert_equal Date.new(2026, 11, 11), Organization.current_local_date
+      [ [ "UTC", Date.new(2026, 11, 11) ], [ "America/Chicago", Date.new(2026, 11, 10) ] ].each do |configured_zone, expected_date|
+        Rails.application.config.time_zone = configured_zone
+        Time.use_zone("Pacific/Honolulu") do
+          assert_equal expected_date, Organization.current_local_date
+          organization = Organization.create!(name: "Legacy Post", unit_type: "american_legion_post", timezone: "Invalid/LegacyZone")
+          assert_equal configured_zone, organization.calendar_time_zone.name
+          assert_equal expected_date, Organization.current_local_date
+          organization.destroy!
+        end
       end
     end
+  ensure
+    Rails.application.config.time_zone = previous_zone
   end
 
   test "the saved Post date uses the daylight-saving midnight on a short day" do

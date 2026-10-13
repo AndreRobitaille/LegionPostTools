@@ -67,7 +67,7 @@ class OfficialActionReauthenticationsController < ApplicationController
     )
     return if @confirmation&.usable_by?(user: current_user, session: Current.session)
 
-    redirect_to admin_root_path, alert: "That official action request is invalid or expired."
+    redirect_to officer_tools_path, alert: "That official action request is invalid or expired."
   end
 
   def set_pending_cookie(value)

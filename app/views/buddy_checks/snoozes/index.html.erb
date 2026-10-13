@@ -1,0 +1,10 @@
+<% content_for :title, "Deferred Buddy Check suggestions" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Deferred suggestions</h1><p class="page-sub">People you set aside here or in the iPhone app. Deferring changes your suggestions; it does not cancel a callback.</p></div>
+  <%= render "buddy_checks/navigation", current: :deferred %>
+  <% if @error %><div class="error-summary" role="alert"><%= @error %></div><% end %>
+  <div class="mrow-list"><% @snoozes.each do |snooze| %>
+    <div class="mrow task-status-row"><div><h2 class="mrow-name"><%= snooze.person.full_name %></h2><p class="membership-secondary">Until <%= buddy_time(snooze.until_at) %></p></div><%= button_to "Restore suggestion", buddy_checks_snooze_path(snooze), method: :delete, params: { operation_id: SecureRandom.uuid, expected_revision: snooze.lock_version }, class: "btn-secondary" %></div>
+  <% end %></div>
+  <% if @snoozes.empty? %><div class="empty"><p>No suggestions are deferred.</p><%= link_to "Choose someone to check on", buddy_checks_root_path, class: "btn-secondary" %></div><% end %>
+</div>

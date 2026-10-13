@@ -1,0 +1,10 @@
+<section class="panel form-panel buddy-form">
+  <% if @error %><div class="error-summary" role="alert"><%= @error %></div><% end %>
+  <%= form_with url: @follow_up ? buddy_checks_follow_up_path(@follow_up) : buddy_checks_follow_ups_path, method: @follow_up ? :patch : :post, scope: :callback, class: "stacked-form" do |form| %>
+    <%= form.hidden_field :person_id, value: @person.id %><%= form.hidden_field :operation_id, value: @form["operation_id"] %>
+    <% if @follow_up %><%= form.hidden_field :expected_revision, value: @form["expected_revision"] %><%= form.hidden_field :change, value: "reschedule" %><% end %>
+    <div class="fl"><%= form.label :due_at, "Agreed callback date and time" %><%= form.datetime_local_field :due_at, value: @form["due_at"], required: true, class: "f" %></div>
+    <p class="membership-secondary">Times use <%= @organization.timezone %>. Save a future time agreed with the member.</p>
+    <div class="btnrow"><%= form.submit @follow_up ? "Save new callback time" : "Schedule callback", class: "btn-primary" %><%= link_to "Cancel", buddy_checks_follow_ups_path, class: "btn-secondary" %></div>
+  <% end %>
+</section>

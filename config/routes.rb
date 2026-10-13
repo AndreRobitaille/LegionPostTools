@@ -202,6 +202,22 @@ Rails.application.routes.draw do
   resource :passkey_invitation, only: %i[destroy]
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
+  get "officer-tools", to: "officer_tools#show", as: :officer_tools
+  namespace :buddy_checks, path: "buddy-checks" do
+    root to: "workspace#index"
+    get "post-activity", to: "coordination#index", as: :activity
+    get "coverage", to: "coordination#coverage", as: :coverage
+    get "county-report", to: "coordination#report", as: :report
+    get "member-history/:id", to: "coordination#show", as: :member_history
+    get "member-history/:id/care", to: "coordination#care", as: :care
+    post "member-history/:id/care", to: "coordination#record_care"
+    post "member-history/:id/contact-preference", to: "coordination#preference", as: :preference
+    get "people", to: "workspace#people", as: :people
+    resources :people, only: :show, controller: "workspace"
+    resources :contacts, only: %i[index new create edit update]
+    resources :follow_ups, path: "follow-ups", only: %i[index new create edit update]
+    resources :snoozes, only: %i[index create destroy]
+  end
   namespace :membership do
     resources :buddy_attendances, path: "buddy-attendance", controller: "buddy_attendance", only: %i[index show] do
       post :create, on: :member, path: ""
@@ -210,10 +226,11 @@ Rails.application.routes.draw do
       post :create, on: :member, path: ""
     end
     root to: "overview#index"
+    get "follow-up", to: "overview#follow_up", as: :follow_up
     get "report", to: "reports#index"
     get "post-checks", to: "post_checks#index", as: :post_checks
     resources :people, only: :show do
-      resources :contacts, only: :create
+      resources :contacts, only: %i[new create]
     end
     resources :drives, only: %i[index new create show update] do
       get :print, on: :member

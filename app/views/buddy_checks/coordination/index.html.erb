@@ -1,0 +1,26 @@
+<%= render "buddy_checks/coordination/privacy" %>
+<% content_for :title, "Buddy Checks · Post activity" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Buddy Checks · Post activity</h1><p class="page-sub">See the check-ins recorded by your Post's callers, including the mobile app.</p></div>
+  <%= render "buddy_checks/navigation", current: :activity %>
+  <% if @care_due&.positive? %>
+    <aside class="workspace-attention" aria-label="Care follow-up due">
+      <h2>Care follow-up due</h2><p><%= pluralize(@care_due, "private care review") %> needs follow-up.</p>
+      <%= link_to "Review extra-care follow-up", buddy_checks_coverage_path(filter: "extra_care"), class: "btn-secondary" %>
+    </aside>
+  <% end %>
+  <%= form_with url: buddy_checks_activity_path, method: :get, class: "membership-toolbar" do |form| %>
+    <div class="fl"><%= form.label :q, "Member name" %><%= form.search_field :q, value: @query, class: "f" %></div>
+    <div class="fl"><%= form.label :result, "Result" %><%= form.select :result, MembershipContact::OUTCOMES.except("already_paid_online", "wants_to_renew", "declined_renewal").map { |value, label| [label, value] }, { include_blank: "All results", selected: @result }, class: "f" %></div>
+    <%= form.submit "Show checks", class: "btn-secondary" %>
+  <% end %>
+  <% if @error %><p class="error-summary" role="alert"><%= @error %></p><% end %>
+  <section class="panel" aria-label="Recorded Buddy Checks">
+    <% if @contacts.empty? %><p>No Buddy Checks match this selection. Missing records do not mean nobody checked in.</p><% end %>
+    <%= render "buddy_checks/coordination/checks", contacts: @contacts, show_member: true %>
+  </section>
+  <nav class="btnrow" aria-label="Post activity pages">
+    <%= link_to "Newer checks", buddy_checks_activity_path(q: @query, result: @result, page: @page - 1), class: "btn-secondary" if @page && @page > 1 %>
+    <%= link_to "Older checks", buddy_checks_activity_path(q: @query, result: @result, page: @page + 1), class: "btn-secondary" if @more %>
+  </nav>
+</div>

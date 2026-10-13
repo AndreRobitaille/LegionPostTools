@@ -62,11 +62,13 @@ export default class extends Controller {
     if (!this.isOpen) return
 
     const items = Array.from(this.panelTarget.querySelectorAll("a, button"))
+      .filter(item => item.getClientRects().length > 0)
     if (items.length === 0) return
 
     event.preventDefault()
     const current = items.indexOf(document.activeElement)
-    const next = (current + step + items.length) % items.length
-    items[next].focus()
+    let next = current + step
+    if (current === -1) next = step > 0 ? 0 : items.length - 1
+    items[(next + items.length) % items.length].focus()
   }
 }

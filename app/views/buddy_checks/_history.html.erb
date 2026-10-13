@@ -1,0 +1,10 @@
+<% if contacts.empty? %><p>No checks of yours are recorded in this selection. Other callers' notes are private.</p><% end %>
+<% contacts.each do |contact| %>
+  <article class="membership-contact">
+    <h3><%= link_to contact.person.full_name, buddy_checks_person_path(contact.person) %> · <%= MembershipContact::OUTCOMES.fetch(contact.outcome) %></h3>
+    <p><%= contact.occurred_at ? buddy_time(contact.occurred_at) : legion_date(contact.occurred_on) %> · <%= MembershipContact::CHANNELS.fetch(contact.channel) %></p>
+    <% if contact.notes.present? %><p class="membership-notes"><%= contact.notes %></p><% end %>
+    <% if contact.follow_up_on %><p>Recorded callback date: <%= legion_date(contact.follow_up_on) %></p><% end %>
+    <div class="task-status-row"><p class="membership-secondary"><%= contact.occurred_at ? "Contact time recorded" : "Date-only contact; no time recorded" %> · Revision <%= contact.revision %></p><%= link_to "Correct this check", edit_buddy_checks_contact_path(contact), class: "task-link" %></div>
+  </article>
+<% end %>

@@ -497,6 +497,47 @@ ALTER SEQUENCE public.buddy_attendance_registers_id_seq OWNED BY public.buddy_at
 
 
 --
+-- Name: buddy_care_updates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.buddy_care_updates (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    person_id bigint NOT NULL,
+    recorded_by_id bigint NOT NULL,
+    assigned_to_id bigint,
+    status character varying NOT NULL,
+    notes text NOT NULL,
+    follow_up_on date,
+    revision integer NOT NULL,
+    submission_key character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT buddy_care_follow_up CHECK ((((status)::text <> 'needs_attention'::text) OR ((assigned_to_id IS NOT NULL) AND (follow_up_on IS NOT NULL)))),
+    CONSTRAINT buddy_care_status CHECK (((status)::text = ANY ((ARRAY['needs_attention'::character varying, 'cleared'::character varying])::text[]))),
+    CONSTRAINT positive_buddy_care_revision CHECK ((revision > 0))
+);
+
+
+--
+-- Name: buddy_care_updates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.buddy_care_updates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: buddy_care_updates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.buddy_care_updates_id_seq OWNED BY public.buddy_care_updates.id;
+
+
+--
 -- Name: buddy_follow_ups; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3103,6 +3144,13 @@ ALTER TABLE ONLY public.buddy_attendance_registers ALTER COLUMN id SET DEFAULT n
 
 
 --
+-- Name: buddy_care_updates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_care_updates ALTER COLUMN id SET DEFAULT nextval('public.buddy_care_updates_id_seq'::regclass);
+
+
+--
 -- Name: buddy_follow_ups id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3628,6 +3676,14 @@ ALTER TABLE ONLY public.buddy_address_reviews
 
 ALTER TABLE ONLY public.buddy_attendance_registers
     ADD CONSTRAINT buddy_attendance_registers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: buddy_care_updates buddy_care_updates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_care_updates
+    ADD CONSTRAINT buddy_care_updates_pkey PRIMARY KEY (id);
 
 
 --
@@ -4263,6 +4319,13 @@ CREATE UNIQUE INDEX idx_on_official_action_confirmation_id_7ceb2b7c93 ON public.
 
 
 --
+-- Name: idx_on_organization_id_person_id_revision_a79ab4ad74; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_on_organization_id_person_id_revision_a79ab4ad74 ON public.buddy_care_updates USING btree (organization_id, person_id, revision);
+
+
+--
 -- Name: idx_on_organization_id_source_key_ecf47169eb; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4442,6 +4505,41 @@ CREATE UNIQUE INDEX index_buddy_attendance_registers_on_meeting_id_and_revision 
 --
 
 CREATE INDEX index_buddy_attendance_registers_on_recorded_by_id ON public.buddy_attendance_registers USING btree (recorded_by_id);
+
+
+--
+-- Name: index_buddy_care_updates_on_assigned_to_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_care_updates_on_assigned_to_id ON public.buddy_care_updates USING btree (assigned_to_id);
+
+
+--
+-- Name: index_buddy_care_updates_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_care_updates_on_organization_id ON public.buddy_care_updates USING btree (organization_id);
+
+
+--
+-- Name: index_buddy_care_updates_on_organization_id_and_submission_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_buddy_care_updates_on_organization_id_and_submission_key ON public.buddy_care_updates USING btree (organization_id, submission_key);
+
+
+--
+-- Name: index_buddy_care_updates_on_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_care_updates_on_person_id ON public.buddy_care_updates USING btree (person_id);
+
+
+--
+-- Name: index_buddy_care_updates_on_recorded_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_buddy_care_updates_on_recorded_by_id ON public.buddy_care_updates USING btree (recorded_by_id);
 
 
 --
@@ -6223,6 +6321,13 @@ CREATE TRIGGER preserve_buddy_evidence BEFORE DELETE OR UPDATE ON public.buddy_a
 
 
 --
+-- Name: buddy_care_updates preserve_buddy_evidence; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER preserve_buddy_evidence BEFORE DELETE OR UPDATE ON public.buddy_care_updates FOR EACH ROW EXECUTE FUNCTION public.preserve_buddy_evidence();
+
+
+--
 -- Name: buddy_operations preserve_buddy_evidence; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6435,6 +6540,14 @@ ALTER TABLE ONLY public.passkey_credentials
 
 ALTER TABLE ONLY public.calendar_events
     ADD CONSTRAINT fk_rails_22b0dbcb90 FOREIGN KEY (updated_by_id) REFERENCES public.users(id);
+
+
+--
+-- Name: buddy_care_updates fk_rails_247d29839a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_care_updates
+    ADD CONSTRAINT fk_rails_247d29839a FOREIGN KEY (person_id) REFERENCES public.people(id);
 
 
 --
@@ -7110,6 +7223,14 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
+-- Name: buddy_care_updates fk_rails_996e492ff6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_care_updates
+    ADD CONSTRAINT fk_rails_996e492ff6 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: minutes_outcomes fk_rails_997cfcf281; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7446,6 +7567,14 @@ ALTER TABLE ONLY public.endeavors
 
 
 --
+-- Name: buddy_care_updates fk_rails_d059cfb8e7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_care_updates
+    ADD CONSTRAINT fk_rails_d059cfb8e7 FOREIGN KEY (assigned_to_id) REFERENCES public.users(id);
+
+
+--
 -- Name: loops_roster_syncs fk_rails_d280fb9179; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7499,6 +7628,14 @@ ALTER TABLE ONLY public.website_access_tokens
 
 ALTER TABLE ONLY public.minutes_outcomes
     ADD CONSTRAINT fk_rails_d9c6f1aace FOREIGN KEY (mover_person_id) REFERENCES public.people(id) ON DELETE SET NULL;
+
+
+--
+-- Name: buddy_care_updates fk_rails_da79ef66fe; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buddy_care_updates
+    ADD CONSTRAINT fk_rails_da79ef66fe FOREIGN KEY (recorded_by_id) REFERENCES public.users(id);
 
 
 --
@@ -7676,6 +7813,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261013010000'),
 ('20261012190000'),
 ('20261012120000'),
 ('20261011211000'),

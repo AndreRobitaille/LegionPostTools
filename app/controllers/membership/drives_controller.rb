@@ -3,19 +3,27 @@ module Membership
     before_action :require_membership_manager, only: %i[new create update]
 
     def index
-      @drives = @access.drives.where(membership_year: @membership_year).order(created_at: :desc)
+      @purpose = params[:purpose].presence_in(MembershipDrive::PURPOSES.keys)
+      @buddy_task = @purpose == "buddy_check"
+      @drives = @access.drives.order(created_at: :desc)
+      if @buddy_task
+        @drives = @drives.where(purpose: "buddy_check")
+      else
+        @drives = @drives.where(membership_year: @membership_year).where.not(purpose: "buddy_check")
+        @drives = @drives.where(purpose: @purpose) if @purpose
+      end
     end
 
     def new
       @drive = @organization.membership_drives.new(membership_year: @membership_year, starts_on: Organization.current_local_date,
-        ends_on: Organization.current_local_date + 30.days, purpose: "renewal")
+        ends_on: Organization.current_local_date + 30.days, purpose: params[:purpose].presence_in(MembershipDrive::PURPOSES.keys) || "renewal")
     end
 
     def create
       @drive = @organization.membership_drives.new(params.expect(membership_drive: [ :title, :purpose, :starts_on, :ends_on, :script ]))
       @drive.assign_attributes(created_by: current_user, membership_year: @membership_year)
       @drive.save!
-      redirect_to membership_drive_path(@drive, membership_year: @drive.membership_year), notice: "Membership drive created.", status: :see_other
+      redirect_to membership_drive_path(@drive, membership_year: @drive.membership_year), notice: @drive.purpose == "buddy_check" ? "Buddy Check drive created." : "Membership drive created.", status: :see_other
     rescue ActiveRecord::RecordInvalid
       render :new, status: :unprocessable_entity
     end

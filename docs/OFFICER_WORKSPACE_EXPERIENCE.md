@@ -72,30 +72,41 @@ OPERATIONS
 Background Jobs
 ```
 
-The October 11 hub redesign uses readable destination rows with whole-row links,
-semantic section headings, and visible keyboard focus. Meeting tools form one desktop
-column; People and roster, Public website, and Access form the other. A workspace with
-only one destination column uses a narrower measure; phone layouts keep meeting tools
-first. Actual role names
-appear in the duty placard when present; manual grants do not invent an officer title.
+The October 12 navigation change gives **Officer tools** its own `/officer-tools`
+hub. Open **Menu → Post duties → Officer tools**. Membership leadership, including
+the current 1st Vice Commander, can reach Membership here without agenda or settings
+permissions. Scoped agenda/minutes managers, publishers, record viewers, and people
+with personal minutes-action grants see only the work their authority permits.
 
-Missing and overdue rosters have one compact attention area with an import action.
-Current roster status, import history, and email-audience synchronization remain beside
-the roster destinations. Empty groups and unauthorized rows are omitted. Publishing
-uses `publish_public_content`; website connections use `manage_settings`. Background
-Jobs requires `manage_settings`, `manage_minutes`, or `manage_agendas`; a record viewer
-gets Meetings without a Jobs link. Destination controllers retain their own guards.
-See [the hub design and validation](ADMIN_WORKSPACE_DESIGN.md).
+**Menu → Application settings → Administration** opens `/admin` for settings
+administrators. A person with both kinds of authority sees both hubs. Old `/admin`
+bookmarks redirect scoped officers to Officer tools. Account management, roster
+imports, Post-position configuration, website connections, agent access, and technical
+maintenance remain in Administration. Publishing remains an officer task with its
+existing `publish_public_content` guard.
 
-- Navigation says **Officer tools** for a person with scoped operational capabilities and
-  **Admin** for a person with `manage_settings`.
-- The page title says **Officer tools** or **Administration** using the same boundary.
-- Scoped officers see a plain explanation of what is available and what remains outside
-  their authority.
-- Back links from meeting templates and the agenda catalog return scoped officers to
-  **Officer tools**, not the member Dashboard.
-- Mobile and desktop layouts retain 16-pixel interactive text, 44-pixel targets, visible
-  focus, and no horizontal overflow.
+Both hubs retain the October 11 redesign's readable whole-row destinations, semantic
+headings, and visible keyboard focus. Officer tools groups Meeting work, Membership, Buddy Checks,
+Agenda setup, Public website, and Processing as permitted. Actual current role names
+appear in its compact Post duties placard; manual grants do not invent officer titles.
+A single destination column uses a narrower measure, and phone layouts stack in task
+order. Missing and overdue rosters keep one attention area beside the import actions
+in Administration. Empty and unauthorized groups are omitted.
+
+Back links from operational meeting pages, meeting templates, the agenda catalog,
+and Endeavor management return to Officer tools. Settings pages return to
+Administration. Background Jobs retains its existing settings/agenda/minutes guard;
+its return destination follows the viewer's workspace. A record viewer gets Meetings
+without Jobs. Personal approval/attestation authority links to shared Meeting records
+without granting access to internal meeting management.
+
+Desktop navigation keeps Dashboard, Calendar, Meetings, Endeavors, and People.
+On phones the same destinations appear under **Menu → Member site**. **Your work**
+contains Buddy Checks (calling or coordination) and assigned calls when permitted;
+Profile and Sign out stay under **Your account**. Menu scrolls within a short viewport,
+with 16-pixel interactive text, 44-pixel targets, and keyboard navigation that skips
+hidden desktop duplicates. See [the current menu design](MENU_AND_WORKSPACE_DESIGN.md)
+and [the earlier hub design](ADMIN_WORKSPACE_DESIGN.md).
 
 The current [minutes policy](MINUTES_APPROVAL_AND_ATTESTATION.md) allows either officer
 to prepare/edit minutes and record the real later-Meeting approval. Commander handoff
@@ -114,8 +125,7 @@ production assignments. The standard policy now also includes `record_minutes_ap
 
 ## Manage Endeavors
 
-Users with `manage_agendas` can open **Manage Endeavors** from the officer/administration
-hub or the Endeavors list. The overview shows active and completed Endeavors, each
+Users with `manage_agendas` can open **Manage Endeavors** from **Officer tools** or the Endeavors list. The overview shows active and completed Endeavors, each
 history's processing state and last publication time, and attention/status filters.
 **Manage history** opens the existing per-Endeavor controls for refresh, guidance,
 withdrawal/resume, and run inspection. Ordinary members cannot see these links or open

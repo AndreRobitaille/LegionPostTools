@@ -1,0 +1,4 @@
+<% content_for :title, "Correct a Buddy Check" %>
+<%= link_to "Your check history", buddy_checks_contacts_path, class: "back" %>
+<div class="page-lead"><h1 class="page-title">Correct a Buddy Check</h1><p class="page-sub"><%= @person.full_name %></p></div>
+<%= render "form" %>

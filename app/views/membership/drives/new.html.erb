@@ -1,14 +1,17 @@
-<% content_for :title, "Create membership drive" %>
-<div class="page-lead"><h1 class="page-title">Create membership drive</h1><p class="page-sub">Membership year <%= @membership_year %>. Choose the purpose and dates, then assign members to callers.</p></div>
+<% buddy_drive = @drive.purpose == "buddy_check" %>
+<% content_for :title, buddy_drive ? "Create Buddy Check drive" : "Create membership drive" %>
+<div class="page-lead"><h1 class="page-title"><%= buddy_drive ? "Create Buddy Check drive" : "Create membership drive" %></h1><p class="page-sub"><% unless buddy_drive %>Membership year <%= @membership_year %>. <% end %>Choose the purpose and dates, then assign members to callers.</p></div>
 <%= form_with model: @drive, url: membership_drives_path, class: "stacked-form" do |form| %>
   <% if @drive.errors.any? %><div class="error-summary" role="alert"><%= @drive.errors.full_messages.to_sentence %></div><% end %>
   <%= hidden_field_tag :membership_year, @membership_year %>
   <div class="fl"><%= form.label :title, "Drive name" %><%= form.text_field :title, class: "f", required: true, maxlength: 160 %></div>
-  <div class="fl"><%= form.label :purpose %><%= form.select :purpose, MembershipDrive::PURPOSES.map { |value, label| [label, value] }, {}, class: "f" %></div>
+  <% if buddy_drive %><%= form.hidden_field :purpose, value: "buddy_check" %><% else %>
+  <div class="fl"><%= form.label :purpose %><%= form.select :purpose, MembershipDrive::PURPOSES.except("buddy_check").map { |value, label| [label, value] }, {}, class: "f" %></div>
+  <% end %>
   <div class="membership-form-grid">
     <div class="fl"><%= form.label :starts_on, "Starts on" %><%= render "shared/editable_date_field", name: "membership_drive[starts_on]", id: "membership_drive_starts_on", value: @drive.starts_on %></div>
     <div class="fl"><%= form.label :ends_on, "Ends on" %><%= render "shared/editable_date_field", name: "membership_drive[ends_on]", id: "membership_drive_ends_on", value: @drive.ends_on %></div>
   </div>
-  <div class="fl"><%= form.label :script, "Call script or instructions" %><%= form.text_area :script, class: "f", rows: 6, maxlength: 5000 %><p class="membership-secondary">Buddy Checks ask how the veteran is doing and offer help. Use a separate renewal drive for dues requests.</p></div>
-  <div class="btnrow"><%= form.submit "Create drive", class: "btn-primary" %><%= link_to "Cancel", membership_root_path(membership_year: @membership_year), class: "btn-secondary" %></div>
+  <div class="fl"><%= form.label :script, "Call script or instructions" %><%= form.text_area :script, class: "f", rows: 6, maxlength: 5000 %><p class="membership-secondary"><%= buddy_drive ? "Ask how the veteran is doing and offer help. Keep dues requests in Membership." : "Use this drive for membership renewal or new-member welcome calls." %></p></div>
+  <div class="btnrow"><%= form.submit "Create drive", class: "btn-primary" %><%= link_to "Cancel", buddy_drive ? membership_drives_path(purpose: "buddy_check") : membership_root_path(membership_year: @membership_year), class: "btn-secondary" %></div>
 <% end %>

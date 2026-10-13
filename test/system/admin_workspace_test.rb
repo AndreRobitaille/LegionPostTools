@@ -23,7 +23,7 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
         page.current_window.resize_to(width, 1100)
         visit admin_root_path
         assert_selector "h1", text: "Administration"
-        assert_selector "h2", text: /meeting work/i
+        assert_no_selector ".workspace-group--meeting-work"
         assert_selector "h2", text: /people and roster/i
         assert_link "Import history"
         assert_link "Sync email audience"
@@ -39,7 +39,7 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
       end
     end
 
-    find(".workspace-group--meeting-work .workspace-destination", text: "Meetings").hover
+    find(".workspace-group--people-roster .workspace-destination", text: "Import history").hover
     assert_readable_workspace
     within ".workspace-group--people-roster" do
       click_link "Import roster"
@@ -65,7 +65,7 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
     click_button "Menu"
     click_link "Officer tools"
 
-    assert_current_path admin_root_path
+    assert_current_path officer_tools_path
     assert_selector "h1", text: "Officer tools"
     assert_no_selector ".workspace-attention"
     assert_no_selector ".workspace-group--access"
@@ -82,16 +82,16 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
     page.driver.browser.switch_to.active_element.send_keys(:enter)
     assert_current_path admin_endeavors_path
 
-    visit admin_root_path
+    visit officer_tools_path
     click_link "Meeting types", exact: false
     assert_current_path admin_meeting_types_path
     find("a.back", text: "Officer tools").click
-    assert_current_path admin_root_path
+    assert_current_path officer_tools_path
     click_link "Background Jobs", exact: false
     assert_current_path admin_jobs_path
 
     page.current_window.resize_to(1400, 1100)
-    visit admin_root_path
+    visit officer_tools_path
     capture_system_screenshot("agenda-manager-1400")
   end
 
@@ -101,7 +101,7 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
 
     [ 1400, 390 ].each do |width|
       page.current_window.resize_to(width, 900)
-      visit admin_root_path
+      visit officer_tools_path
       assert_selector ".workspace-group", count: 1
       assert_selector "h2", text: /public website/i
       assert_no_link "Website connections"
@@ -114,14 +114,14 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
     assert_current_path admin_website_publications_path
     visit admin_website_access_tokens_path
     assert_current_path root_path
-    visit admin_root_path
+    visit officer_tools_path
     assert_no_link "Website connections"
   end
 
   test "record viewer follows Meetings and loses workspace access on the next request after revocation" do
     grant "view_internal_records"
     system_sign_in(@user)
-    visit admin_root_path
+    visit officer_tools_path
     assert_selector ".workspace-destination", count: 1
     assert_no_link "Background Jobs"
     within ".workspace-group--meeting-work" do
@@ -132,7 +132,7 @@ class AdminWorkspaceSystemTest < ApplicationSystemTestCase
     visit admin_jobs_path
     assert_current_path root_path
     @user.permission_grants.find_by!(capability: "view_internal_records").destroy!
-    visit admin_root_path
+    visit officer_tools_path
     assert_current_path root_path
     click_button "Menu"
     assert_no_link "Officer tools"

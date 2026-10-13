@@ -1,0 +1,19 @@
+<nav class="membership-navigation" aria-label="Buddy Checks pages">
+  <% destinations = [] %>
+  <% personal = [:home, :people, :history, :callbacks, :deferred].include?(current) %>
+  <% if personal && current_user.mobile_buddy_checks_access? %>
+    <% destinations.concat([["Buddy Checks home", buddy_checks_root_path, :home], ["Find a member", buddy_checks_people_path, :people], ["Your check history", buddy_checks_contacts_path, :history], ["Your callbacks", buddy_checks_follow_ups_path, :callbacks], ["Deferred suggestions", buddy_checks_snoozes_path, :deferred]]) %>
+  <% end %>
+  <% if personal && current_user.buddy_check_coordination_access? %>
+    <% destinations << ["Post coordination", buddy_checks_activity_path, :activity] %>
+  <% elsif current_user.buddy_check_coordination_access? %>
+    <% destinations.concat([["Post activity", buddy_checks_activity_path, :activity], ["Care coverage", buddy_checks_coverage_path, :coverage], ["County report", buddy_checks_report_path, :report], ["Buddy Check drives", membership_drives_path(purpose: "buddy_check"), :drives]]) %>
+    <% if current_user.mobile_buddy_checks_access? %>
+      <% destinations << ["Meeting attendance", membership_buddy_attendances_path, :attendance] %>
+      <% destinations << ["Your check-ins", buddy_checks_root_path, :home] %>
+    <% end %>
+  <% end %>
+  <% destinations.each do |label, path, key| %>
+    <%= link_to label, path, aria: { current: current == key ? "page" : nil } %>
+  <% end %>
+</nav>

@@ -4,7 +4,7 @@ module Membership
     before_action -> { head :forbidden unless current_user.mobile_buddy_checks_access? }
 
     def index
-      @meetings = @organization.meetings.where("starts_at <= ?", Time.current).ordered.limit(100)
+      @meetings = @organization.meetings.where(cancelled: false).where("starts_at <= ?", Time.current).ordered.limit(100)
     end
 
     def show

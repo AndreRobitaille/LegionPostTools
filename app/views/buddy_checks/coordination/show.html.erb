@@ -1,0 +1,43 @@
+<%= render "buddy_checks/coordination/privacy" %>
+<% content_for :title, "#{@person.full_name} · Buddy Check history" %>
+<div class="task-workspace">
+  <%= link_to "Post activity", buddy_checks_activity_path, class: "back" %>
+  <div class="page-lead"><h1 class="page-title"><%= @person.full_name %> · Buddy Check history</h1><p class="page-sub">Check-ins recorded by your Post's callers.</p></div>
+  <%= render "buddy_checks/navigation", current: :activity %>
+  <% if @can_prepare %><p><%= link_to "Prepare Buddy Check", buddy_checks_person_path(@person), class: "btn-primary" %></p><% end %>
+  <section class="panel buddy-care-section" aria-label="Private care follow-up">
+    <h2>Private care follow-up</h2>
+    <% if @current_care %>
+      <p><strong><%= BuddyCareUpdate::STATUSES.fetch(@current_care.status) %></strong></p>
+      <p><%= @current_care.notes %></p>
+      <% if @current_care.status == "needs_attention" %><p>Follow-up owner: <%= @current_care.assigned_to.person.full_name %> · Review by <%= legion_date(@current_care.follow_up_on) %></p><% end %>
+    <% else %><p>No extra-care follow-up has been recorded.</p><% end %>
+    <%= link_to "Record care follow-up", buddy_checks_care_path(@person), class: "btn-secondary" %>
+    <% if @care_updates.any? %>
+      <details class="membership-correction"><summary>Earlier care reviews</summary>
+        <% @care_updates.each do |update| %>
+          <article class="membership-contact"><h3><%= BuddyCareUpdate::STATUSES.fetch(update.status) %> · Revision <%= update.revision %></h3><p><%= update.notes %></p><p class="membership-secondary"><%= update.recorded_by.person.full_name %> · <%= buddy_time(update.created_at) %></p></article>
+        <% end %>
+      </details>
+    <% end %>
+  </section>
+  <section class="panel" aria-label="Buddy Check contact preference">
+    <h2>Contact preference</h2>
+    <p><%= @paused ? "No Buddy Check contact requested." : "No request to pause Buddy Check contact is recorded." %></p>
+    <% if @preference_error %><p class="error-summary" role="alert"><%= @preference_error %></p><% end %>
+    <details class="membership-correction" <%= "open" if @preference_error %>><summary>Record a contact preference</summary>
+      <%= form_with url: buddy_checks_preference_path(@person), scope: :preference, class: "stacked-form" do |form| %>
+        <%= form.hidden_field :submission_key, value: @preference_values&.dig(:submission_key) || @preference_key %>
+        <div class="fl"><%= form.label :outcome, "Member's preference" %><%= form.select :outcome, [["No Buddy Check contact requested", "do_not_contact"], ["Member agreed to resume Buddy Checks", "contact_permission_restored"]], { selected: @preference_values&.dig(:outcome) }, class: "f" %></div>
+        <div class="fl"><%= form.label :notes, "Preference source" %><%= form.text_area :notes, value: @preference_values&.dig(:notes), class: "f", rows: 3, required: true, maxlength: 2000 %></div>
+        <p class="membership-secondary">Record the member's actual request and how you learned it. This is a preference review, not another performed Buddy Check.</p>
+        <%= form.submit "Save contact preference", class: "btn-secondary" %>
+      <% end %>
+    </details>
+  </section>
+  <section class="panel" aria-label="Buddy Check contact history">
+    <h2>Buddy Check history</h2>
+    <% if @contacts.empty? %><p>No Buddy Checks are recorded for this member.</p><% end %>
+    <%= render "buddy_checks/coordination/checks", contacts: @contacts, show_member: false %>
+  </section>
+</div>

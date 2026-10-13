@@ -15,13 +15,14 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
 
   test "officer tracks receipt saves summary and starts a drive at desktop and phone widths" do
     system_sign_in(@officer)
-    visit membership_root_path(membership_year: @year)
+    visit membership_follow_up_path(membership_year: @year)
     assert_selector ".sec-head-label", text: "NEEDS ATTENTION"
     capture_system_screenshot("membership-officer-desktop")
     assert_readable_membership_page
     click_link "Alex Member"
     assert_current_path membership_person_path(@member, membership_year: @year)
     assert_no_selector "html[data-turbo-preview]", visible: :all
+    find("summary", text: "Record a payment or National payment report").click
     within "form[action='#{membership_dues_records_path}']" do
       fill_in "Amount received ($)", with: "45.00"
       find_field("Receipt or check reference").click
@@ -44,7 +45,7 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
     click_button "Save today's Adjutant summary"
     assert_text "Adjutant membership summary"
     assert_equal "45.0", MembershipSummary.sole.payload["post_dues_received"]
-    visit membership_root_path(membership_year: @year)
+    visit membership_follow_up_path(membership_year: @year)
     assert_readable_membership_page
     capture_system_screenshot("membership-officer-phone")
     click_link "Drives", exact: true
@@ -79,7 +80,7 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
     workspace.record_dues!(dues_attributes(person_id: online.id, kind: "national_reported", amount: nil))
     workspace.record_dues!(dues_attributes(person_id: received.id))
     system_sign_in(@officer)
-    visit membership_root_path
+    visit membership_follow_up_path
     assert_link "Alex Member"
     assert_no_link "Taylor Member"
     assert_no_link deceased.roster_display_name
@@ -107,7 +108,7 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     assert_readable_membership_page
     capture_system_screenshot("membership-deceased-phone")
-    find("summary", text: "Add a review or returned paper result").click
+    click_link "Add a review or returned paper result"
     select "Officer review of a recorded result", from: "Channel"
     select "Officer review needed", from: "What happened?"
     fill_in "Brief notes", with: "Reviewed retained history"
@@ -138,17 +139,18 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     click_button "Menu"
     assert_no_link "Membership", exact: true
-    visit membership_root_path
+    visit membership_follow_up_path
     assert_text "You do not have a current membership assignment"
   end
 
   test "assigned caller corrects validation and records callback on a phone" do
     system_sign_in(@volunteer)
     page.current_window.resize_to(390, 844)
-    visit membership_root_path(membership_year: @year)
+    visit membership_follow_up_path(membership_year: @year)
     assert_link "Alex Member"
     assert_no_link "Taylor Member"
     click_link "Alex Member"
+    open_contact_entry
     select "Callback requested", from: "What happened?"
     fill_in "Brief notes", with: "Call after lunch on the agreed day"
     click_button "Record contact"
@@ -215,6 +217,7 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
   test "returned same day sheet preserves callback until an officer records a reasoned review" do
     system_sign_in(@volunteer)
     visit membership_person_path(@member, membership_year: @year)
+    open_contact_entry
     select "Callback requested", from: "What happened?"
     fill_in "Follow-up date (if needed)", with: (Organization.current_local_date + 3).strftime("%d %b %Y").upcase
     fill_in "Brief notes", with: "Agreed callback after lunch"
@@ -224,6 +227,7 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
 
     system_sign_in(@officer)
     visit membership_person_path(@member, membership_year: @year)
+    open_contact_entry
     find("#membership_contact_membership_assignment_id").find("option[value='#{@assignment.id}']").select_option
     select "No answer", from: "What happened?"
     fill_in "Paper reference (when entering a call sheet)", with: "#{@drive.id}-#{@assignment.id}-123456abcdef"
@@ -241,6 +245,7 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
 
     system_sign_in(@officer)
     visit membership_person_path(@member, membership_year: @year)
+    open_contact_entry
     find("#membership_contact_membership_assignment_id").find("option[value='#{@assignment.id}']").select_option
     select "Officer review of a recorded result", from: "Channel"
     select "Callback requested", from: "What happened?"
@@ -257,22 +262,28 @@ class MembershipWorkspaceSystemTest < ApplicationSystemTestCase
     @drive.update!(purpose: "buddy_check")
     @member.update!(roster_paid_through_year: @year)
     system_sign_in(@volunteer)
-    visit membership_root_path(membership_year: @year)
+    visit membership_follow_up_path(membership_year: @year)
     click_link "Alex Member"
     assert_current_path membership_person_path(@member, membership_year: @year, assignment_id: @assignment.id)
+    open_contact_entry(button: "Record Buddy Check result")
     within "#membership_contact_outcome" do
       assert_no_selector "option[value='wants_to_renew']:not([disabled])", visible: :all
       assert_selector "option[value='reached']:not([disabled])", visible: :all
     end
     select "Reached", from: "What happened?"
     fill_in "Brief notes", with: "Welcomed a visit from the Post"
-    click_button "Record contact"
+    click_button "Record Buddy Check result"
     assert_text "Contact recorded"
     assert_equal "buddy_check", MembershipContact.sole.purpose
     assert_empty @member.membership_dues_records
   end
 
   private
+
+  def open_contact_entry(button: "Record contact")
+    find("a[href*='/contacts/new']").click
+    assert_button button
+  end
 
   def assert_readable_membership_page
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth + 1"), "The page must fit the viewport"

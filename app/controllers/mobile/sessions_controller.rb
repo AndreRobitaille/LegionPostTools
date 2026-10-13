@@ -18,12 +18,12 @@ module Mobile
       else
         token.revoke
       end
-      redirect_to mobile_sessions_path, notice: "Mobile session revoked.", status: :see_other
+      redirect_to mobile_sessions_path, notice: "App connection disconnected.", status: :see_other
     end
 
     def destroy_remembered
       remembered_sessions.find_by!(public_id: params[:id]).revoke!
-      redirect_to mobile_sessions_path, notice: "Mobile session revoked.", status: :see_other
+      redirect_to mobile_sessions_path, notice: "App connection disconnected.", status: :see_other
     end
 
     private

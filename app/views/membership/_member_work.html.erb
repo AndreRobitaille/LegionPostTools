@@ -1,6 +1,8 @@
 <div class="membership-work-lines">
-  <p><span>National record</span> <%= membership_renewal_label(person, @workspace.report) %><% if person.roster_paid_through_year %> · Paid through <%= person.roster_paid_through_year %><% end %></p>
-  <p><span>Post renewal work</span> <%= MembershipWorkspace::WORK_STATES.fetch(@workspace.work_state(person)) %></p>
   <% item = local_assigns[:work_item] || @workspace.work_item(person) %>
+  <% if item[:purpose] == "renewal" %>
+    <p><span>National record</span> <%= membership_renewal_label(person, @workspace.report) %><% if person.roster_paid_through_year %> · Paid through <%= person.roster_paid_through_year %><% end %></p>
+    <p><span>Post renewal work</span> <%= MembershipWorkspace::WORK_STATES.fetch(@workspace.work_state(person)) %></p>
+  <% end %>
   <p><span>Next step</span> <%= item[:next_step] %><% if item[:follow_up_on] %> · <%= legion_date(item[:follow_up_on]) %><% end %></p>
 </div>

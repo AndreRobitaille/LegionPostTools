@@ -1,0 +1,6 @@
+<% entry_title = @buddy_task ? "Record Buddy Check result" : "Record membership contact" %>
+<% content_for :title, entry_title %>
+<% no_outreach = @workspace.outreach_exclusion(@person).present? %>
+<%= link_to "Back to #{@person.roster_display_name}", membership_person_path(@person, membership_year: @membership_year, assignment_id: @contact.membership_assignment_id), class: "back" %>
+<div class="page-lead"><h1 class="page-title"><%= no_outreach ? "Record a review or returned result" : entry_title %></h1><p class="page-sub"><%= @person.roster_display_name %><% unless @buddy_task %> · Membership year <%= @membership_year %><% end %></p></div>
+<section class="panel form-panel"><%= render "form", no_outreach: no_outreach %></section>

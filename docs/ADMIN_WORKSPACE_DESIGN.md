@@ -1,5 +1,9 @@
 # Administration and Officer tools
 
+The [October 12 menu design](MENU_AND_WORKSPACE_DESIGN.md) supersedes the combined
+hub and navigation naming described here. The destination-row visual system remains
+current; Officer tools and Administration now have separate hubs.
+
 Design for GitHub issue #64, October 11, 2026.
 
 ## Page job and scope

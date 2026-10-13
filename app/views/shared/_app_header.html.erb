@@ -46,19 +46,27 @@
           <%# Destinations appear here only at phone widths, where the tab strip
               is hidden. CSS hides one or the other, so a screen reader never
               meets both sets of links. %>
-          <div class="app-menu-nav">
+          <section class="app-menu-nav app-menu-group" aria-labelledby="menu-member-heading">
+            <h2 class="app-menu-heading" id="menu-member-heading">Member site</h2>
             <% primary_destinations.each do |destination| %>
               <%= link_to destination[:label], destination[:path], menu_link_attributes(destination[:section]) %>
             <% end %>
-            <% if (admin = admin_destination) %>
-              <%= link_to admin[:label], admin[:path], menu_link_attributes(admin[:section]) %>
-            <% end %>
-          </div>
+          </section>
 
-          <div class="app-menu-actions">
-            <%= link_to "Your profile", profile_path, class: "app-menu-link" %>
+          <% work_menu_groups.each do |group| %>
+            <section class="app-menu-group" aria-labelledby="menu-<%= group[:key] %>-heading">
+              <h2 class="app-menu-heading" id="menu-<%= group[:key] %>-heading"><%= group[:label] %></h2>
+              <% group[:destinations].each do |destination| %>
+                <%= link_to destination[:label], destination[:path], menu_link_attributes(destination[:section]) %>
+              <% end %>
+            </section>
+          <% end %>
+
+          <section class="app-menu-actions app-menu-group" aria-labelledby="menu-account-heading">
+            <h2 class="app-menu-heading" id="menu-account-heading">Your account</h2>
+            <%= link_to "Your profile", profile_path, menu_link_attributes(:profile) %>
             <%= button_to "Sign out", session_path, method: :delete, class: "app-menu-link app-menu-link--signout" %>
-          </div>
+          </section>
         </div>
       </div>
     </div>

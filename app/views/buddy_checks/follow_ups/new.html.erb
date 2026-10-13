@@ -1,0 +1,4 @@
+<% content_for :title, "Schedule a Buddy Check callback" %>
+<%= link_to "Back to #{@person.full_name}", buddy_checks_person_path(@person), class: "back" %>
+<div class="page-lead"><h1 class="page-title">Schedule a callback</h1><p class="page-sub"><%= @person.full_name %></p></div>
+<%= render "form" %>

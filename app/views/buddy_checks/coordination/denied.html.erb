@@ -1,0 +1,4 @@
+<%= render "buddy_checks/coordination/privacy" %>
+<% content_for :title, "Buddy Check coordination access" %>
+<div class="page-lead"><h1 class="page-title">Buddy Check coordination access</h1><p class="page-sub"><%= @error %></p></div>
+<%= link_to current_user.mobile_buddy_checks_access? ? "Your Buddy Checks" : "Return to dashboard", current_user.mobile_buddy_checks_access? ? buddy_checks_root_path : root_path, class: "btn-secondary" %>

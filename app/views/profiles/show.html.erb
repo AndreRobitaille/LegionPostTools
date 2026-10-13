@@ -67,6 +67,15 @@
   </div>
 </section>
 
+<% if current_user.mobile_buddy_checks_access? %>
+  <section class="profile-section" id="connected-apps" aria-labelledby="connected-apps-heading">
+    <%= render "shared/section_header", label: "Connected apps", heading_tag: :h2, heading_id: "connected-apps-heading" %>
+    <div class="workspace-group"><div class="mrow-list">
+      <%= render "shared/workspace_destination", label: "Buddy Checks app connections", description: "Review or disconnect the iPhone app's access to your account.", path: mobile_sessions_path %>
+    </div></div>
+  </section>
+<% end %>
+
 <section class="profile-section">
   <%= render "shared/section_header", label: "Agent access" %>
 
@@ -78,7 +87,3 @@
     <%= link_to "Manage agent access", agent_access_tokens_path, class: "btn-secondary" %>
   </div>
 </section>
-
-<% if current_user.mobile_buddy_checks_access? %>
-  <%= link_to "Mobile sessions", mobile_sessions_path, class: "btn-secondary" %>
-<% end %>

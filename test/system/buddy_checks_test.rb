@@ -15,7 +15,7 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
 
   test "officer reviews explicit attendance and address provenance at desktop and phone widths" do
     system_sign_in(@officer)
-    visit membership_root_path
+    visit buddy_checks_root_path
     click_link "General-member attendance"
     click_link "Review attendance"
     assert_text "This register covers 2 named members"
@@ -69,10 +69,10 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     capture_system_screenshot("buddy-consent-phone")
     mobile_headers
     visit mobile_sessions_path
-    assert_button "Revoke session #{@mobile_tokens[@other.id].id}"
+    assert_button "Disconnect app"
     capture_system_screenshot("buddy-sessions-phone")
-    click_button "Revoke session #{@mobile_tokens[@other.id].id}"
-    assert_text "No active mobile sessions."
+    accept_confirm { click_button "Disconnect app" }
+    assert_text "No active app connections."
     assert @mobile_tokens[@other.id].reload.revoked_at
   end
 
@@ -122,7 +122,7 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     assert_equal 0, Doorkeeper::AccessToken.count
     # Chromium has no native callback handler; finish that navigation before reuse.
     visit mobile_sessions_path
-    assert_text "No active mobile sessions."
+    assert_text "No active app connections."
   ensure
     ActionController::Base.allow_forgery_protection = previous
     ActionController::Base.forgery_protection_origin_check = previous_origin_check
@@ -213,7 +213,7 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     Capybara.using_session(:remembered_revocation) do
       system_sign_in(@other)
       visit mobile_sessions_path
-      assert_button "Revoke remembered session #{connection.id}"
+      assert_button "Disconnect remembered app"
       assert_text "Remembered until"
       page.current_window.resize_to(1400, 1000)
       capture_system_screenshot("buddy-remembered-sessions-desktop")
@@ -221,8 +221,8 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
       page.current_window.resize_to(390, 844)
       capture_system_screenshot("buddy-remembered-sessions-phone")
       assert_no_horizontal_overflow
-      click_button "Revoke remembered session #{connection.id}"
-      assert_text "No active mobile sessions."
+      accept_confirm { click_button "Disconnect remembered app" }
+      assert_text "No active app connections."
     end
     api.post "/oauth/token", params: { grant_type: "refresh_token", client_id: @mobile_client.uid,
       refresh_token: credentials["refresh_token"], exchange_id: SecureRandom.uuid }
@@ -240,12 +240,12 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
   test "pilot removal hides phone controls for a membership manager at desktop and narrow widths" do
     system_sign_in(@officer)
     visit profile_path
-    assert_link "Mobile sessions"
+    assert_link "Buddy Checks app connections"
     @officer.permission_grants.where(capability: "use_mobile_buddy_checks").destroy_all
     [ [ 1400, 1000 ], [ 390, 844 ] ].each do |width, height|
       page.current_window.resize_to(width, height)
       visit profile_path
-      assert_no_link "Mobile sessions"
+      assert_no_link "Buddy Checks app connections"
       visit membership_root_path
       assert_link "Drives"
       assert_no_link "General-member attendance"

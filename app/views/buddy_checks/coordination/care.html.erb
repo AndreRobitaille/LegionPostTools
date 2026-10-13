@@ -1,0 +1,19 @@
+<%= render "buddy_checks/coordination/privacy" %>
+<% content_for :title, "Record care follow-up" %>
+<div class="task-workspace">
+  <%= link_to "Buddy Check history", buddy_checks_member_history_path(@person), class: "back" %>
+  <div class="page-lead"><h1 class="page-title">Record care follow-up</h1><p class="page-sub"><%= @person.full_name %> · Private to authorized Post coordinators.</p></div>
+  <% if @current_care %><section class="panel"><h2>Current care review</h2><p><%= BuddyCareUpdate::STATUSES.fetch(@current_care.status) %> · Revision <%= @current_care.revision %></p><p><%= @current_care.notes %></p></section><% end %>
+  <% if @error %><p class="error-summary" role="alert"><%= @error %></p><% end %>
+  <%= form_with url: buddy_checks_care_path(@person), scope: :care, class: "stacked-form" do |form| %>
+    <%= form.hidden_field :submission_key, value: @form["submission_key"] %><%= form.hidden_field :expected_revision, value: @form["expected_revision"] %>
+    <div class="fl"><%= form.label :status, "Care review" %><%= form.select :status, BuddyCareUpdate::STATUSES.map { |value, label| [label, value] }, { selected: @form["status"] }, class: "f" %></div>
+    <div class="fl"><%= form.label :notes, "Reason and practical next step" %><%= form.text_area :notes, value: @form["notes"], class: "f", rows: 4, maxlength: 1000, required: true %><p class="membership-secondary">Record your observation and the agreed next step. Keep detailed medical information out of this note. Care reviews are separate from check-in results and county totals.</p></div>
+    <div class="membership-form-grid">
+      <div class="fl"><%= form.label :assigned_to_id, "Follow-up owner" %><%= form.select :assigned_to_id, @owners.map { |owner| [owner.person.full_name, owner.id] }, { include_blank: "Choose a coordinator", selected: @form["assigned_to_id"] }, class: "f" %></div>
+      <div class="fl"><%= form.label :follow_up_on, "Review by" %><%= render "shared/editable_date_field", name: "care[follow_up_on]", id: "care_follow_up_on", value: @form["follow_up_on"] %></div>
+    </div>
+    <p class="membership-secondary">An owner and review date are required while extra care is needed. Saving adds a new review and preserves the earlier record.</p>
+    <div class="btnrow"><%= form.submit "Save care follow-up", class: "btn-primary" %><%= link_to "Cancel", buddy_checks_member_history_path(@person), class: "btn-secondary" %></div>
+  <% end %>
+</div>

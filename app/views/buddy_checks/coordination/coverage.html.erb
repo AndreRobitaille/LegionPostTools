@@ -1,0 +1,47 @@
+<%= render "buddy_checks/coordination/privacy" %>
+<% content_for :title, "Buddy Checks · Care coverage" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Care coverage</h1><p class="page-sub">Keep track of who needs a check-in and who has asked for no contact.</p></div>
+  <%= render "buddy_checks/navigation", current: :coverage %>
+  <%= form_with url: buddy_checks_coverage_path, method: :get, class: "membership-toolbar" do |form| %>
+    <div class="fl"><%= form.label :days, "Conversation look-back (days)" %><%= form.number_field :days, value: params[:days].presence || @days, min: 1, max: 730, class: "f" %></div>
+    <div class="fl"><%= form.label :filter, "Show" %><%= form.select :filter, [["Needs a check-in", "attention"], ["All members", "all"], ["No contact requested", "no_contact"], ["Extra care follow-up", "extra_care"]], { selected: @filter }, class: "f" %></div>
+    <div class="fl"><%= form.label :q, "Member name" %><%= form.search_field :q, value: @query, class: "f" %></div>
+    <%= form.submit "Review coverage", class: "btn-secondary" %>
+  <% end %>
+  <% if @error %><p class="error-summary" role="alert"><%= @error %></p><% end %>
+  <% if @coverage_summary %>
+    <dl class="buddy-coverage-summary">
+      <div><dt>Available for check-ins</dt><dd><%= @coverage_summary[:available] %> members</dd></div>
+      <div><dt>Recorded conversation within <%= @days %> days</dt><dd><%= @coverage_summary[:reached] %> of <%= @coverage_summary[:available] %></dd></div>
+      <div><dt>Needs a check-in</dt><dd><%= @coverage_summary[:attention] %> members</dd></div>
+      <div><dt>No contact requested</dt><dd><%= @coverage_summary[:paused] %> members</dd></div>
+    </dl>
+  <% end %>
+  <p class="workspace-footnote">These are recorded facts. Missing history is unknown. Meeting alerts require two explicitly recorded absences in complete registers.</p>
+  <% if @total %><%= render "shared/section_header", label: "Members in this selection", meta: pluralize(@total, "member"), heading_tag: :h2 %><% end %>
+  <% if @rows.empty? %><div class="empty"><p>No members match this selection.</p></div><% end %>
+  <div class="buddy-coverage-list">
+    <% @rows.each do |row| %>
+      <% person = row[:person] %>
+      <article class="panel buddy-coverage-row">
+        <h2><%= link_to person.full_name, buddy_checks_member_history_path(person) %></h2>
+        <% if row[:paused] %><p class="membership-notice">No Buddy Check contact requested. Routine Buddy Check outreach is paused.</p><% end %>
+        <dl class="task-facts">
+          <div><dt>Last recorded conversation</dt><dd><%= row[:last_conversation] ? legion_date(row[:last_conversation].occurred_on) : "Unknown — no conversation recorded" %></dd></div>
+          <div><dt>Last recorded meeting attendance</dt><dd><%= row[:last_seen] ? legion_date(row[:last_seen].starts_at.in_time_zone(@organization.calendar_time_zone).to_date) : "Unknown — no attendance recorded" %></dd></div>
+        </dl>
+        <% if row[:missing_meetings] %><p class="membership-notice">Absent at the latest two covered meetings. Review a check-in.</p><% end %>
+        <% if (care = row[:extra_care]) %>
+          <div class="buddy-care-callout"><strong>Needs extra care</strong><p><%= care.notes %></p><p>Follow-up owner: <%= care.assigned_to.person.full_name %> · Review by <%= legion_date(care.follow_up_on) %><%= " · Due" if care.follow_up_on <= Organization.current_local_date %></p></div>
+          <% unless care.assigned_to.buddy_check_coordination_access? %><p class="membership-notice">This owner's coordination access has ended. Reassign the care follow-up.</p><% end %>
+        <% end %>
+        <%= link_to "Review Buddy Check history", buddy_checks_member_history_path(person), class: "task-link" %>
+      </article>
+    <% end %>
+  </div>
+  <nav class="btnrow" aria-label="Care coverage pages">
+    <%= link_to "Previous members", buddy_checks_coverage_path(q: @query, days: @days, filter: @filter, page: @page - 1), class: "btn-secondary" if @page && @page > 1 %>
+    <%= link_to "More members", buddy_checks_coverage_path(q: @query, days: @days, filter: @filter, page: @page + 1), class: "btn-secondary" if @more %>
+  </nav>
+</div>

@@ -1,0 +1,14 @@
+<% content_for :title, "Manage a Buddy Check callback" %>
+<%= link_to "Your callbacks", buddy_checks_follow_ups_path, class: "back" %>
+<div class="page-lead"><h1 class="page-title">Manage callback</h1><p class="page-sub"><%= @person.full_name %> · <%= buddy_time(@follow_up.due_at) %></p></div>
+<% if @follow_up.status == "open" %>
+  <%= render "form" %>
+  <section class="panel form-panel task-secondary-action">
+    <%= render "shared/section_header", label: "Finish this callback", heading_tag: :h2 %>
+    <p>Mark it complete after you have finished the agreed follow-up. This does not record a new Buddy Check.</p>
+    <%= link_to "Record the actual contact", new_buddy_checks_contact_path(person_id: @person.id), class: "task-link" %>
+    <div class="btnrow"><% [["Mark callback complete", "complete", "btn-secondary"], ["Cancel callback", "cancel", "btn-return"]].each do |label, change, style| %>
+      <%= button_to label, buddy_checks_follow_up_path(@follow_up), method: :patch, params: { callback: { operation_id: SecureRandom.uuid, expected_revision: @follow_up.lock_version, change: change } }, class: style %>
+    <% end %></div>
+  </section>
+<% else %><div class="empty"><p>This callback is <%= @follow_up.status %>. It remains in the saved record.</p></div><% end %>

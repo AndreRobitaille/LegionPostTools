@@ -170,7 +170,7 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     get admin_endeavors_path
     assert_redirected_to root_path
     sign_in_as(@manager)
-    get admin_root_path
+    get officer_tools_path
     assert_select "a[href=?]", admin_endeavors_path
     assert_no_difference "EndeavorHistoryRun.count" do
       get admin_endeavors_path

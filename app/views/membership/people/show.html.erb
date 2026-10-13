@@ -1,67 +1,36 @@
-<% content_for :title, "#{@person.roster_display_name} · Membership" %>
-<%
-  no_outreach = @workspace.outreach_exclusion(@person).present?
-  entry_label = if no_outreach
-    "Record history"
-  elsif @access.manager?
-    "Record contact or review"
-  else
-    "Record contact"
-  end
-%>
-<div class="page-lead">
-  <%= link_to "Membership worklist", membership_root_path(membership_year: @membership_year), class: "membership-back" %>
-  <h1 class="page-title"><%= @person.roster_display_name %></h1>
-  <p class="page-sub">Membership year <%= @membership_year %></p>
-</div>
-<%= render "shared/section_panel", label: "Membership and next contact" do %>
-  <%= render "membership/member_work", person: @person, work_item: @contact_work_item %>
-  <p class="membership-secondary">National roster imported <%= @person.roster_imported_at ? legion_date(membership_local_time(@person.roster_imported_at)) : "date not recorded" %>.</p>
-  <% if @workspace.contact_paused?(@person, purpose: @contact.purpose) %>
-    <p class="membership-notice">Contact is paused for <%= MembershipDrive::PURPOSES.fetch(@contact.purpose).downcase %>. A membership officer must record renewed permission before further contact for this purpose.</p>
-  <% elsif @contact_work_item[:outreach_needed] %>
-    <div class="btnrow">
-      <% if @person.directory_phone_number.present? %><%= link_to "Call #{@person.directory_phone_number}", "tel:#{@person.directory_phone_number.gsub(/[^+\d]/, '')}", class: "btn-secondary" %><% end %>
-      <% if @person.directory_email_address.present? %><%= mail_to @person.directory_email_address, "Open email", class: "btn-secondary" %><% end %>
+<% content_for :title, "#{@person.roster_display_name} · #{@buddy_task ? 'Buddy Check' : 'Membership'}" %>
+<% no_outreach = @workspace.outreach_exclusion(@person).present? %>
+<div class="task-workspace">
+  <%= link_to(@buddy_task ? "Buddy Check drives" : "Membership worklist", @buddy_task ? membership_drives_path(purpose: "buddy_check") : membership_follow_up_path(membership_year: @membership_year), class: "back") %>
+  <div class="page-lead"><h1 class="page-title"><%= @person.roster_display_name %></h1><p class="page-sub"><%= @buddy_task ? "Buddy Check caller work" : "Membership year #{@membership_year}" %></p></div>
+  <div class="workspace-groups">
+    <div class="workspace-column">
+      <%= render "shared/section_panel", label: @buddy_task ? "Buddy Check and next step" : "Membership and next step" do %>
+        <%= render "membership/member_work", person: @person, work_item: @contact_work_item %>
+        <p class="membership-secondary">National roster imported <%= @person.roster_imported_at ? legion_date(membership_local_time(@person.roster_imported_at)) : "date not recorded" %>.</p>
+        <% if @workspace.contact_paused?(@person, purpose: @contact.purpose) %><p class="membership-notice">Contact is paused for this purpose. Membership leadership must record renewed permission before further contact.</p><% end %>
+        <div class="mrow-list"><%= render "shared/workspace_destination", label: no_outreach ? "Add a review or returned paper result" : "Record contact or review", description: "Record the actual result, brief notes, and any agreed callback.", path: new_membership_person_contact_path(@person, membership_year: @membership_year, assignment_id: @contact.membership_assignment_id) %></div>
+      <% end %>
+      <%= render "shared/section_panel", label: "Contact information" do %>
+        <% unless no_outreach || @workspace.contact_paused?(@person, purpose: @contact.purpose) %>
+          <dl class="task-facts"><div><dt>Phone</dt><dd><%= @person.directory_phone_number.present? ? link_to(@person.directory_phone_number, "tel:#{@person.directory_phone_number.gsub(/[^+\d]/, '')}") : "Not recorded" %></dd></div><div><dt>Email</dt><dd><%= @person.directory_email_address.present? ? mail_to(@person.directory_email_address) : "Not recorded" %></dd></div></dl>
+          <p class="membership-secondary">Opening a phone or email app does not record a completed contact.</p>
+        <% end %>
+        <% if @access.manager? %>
+          <div class="mrow-list">
+            <%= render "shared/workspace_destination", label: "Open full roster record", description: "Review the imported member record and current Post roles.", path: person_path(@person) %>
+            <% if current_user.mobile_buddy_checks_access? %><%= render "shared/workspace_destination", label: "Review mailing address", description: "Check address components against a known source.", path: membership_buddy_address_path(@person) %><% end %>
+          </div>
+        <% end %>
+      <% end %>
     </div>
-    <p class="membership-secondary">Opening a phone or email app does not record a completed contact.</p>
-  <% end %>
-  <% if @access.manager? %><%= link_to "Open full roster record", person_path(@person) %><% end %>
-<% end %>
-
-<%= render "shared/section_panel", label: entry_label do %>
-  <% if no_outreach %>
-    <details class="membership-correction" <%= "open" if @contact.errors.any? %>>
-      <summary>Add a review or returned paper result</summary>
-  <% end %>
-  <%= form_with model: @contact, url: membership_person_contacts_path(@person), class: "stacked-form membership-form", data: { controller: "membership-contact" } do |form| %>
-    <% if no_outreach %><p class="panel-lead">This record is kept for history. Enter an officer review with notes, or include the paper reference when entering a returned call sheet.</p><% end %>
-    <% if @contact.errors.any? %><div class="error-summary" role="alert"><%= @contact.errors.full_messages.to_sentence %></div><% end %>
-    <%= hidden_field_tag :membership_year, @membership_year %>
-    <%= form.hidden_field :submission_key %>
-    <% if @assignments.any? %>
-      <div class="fl"><%= form.label :membership_assignment_id, "Drive and assigned caller" %><%= form.select :membership_assignment_id, @assignments.map { |assignment| [membership_assignment_label(assignment), assignment.id, { "data-purpose" => assignment.membership_drive.purpose }] }, { include_blank: @access.manager? ? "Individual officer outreach" : false }, class: "f", data: { membership_contact_target: "assignment", action: "membership-contact#update" } %></div>
-    <% end %>
-    <% if @access.manager? %><div class="fl"><%= form.label :purpose %><%= form.select :purpose, MembershipDrive::PURPOSES.map { |value, label| [label, value] }, {}, class: "f", data: { membership_contact_target: "purpose", action: "membership-contact#update" } %><p class="membership-secondary">A drive determines its own contact purpose.</p></div><% end %>
-    <div class="membership-form-grid">
-      <div class="fl"><%= form.label :occurred_on, @access.manager? ? "Contact or review date" : "Contact date" %><%= render "shared/editable_date_field", name: "membership_contact[occurred_on]", id: "membership_contact_occurred_on", value: @contact.occurred_on || @contact.occurred_on_before_type_cast %></div>
-      <div class="fl"><%= form.label :channel %><%= form.select :channel, membership_channel_options(manager: @access.manager?), {}, class: "f" %></div>
-    </div>
-    <div class="fl"><%= form.label :outcome, "What happened?" %><%= form.select :outcome, membership_contact_options(manager: @access.manager?), { include_blank: "Choose a result" }, class: "f", required: true, data: { membership_contact_target: "outcome" } %></div>
-    <div class="fl"><%= form.label :follow_up_on, "Follow-up date (if needed)" %><%= render "shared/editable_date_field", name: "membership_contact[follow_up_on]", id: "membership_contact_follow_up_on", value: @contact.follow_up_on || @contact.follow_up_on_before_type_cast %></div>
-    <div class="fl"><%= form.label :notes, "Brief notes" %><%= form.text_area :notes, class: "f", rows: 3, maxlength: 2000 %><p class="membership-secondary">Record the next step. Keep sensitive health or financial details out of drive notes.</p></div>
-    <div class="fl"><%= form.label :paper_reference, "Paper reference (when entering a call sheet)" %><%= form.text_field :paper_reference, class: "f", maxlength: 100 %><p class="membership-secondary">Returned paper stays in history. It does not replace digital work from the same day. Officers can record a review with notes to confirm a different next step.</p></div>
-    <%= form.submit "Record contact", class: "btn-primary" %>
-  <% end %>
-  <% if no_outreach %></details><% end %>
-<% end %>
-
+    <div class="workspace-column">
 <%= render "shared/section_panel", label: @access.manager? ? "Contact history" : "Your contact history" do %>
-  <% if @contacts.empty? %><p>No contacts recorded for this year.</p><% end %>
+  <% if @contacts.empty? %><p>No contacts recorded in this selection.</p><% end %>
   <% @contacts.each do |contact| %>
     <article class="membership-contact">
       <h2><%= MembershipContact::OUTCOMES.fetch(contact.outcome) %></h2>
-      <p><%= legion_date(contact.occurred_on) %> · <%= MembershipContact::CHANNELS.fetch(contact.channel) %> · <%= MembershipDrive::PURPOSES.fetch(contact.purpose) %></p>
+      <p><%= contact.occurred_at ? legion_datetime(membership_local_time(contact.occurred_at)) : legion_date(contact.occurred_on) %> · <%= MembershipContact::CHANNELS.fetch(contact.channel) %> · <%= MembershipDrive::PURPOSES.fetch(contact.purpose) %></p>
       <% if contact.notes.present? %><p class="membership-notes"><%= contact.notes %></p><% end %>
       <% if contact.follow_up_on %><p>Follow-up: <strong><%= legion_date(contact.follow_up_on) %></strong></p><% end %>
       <p class="membership-secondary"><% if contact.membership_assignment %>Caller: <%= contact.membership_assignment.assigned_to.person.full_name %>. <% end %>Recorded by <%= contact.recorded_by.person.full_name %> on <%= legion_date(membership_local_time(contact.created_at)) %>.<% if contact.paper_reference %> Paper reference: <%= contact.paper_reference %>.<% end %></p>
@@ -69,12 +38,16 @@
   <% end %>
 <% end %>
 
-<% if @access.manager? %>
-  <%= render "shared/section_panel", label: "Dues and reported payments" do %>
-    <p class="panel-lead">Record full-year dues received here or a member's report of paying National. Roster confirmation remains separate.</p>
-    <%= render "membership/dues_form", person: @person %>
-    <%= render "membership/dues_records", records: @dues_records %>
-  <% end %>
-<% end %>
 
-<% if @access.manager? && current_user.mobile_buddy_checks_access? %><%= link_to "Review mailing address", membership_buddy_address_path(@person), class: "btn-secondary" %><% end %>
+      <% if @access.manager? && !@buddy_task %>
+        <%= render "shared/section_panel", label: "Dues and reported payments" do %>
+          <details class="membership-correction" <%= "open" if @dues_record.errors.any? %>><summary>Record a payment or National payment report</summary>
+            <p class="panel-lead">Local receipts and member reports remain separate from National roster confirmation.</p>
+            <%= render "membership/dues_form", person: @person %>
+          </details>
+          <%= render "membership/dues_records", records: @dues_records %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

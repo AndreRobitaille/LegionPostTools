@@ -265,7 +265,7 @@ class OfficerTurnoverAuthorityTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_select ".app-menu-id-role", text: label, count: active ? 1 : 0
-    assert_select "a[href='#{admin_root_path}']", text: "Officer tools", count: active ? 1 : 0
+    assert_select "a[href='#{officer_tools_path}']", text: "Officer tools", count: active ? 1 : 0
     actor.person.reload
     assert_equal expected_roles, actor.person.active_role_labels
     if active

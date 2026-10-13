@@ -67,15 +67,17 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".app-menu-nav a.app-menu-link[href=?]", meetings_path, text: "Meetings"
     assert_select ".app-menu-nav a.app-menu-link[href=?]", endeavors_path, text: "Endeavors"
-    assert_select ".app-menu-nav a.app-menu-link[href=?]", admin_root_path, text: "Admin"
+    assert_select ".app-menu-group[aria-labelledby=menu-administration-heading] a[href=?]", admin_root_path, text: "Administration"
+    assert_select ".app-menu-group[aria-labelledby=menu-officer-heading] a[href=?]", officer_tools_path, text: "Officer tools"
   end
 
-  test "account menu omits Admin for a plain member" do
+  test "account menu omits duty and settings hubs for a plain member" do
     prepare_setup_complete_state
     sign_in_plain_member
     get root_path
 
-    assert_select ".app-menu-nav a.app-menu-link[href=?]", admin_root_path, count: 0
+    assert_select ".app-menu-panel a[href=?]", admin_root_path, count: 0
+    assert_select ".app-menu-panel a[href=?]", officer_tools_path, count: 0
     assert_select ".app-menu-nav a.app-menu-link[href=?]", people_path, text: "People"
   end
 
@@ -99,20 +101,23 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "admin sees People and Admin tabs" do
+  test "administrator sees five member tabs and two separate workspace links" do
     prepare_setup_complete_state
     sign_in_admin
     get root_path
     assert_select "nav.nav-bar a.nav-tab", text: "People"
-    assert_select "nav.nav-bar a.nav-tab--admin", text: /Admin/
+    assert_select "nav.nav-bar a.nav-tab", count: 5
+    assert_select ".app-menu-panel a[href=?]", officer_tools_path, text: "Officer tools"
+    assert_select ".app-menu-panel a[href=?]", admin_root_path, text: "Administration"
   end
 
-  test "agenda manager sees Officer tools tab linking to the hub" do
+  test "agenda manager sees Officer tools in the duty group and no Administration link" do
     prepare_setup_complete_state
     sign_in_agenda_manager
     get root_path
-    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_root_path, text: /Officer tools/
-    assert_select "nav.nav-bar a.nav-tab--admin[href=?]", admin_agenda_item_catalog_entries_path, count: 0
+    assert_select ".app-menu-group[aria-labelledby=menu-officer-heading] a[href=?]", officer_tools_path, text: "Officer tools"
+    assert_select ".app-menu-panel a[href=?]", admin_root_path, count: 0
+    assert_select ".app-menu-panel a[href=?]", admin_agenda_item_catalog_entries_path, count: 0
   end
 
   test "plain member sees People but not Admin tab" do

@@ -1,0 +1,7 @@
+<% content_for :title, "Your Buddy Check history" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Your check history</h1><p class="page-sub">Checks saved here and in the iPhone app, across membership years.</p></div>
+  <%= render "buddy_checks/navigation", current: :history %>
+  <section class="panel"><%= render "buddy_checks/history", contacts: @contacts %></section>
+  <nav class="btnrow" aria-label="Check history pages"><%= link_to "Newer checks", buddy_checks_contacts_path(page: @page - 1), class: "btn-secondary" if @page > 1 %><%= link_to "Older checks", buddy_checks_contacts_path(page: @page + 1), class: "btn-secondary" if @more %></nav>
+</div>

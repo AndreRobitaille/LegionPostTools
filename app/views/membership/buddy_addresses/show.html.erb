@@ -1,4 +1,5 @@
 <% content_for :title, "Review mailing address" %>
+<%= link_to "Back to #{@person.full_name}", membership_person_path(@person), class: "back" %>
 <div class="page-lead"><h1 class="page-title">Review mailing address</h1><p class="page-sub"><%= @person.full_name %></p></div>
 <section class="panel form-panel">
 <p><strong>Original roster address</strong><br><%= @person.roster_address.presence || "Not recorded" %></p>

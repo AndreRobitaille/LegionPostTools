@@ -1,0 +1,62 @@
+<% content_for :title, "Buddy Checks" %>
+<div class="task-workspace">
+  <div class="page-lead"><h1 class="page-title">Buddy Checks</h1><p class="page-sub">Check how a fellow veteran is doing, offer help, and keep your agreed callbacks.</p></div>
+  <% if @due_follow_ups.any? %>
+    <section class="workspace-attention" aria-labelledby="buddy-due-heading">
+      <%= render "shared/section_header", label: "Callbacks due", heading_tag: :h2, heading_id: "buddy-due-heading" %>
+      <% @due_follow_ups.each do |callback| %>
+        <div class="task-status-row"><div><strong><%= callback.person.full_name %></strong><p class="membership-secondary">Agreed for <%= buddy_time(callback.due_at) %></p></div><%= link_to "Prepare callback", buddy_checks_person_path(callback.person), class: "btn-primary" %></div>
+      <% end %>
+    </section>
+  <% end %>
+  <div class="workspace-groups">
+    <div class="workspace-column">
+      <section class="workspace-group workspace-group--outreach" aria-labelledby="buddy-start-heading">
+        <%= render "shared/section_header", label: "Make a Buddy Check", heading_tag: :h2, heading_id: "buddy-start-heading" %>
+        <div class="panel buddy-suggestion">
+          <% if @suggestion[:state] == "candidate" %>
+            <% person = @suggestion[:person] %>
+            <h3><%= person[:first_name] %> <%= person[:last_name] %></h3>
+            <p><%= @suggestion[:reason] == "two_recorded_absences" ? "Absent at two covered meetings." : "An older Buddy Check is recorded." %></p>
+            <p class="membership-secondary">Recorded evidence: <%= legion_date(Date.iso8601(@suggestion[:reason_on])) %>. Missing history remains unknown.</p>
+            <%= link_to "Prepare Buddy Check", buddy_checks_person_path(person[:id]), class: "btn-primary" %>
+          <% elsif @suggestion[:state] == "insufficient_history" %>
+            <h3>Choose someone to check on</h3>
+            <p>There is not enough recorded history to prioritize a member. These are random available choices.</p>
+            <div class="buddy-choice-list">
+              <% @suggestion.fetch(:random_candidates, []).each do |person| %>
+                <%= render "shared/workspace_destination", label: "#{person[:first_name]} #{person[:last_name]}", description: "Prepare a Buddy Check", path: buddy_checks_person_path(person[:id]) %>
+              <% end %>
+            </div>
+          <% else %>
+            <h3>No new suggestion right now</h3><p>Current contact history, assignments, callbacks, and your deferrals leave no available suggestion.</p>
+          <% end %>
+        </div>
+        <div class="mrow-list"><%= render "shared/workspace_destination", label: "Find a member", description: "Choose a person you know or need to follow up with.", path: buddy_checks_people_path %></div>
+      </section>
+    </div>
+    <div class="workspace-column">
+      <section class="workspace-group" aria-labelledby="buddy-work-heading">
+        <%= render "shared/section_header", label: "Your outreach", heading_tag: :h2, heading_id: "buddy-work-heading" %>
+        <div class="mrow-list">
+          <%= render "shared/workspace_destination", label: "Your callbacks", description: "Prepare an agreed call, change its time, or mark it finished.", path: buddy_checks_follow_ups_path %>
+          <%= render "shared/workspace_destination", label: "Your check history", description: "Review and correct checks saved here or in the iPhone app.", path: buddy_checks_contacts_path %>
+          <%= render "shared/workspace_destination", label: "Deferred suggestions", description: "Review people you set aside and restore a suggestion.", path: buddy_checks_snoozes_path %>
+        </div>
+      </section>
+      <% if current_user.full_membership_access? %>
+        <section class="workspace-group" aria-labelledby="buddy-coordination-heading">
+          <%= render "shared/section_header", label: "Coordinate Post outreach", heading_tag: :h2, heading_id: "buddy-coordination-heading" %>
+          <div class="mrow-list">
+            <%= render "shared/workspace_destination", label: "Post activity", description: "Review checks recorded by all Post callers, including the mobile app.", path: buddy_checks_activity_path %>
+            <%= render "shared/workspace_destination", label: "Care coverage", description: "Review who needs a check-in, meeting absences, and extra-care follow-up.", path: buddy_checks_coverage_path %>
+            <%= render "shared/workspace_destination", label: "County report", description: "The separate monthly count of Buddy Checks where the person was reached.", path: buddy_checks_report_path %>
+            <%= render "shared/workspace_destination", label: "Buddy Check drives", description: "Assign callers, review their work, and print call sheets.", path: membership_drives_path(purpose: "buddy_check") %>
+            <%= render "shared/workspace_destination", label: "General-member attendance", description: "Review meeting attendance used as Buddy Check evidence.", path: membership_buddy_attendances_path %>
+          </div>
+        </section>
+      <% end %>
+    </div>
+  </div>
+  <p class="workspace-footnote">Buddy Checks are welfare outreach. Keep dues requests in Membership and sensitive health or financial details out of check notes.</p>
+</div>
