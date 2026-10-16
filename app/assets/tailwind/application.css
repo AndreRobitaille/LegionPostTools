@@ -2406,8 +2406,11 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   body:has(.calendar-workspace) { page: calendar-month; }
   .calendar-month { page: calendar-month; }
   .calendar-schedule { page: calendar-list; break-before: page; }
-  /* Repeat the printable inset even when the browser overrides page margins. */
-  .app-main:has(.calendar-workspace) { max-width: none; width: auto; margin: 0; padding: 0.25in; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  /* Repeat the printable inset even when the browser overrides page margins.
+     The PDF source uses the print layout, which does not carry the screen body
+     font. Name the system sans here so a host that has Noto Sans does not embed
+     that face: its ascender crosses the quarter-inch inset at the month heading. */
+  .app-main:has(.calendar-workspace) { max-width: none; width: auto; margin: 0; padding: 0.25in; box-decoration-break: clone; -webkit-box-decoration-break: clone; font-family: system-ui, "Segoe UI", Helvetica, Arial, sans-serif; }
   .app-header, .nav-bar, .app-flash,
   .calendar-sidebar, .calendar-page-header, .calendar-month-heading, .calendar-context-note,
   .calendar-footer, .calendar-empty, .calendar-schedule-action, .calendar-create-actions { display: none !important; }
