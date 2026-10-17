@@ -45,7 +45,7 @@ class MobileRememberedAuthenticationTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_response :success
     assert_select "input[name='remember_session'][value='180_days']"
-    assert_select "input[type='submit'][value='Connect and remember this sign-in']"
+    assert_select "form[action='/oauth/authorize'] button[type='submit']", text: "Connect and remember this sign-in"
     assert_includes response.body, "up to 180 days"
     assert_equal "strict-origin", response.headers["Referrer-Policy"]
     assert_equal "no-store", response.headers["Cache-Control"]
