@@ -24,6 +24,7 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_response :success
     assert_select "h1", "Connect Buddy Checks"
+    assert_select "form[action='/oauth/authorize'] button[type='submit']", text: "Connect Buddy Checks"
     post "/oauth/authorize", params: @authorization
     assert_response :redirect
     callback = URI.parse(response.location)
@@ -171,7 +172,7 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
     code = URI.decode_www_form(URI.parse(response.location).query).to_h.fetch("code")
     @other.permission_grants.where(capability: "use_mobile_buddy_checks").destroy_all
     get "/oauth/authorize", params: @authorization
-    assert_select "input[type='submit'][value='Connect Buddy Checks']", count: 0
+    assert_select "form[action='/oauth/authorize'] button[type='submit']", count: 0
     assert_nil response.headers["Location"]
     post "/oauth/authorize", params: @authorization
     assert_nil response.headers["Location"]
