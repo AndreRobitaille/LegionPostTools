@@ -186,3 +186,15 @@ is `/home/andre/Development/LegionPostTools-mobile-handoffs-preserved-20261017`,
 based on `607e995f7654fb220a7996d5fe10caa131acee25`. `PRESERVATION.json` in that
 checkout records the original paths, tracked/untracked state, and verified SHA256
 hashes. The five edits are not committed, pushed, or part of this sharing release.
+
+Required PR browser CI also exposed two existing responsive defects: the menu's
+fixed height allowance did not account for a wrapped installation name, and the
+remembered-sign-in submit input overflowed its phone card. The correction retains
+The 1919 palette, existing type sizes, 44 px menu targets, and keyboard behavior.
+The menu uses the actual room beneath its anchor; the consent action wraps within
+its existing card. These integration fixes are not part of deployed `43c189b`.
+The strengthened long-name menu test failed against the original controller and
+passes after the correction. The affected system files pass together: 11 tests,
+205 assertions, zero failures/errors/skips. The menu and remembered-sign-in card
+were also visually checked at actual 320 px width. JavaScript parsing and focused
+Ruby style checks pass; the required PR pipeline verifies the complete revision.
