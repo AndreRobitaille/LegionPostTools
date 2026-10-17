@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "LegionPostTools" %></title>
+    <title><%= members_browser_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
+    <%= render "shared/members_metadata" %>
     <%# Speculative form GETs can overwrite a newer confirmation's session cookie. %>
     <meta name="turbo-prefetch" content="false">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="LegionPostTools">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
     <%# Lexxy (rich-text editor) first, then app styles so our theme overrides win %>
     <%= stylesheet_link_tag "lexxy", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>

@@ -234,7 +234,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_response :success
-    assert_match "LegionPostTools", response.body
+    assert_select "title", text: Rails.application.config.x.members_site.name
     assert_match user.person.full_name, response.body
   end
 

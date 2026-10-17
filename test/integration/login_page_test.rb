@@ -11,12 +11,12 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test "sign-in page renders the entry hero with emblem and post identity" do
+  test "sign-in page renders the entry hero with emblem and configured members identity" do
     get new_session_path
     assert_response :success
     assert_select ".entry-hero", count: 1
     assert_select "img.entry-emb[src*=?]", "al-emblem"
-    assert_select "h1.entry-title", text: /Robert E\. Burns Post 165/
+    assert_select "h1.entry-title", text: Rails.application.config.x.members_site.name
     assert_select ".entry-loc", text: /Two Rivers, WI/
   end
 
@@ -52,7 +52,7 @@ class LoginPageTest < ActionDispatch::IntegrationTest
     Organization.delete_all
     get new_session_path
     assert_response :success
-    assert_select "h1.entry-title", text: "LegionPostTools"
+    assert_select "h1.entry-title", text: Rails.application.config.x.members_site.name
     assert_select ".entry-kick", count: 0
     assert_select ".entry-loc", count: 0
   end

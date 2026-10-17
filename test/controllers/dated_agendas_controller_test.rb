@@ -73,6 +73,7 @@ class DatedAgendasControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "application/pdf", response.media_type
+    assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
     assert_match(/inline/, response.headers.fetch("Content-Disposition"))
     assert_equal({ dated_agenda: @published, variant: "agenda" }, rendered)
   end

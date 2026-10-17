@@ -57,6 +57,9 @@ class DatedAgendaPdfSourcesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "private, no-store", response.headers["Cache-Control"]
     assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+    assert_select "title", text: Rails.application.config.x.members_site.name
+    assert_select "meta[property='og:title'][content=?]", Rails.application.config.x.members_site.name
+    assert_no_match(/token=|Membership Meeting/, Nokogiri::HTML(response.body).at_css("head").to_s)
     assert_select "body.print-body"
     assert_select ".agenda-masthead h1", text: "#{@agenda.title} — Agenda"
     assert_select "img.agenda-emblem[alt='']"
