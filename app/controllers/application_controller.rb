@@ -31,6 +31,8 @@ class ApplicationController < ActionController::Base
   def require_authentication
     return if authenticated?
 
+    destination = SignInReturnPath.capture(request)
+    session[SignInReturnPath::SESSION_KEY] = destination if destination
     redirect_to new_session_path, alert: "You must sign in first."
   end
 
@@ -52,8 +54,12 @@ class ApplicationController < ActionController::Base
 
   def start_new_session_for(user)
     mobile_return_to = self.session[:mobile_authorization_return_to]
+    navigation_return_to = self.session[SignInReturnPath::SESSION_KEY]
     reset_session
     self.session[:mobile_authorization_return_to] = mobile_return_to if mobile_return_to
+    if SignInReturnPath.destination(navigation_return_to)
+      self.session[SignInReturnPath::SESSION_KEY] = navigation_return_to
+    end
     session = Session.create!(
       user: user,
       ip_address: request.remote_ip,
@@ -66,8 +72,11 @@ class ApplicationController < ActionController::Base
   end
 
   def after_human_sign_in_path
-    destination = session.delete(:mobile_authorization_return_to)
-    destination.to_s.start_with?("/oauth/authorize?") ? destination : root_path
+    mobile_destination = session.delete(:mobile_authorization_return_to)
+    navigation_destination = SignInReturnPath.destination(session.delete(SignInReturnPath::SESSION_KEY))
+    return mobile_destination if mobile_destination.to_s.start_with?("/oauth/authorize?")
+
+    navigation_destination || root_path
   end
 
   def terminate_current_session

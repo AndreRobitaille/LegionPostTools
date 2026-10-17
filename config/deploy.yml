@@ -33,6 +33,11 @@ env:
     WEB_CONCURRENCY: 2
     RAILS_LOG_LEVEL: info
     APP_HOST: members.wipost165.org
+    MEMBERS_SITE_NAME: Post 165 Members
+    MEMBERS_SITE_DESCRIPTION: Meeting agendas, minutes, and member resources for Post 165 in Two Rivers. Member sign-in required.
+    MEMBERS_SITE_ORIGIN: https://members.wipost165.org
+    MEMBERS_SITE_IMAGE_PATH: /members/post165/members-og.jpg
+    MEMBERS_SITE_IMAGE_ALT: Post 165 Members — Two Rivers.
     APP_TIME_ZONE: America/Chicago
     MOBILE_BUDDY_CHECK_ENABLED: "true"
     MOBILE_BUDDY_CHECK_ISSUER: https://members.wipost165.org

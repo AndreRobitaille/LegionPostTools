@@ -10,7 +10,7 @@
       <% if @organization&.unit_type.present? %>
         <div class="entry-kick"><%= @organization.unit_type.titleize %></div>
       <% end %>
-      <h1 class="entry-title"><%= @organization&.name || "LegionPostTools" %></h1>
+      <h1 class="entry-title"><%= members_site.name %></h1>
       <div class="entry-diamonds">&#9670; &#9670; &#9670;</div>
       <% if @organization&.locality.present? %>
         <div class="entry-loc"><%= @organization.locality %></div>

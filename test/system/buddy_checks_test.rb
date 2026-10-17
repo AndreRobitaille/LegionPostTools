@@ -183,6 +183,10 @@ class BuddyChecksSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     capture_system_screenshot("buddy-remembered-consent-phone")
     assert_no_horizontal_overflow
+    page.current_window.resize_to(320, 844)
+    assert_equal 320, page.evaluate_script("innerWidth")
+    capture_system_screenshot("buddy-remembered-consent-small-phone")
+    assert_no_horizontal_overflow
     submissions = Queue.new
     observer = ->(event) do
       payload = event.payload

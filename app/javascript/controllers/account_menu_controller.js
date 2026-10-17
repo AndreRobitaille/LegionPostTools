@@ -9,11 +9,13 @@ export default class extends Controller {
 
   connect() {
     this.closeOnOutsideClick = this.closeOnOutsideClick.bind(this)
+    this.fitPanelToViewport = this.fitPanelToViewport.bind(this)
     this.close()
   }
 
   disconnect() {
     document.removeEventListener("click", this.closeOnOutsideClick)
+    window.removeEventListener("resize", this.fitPanelToViewport)
   }
 
   toggle(event) {
@@ -25,7 +27,9 @@ export default class extends Controller {
     this.isOpen = true
     this.panelTarget.hidden = false
     this.buttonTarget.setAttribute("aria-expanded", "true")
+    this.fitPanelToViewport()
     document.addEventListener("click", this.closeOnOutsideClick)
+    window.addEventListener("resize", this.fitPanelToViewport)
   }
 
   close() {
@@ -33,6 +37,14 @@ export default class extends Controller {
     this.panelTarget.hidden = true
     this.buttonTarget.setAttribute("aria-expanded", "false")
     document.removeEventListener("click", this.closeOnOutsideClick)
+    window.removeEventListener("resize", this.fitPanelToViewport)
+  }
+
+  fitPanelToViewport() {
+    if (!this.isOpen) return
+
+    const top = this.panelTarget.getBoundingClientRect().top
+    this.panelTarget.style.maxHeight = `${Math.max(0, window.innerHeight - top - 12)}px`
   }
 
   // Escape anywhere in the menu returns you to the button you opened it with,

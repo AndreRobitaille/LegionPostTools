@@ -10,7 +10,7 @@
     <% if remember_requested? %>
       <p>Remember this sign-in for up to 180 days. Access ends sooner if your website access is removed or you revoke this connection.</p>
     <% end %>
-    <div class="btnrow"><%= submit_tag(remember_requested? ? "Connect and remember this sign-in" : "Connect Buddy Checks", class: "btn-primary") %><%= link_to "Cancel", root_path, class: "btn-secondary" %></div>
+    <div class="btnrow mobile-consent-actions"><%= button_tag(remember_requested? ? "Connect and remember this sign-in" : "Connect Buddy Checks", type: :submit, class: "btn-primary") %><%= link_to "Cancel", root_path, class: "btn-secondary" %></div>
   <% end %>
   <p class="membership-secondary"><%= "Access lasts 15 minutes. " unless remember_requested? %>Review or disconnect it under Your profile → Connected apps.</p>
 </section>

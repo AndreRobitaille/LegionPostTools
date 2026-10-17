@@ -13,6 +13,8 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
   teardown { restore_buddy_configuration }
 
   test "real email sign-in returns to consent and PKCE issues a scoped human credential" do
+    get meetings_path
+    assert_redirected_to new_session_path
     get "/oauth/authorize", params: @authorization
     assert_redirected_to new_session_path
     magic_link = MagicLink.create_for!(@other)
@@ -22,6 +24,7 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_response :success
     assert_select "h1", "Connect Buddy Checks"
+    assert_select "form[action='/oauth/authorize'] button[type='submit']", text: "Connect Buddy Checks"
     post "/oauth/authorize", params: @authorization
     assert_response :redirect
     callback = URI.parse(response.location)
@@ -43,6 +46,25 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
     post "/oauth/token", params: exchange
     assert_response :bad_request
     assert_equal 1, Doorkeeper::AccessToken.count
+  end
+
+  test "passkey sign-in gives OAuth return priority over ordinary navigation" do
+    get meetings_path
+    get "/oauth/authorize", params: @authorization
+    stored = @other.passkey_credentials.create!(external_id: "mobile-passkey", public_key: "key", sign_count: 0)
+    credential = Struct.new(:id, :sign_count) do
+      def verify(*) = true
+    end.new(stored.external_id, 1)
+    post authentication_options_passkeys_path
+    with_stubbed_class_method(WebAuthn::Credential, :from_get, ->(*) { credential }) do
+      post authentication_passkeys_path, params: { publicKeyCredential: { id: stored.external_id } }, as: :json
+    end
+    assert_response :success
+    assert_match(%r{/oauth/authorize\?}, response.parsed_body.fetch("redirect_url"))
+    assert_nil request.session[SignInReturnPath::SESSION_KEY]
+    get response.parsed_body.fetch("redirect_url")
+    assert_response :success
+    assert_select "h1", "Connect Buddy Checks"
   end
 
   test "callbacks challenge methods state and issuer are validated before redirecting" do
@@ -106,6 +128,8 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
   end
 
   test "email code sign-in in a fresh browser retains the OAuth request through delivery and consent" do
+    get meetings_path
+    assert_redirected_to new_session_path
     get "/oauth/authorize", params: @authorization
     assert_redirected_to new_session_path
     assert_emails 1 do
@@ -148,7 +172,7 @@ class MobileAuthenticationTest < ActionDispatch::IntegrationTest
     code = URI.decode_www_form(URI.parse(response.location).query).to_h.fetch("code")
     @other.permission_grants.where(capability: "use_mobile_buddy_checks").destroy_all
     get "/oauth/authorize", params: @authorization
-    assert_select "input[type='submit'][value='Connect Buddy Checks']", count: 0
+    assert_select "form[action='/oauth/authorize'] button[type='submit']", count: 0
     assert_nil response.headers["Location"]
     post "/oauth/authorize", params: @authorization
     assert_nil response.headers["Location"]

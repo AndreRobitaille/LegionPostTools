@@ -65,6 +65,33 @@ class SearchEngineIndexingTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "synthetic attachment", response.body
     assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+
+    get rails_storage_redirect_path(blob, disposition: "attachment")
+    assert_response :redirect
+    assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+    follow_redirect!
+    assert_response :success
+    assert_equal "synthetic attachment", response.body
+    assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+  ensure
+    blob&.purge
+  end
+
+  test "redirects static errors and rendered errors retain noindex" do
+    Installation.singleton.update!(setup_completed_at: Time.current)
+    get meetings_path
+    assert_response :redirect
+    assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+    %w[/400.html /404.html /406-unsupported-browser.html /422.html /500.html].each do |path|
+      get path
+      assert_response :success
+      assert_select "meta[name='robots'][content='noindex, nofollow']", count: 1
+      assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
+      assert_no_match(/token=|untrusted/, Nokogiri::HTML(response.body).at_css("head").to_s)
+    end
+    get "/missing-member-page?token=private-token"
+    assert_response :not_found
+    assert_equal "noindex, nofollow", response.headers["X-Robots-Tag"]
   end
 
   test "robots.txt is served, allows crawling, and does not advertise a sitemap" do

@@ -48,6 +48,14 @@ class WorkspaceNavigationSystemTest < ApplicationSystemTestCase
       assert_equal "Menu", page.evaluate_script("document.activeElement.textContent.trim()")
     end
 
+    @organization.update!(name: "Synthetic American Legion Post with a longer installation name")
+    visit root_path
+    assert_equal 320, page.evaluate_script("innerWidth")
+    click_button "Menu"
+    assert_menu_layout
+    capture_system_screenshot("menu-long-installation-name-320")
+    find(".app-menu-btn").send_keys(:escape)
+
     click_button "Menu"
     click_link "Officer tools", exact: true
     assert_current_path officer_tools_path
