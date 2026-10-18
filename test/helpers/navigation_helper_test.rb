@@ -11,6 +11,10 @@ class NavigationHelperTest < ActionView::TestCase
     assert_equal :people, nav_section_for("/people/42")
   end
 
+  test "nav_section_for maps the member contact page" do
+    assert_equal :contact, nav_section_for("/contact")
+  end
+
   test "nav_section_for maps admin paths that are not people" do
     assert_equal :admin, nav_section_for("/admin")
     assert_equal :admin, nav_section_for("/admin/roster_imports/new")

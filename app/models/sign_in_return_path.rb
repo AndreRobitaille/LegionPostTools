@@ -4,7 +4,7 @@ class SignInReturnPath
   SESSION_KEY = :navigation_return_to
   TTL = 15.minutes
   NAVIGATION_PATHS = [
-    %r{\A/(?:dashboard|profile|officer-tools)?\z},
+    %r{\A/(?:dashboard|profile|officer-tools|contact)?\z},
     %r{\A/meetings(?:/[1-9]\d*(?:/minutes)?)?\z},
     %r{\A/dated_agendas(?:/[1-9]\d*)?\z},
     %r{\A/people(?:/[1-9]\d*)?\z},

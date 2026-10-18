@@ -101,12 +101,13 @@ class PrimaryNavTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "administrator sees five member tabs and two separate workspace links" do
+  test "administrator sees six member tabs and two separate workspace links" do
     prepare_setup_complete_state
     sign_in_admin
     get root_path
     assert_select "nav.nav-bar a.nav-tab", text: "People"
-    assert_select "nav.nav-bar a.nav-tab", count: 5
+    assert_select "nav.nav-bar a.nav-tab", count: 6
+    assert_select "nav.nav-bar a.nav-tab[href=?]", post_contact_path, text: "Contact the Post"
     assert_select ".app-menu-panel a[href=?]", officer_tools_path, text: "Officer tools"
     assert_select ".app-menu-panel a[href=?]", admin_root_path, text: "Administration"
   end
