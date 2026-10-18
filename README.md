@@ -79,6 +79,8 @@ Most ordinary post members are not expected to log in during early versions. The
   officer/admin parity for accounts, transcripts, working minutes, AI review, and Jobs.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.
 - `docs/MEMBER_SIGN_IN_GUIDE.md` — plain-language email sign-in instructions for Post members.
+- [Members site identity and sharing](docs/MEMBERS_SITE_SHARING.md) — configurable branding,
+  privacy-safe previews, indexing policy, and ordinary sign-in return boundaries.
 - `docs/USER_MANAGEMENT_GUIDE.md` — Commander and Adjutant procedures for accounts, officers, and permissions.
 - [Buddy Checks website guide](docs/BUDDY_CHECKS_WORKSPACE.md) — welfare calls, shared
   mobile/web history, callbacks, attendance evidence, and app connections.

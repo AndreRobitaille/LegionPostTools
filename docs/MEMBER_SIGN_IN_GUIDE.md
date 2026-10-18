@@ -96,3 +96,15 @@ there so you can use it on your other devices. That is optional. You do not need
 
 If you are unsure or do not want to set one up, select **Not now**. Email sign-in will
 continue to work exactly as before. You can add a passkey later from your profile.
+
+## Opening a Link to a Meeting or Member Page
+
+If a Post member sends you a meeting or agenda link, sign in using the same browser
+that opened it. After you finish, the website returns to that page if you still have
+permission to see it. This return is saved for 15 minutes. Opening another supported
+member page before signing in replaces the saved destination.
+
+If you open the email link on another device or in another browser, the website cannot
+carry your original page there. It uses any recent member page saved in that browser,
+or opens your dashboard. You can open the shared link again after signing in. Keep
+the original browser open to use the emailed code there instead.

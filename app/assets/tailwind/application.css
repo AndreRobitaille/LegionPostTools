@@ -521,6 +521,7 @@
 .stacked-form .fl .f { width: 100%; box-sizing: border-box; }
 .stacked-form .error-summary { margin-bottom: 18px; }
 .stacked-form .btnrow { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.mobile-consent-actions .btn-primary { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 /* Several screens wrap a .stacked-form in a .panel. Both are cards, so nested
    they draw two borders around one form. Flatten the inner one. */
 .panel > .stacked-form { max-width: none; background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; }

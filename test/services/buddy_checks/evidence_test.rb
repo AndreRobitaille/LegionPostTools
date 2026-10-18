@@ -138,10 +138,10 @@ class BuddyChecksEvidenceTest < ActiveSupport::TestCase
   end
 
   test "same-day offline entries use event instants rather than arrival order" do
-    travel_to Time.utc(2026, 10, 11, 20) do
+    travel_to Time.current.change(hour: 20, min: 0, sec: 0) do
       @drive.update!(purpose: "buddy_check")
-      operations(@volunteer).record(**buddy_payload(assignment_id: @assignment.id, facts: buddy_facts(occurred_at: "2026-10-11T18:00:00Z")))
-      operations(@volunteer).record(**buddy_payload(assignment_id: @assignment.id, facts: buddy_facts(occurred_at: "2026-10-11T17:00:00Z", outcome: "no_answer")))
+      operations(@volunteer).record(**buddy_payload(assignment_id: @assignment.id, facts: buddy_facts(occurred_at: 2.hours.ago.iso8601)))
+      operations(@volunteer).record(**buddy_payload(assignment_id: @assignment.id, facts: buddy_facts(occurred_at: 3.hours.ago.iso8601, outcome: "no_answer")))
       assert_equal "Contact completed", workspace(@volunteer).contact_work_item(@member, purpose: "buddy_check", assignment: @assignment)[:next_step]
     end
   end
