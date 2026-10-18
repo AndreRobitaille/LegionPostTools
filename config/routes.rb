@@ -59,6 +59,7 @@ Rails.application.routes.draw do
     get :revoke, on: :member
   end
   resources :people, only: %i[index show]
+  get "contact", to: "post_contacts#show", as: :post_contact
   get "calendar", to: "calendar#show", as: :calendar
   get "calendar/print", to: "calendar#print", as: :print_calendar
   get "calendar/manage", to: "calendar#manage", as: :manage_calendar

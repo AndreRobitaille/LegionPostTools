@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "../stylesheets/website_calendar.css";
 @import "../stylesheets/member_meeting_documents.css";
+@import "../stylesheets/post_contact.css";
 
 @theme {
   --color-navy: #0A2240;

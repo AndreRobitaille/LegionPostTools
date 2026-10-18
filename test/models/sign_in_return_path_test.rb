@@ -2,7 +2,7 @@ require "test_helper"
 
 class SignInReturnPathTest < ActiveSupport::TestCase
   test "only canonical supported navigation paths can be restored" do
-    [ "/", "/profile", "/meetings/12", "/meetings/12/minutes", "/dated_agendas/3", "/people/4", "/calendar",
+    [ "/", "/profile", "/contact", "/meetings/12", "/meetings/12/minutes", "/dated_agendas/3", "/people/4", "/calendar",
       "/admin/meetings/4/minutes", "/admin/dated_agendas/4/commander" ].each do |path|
       assert SignInReturnPath.allowed?(path), path
     end

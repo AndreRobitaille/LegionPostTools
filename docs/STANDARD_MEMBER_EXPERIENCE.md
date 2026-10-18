@@ -111,6 +111,10 @@ minutes become official only after the separately recorded membership act.
 
 ## Directory and profile
 
+- **Contact the Post** is a primary member destination for the saved Post email,
+  mailing address, and current officers' directory call/email details. See
+  [Contact the Post](CONTACT_THE_POST.md) for date selection, privacy, and empty states.
+
 - Constrain the standard directory to a readable desktop measure. Its search control is
   compact on desktop and full width on phones.
 - Every directory row has a visible **View details** cue while retaining a generous click
