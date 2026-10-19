@@ -36,7 +36,8 @@ never restart because sources or configuration subsequently changed.
 
 Recovery names the failed run directly, independently of the current fingerprint lookup.
 It copies the original requester, delegated token, meeting scope, refresh identity, and
-retry-root ID. Source/catalog/guidance drift defers recovery instead of converting it
+retry-root ID. Legacy manual `refresh_id` chains count toward the same retry cap;
+rollout does not reset their existing attempts. Source/catalog/guidance drift defers recovery instead of converting it
 into system work. Revoked authority prevents provider calls and publication. Transient
 retries remain delayed and bounded; daily-budget recovery remains next-day. Completed
 stages and timeout reservations retain existing reuse and accounting semantics.
@@ -66,7 +67,7 @@ Three workflow regression checks against the original PR head `10d4d99` failed a
 expected (3 tests, 16 assertions): active-run overlap lost the newer attestation, queue
 refusal left no recoverable work, and catalog drift created an unscoped system retry.
 The same workflow assertions pass with the corrected journal and retry paths. The final
-focused service/controller/database-guard run passed 109 tests and 870 assertions, with
+focused service/controller/database-guard run passed 111 tests and 887 assertions, with
 no failures, errors, or skips.
 
 `test/services/endeavor_history/triggers_test.rb` exercises the actual refresh/worker

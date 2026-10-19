@@ -309,6 +309,37 @@ class EndeavorHistoryTest
     ENV["OPENAI_ENDEAVOR_DISCOVERY_REASONING"] = previous
   end
 
+  [ 2, 3 ].each do |attempt_count|
+    test "trigger recovery preserves the legacy manual retry chain after #{attempt_count} attempts" do
+      manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+      root = nil
+      attempt_count.times do
+        run = @endeavor.history_runs.create!(manifest: manifest, fingerprint: EndeavorHistory::Sources.digest(manifest),
+          requested_by: @manager, status: "failed", error_category: "timeout", finished_at: 16.minutes.ago)
+        root ||= run.id
+        @endeavor.history_events.create!(action: "requested", actor: @manager, endeavor_history_run: run,
+          metadata: { "force" => true, "refresh" => true, "refresh_id" => root, "meeting_id" => @meeting.id })
+      end
+      legacy = @endeavor.history_runs.recent.first
+      assert_equal root, EndeavorHistory::Requests.retry_root(legacy)
+      assert_equal attempt_count, EndeavorHistory::Requests.attempts(legacy)
+      assert_difference "EndeavorHistoryRun.count", attempt_count == 2 ? 1 : 0 do
+        reconcile_and_process
+      end
+      if attempt_count == 2
+        recovered = @endeavor.history_runs.recent.first
+        assert_equal "succeeded", recovered.status
+        assert_equal @manager.id, recovered.requested_by_id
+        request = EndeavorHistory::Requests.metadata(recovered)
+        assert_equal root, request["refresh_id"]
+        assert_equal root, request["retry_root_id"]
+        assert_equal @meeting.id, request["meeting_id"]
+      else
+        assert_empty @provider.calls
+      end
+    end
+  end
+
   private
 
   def attest_later_minutes(body: "Latest volunteers confirmed.")

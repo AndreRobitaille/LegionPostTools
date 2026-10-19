@@ -65,7 +65,10 @@ module EndeavorHistory
       request && context(request.metadata.fetch("manifest")) == context(run.manifest)
     end
 
-    def retry_root(run) = metadata(run)["retry_root_id"] || run.id
+    def retry_root(run)
+      request = metadata(run)
+      request["retry_root_id"] || (request["refresh_id"] if request["refresh"]) || run.id
+    end
 
     def attempts(run)
       attempt_events(run).count
@@ -78,7 +81,7 @@ module EndeavorHistory
     def attempt_events(run)
       root = retry_root(run)
       run.endeavor.history_events.where(action: "requested")
-        .where("metadata ->> 'retry_root_id' = :root OR endeavor_history_run_id = :id", root: root.to_s, id: root)
+        .where("metadata ->> 'retry_root_id' = :root OR metadata ->> 'refresh_id' = :root OR endeavor_history_run_id = :id", root: root.to_s, id: root)
     end
 
     def retryable?(run)
