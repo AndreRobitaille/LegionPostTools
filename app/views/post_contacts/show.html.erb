@@ -6,65 +6,36 @@
 <div class="post-contact-page">
   <div class="page-lead">
     <h1 class="page-title">Contact the Post</h1>
-    <p class="page-sub">You do not need to know every officer's title to ask for help.</p>
+    <p class="page-sub">Find the right person for your question.</p>
+  </div>
+
+  <div class="post-contact-general">
+    <% if @organization.public_email.present? %>
+      <p>Not sure whom to contact? Email the Post:</p>
+      <%= mail_to @organization.public_email, @organization.public_email, class: "post-contact-address" %>
+    <% else %>
+      <p>A general Post email has not been added yet.<% if @officer_assignments.any? %> Contact one of the officers below.<% end %></p>
+    <% end %>
   </div>
 
   <section aria-labelledby="who-can-help-heading">
-    <%= render "shared/section_header", label: "Who can help?", heading_tag: :h2, heading_id: "who-can-help-heading" %>
-    <div class="post-contact-choices">
+    <%= render "shared/section_header", label: "Start here", heading_tag: :h2, heading_id: "who-can-help-heading" %>
+    <div class="mrow-list post-contact-choices">
       <% @primary_contacts.each_with_index do |contact, index| %>
-        <% guidance = contact.fetch(:guidance) %>
-        <section class="card post-contact-choice" aria-labelledby="contact-choice-<%= index %>">
-          <div class="card-head">
-            <span class="card-dia" aria-hidden="true">&#9670;</span>
-            <p class="card-head-label post-contact-office"><%= contact.fetch(:office) %></p>
-          </div>
-          <div class="card-body">
-            <h3 class="post-contact-need" id="contact-choice-<%= index %>"><%= guidance.fetch(:heading) %></h3>
-            <p class="post-contact-responsibility"><%= guidance.fetch(:responsibility) %></p>
-            <div class="post-contact-examples">
-              <p>For example:</p>
-              <ul><% guidance.fetch(:examples).each do |example| %><li><%= example %></li><% end %></ul>
-            </div>
-            <div class="post-contact-choice-people">
-              <% if contact.fetch(:assignments).any? %>
-                <% contact.fetch(:assignments).each do |assignment| %>
-                  <%= render "person_contact", assignment: %>
-                <% end %>
-              <% else %>
-                <p class="post-contact-note">A current <%= contact.fetch(:office) %> is not listed yet.</p>
-                <% if @organization.public_email.present? %>
-                  <%= mail_to @organization.public_email, "Email the Post for the #{contact.fetch(:office)}", subject: "For the #{contact.fetch(:office)}", class: "post-contact-fallback" %>
-                <% end %>
+        <article class="mrow mrow--office post-contact-row post-contact-choice" aria-labelledby="contact-choice-<%= index %>">
+          <div class="post-contact-identity">
+            <h3 class="post-contact-office" id="contact-choice-<%= index %>"><%= contact.fetch(:office) %></h3>
+            <% if contact.fetch(:assignments).any? %>
+              <% contact.fetch(:assignments).each do |assignment| %>
+                <%= render "person_contact", assignment: %>
               <% end %>
-            </div>
+            <% else %>
+              <p class="post-contact-note">A current <%= contact.fetch(:office) %> is not listed yet.</p>
+              <%= render "post_email", office: contact.fetch(:office) %>
+            <% end %>
           </div>
-        </section>
-      <% end %>
-    </div>
-  </section>
-
-  <section class="card post-contact-general" aria-labelledby="general-contact-heading">
-    <div class="card-head">
-      <span class="card-dia" aria-hidden="true">&#9670;</span>
-      <h2 class="card-head-label" id="general-contact-heading">Not sure where to start?</h2>
-    </div>
-    <div class="card-body">
-      <% if @organization.public_email.present? %>
-        <p>Email the Post and tell us what you need help with.</p>
-        <div class="post-contact-email">
-          <span class="post-contact-address"><%= @organization.public_email %></span>
-          <%= mail_to @organization.public_email, "Email the Post", class: "btn-primary" %>
-        </div>
-        <p class="post-contact-note">Opens your email app.</p>
-      <% else %>
-        <p>A general Post email has not been added yet.<% if @officer_assignments.any? %> Contact one of the officers below.<% end %></p>
-      <% end %>
-      <% if @organization.mailing_address.present? %>
-        <div class="post-contact-mailing">
-          <h3>Mailing address</h3>
-          <address><%= safe_join(@organization.mailing_address_lines, tag.br) %></address>
-        </div>
+          <%= render "role_guidance", guidance: contact.fetch(:guidance) if contact.fetch(:guidance) %>
+        </article>
       <% end %>
     </div>
   </section>
@@ -74,15 +45,14 @@
       <%= render "shared/section_header", label: "Other current officers", heading_tag: :h2, heading_id: "current-officers-heading" %>
       <div class="mrow-list post-contact-officers">
         <% @other_officer_assignments.each do |assignment| %>
-          <article class="mrow post-contact-officer" aria-labelledby="officer-<%= assignment.id %>">
-            <h3 class="post-contact-office" id="officer-<%= assignment.id %>"><%= assignment.position_title.name %></h3>
-            <% if (guidance = PostContactGuidance::OTHER_OFFICES[assignment.position_title.name]) %>
-              <div class="post-contact-role-help">
-                <p class="post-contact-responsibility"><%= guidance.fetch(:responsibility) %></p>
-                <p class="post-contact-role-examples">For example: <%= guidance.fetch(:examples).join("; ") %>.</p>
-              </div>
+          <article class="mrow post-contact-row post-contact-officer" aria-labelledby="officer-<%= assignment.id %>">
+            <div class="post-contact-identity">
+              <h3 class="post-contact-office" id="officer-<%= assignment.id %>"><%= assignment.position_title.name %></h3>
+              <%= render "person_contact", assignment: %>
+            </div>
+            <% if (guidance = assignment.position_title.contact_guidance) %>
+              <%= render "role_guidance", guidance: %>
             <% end %>
-            <%= render "person_contact", assignment: %>
           </article>
         <% end %>
       </div>
@@ -91,8 +61,16 @@
     <p class="empty">Current officers have not been listed yet.</p>
   <% end %>
 
-  <div class="post-contact-directory">
-    <p>Looking for another member?</p>
-    <%= link_to "View member directory", people_path, class: "btn-secondary" %>
-  </div>
+  <footer class="post-contact-footer">
+    <div class="post-contact-directory">
+      <p>Looking for another member?</p>
+      <%= link_to "View member directory", people_path %>
+    </div>
+    <% if @organization.mailing_address.present? %>
+      <div class="post-contact-mailing">
+        <h2>Mailing address</h2>
+        <address><%= safe_join(@organization.mailing_address_lines, tag.br) %></address>
+      </div>
+    <% end %>
+  </footer>
 </div>

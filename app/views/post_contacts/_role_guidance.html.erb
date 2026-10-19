@@ -1,0 +1,13 @@
+<div class="post-contact-role-help">
+  <p class="post-contact-responsibility"><%= guidance.fetch(:responsibility) %></p>
+  <% if guidance.fetch(:examples).any? %>
+    <div class="post-contact-examples">
+      <p>Contact them when:</p>
+      <ul>
+        <% guidance.fetch(:examples).each do |example| %>
+          <li><%= example %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>

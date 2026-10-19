@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     match "member_stories/:id/portrait/:revision/:size.webp", action: :portrait, via: :all
     match "events", action: :events, via: :all
     match "events/:id", action: :event, via: :all
+    match "officers", action: :officers, via: :all
     match "*path", action: :missing, via: :all
   end
 
@@ -124,7 +125,7 @@ Rails.application.routes.draw do
       delete :discard, on: :member
     end
     resources :loops_roster_syncs, only: %i[new create show]
-    resources :position_titles, only: %i[index create update] do
+    resources :position_titles, only: %i[index create edit update] do
       post :reorder, on: :collection
     end
     resources :agenda_item_catalog_entries, except: :show do

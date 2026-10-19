@@ -147,6 +147,6 @@ class Admin::DatedAgendasControllerTest < ActionDispatch::IntegrationTest
   def assign_position_capabilities(user, role_name, *capabilities)
     title = @organization.position_titles.create!(name: role_name, display_order: @organization.position_titles.count + 1)
     capabilities.each { |capability| title.position_capability_grants.create!(capability:) }
-    title.position_assignments.create!(person: user.person, starts_on: Date.current)
+    title.position_assignments.create!(person: user.person, starts_on: Organization.current_local_date)
   end
 end

@@ -2744,7 +2744,11 @@ CREATE TABLE public.position_titles (
     active boolean DEFAULT true NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    grants_full_membership_access boolean DEFAULT false NOT NULL
+    grants_full_membership_access boolean DEFAULT false NOT NULL,
+    contact_description text,
+    contact_examples jsonb DEFAULT '[]'::jsonb NOT NULL,
+    website_officer_listing boolean DEFAULT false NOT NULL,
+    CONSTRAINT position_contact_examples_array CHECK ((jsonb_typeof(contact_examples) = 'array'::text))
 );
 
 
@@ -7813,6 +7817,8 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261018010100'),
+('20261018010000'),
 ('20261013010000'),
 ('20261012190000'),
 ('20261012120000'),

@@ -1,5 +1,20 @@
 # Public website publishing
 
+## Public officers (October 18, 2026)
+
+Andre requested a public page showing current officer names with the role descriptions
+and member-oriented examples approved in Contact the Post. `/public/v1/officers`
+implements that separate explicit publication policy: currently assigned names in
+active offices selected for `website_officer_listing`, plus saved role guidance and
+the general Post email. No individual contact details, membership fields, private
+links or portraits are exposed. Standard officer offices are initially selected by
+migration/preset; custom positions start unlisted. Administrators manage this position
+configuration under their existing `manage_settings` authority. Ordinary assignment
+and name updates then keep the public officer list current, subject to directory
+exclusions and the Post's local date. This role/name policy is separate from story
+and portrait consent, which remains unchanged. See the
+[consumer contract](PUBLIC_PUBLISHING_HANDOFF.md#public-officers-october-18-2026).
+
 ## Automatic calendar listings (September 28, 2026)
 
 The event workflow below is legacy behavior until automatic listings are activated.

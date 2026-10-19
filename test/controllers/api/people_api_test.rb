@@ -20,7 +20,7 @@ class ApiPeopleApiTest < ActionDispatch::IntegrationTest
     @membership_assignment = PositionAssignment.create!(
       person: @membership_officer.person,
       position_title: @membership_title,
-      starts_on: Date.current - 1
+      starts_on: Organization.current_local_date - 1
     )
   end
 
@@ -40,7 +40,7 @@ class ApiPeopleApiTest < ActionDispatch::IntegrationTest
       roster_address: "123 Private Street"
     )
     User.create!(person: directory_person, email_address: "login-secret@example.com")
-    PositionAssignment.create!(person: directory_person, position_title: @membership_title, starts_on: Date.current)
+    PositionAssignment.create!(person: directory_person, position_title: @membership_title, starts_on: Organization.current_local_date)
     Person.create!(first_name: "Former", last_name: "Member", member_number: "000000000002", roster_member_status: "Expired")
     sign_in_as(@member)
 
@@ -91,11 +91,11 @@ class ApiPeopleApiTest < ActionDispatch::IntegrationTest
   test "officer directory lists current assignments and filters exact role names" do
     commander_title = PositionTitle.create!(organization: @organization, name: "Commander", display_order: 2)
     commander = roster_person("Alex", status: "Active", paid_through: 2027)
-    PositionAssignment.create!(person: commander, position_title: commander_title, starts_on: Date.current)
+    PositionAssignment.create!(person: commander, position_title: commander_title, starts_on: Organization.current_local_date)
     former = roster_person("Former", status: "Active", paid_through: 2027)
     PositionAssignment.create!(
       person: former, position_title: commander_title,
-      starts_on: Date.current - 2.years, ends_on: Date.current - 1.year
+      starts_on: Organization.current_local_date - 2.years, ends_on: Organization.current_local_date - 1.year
     )
     sign_in_as(@member)
 
@@ -105,7 +105,7 @@ class ApiPeopleApiTest < ActionDispatch::IntegrationTest
     ids = response.parsed_body.fetch("people").pluck("id")
     assert_includes ids, commander.id
     assert_not_includes ids, former.id
-    assert_equal Date.current.iso8601, response.parsed_body["as_of"]
+    assert_equal Organization.current_local_date.iso8601, response.parsed_body["as_of"]
   end
 
   test "standard member and past officer are forbidden from membership information" do
@@ -113,8 +113,8 @@ class ApiPeopleApiTest < ActionDispatch::IntegrationTest
     PositionAssignment.create!(
       person: past.person,
       position_title: @membership_title,
-      starts_on: Date.current - 2.years,
-      ends_on: Date.current - 1.year
+      starts_on: Organization.current_local_date - 2.years,
+      ends_on: Organization.current_local_date - 1.year
     )
 
     [ @member, past ].each do |user|
@@ -207,7 +207,7 @@ class ApiPeopleApiTest < ActionDispatch::IntegrationTest
     get "/api/membership/summary", params: { membership_year: 2027 }, as: :json, headers: headers
     assert_response :success
 
-    @membership_assignment.update!(ends_on: Date.current - 1)
+    @membership_assignment.update!(ends_on: Organization.current_local_date - 1)
     get "/api/membership/summary", params: { membership_year: 2027 }, as: :json, headers: headers
     assert_response :forbidden
   end

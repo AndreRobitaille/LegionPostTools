@@ -41,7 +41,22 @@ These routes accept GET and HEAD:
 | `/public/v1/member_stories/:id` | Published introduction, independently of homepage placement |
 | `/public/v1/events?from=YYYY-MM-DD&to=YYYY-MM-DD` | Complete 1–93-day interval, inclusive start/exclusive end |
 | `/public/v1/events/:id` | Published event, including past/cancelled events |
+| `/public/v1/officers` | Current public officer names, roles, explanations and general Post email; no personal contacts |
 | `/public/v1/member_stories/:id/portrait/:revision/:size.webp` | Current approved `small` 320×400 or `large` 640×800 WebP bytes |
+
+### Public officers (October 18, 2026)
+
+`GET/HEAD /public/v1/officers` supplies current public officer names, office titles,
+saved responsibilities/examples and the general Post email. Personal contact details
+are excluded. It uses the existing Post-owned website token and feed cache contract.
+
+The canonical [Public officers API reference](PUBLIC_OFFICERS_API.md) defines every
+field, nullable/empty result, selection and turnover rule, conditional request, error
+and recovery behavior. Its [OpenAPI 3.1 contract](api/public-officers.openapi.json)
+provides the machine-readable schemas and examples. The
+[website implementation brief](PUBLIC_OFFICERS_WEBSITE_HANDOFF.md) covers the companion
+client and page work. The backend addition must be deployed before the consumer enables
+production requests; confirm its availability using the website's existing connection.
 
 ### Obtain and maintain a website token
 

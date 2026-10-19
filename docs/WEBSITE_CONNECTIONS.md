@@ -23,6 +23,11 @@ Website access is a fixed feature boundary, not a role or configurable permissio
 bundle. Tokens never inherit officer roles or user grants and cannot be upgraded
 to editorial or general API access.
 
+The fixed read-only scope also includes current public officer names, role guidance
+and the general Post email at `/public/v1/officers`. Only explicitly listed offices
+are included; individual email addresses, phone numbers and private member data are
+excluded. See the [public-officers contract](PUBLIC_OFFICERS_API.md).
+
 Token creation and management are browser-only. No API route creates, reveals,
 rotates or revokes a website or personal agent token. A bearer credential alone
 cannot authenticate the token-management screens. The private `GET /api` handbook

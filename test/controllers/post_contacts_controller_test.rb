@@ -32,11 +32,12 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@member)
     get post_contact_path
     assert_response :success
-    assert_select "a[href='mailto:post@example.test']", text: "Email the Post"
+    assert_select ".post-contact-general a[href='mailto:post@example.test']", text: "post@example.test"
     assert_select "address", text: /PO Box 100.*Example, WI 53000/m
-    assert_select "a[href='mailto:directory@example.test'][aria-label='Email Morgan Officer, Commander']", text: "Email"
-    assert_select "a[href='tel:+19205550101;ext=42'][aria-label='Call Morgan Officer, Commander']", text: "Call"
-    assert_select ".post-contact-details", text: /\+1 \(920\) 555-0101 ext\. 42.*directory@example.test/m
+    assert_select "a[href='mailto:directory@example.test']", text: "directory@example.test"
+    assert_select "a[href='tel:+19205550101;ext=42']", text: "+1 (920) 555-0101 ext. 42"
+    assert_select ".post-contact-page .btn-primary, .post-contact-page .btn-secondary, .post-contact-page button", count: 0
+    assert_select ".post-contact-details", text: /directory@example.test.*\+1 \(920\) 555-0101 ext\. 42/m
     assert_select "a[href=?]", people_path, text: "View member directory"
     %w[PRIVATE123 private-login@example.test roster@example.test 9205550199].each { |private_value| assert_not_includes response.body, private_value }
     assert_not_includes response.body, "Private home address"
@@ -55,22 +56,40 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".post-contact-choice .post-contact-name" do |names|
       assert_equal [ "Morgan Officer", "Casey Officer" ], names.map(&:text)
     end
-    assert_select ".post-contact-need", "Post questions and getting involved"
-    assert_select ".post-contact-need", "Veteran benefits and support"
-    assert_select ".post-contact-responsibility", "Connects veterans and their families with benefits guidance and local support."
+    assert_select ".post-contact-responsibility", "Helps veterans and families understand benefits and find help with claims and other needs."
     assert_select ".post-contact-choice", count: 2 do
       assert_select ".post-contact-examples li", count: 4
     end
-    assert_select ".post-contact-examples li", "Where can I get help with a VA claim?"
+    assert_select ".post-contact-examples li", "You need help getting started with a VA claim."
     assert_select ".post-contact-officers .post-contact-name" do |names|
       assert_equal [ "Former Officer", "James Officer" ], names.map(&:text)
     end
-    assert_select ".post-contact-officers .post-contact-responsibility", "Keeps the Post's records and handles official messages."
-    assert_select ".post-contact-role-examples", "For example: Updating contact details; Finding meeting minutes."
+    assert_select ".post-contact-officers .post-contact-responsibility", "Manages Post records, meeting minutes and member communications."
+    assert_select ".post-contact-officers .post-contact-examples li", "Your address or contact information has changed."
+    assert_select ".post-contact-officers .post-contact-examples li", "You need a replacement membership card or a copy of meeting minutes."
     assert_select ".post-contact-officers .post-contact-role-help", count: 1
     assert_equal 9, commander.position_title.reload.display_order
     assert_equal 20, service.position_title.reload.display_order
     assert_empty @member.permission_grants
+  end
+
+  test "assistant roles explain only whom they assist and retain their contact details" do
+    chaplain = assign_officer("Assistant Chaplain", "Robin", email_address: "assistant@example.test")
+    adjutant = assign_officer("Assistant Adjutant", "Taylor", phone_number: "9205550103")
+    assign_officer("1st Vice Commander", "Pat")
+    sign_in_as(@member)
+    get post_contact_path
+    [ [ chaplain, "Chaplain" ], [ adjutant, "Adjutant" ] ].each do |assignment, primary_role|
+      assert_select "article[aria-labelledby='officer-#{assignment.id}']" do
+        assert_select ".post-contact-responsibility", "Assists the #{primary_role}."
+        assert_select ".post-contact-examples", count: 0
+        assert_select ".post-contact-name", assignment.person.roster_display_name
+      end
+    end
+    assert_select "a[href='mailto:assistant@example.test']", text: "assistant@example.test"
+    assert_select "a[href='tel:9205550103']", text: "9205550103"
+    assert_select ".post-contact-responsibility", "Leads member recruitment and retention, and fills in for the Commander."
+    assert_select ".post-contact-examples li", "You need help renewing your membership."
   end
 
   test "missing primary officeholders or direct details offer the Post email without inventing a contact" do
@@ -79,8 +98,8 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
     get post_contact_path
     assert_select ".post-contact-choice .post-contact-name", count: 1
     assert_select ".post-contact-choice", text: /A current Service Officer is not listed yet/
-    assert_select ".post-contact-choice a.post-contact-fallback", count: 2
-    assert_select "a.post-contact-fallback", "Email the Post for the Service Officer"
+    assert_select ".post-contact-choice .post-contact-fallback a", count: 2
+    assert_select ".post-contact-choice .post-contact-fallback a", "post@example.test"
     assert_select "a[href='mailto:post@example.test?subject=For%20the%20Service%20Officer']"
     assert_select "a[href^='tel:']", count: 0
   end
@@ -125,8 +144,8 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
     get post_contact_path
     assert_select ".post-contact-name", "Incoming Officer"
     assert_not_includes response.body, "outgoing@example.test"
-    assert_select "a[href='mailto:incoming@example.test']", text: "Email"
-    assert_select "a[href='mailto:updated-post@example.test']", text: "Email the Post"
+    assert_select "a[href='mailto:incoming@example.test']", text: "incoming@example.test"
+    assert_select ".post-contact-general a[href='mailto:updated-post@example.test']", text: "updated-post@example.test"
     incoming.update!(roster_removed_at: Time.current)
     get post_contact_path
     assert_select ".post-contact-officer", count: 0
@@ -146,7 +165,7 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
     assert_select "address", count: 0
     assert_select ".post-contact-officer a[href^='mailto:']", count: 1
     assert_select ".post-contact-officer a[href^='tel:']", count: 1
-    assert_select "a[href='tel:9205550102']", text: "Call"
+    assert_select "a[href='tel:9205550102']", text: "(920) 555-0102"
     assert_select ".post-contact-note", "No direct contact details listed."
     assert_not_includes response.body, "Use the Post contact above"
   end

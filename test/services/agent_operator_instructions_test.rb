@@ -13,7 +13,7 @@ class AgentOperatorInstructionsTest < ActiveSupport::TestCase
 
   test "identifies an assigned officer by name and current role" do
     commander = PositionTitle.create!(organization: @organization, name: "Commander", display_order: 1)
-    PositionAssignment.create!(person: @person, position_title: commander, starts_on: Date.current)
+    PositionAssignment.create!(person: @person, position_title: commander, starts_on: Organization.current_local_date)
 
     instructions = AgentOperatorInstructions.new(
       user: @user,

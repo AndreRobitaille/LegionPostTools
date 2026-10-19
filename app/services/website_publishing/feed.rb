@@ -11,6 +11,25 @@ module WebsitePublishing
       { schema_version: 1, complete: true, members: scope.where(kind: "story").where.not(featured_position: nil).order(:featured_position).map { |record| story(record) } }
     end
 
+    def officers
+      today = @organization.calendar_time_zone.today
+      assignments = PositionAssignment.joins(:person, :position_title)
+        .merge(Person.directory_visible)
+        .merge(@organization.position_titles.where(active: true, website_officer_listing: true))
+        .where("starts_on <= :today AND (ends_on IS NULL OR ends_on >= :today)", today:)
+        .includes(:person, :position_title)
+        .order("position_titles.display_order", "position_titles.name", "people.last_name", "people.first_name", :id)
+        .to_a.uniq { |assignment| [ assignment.position_title_id, assignment.person_id ] }
+      officers = assignments.map do |assignment|
+        title = assignment.position_title
+        { name: assignment.person.roster_display_name, office: title.name,
+          responsibility: title.contact_description.presence, examples: title.contact_examples,
+          display_order: title.display_order, primary_contact: PostContactGuidance::PRIMARY_OFFICES.include?(title.name) }
+      end
+      { schema_version: 1, complete: true, as_of: today.iso8601, timezone: timezone,
+        post: { name: @organization.name, email: @organization.public_email.presence }, officers: officers }
+    end
+
     def story_detail(id)
       { schema_version: 1, member: story(scope.find_by!(kind: "story", public_id: id)) }
     end

@@ -53,7 +53,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     officer = sign_in_member(can_manage_settings: false)
     adjutant = @org.position_titles.create!(name: "Adjutant", display_order: 1, active: true)
     adjutant.position_capability_grants.create!(capability: "manage_agendas")
-    PositionAssignment.create!(person: officer.person, position_title: adjutant, starts_on: Date.current)
+    PositionAssignment.create!(person: officer.person, position_title: adjutant, starts_on: Organization.current_local_date)
 
     get officer_tools_path
 

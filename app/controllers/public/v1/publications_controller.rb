@@ -26,6 +26,10 @@ module Public
         with_feed { |feed| json(feed.event_detail(params[:id])) }
       end
 
+      def officers
+        with_feed { |feed| json(feed.officers) }
+      end
+
       def portrait
         with_feed do |feed|
           bytes = feed.portrait(id: params[:id], revision: params[:revision], size: params[:size])

@@ -57,7 +57,7 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
       officer = create_user_with
       title = @organization.position_titles.create!(name: title_name, display_order: index + 1)
       title.position_capability_grants.create!(capability:)
-      title.position_assignments.create!(person: officer.person, starts_on: Date.current)
+      title.position_assignments.create!(person: officer.person, starts_on: Organization.current_local_date)
       sign_in_as(officer)
 
       get admin_meeting_minutes_path(@meeting)

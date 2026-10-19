@@ -1,0 +1,6 @@
+<% if @organization.public_email.present? %>
+  <p class="post-contact-note post-contact-fallback">
+    Contact the Post at
+    <%= mail_to @organization.public_email, @organization.public_email, subject: "For the #{office}" %>.
+  </p>
+<% end %>
