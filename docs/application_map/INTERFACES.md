@@ -153,7 +153,7 @@ Examples and request fields live in the existing focused API documents and handb
 | Rails Active Storage/Action Text engine paths | Framework attachment/representation/rich-text integration; direct-upload action explicitly returns 404; do not classify as an authorized generic document workflow |
 | Static assets/icons/importmaps | Layout/editor/print/runtime dependencies; no independent business state |
 | `/letter_opener` | Mounted only in development; local email preview, never a production member feature |
-| Recurring jobs | Finished-job cleanup, agent-execution cleanup, Endeavor history stalled-run recovery; background operational transitions, not a nightly test-quality reviewer |
+| Recurring jobs | Finished-job cleanup, agent-execution cleanup, Endeavor history recorded-request and stalled-run recovery; background operational transitions, not a nightly test-quality reviewer |
 | Accepted-minutes amendments, transcript purge UI/job, full-roster CSV export | Planned/unmapped; stored policy/metadata or old design prose does not establish an available action |
 | General Person creation/edit, installation settings after setup, Meeting Body CRUD, general document archive, event registration/volunteer scheduling, recurring meetings | No mapped dedicated current web workflow; do not invent screens or tests from generic examples |
 

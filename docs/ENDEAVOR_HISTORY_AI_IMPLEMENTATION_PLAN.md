@@ -106,10 +106,12 @@ valid system-triggered results publish without any human review action.
 
 ## 5. Add event-driven orchestration and admin recovery
 
-Shipped behavior is narrower than this plan. Attestation enqueues one refresh job per
-non-withdrawn Endeavor. Creating an Endeavor does not scan history. The recurring job
-recovers existing stalled or failed runs and does not fingerprint-scan for a missed
-attestation. See [Endeavor AI history](ENDEAVOR_HISTORY_AI.md).
+Current implementation uses an append-only attestation-request journal, committed with
+the revision. After-commit jobs and reconciliation recover recorded requests, including
+missed enqueue and newer attestation during active work. Creating an Endeavor and generic
+fingerprint changes do not trigger spending. See the
+[trigger design](ENDEAVOR_HISTORY_TRIGGER_DESIGN.md) and
+[operating guide](ENDEAVOR_HISTORY_AI.md).
 
 Add focused jobs for discovery/verification and affected-Endeavor synthesis/verification.
 Run after member-visible attestation commits. A rollback must enqueue nothing. Queue

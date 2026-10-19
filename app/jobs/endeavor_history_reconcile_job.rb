@@ -1,14 +1,14 @@
 class EndeavorHistoryReconcileJob < ApplicationJob
   queue_as :background
 
-  # Attestation enqueues refresh jobs. This job only recovers runs that already exist.
-  # A fingerprint sweep would start paid work when the catalog changes without new minutes.
+  # Recover recorded requests, never infer spending authority from a changed fingerprint.
   def perform(organization_id = nil)
     return unless EndeavorHistory::Config.enabled?
     scope = organization_id ? Organization.where(id: organization_id) : Organization.all
     scope.find_each do |organization|
       organization.endeavors.where(history_withdrawn: false).find_each do |endeavor|
         recover_stalled(endeavor)
+        EndeavorHistory::Requests.enqueue(endeavor) unless endeavor.history_runs.active.exists?
       end
     end
   end
@@ -17,6 +17,12 @@ class EndeavorHistoryReconcileJob < ApplicationJob
 
   def recover_stalled(endeavor)
     endeavor.history_runs.active.each do |run|
+      unless EndeavorHistory::Requests.authorized_run?(run)
+        run.with_lock do
+          run.update!(status: "failed", error_category: "unproven_request", finished_at: Time.current) unless run.terminal?
+        end
+        next
+      end
       if run.status == "pending"
         EndeavorHistoryJob.perform_later(run.id) if run.created_at < 5.minutes.ago
       elsif run.heartbeat_at && run.heartbeat_at < 15.minutes.ago
@@ -28,14 +34,7 @@ class EndeavorHistoryReconcileJob < ApplicationJob
       end
     end
     latest = endeavor.history_runs.recent.first
-    return unless latest&.status == "failed"
-    if latest.error_category == "daily_budget" && latest.finished_at && latest.finished_at < Time.current.beginning_of_day
-      EndeavorHistory::Processing.request(endeavor, force: true)
-      return
-    end
-    return unless %w[queue_error worker_stalled timeout rate_limit provider_error].include?(latest.error_category)
-    return unless latest.finished_at && latest.finished_at < 15.minutes.ago
-    return if endeavor.history_runs.where(fingerprint: latest.fingerprint).count >= 3
-    EndeavorHistory::Processing.request(endeavor, force: true)
+    return unless latest && EndeavorHistory::Requests.retryable?(latest)
+    EndeavorHistory::Processing.request(endeavor, retry_run: latest)
   end
 end

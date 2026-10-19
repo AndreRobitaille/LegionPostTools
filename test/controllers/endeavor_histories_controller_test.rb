@@ -1,6 +1,8 @@
 require "test_helper"
+require_relative "../support/endeavor_history_provider"
 
 class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
   setup do
     Installation.singleton.update!(setup_completed_at: Time.current)
     @organization = Organization.create!(name: "Example Post", unit_type: "american_legion_post", timezone: "America/Chicago")
@@ -219,7 +221,74 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, EndeavorHistory::Overview.new(@organization).filtered("attention").size
   end
 
+  test "web guidance stays unpaid until explicit refresh and a later member request sees the edition" do
+    with_enabled_history do |provider|
+      source_fixture
+      sign_in_as(@manager)
+      post admin_endeavor_history_path(@endeavor), params: { operation: "guidance", guidance: "Preserve financial conditions.", lock_version: @endeavor.lock_version }
+      assert_redirected_to admin_endeavor_history_path(@endeavor)
+      assert_no_difference "EndeavorHistoryRun.count" do
+        perform_enqueued_jobs { 2.times { EndeavorHistoryReconcileJob.perform_now(@organization.id) } }
+      end
+      assert_empty provider.calls
+      post admin_endeavor_history_path(@endeavor), params: { operation: "refresh" }
+      assert_redirected_to admin_endeavor_history_path(@endeavor)
+      perform_enqueued_jobs(only: EndeavorHistoryJob)
+      assert_equal "succeeded", @endeavor.history_runs.recent.first.status
+      sign_in_as(@member)
+      get endeavor_path(@endeavor)
+      assert_response :success
+      assert_includes response.body, "Volunteers requested"
+      get api_endeavor_path(@endeavor), as: :json
+      assert_response :success
+      assert_includes response.body, "Volunteers requested"
+    end
+  end
+
+  test "bearer scoped refresh is idempotent and explicit resume preserves delegated authority" do
+    with_enabled_history do |_provider|
+      minutes, = source_fixture
+      token, plaintext = AgentAccessToken.issue!(user: @manager, name: "History test delegate", expires_in: 1.day)
+      headers = { "Authorization" => "Bearer #{plaintext}", "Idempotency-Key" => SecureRandom.uuid }
+      payload = { operation: "refresh", meeting_id: minutes.meeting_id }
+      assert_difference "EndeavorHistoryRun.count", 1 do
+        2.times do
+          post api_endeavor_history_path(@endeavor), params: payload, headers: headers, as: :json
+          assert_response :accepted
+        end
+      end
+      run = @endeavor.history_runs.recent.first
+      assert_equal token.id, run.agent_access_token_id
+      assert_equal minutes.meeting_id, EndeavorHistory::Requests.metadata(run)["meeting_id"]
+      perform_enqueued_jobs(only: EndeavorHistoryJob)
+      assert_equal "succeeded", run.reload.status
+      post api_endeavor_history_path(@endeavor), params: { operation: "withdraw", lock_version: @endeavor.reload.lock_version },
+        headers: headers.merge("Idempotency-Key" => SecureRandom.uuid), as: :json
+      assert_response :success
+      assert_predicate @endeavor.reload, :history_withdrawn?
+      post api_endeavor_history_path(@endeavor), params: { operation: "resume", lock_version: @endeavor.lock_version },
+        headers: headers.merge("Idempotency-Key" => SecureRandom.uuid), as: :json
+      assert_response :success
+      perform_enqueued_jobs(only: EndeavorHistoryJob)
+      resumed = @endeavor.history_runs.recent.first
+      assert_equal "succeeded", resumed.status
+      assert_equal token.id, resumed.agent_access_token_id
+      get api_endeavor_path(@endeavor), headers: { "Authorization" => "Bearer #{plaintext}" }, as: :json
+      assert_response :success
+      assert_includes response.body, "Volunteers requested"
+    end
+  end
+
   private
+
+  def with_enabled_history
+    previous = ENV["ENDEAVOR_HISTORY_ENABLED"]
+    ENV["ENDEAVOR_HISTORY_ENABLED"] = "1"
+    provider = EndeavorHistoryTestProvider.new
+    with_stubbed_class_method(EndeavorHistory::Provider, :new, -> { provider }) { yield provider }
+  ensure
+    ENV["ENDEAVOR_HISTORY_ENABLED"] = previous
+  end
 
   def source_fixture
     @manager.permission_grants.create!(capability: "approve_minutes")

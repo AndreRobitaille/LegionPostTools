@@ -20,7 +20,7 @@ namespace :endeavor_history do
     Endeavor.where("id > ?", after).order(:id).limit(limit).each do |endeavor|
       next if endeavor.history_withdrawn?
       begin
-        run = EndeavorHistory::Processing.request(endeavor)
+        run = EndeavorHistory::Processing.request(endeavor, backfill: true)
         puts({ endeavor_id: endeavor.id, run_id: run.id, status: run.status, next_after_id: endeavor.id }.to_json)
       rescue EndeavorHistory::Error => error
         puts({ endeavor_id: endeavor.id, error: error.category, next_after_id: endeavor.id }.to_json)

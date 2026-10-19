@@ -1,41 +1,10 @@
 require "test_helper"
+require_relative "../../support/endeavor_history_provider"
 
 class EndeavorHistoryTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
-  class FakeProvider
-    attr_reader :calls
-    attr_accessor :alter
-
-    def initialize
-      @calls = []
-    end
-
-    def call(stage:, input:, schema:)
-      @calls << [ stage, input ]
-      data = case stage
-      when "discovery"
-        { "items" => input.fetch("source").fetch("items").map do |item|
-          units = item.fetch("units").reject { |unit| unit["kind"] == "title" }
-          relevant = item["title"] != "Unrelated report"
-          { "key" => item["key"], "relevance" => relevant ? "related" : "no_match", "reason" => "Source matches the named event.",
-            "facts" => relevant ? units.map { |unit| { "text" => unit["text"], "kind" => "report", "source_ids" => [ unit["id"] ] } } : [],
-            "outcomes" => units.select { |unit| unit["kind"] == "outcome" }.map { |unit| { "source_id" => unit["id"], "relevant" => relevant, "reason" => "Recorded event decision." } } }
-        end }
-      when "summary"
-        meetings = input.fetch("meetings").select { |meeting| meeting["facts"].any? && (!input["account_revision_ids"] || input["account_revision_ids"].include?(meeting["revision_id"])) }.map do |meeting|
-          { "revision_id" => meeting["revision_id"], "headline" => { "text" => "Volunteer needs and recorded decisions", "fact_ids" => [ meeting["facts"].first["id"] ] },
-            "decision_titles" => meeting["items"].flat_map { |item| item["units"].select { |unit| unit["kind"] == "outcome" }.map { |unit| { "source_id" => unit["id"], "text" => "Fund allocation" } } },
-            "claims" => meeting["facts"].map { |fact| { "text" => fact["text"], "fact_ids" => [ fact["id"] ] } } }
-        end
-        { "overview" => input["meetings"].flat_map { |meeting| meeting["facts"].map { |fact| { "text" => fact["text"], "fact_ids" => [ fact["id"] ] } } }.first(2), "meetings" => meetings }
-      else
-        { "valid" => true, "issues" => [] }
-      end
-      @alter&.call(stage, input, data)
-      { "data" => data, "total_tokens" => 10, "input_tokens" => 5, "output_tokens" => 5, "model" => "offline-fake" }
-    end
-  end
+  FakeProvider = EndeavorHistoryTestProvider
 
   setup do
     @old_enabled = ENV["ENDEAVOR_HISTORY_ENABLED"]
@@ -302,7 +271,7 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert EndeavorHistory::Presenter.new(@endeavor).overview.any?
     confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @adjutant,
       action: "attest", evidence_note: "Synthetic corrected attestation.")
-    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) do
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: ->(args) { args.first == @endeavor.id && args.second.present? }) do
       @minutes.attest_with_confirmation!(confirmation: confirmation)
     end
     assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob)
@@ -318,17 +287,17 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
       minutes = MeetingMinutes.create_from_meeting!(meeting: meeting)
       minutes.sections.first.items.create!(title: "Car Show", behavior_type: "report_slot", position: 1, body: "Volunteers confirmed.")
     end
-    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) { attest(minutes) }
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: ->(args) { args.first == @endeavor.id && args.second.present? }) { attest(minutes) }
     assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob)
     clear_enqueued_jobs
     assert_difference "EndeavorHistoryRun.count", 1 do
-      EndeavorHistoryRefreshJob.perform_now(@endeavor.id)
+      EndeavorHistoryRefreshJob.perform_now(@endeavor.id, EndeavorHistory::Requests.latest(@endeavor)&.id)
     end
     run = @endeavor.history_runs.recent.first
     EndeavorHistory::Processing.new(run, provider: @provider).call
     assert_equal "succeeded", run.reload.status
     assert_no_difference "EndeavorHistoryRun.count" do
-      assert_no_enqueued_jobs(only: EndeavorHistoryJob) { EndeavorHistoryRefreshJob.perform_now(@endeavor.id) }
+      assert_no_enqueued_jobs(only: EndeavorHistoryJob) { EndeavorHistoryRefreshJob.perform_now(@endeavor.id, EndeavorHistory::Requests.latest(@endeavor)&.id) }
     end
   end
 
@@ -348,7 +317,7 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert_enqueued_jobs 3, only: EndeavorHistoryRefreshJob do
       attest(minutes)
     end
-    queued = enqueued_jobs.select { |job| job[:job] == EndeavorHistoryRefreshJob }.map { |job| job[:args] }
+    queued = enqueued_jobs.select { |job| job[:job] == EndeavorHistoryRefreshJob }.map { |job| [ job[:args].first ] }
     assert_equal [ [ @endeavor.id ], [ sibling.id ], [ completed.id ] ].sort, queued.sort
     assert_not_includes queued.flatten, withdrawn.id
     assert_not_includes queued.flatten, foreign.id
@@ -385,7 +354,7 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert_predicate @minutes.reload, :draft?
     @item.update!(body: "Corrected Car Show volunteer count.")
     previous_revision_id = @minutes.current_revision_id
-    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) do
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: ->(args) { args.first == @endeavor.id && args.second.present? }) do
       @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
         minutes: @minutes, user: @adjutant, action: "attest", evidence_note: "Synthetic corrected attestation."
       ))
@@ -427,7 +396,7 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     end
     assert_empty created.reload.history_runs
     assert_difference "@endeavor.history_runs.count", 1 do
-      EndeavorHistoryRefreshJob.perform_now(@endeavor.id)
+      EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true)
     end
     assert_empty @provider.calls
   end
@@ -714,7 +683,7 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous
     @provider.alter = nil
     @provider.calls.clear
-    second = EndeavorHistory::Processing.request(@endeavor, force: true)
+    second = travel(1.day) { EndeavorHistory::Processing.request(@endeavor, retry_run: first) }
     assert_equal @manager, second.requested_by
     assert_equal token.id, second.agent_access_token_id
     event = @endeavor.history_events.find_by!(action: "requested", endeavor_history_run: second)
@@ -839,16 +808,21 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
 
   def history_run(endeavor, status:, heartbeat_at: nil, started_at: nil)
     manifest = EndeavorHistory::Sources.new(endeavor).manifest
-    endeavor.history_runs.create!(manifest: manifest, fingerprint: EndeavorHistory::Sources.digest(manifest),
+    run = endeavor.history_runs.create!(manifest: manifest, fingerprint: EndeavorHistory::Sources.digest(manifest),
       status: status, heartbeat_at: heartbeat_at, started_at: started_at)
+    endeavor.history_events.create!(action: "requested", endeavor_history_run: run, metadata: { "trigger" => "backfill", "retry_root_id" => run.id })
+    run
   end
 
   def failed_history_run(endeavor, category, finished_at: 16.minutes.ago, count: 1)
     manifest = EndeavorHistory::Sources.new(endeavor).manifest
     fingerprint = EndeavorHistory::Sources.digest(manifest)
+    root = nil
     count.times do
-      endeavor.history_runs.create!(manifest: manifest, fingerprint: fingerprint, status: "failed",
+      run = endeavor.history_runs.create!(manifest: manifest, fingerprint: fingerprint, status: "failed",
         error_category: category, finished_at: finished_at)
+      root ||= run.id
+      endeavor.history_events.create!(action: "requested", endeavor_history_run: run, metadata: { "trigger" => "backfill", "retry_root_id" => root })
     end
   end
 
