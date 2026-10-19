@@ -38,8 +38,9 @@ These are installation values, not application defaults:
 | Post officers | `cmvfnxk7o0vxb0jy9ghcd1jh8` | Reserved for future use; no application sync or automatic minutes targeting |
 
 Automatic email and the general-audience review are enabled. Selected meeting types are
-**PEC Meeting** (9) and **Membership Meeting** (10). The published transactional template
-is `cmvfhh6pj01t60jzj8d0s8mkr`; replies use the configured Organization public email.
+**PEC Meeting** (9) and **Membership Meeting** (10). The initial activation used transactional
+template `cmvfhh6pj01t60jzj8d0s8mkr`; the current presentation is recorded below. Replies use
+the configured Organization public email.
 Loops support confirmed PDF attachments are enabled. Delivery uses individual messages,
 without the optional CC arrangement offered by support.
 
@@ -50,8 +51,33 @@ provider read-back confirmed the minutes recipients and other list memberships s
 These are dated verification counts; use the website for the current register and results.
 
 The worker, scheduler and 15-minute reconciler were running. No historical distributions
-were created and no real emails were sent during activation. Attestation and corrected-copy
-flows were tested with an offline provider; actual inbox delivery was not tested.
+were created and no real emails were sent during that initial activation. Attestation and
+corrected-copy flows were tested with an offline provider.
+
+### Styled presentation update, October 19, 2026
+
+[PR #162](https://github.com/AndreRobitaille/LegionPostTools/pull/162) deployed at
+`bffac1c21fa428c1531df275f63952524c2ae8e9`. The current published transactional template is
+`cmvfr487a00s40j2aqptunwto`, **Meeting minutes — PDF cover v2**. Its source and sending
+metadata are versioned in [emails/](../emails/minutes-v2.lmx). The previous template remains
+published for frozen submissions and retries.
+
+The saved subject is `{{post_label}} · {{copy_label}} · {{meeting_name}} · {{meeting_date}}`.
+The saved cover note is “Open the attached PDF to read, save or print the minutes.” Both
+remain editable on Minutes distribution. The layout adds a Post letterhead, automatic
+**Minutes PDF attached** heading, separate approval status and corrected-copy notice.
+
+Production read-back confirmed the published content and zero Loops Guardian errors or
+warnings. Activation preserved both list connections, selected meeting types, reply address,
+all three recipient records (two active and enrolled at this verification) and all 85 roster
+enrollments. Automatic sending remained enabled, the worker and reconciler were running,
+and no historical mailing was created.
+
+One separately authorized test to Andre's requested address was accepted by Loops at
+4:27 PM Central with the October 6 attested minutes PDF, using the existing application
+PDF renderer. It had a `[TEST]` subject prefix, one recipient, no CC/BCC and
+`addToAudience: false`. Read-back confirmed contact and local records were preserved.
+Provider acceptance does not confirm inbox receipt or appearance in an email application.
 
 ## Manage minutes recipients
 
@@ -226,16 +252,16 @@ Settings start paused and no recipient contacts are seeded. Before activation:
    scheduled sends and contact-added workflows to Post members. Confirm that review on
    Minutes distribution before enrolling outside contacts. The application cannot prevent
    someone manually selecting All audience in the Loops dashboard.
-3. Have Loops enable transactional attachments. Create a transactional template whose subject
-   uses `subject`, whose greeting uses `recipient_name`, whose body uses `cover_note`, and
-   whose sign-off uses `post_name`. Available additional variables are `meeting_label`,
-   `meeting_date` and `reply_to`. Use the configured monitored address in the template's
-   Reply-to setting. The attachment is supplied by the application, not a public link.
+3. Have Loops enable transactional attachments. Create a styled transactional template using
+   the versioned [LMX layout](../emails/minutes-v2.lmx), [sending metadata](../emails/minutes-v2.json)
+   and variable contract above. The subject uses `subject` and Reply-to uses `reply_to`.
+   Keep any previous template published for frozen submissions and retries. The attachment
+   is supplied by the application, not a public link.
 4. Save the template ID and monitored reply address. Select the installation's PEC and
    monthly meeting types by ID; names and Post numbers are not hard-coded.
 5. Add and explicitly enroll the designated office entries. Inspect read-back opt-out results.
    Verify attestation and corrected-copy flows with a fake provider. Any live test email
-   requires explicit authorization; Post 165 activated without sending a real test email.
+   requires explicit authorization; initial activation does not send a real test email.
 6. Ensure the Solid Queue worker and recurring reconciler run. A worker rendering PDFs must
    reach this installation's web service through `PDF_RENDER_PORT` (default `PORT` or 3000)
    on loopback. Do not point it at another application's listener. Chromium is already a
