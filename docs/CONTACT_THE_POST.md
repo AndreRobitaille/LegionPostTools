@@ -13,8 +13,9 @@ Use the organization's existing `public_email` and optional `mailing_address`. D
 invent a Post phone number, mailbox recipient, or response-time promise. Andre selected
 `wipost165@gmail.com` for Post 165 on October 18, 2026; save it in the organization's
 existing email setting rather than hard-coding it into application behavior.
-Email and Call actions open the member's email/telephone application; there is no message
-form, delivery queue, or automatic sending. Show the addresses/numbers as readable text too.
+Show email addresses as ordinary `mailto:` links and phone numbers as ordinary `tel:`
+links, with the actual address/number as link text. Do not repeat them as Call or Email
+buttons. There is no message form, delivery queue, or automatic sending.
 
 Current officers come from active Post positions with assignments covering the Post's
 local date (inclusive start/end). Lead with Commander and Service Officer, then list
@@ -28,20 +29,28 @@ The two standard office names select presentation guidance only; they never conf
 authority. Unrecognized/custom positions retain their ordinary contact listing rather
 than receiving guessed responsibilities.
 
-Each primary contact has a one-sentence responsibility and two short examples of member
-questions. Commander: Post business, concerns, and participation. Service Officer:
+Each primary contact has a one-sentence responsibility and two short examples under
+“Contact them when:”. Write these as situations an ordinary member might face, using
+“You…” rather than listing officer tasks or broad topics. Commander: concerns about
+Post decisions or treatment, and raising an issue at a meeting. Service Officer:
 connecting veterans and families with benefits guidance and local support. Do not claim
 the Post Service Officer is an accredited representative, provides legal/medical advice,
 or can promise benefits. If either current officeholder or their direct contact details
 are missing, provide a clearly labelled route through the Post email instead.
 
 Other standard Post offices also receive a short responsibility sentence and two examples.
-The Assistant Chaplain wording describes assisting the Chaplain, as implied by that preset
-title; it makes no independent promise of services.
+Assistant roles receive only “Assists the [primary role].” with no examples or extra duties,
+as Andre requested in the design revision. Their officer names and contact details remain.
 
 These are member-facing summaries informed by the [2026 American Legion Officer's Guide](https://www.legion.org/getmedia/9886852f-7570-4d04-85e8-2832116fdb63/27ia0226-post-officers-guide.pdf),
-printed pages 19–20 and 26–29. The guide supplies general role context; Andre's instruction
-establishes the two main contacts on this page.
+printed pages 19–20 and 26–29. The guide supplies general role context; Andre's instructions
+establish the two main contacts and the 2nd Vice Commander's focus on fundraising and
+events. The Chaplain's description also draws on The American Legion's
+[Chaplain's Handbook](https://www.illegion.org/wp-content/uploads/2016/01/Chaplains-Handbook-WEB_0.pdf),
+printed pages 3–4 and 10: spiritual guidance, visits, cards and calls, alongside support
+during illness and bereavement. These outreach details are explicit in that handbook;
+the 2026 Officer's Guide's short Chaplain section emphasizes ceremonies and bereaved
+families. Frame outreach as a reason to contact the Chaplain, without promising a visit.
 
 Use `directory_email_address` and `directory_phone_number`, including their existing
 roster fallback, without revealing login email, private membership fields, or account
@@ -53,41 +62,109 @@ When Post email is missing, direct members to officers below. When an officer ha
 contact details, explain that directly and refer to the Post contact above. When no
 current assignments are recorded, explain the absence without implying offices are vacant.
 
-## Visual direction
+## Visual direction — revised October 18, 2026
 
 Follow The 1919: authority navy `#0A2240`, service gold `#C6A15B`, cream `#F4EEDD`,
-paper `#FBF7EC`, and ink `#1B222B`. Use existing system sans, 16px body/actions,
-14px secondary details, and at least 13px labels. Reuse the bounded main column,
-card, section header, and member-row vocabulary. No new hero or portraits.
+paper `#FBF7EC`, and ink `#1B222B`. Keep system sans for this working page: 24px page
+title, 20px office headings, 17px names, 16px body and links, and 14px secondary notes.
 
-The signature is two plain choices based on the member's need, each containing the office,
-responsibility, two examples, current officeholder, and direct contact actions. Use the
-existing paper cards and gold section rules, with the choices alongside one another on
-desktop and stacked below 900px. Follow with the Post email for uncertain questions, then
-the other current officers and directory link. Keep the individual contact information
-and actions together on both widths.
-Keep long names/emails wrapping, visible keyboard focus, and tap targets at least 44px.
+The earlier boxed choices gave repeated headings and actions more prominence than the
+officers themselves. The revised direction is a compact directory built from the shared
+section headers and `.mrow-list` / `.mrow` vocabulary. The Post email sits directly under
+the introduction. Commander and Service Officer lead one list under “Start here”; other
+officers follow in the same row format. Use a subtle gold left edge for the two main roles.
+
+Each desktop row aligns the office, officer name and linked contact details on the left,
+with the responsibility and short examples on the right. This repeated alignment is the
+page's signature: members can scan either whom to reach or what they handle. Below 900px,
+each row stacks in that same reading order. Use one heading per office, ordinary underlined
+links, short examples, and no boxed contact controls. Put the optional mailing address and
+member-directory link in a quiet footer. Keep the existing 940px main measure.
+
+The member-audience wording revision keeps this visual structure. Allow the concrete
+“You…” examples to wrap naturally at the existing 16px size; do not compress the type
+or turn the examples into another set of controls.
+
+Preserve comfortable line spacing, wrapping for long addresses, visible keyboard focus,
+and at least 24px text-link targets with space between adjacent links. The deliberate
+design choice is to give the same simple directory structure to all officers while using
+placement and the shared gold edge to identify the two starting contacts.
 
 ```text
 Contact the Post
-You do not need to know every officer's title to ask for help.
+Find the right person for your question.
+Not sure whom to contact? Email the Post: post@example.test
 
-[ Post questions and getting involved ] [ Veteran benefits and support ]
-[ Commander                            ] [ Service Officer              ]
-[ One sentence + two example questions in each card                       ]
-[ Current officer name, contact details, and Call / Email buttons         ]
-
-[ Not sure where to start?                               ]
-[ post@example.test                     [Email the Post]  ]
-[ Mailing address, when recorded                         ]
+◆ Start here ─────────────────────────────────────────────
+Commander                    Responsibility sentence
+Officer name                 Contact them when:
+email@example.test           • You have a concern about a Post decision or how you were treated.
+(920) 555-0101                • You want to raise an issue at a Post meeting.
+─────────────────────────────────────────────────────────
+Service Officer              Responsibility sentence
+Officer name                 Two short examples
+email@example.test
+(920) 555-0102
 
 ◆ Other current officers ─────────────────────────────────
-Office
-Officer name                                  [Call] [Email]
-Phone number · email address
+Office and contact details   Responsibility and examples
+Assistant role and contacts  Assists the primary role.
 
-Looking for another member?  View member directory →
+View member directory        Mailing address, when recorded
 ```
+
+## Stored guidance and public officers API — October 18, 2026
+
+Store the approved responsibility sentence and ordered examples on each `PositionTitle`
+as `contact_description` (plain text) and `contact_examples` (a JSON array of plain-text
+strings). The member page reads those saved values; code defaults are only initial data
+for newly created standard positions. A reversible migration backfills existing standard
+roles without creating assignments or changing authority. Renaming a position preserves
+its saved guidance. Custom roles start blank. Assistants always store only “Assists the
+[primary role].” and an empty examples array, including after a rename. Preset reuse
+never replaces an administrator's saved guidance or public-listing choice.
+
+An administrator with existing `manage_settings` authority opens **Administration →
+Post Positions → Edit contact guidance**. Use The 1919's ordinary single-column form:
+role heading, responsibility textarea, examples textarea (one per line, at most two),
+a public-officer-listing checkbox, and Save/Cancel. Explain that the text appears on the
+member page and accompanies an officer's name on the public website when listed.
+Show errors with retained input. Assistants have fixed text and only the listing control.
+At desktop and phone widths retain the shared form measure, 16px controls and comfortable
+spacing. No second website editing/account system or new permission grant is introduced.
+
+Andre explicitly requested a public page showing who the current officers are, alongside
+the approved role explanations. The existing member directory alone does not authorize
+publication of every Post position. Add a dedicated `website_officer_listing` flag to
+positions: initially enable the standard officer roles (including Assistant Chaplain)
+in the migration and on new-installation preset creation; other custom positions start
+private until an administrator selects them. Turning the flag off removes that office
+from the public feed, while preserving its member contact listing. Active status,
+current assignment dates and directory exclusions continue to apply independently.
+
+Add `GET/HEAD /public/v1/officers` to the existing website-token-authenticated,
+read-only publishing controller. Return `schema_version: 1`, `complete: true`,
+`as_of` (the Post's local date), `timezone`, `post: {name, email}` (general Post email),
+and `officers`, ordered by configured office order/name and officer name. Each officer
+has only `name`, `office`, `responsibility`, `examples`, `primary_contact`, and
+`display_order`. A responsibility may be null when its saved text is blank. Use the
+same saved name display as the member directory. Include current assignments for active,
+publicly listed offices and directory-visible people. Dates are inclusive at both ends.
+Deduplicate person/office assignments, retaining multiple offices for the same person.
+Unassigned offices do not appear; absence is not a declaration of vacancy.
+
+This is an explicit public-name projection, not a serialization of roster records.
+Personal email addresses, phone numbers, home addresses, membership data, internal ids,
+assignment dates, account state, portraits and directory links are excluded. Contact
+routes use only the Post's general email. Introductions/portraits keep their separate
+consent and publication workflow. This public-officer policy does not authorize images.
+
+Reuse website-token Post scoping, authentication before conditional reads, ETags,
+five-minute private caching, method restrictions and errors. Saved name/assignment edits,
+turnover, roster exclusions and listing changes appear on subsequent origin reads;
+downstream caches retain only the remaining 300-second freshness budget. Document the
+exact contract and a server-side consumer handoff for `wipost165`. Companion-repo
+implementation and deployment are separate from delivering this backend contract.
 
 ## Verification
 
@@ -140,3 +217,79 @@ deployment. No real member records were used for the preview.
 
 These are local checks and transport evidence; production deployment and the saved
 production email require separate verification after the release.
+
+### Directory redesign verification — October 18, 2026
+
+- Rechecked the role summaries against the 2026 Officer's Guide, printed pages 19–20
+  and 26–29. Assistant descriptions follow Andre's separate instruction to state only
+  whom they assist, without examples. Vice commanders retain their distinct duties.
+- Contact, navigation and shared-link sign-in tests: 31 tests, 354 assertions,
+  zero failures/errors/skips. Assistant Chaplain and Assistant Adjutant cases verify
+  the short explanation, absence of examples, and preserved contact links.
+- Contact browser workflows: 2 tests, 107 assertions, zero failures/errors/skips.
+  Checked desktop, 900px, 390px and 320px layouts, plain underlined contact links,
+  no contact buttons, keyboard focus, long addresses, missing contacts and turnover.
+  An initial browser check detected a fallback email link below the 24px target;
+  the corrected link passed the clean rerun.
+- Reviewed desktop and phone captures, including the assistant row and empty states.
+  Screenshots use synthetic officers and are under `tmp/contact-the-post/redesign/`.
+- Focused RuboCop: 3 files, no offenses. `git diff --check` passed.
+
+This revision is local; these results do not establish a new production deployment.
+
+### Member-audience wording verification — October 18, 2026
+
+- Replaced topic fragments with concrete member situations under “Contact them when:”.
+  Updated the 2nd Vice Commander to fundraising and events per Andre, and expanded the
+  Chaplain's description using the Chaplain's Handbook references above.
+- Existing contact controller tests: 10 tests, 147 assertions, zero failures/errors/skips.
+- Existing contact browser workflows: 2 tests, 107 assertions, zero failures/errors/skips.
+  Reviewed the longer copy at desktop and 320px; text wraps without horizontal overflow
+  and retains the existing readable type. Captures use synthetic records and are under
+  `tmp/contact-the-post/member-guidance/`.
+- Focused RuboCop: 3 files, no offenses. `git diff --check` passed.
+
+These wording changes are local and have not been deployed.
+
+### Stored guidance and public officers verification — October 18, 2026
+
+- Focused model, member page, admin, public feed, website-token and handbook checks:
+  54 tests, 1,386 assertions, zero failures/errors/skips. These exercise saved edits
+  appearing on later member/API reads, invalid-input recovery, revoked/foreign authority,
+  Post scoping, explicit public listing, names without personal contacts, assignment
+  deduplication, multiple offices, hidden/removed people and inclusive local-date turnover.
+- `APP_TIME_ZONE=America/Chicago bin/rails test`: 1,530 tests, 16,041 assertions,
+  zero failures/errors/skips. Two existing handbook fixtures now use the Post-local
+  date for assignments instead of UTC `Date.current`, matching the governing role policy.
+- Contact and Post Positions browser workflows: 5 tests, 187 assertions, zero
+  failures/errors/skips. The editor's desktop/phone save and invalid-input recovery
+  workflow passed again with 34 assertions after moving captures to the saved form.
+  An initial harness failure compared an expected nil with `assert_equal`; comparing
+  the saved guidance/listing attributes corrected the assertion without changing behavior.
+- Reviewed desktop and phone editor/member captures under
+  `tmp/contact-the-post/persisted/`: 16px controls, wrapping without horizontal overflow,
+  retained errors/input, saved public-listing choice and plain member contact links.
+- A synthetic PostgreSQL temporary-table migration check verified exact approved
+  backfill, assistant/custom defaults, standard public-listing choices, unchanged
+  authority/order, and both schema rollbacks. No real member records were used.
+  Both migrations also completed in the local development database without resetting it.
+- Focused RuboCop and `git diff --check` passed. Brakeman reported zero errors and
+  zero security warnings. Public API examples and local documentation links were checked.
+
+The checks above preceded production release and do not establish deployment. The
+companion website still needs the consumer/page work described in
+[PUBLIC_OFFICERS_WEBSITE_HANDOFF.md](PUBLIC_OFFICERS_WEBSITE_HANDOFF.md).
+
+### Final local release checks — October 18, 2026
+
+- `bin/rails test` with the default UTC application timezone: 1,530 tests,
+  16,041 assertions, zero failures/errors/skips. The first UTC run exposed 18 older
+  tests whose assignment fixtures used UTC dates while policy uses the Post's local
+  date. Corrected those role fixture dates and the related dated-agenda browser fixtures;
+  application permission and date-selection behavior was not changed.
+- Full RuboCop: 651 files, no offenses. Bundler Audit and Importmap Audit reported
+  no vulnerable dependencies. The earlier Brakeman check had zero errors/warnings.
+- Revalidated OpenAPI and documentation examples against nine synthetic API responses;
+  all passed, including authentication, cache headers and malformed-field rejection.
+
+CI and production verification are separate from these local results.

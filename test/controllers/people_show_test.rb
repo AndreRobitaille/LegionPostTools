@@ -152,7 +152,7 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
       organization: Organization.first, name: "Membership Leader", display_order: 1,
       grants_full_membership_access: true
     )
-    PositionAssignment.create!(person: officer_person, position_title: title, starts_on: Date.current)
+    PositionAssignment.create!(person: officer_person, position_title: title, starts_on: Organization.current_local_date)
     sign_in_as(officer_user)
     person = build_person
     User.create!(person: person, email_address: "private-login@example.com")
@@ -175,7 +175,7 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     )
     PositionAssignment.create!(
       person: past_person, position_title: title,
-      starts_on: Date.current - 2.years, ends_on: Date.current - 1.year
+      starts_on: Organization.current_local_date - 2.years, ends_on: Organization.current_local_date - 1.year
     )
     sign_in_as(past_user)
     person = build_person
@@ -208,7 +208,7 @@ class PeopleShowTest < ActionDispatch::IntegrationTest
     user = User.create!(person:, email_address: "adjutant@example.com", email_verified_at: Time.current)
     title = PositionTitle.create!(organization: Organization.first, name: "Adjutant", display_order: 1)
     title.position_capability_grants.create!(capability: "manage_minutes")
-    PositionAssignment.create!(person:, position_title: title, starts_on: Date.current)
+    PositionAssignment.create!(person:, position_title: title, starts_on: Organization.current_local_date)
 
     get person_path(person)
 

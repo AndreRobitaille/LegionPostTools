@@ -163,7 +163,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
     commander_title.position_capability_grants.create!(capability: "manage_agendas")
     commander_title.position_capability_grants.create!(capability: "approve_minutes")
-    commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)
+    commander_title.position_assignments.create!(person: @user.person, starts_on: Organization.current_local_date)
     item = @agenda.dated_agenda_items.find_by!(title: "Opening Ceremony")
     item.update!(
       behavior_type: "roll_call",
@@ -209,7 +209,7 @@ class DatedAgendasSystemTest < ApplicationSystemTestCase
     commander_title = @organization.position_titles.create!(name: "Commander", display_order: 1, required_by_default: true, active: true)
     commander_title.position_capability_grants.create!(capability: "manage_agendas")
     commander_title.position_capability_grants.create!(capability: "approve_minutes")
-    commander_title.position_assignments.create!(person: @user.person, starts_on: Date.current)
+    commander_title.position_assignments.create!(person: @user.person, starts_on: Organization.current_local_date)
     historical_commander = Person.create!(first_name: "July", last_name: "Commander")
     item = @agenda.dated_agenda_items.find_by!(title: "Opening Ceremony")
     item.update!(behavior_type: "roll_call")

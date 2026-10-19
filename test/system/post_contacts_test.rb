@@ -12,7 +12,8 @@ class PostContactsSystemTest < ApplicationSystemTestCase
       [ "Adjutant", "James", "Bennett", "james@example.test", nil ],
       [ "Chaplain", "Robin", "Hayes", nil, "(920) 555-0103" ],
       [ "Service Officer", "Casey", "Brooks", "casey@example.test", "(920) 555-0104" ],
-      [ "Historian", "Taylor", "Lane", nil, nil ]
+      [ "Historian", "Taylor", "Lane", nil, nil ],
+      [ "Assistant Chaplain", "Drew", "Parker", "drew@example.test", nil ]
     ].each_with_index do |(office, first_name, last_name, email, phone), index|
       title = @organization.position_titles.create!(name: office, display_order: index)
       person = Person.create!(first_name:, last_name:, email_address: email, phone_number: phone)
@@ -34,27 +35,38 @@ class PostContactsSystemTest < ApplicationSystemTestCase
       click_link "Contact the Post", exact: true
       assert_current_path post_contact_path
       assert_selector "h1", text: "Contact the Post"
-      assert_link "Email the Post", href: "mailto:wipost165@gmail.com"
-      assert_selector ".post-contact-name", count: 6
+      assert_link "wipost165@gmail.com", href: "mailto:wipost165@gmail.com"
+      assert_selector ".post-contact-name", count: 7
       within ".post-contact-choices" do
         assert_selector ".post-contact-name", text: "Morgan Reed"
         assert_selector ".post-contact-name", text: "Casey Brooks"
-        assert_text "Post questions and getting involved"
-        assert_text "Veteran benefits and support"
+        assert_text "You have a concern about a Post decision or how you were treated."
+        assert_text "You need help getting started with a VA claim."
         assert_selector ".post-contact-examples li", count: 4
       end
-      assert_selector ".post-contact-actions a[href^='tel:']", count: 4
-      assert_selector ".post-contact-actions a[href^='mailto:']", count: 4
-      assert_selector "a[aria-label='Call Morgan Reed, Commander'][href='tel:9205550101']"
+      assert_selector ".post-contact-details a[href^='tel:']", count: 4
+      assert_selector ".post-contact-details a[href^='mailto:']", count: 5
+      assert_link "(920) 555-0101", href: "tel:9205550101"
+      assert_no_selector ".post-contact-page button, .post-contact-page .btn-primary, .post-contact-page .btn-secondary"
+      within ".post-contact-officer", text: "Assistant Chaplain" do
+        assert_text "Assists the Chaplain."
+        assert_no_selector ".post-contact-examples"
+        assert_link "drew@example.test"
+      end
       assert_selector ".post-contact-note", text: "No direct contact details listed."
-      assert_link "Email the Post for the Historian"
+      within ".post-contact-officer", text: "Historian" do
+        assert_link "wipost165@gmail.com", href: "mailto:wipost165@gmail.com?subject=For%20the%20Historian"
+      end
       assert_contact_layout
+      page.scroll_to(:top)
       capture_system_screenshot("contact-the-post-#{width}")
       if width == 390
-        service_officer = find(".post-contact-choice", text: "Veteran benefits and support")
+        service_officer = find(".post-contact-choice", text: "Service Officer")
         page.scroll_to(service_officer, align: :top)
         assert_in_delta 0, service_officer.evaluate_script("this.getBoundingClientRect().top"), 1
         capture_system_screenshot("contact-the-post-service-officer-390")
+        page.scroll_to(find(".post-contact-officer", text: "Assistant Chaplain"), align: :bottom)
+        capture_system_screenshot("contact-the-post-assistant-390")
       end
     end
 
@@ -79,7 +91,7 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     assert_contact_layout
     commander_link = find_link("Morgan-Alexandra Reed-Worthington")
     commander_link.send_keys(:tab)
-    assert_equal "Call Morgan-Alexandra Reed-Worthington, Commander", page.evaluate_script("document.activeElement.getAttribute('aria-label')")
+    assert_equal "mailto:morgan.alexandra.reed.worthington@example.test", page.evaluate_script("document.activeElement.getAttribute('href')")
     assert page.evaluate_script("document.activeElement.matches(':focus-visible')")
     assert page.evaluate_script("parseFloat(getComputedStyle(document.activeElement).outlineWidth) >= 3")
     capture_system_screenshot("contact-the-post-long-details-390")
@@ -89,14 +101,14 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     click_button "Menu"
     click_link "Contact the Post", exact: true
     assert_no_text "Morgan-Alexandra Reed-Worthington"
-    assert_selector ".post-contact-name", count: 5
+    assert_selector ".post-contact-name", count: 6
     assert_text "A current Commander is not listed yet."
     @organization.update!(public_email: nil, mailing_address: nil)
     PositionAssignment.update_all(ends_on: Organization.current_local_date - 1)
     visit post_contact_path
     assert_text "A general Post email has not been added yet."
     assert_text "Current officers have not been listed yet."
-    assert_no_link "Email the Post"
+    assert_no_selector ".post-contact-page a[href^='mailto:']"
     assert_contact_layout
     capture_system_screenshot("contact-the-post-empty-390")
   end
@@ -105,16 +117,27 @@ class PostContactsSystemTest < ApplicationSystemTestCase
 
   def assert_contact_layout
     assert page.evaluate_script("document.documentElement.scrollWidth <= innerWidth"), "No horizontal page overflow"
-    assert page.evaluate_script(<<~JS), "Contact text wraps and call/email targets remain readable and usable"
+    issues = page.evaluate_script(<<~JS)
       (() => {
         const content = document.querySelector('.post-contact-page');
-        return [...content.querySelectorAll('a.btn-primary, a.btn-secondary')].every(link => {
+        const links = [...content.querySelectorAll('a')];
+        const issues = links.length ? [] : ['No contact or directory links found'];
+        links.forEach(link => {
           const bounds = link.getBoundingClientRect();
-          return bounds.height >= 44 && bounds.width >= 44 && bounds.left >= 0 && bounds.right <= innerWidth &&
-            parseFloat(getComputedStyle(link).fontSize) >= 16;
-        }) && [...content.querySelectorAll('.post-contact-details, .post-contact-office, .post-contact-note, .post-contact-responsibility, .post-contact-examples')].every(element =>
-          element.scrollWidth <= element.clientWidth && parseFloat(getComputedStyle(element).fontSize) >= 14);
+          const style = getComputedStyle(link);
+          if (bounds.height < 24 || bounds.left < 0 || bounds.right > innerWidth ||
+              parseFloat(style.fontSize) < 16 || !style.textDecorationLine.includes('underline')) {
+            issues.push({ text: link.textContent.trim(), height: bounds.height, left: bounds.left, right: bounds.right, fontSize: style.fontSize });
+          }
+        });
+        content.querySelectorAll('.post-contact-details, .post-contact-office, .post-contact-note, .post-contact-responsibility, .post-contact-examples').forEach(element => {
+          if (element.scrollWidth > element.clientWidth || parseFloat(getComputedStyle(element).fontSize) < 14) {
+            issues.push({ className: element.className, problem: 'Text overflow or size' });
+          }
+        });
+        return issues;
       })()
     JS
+    assert_empty issues, "Contact links and text remain readable and inside the page"
   end
 end

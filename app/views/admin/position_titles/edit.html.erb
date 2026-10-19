@@ -1,0 +1,50 @@
+<% content_for :title, "Contact guidance — #{@position_title.name}" %>
+<%= link_to "← Post Positions", admin_position_titles_path, class: "back" %>
+
+<div class="page-lead">
+  <h1 class="page-title"><%= @position_title.name %></h1>
+  <p class="page-sub">Help members understand when to contact this officer.</p>
+</div>
+
+<div class="post-contact-editor">
+  <p>This guidance appears on Contact the Post. When this office is listed on the public website, it also appears there with the current officer's name. Personal email addresses and phone numbers stay in the member directory.</p>
+
+  <%= form_with model: [:admin, @position_title], class: "stacked-form" do |form| %>
+    <% if @position_title.errors.any? %>
+      <div class="error-summary" role="alert">
+        <h2>Check the guidance</h2>
+        <ul><% @position_title.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+      </div>
+    <% end %>
+
+    <% if @position_title.assistant_role? %>
+      <p><%= @position_title.contact_description %></p>
+      <p class="page-sub">Assistant roles only say whom they assist, with no examples.</p>
+    <% else %>
+      <div class="fl">
+        <%= form.label :contact_description, "Responsibility" %>
+        <p class="post-contact-editor-hint" id="responsibility-hint">Describe the role in one sentence. Leave both text fields blank to hide the explanation.</p>
+        <%= form.text_area :contact_description, rows: 3, maxlength: 1000, class: "f", aria: { describedby: "responsibility-hint" } %>
+      </div>
+      <div class="fl">
+        <%= form.label :contact_examples_text, "Contact them when…" %>
+        <p class="post-contact-editor-hint" id="examples-hint">Add up to two examples, one per line. Start with “You…” and describe why a member would reach out. Each example can be up to 300 characters.</p>
+        <%= form.text_area :contact_examples_text, rows: 5, class: "f", aria: { describedby: "examples-hint" } %>
+      </div>
+
+    <% end %>
+
+    <label class="form-toggle">
+      <%= form.check_box :website_officer_listing %>
+      <span>
+        <span class="ft-label">List current officers on the public website</span>
+        <span class="ft-help">Share this office, its guidance and the names of its current officers. Personal contact details are excluded. Updates may take up to five minutes to appear.</span>
+      </span>
+    </label>
+
+    <div class="btnrow">
+      <%= form.submit "Save guidance", class: "btn-primary" %>
+      <%= link_to "Cancel", admin_position_titles_path, class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>

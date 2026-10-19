@@ -1,5 +1,7 @@
 module Admin
   class PositionTitlesController < BaseController
+    before_action :set_position_title, only: %i[edit update]
+
     def index
       @position_titles = Organization.first.position_titles.includes(:position_capability_grants).order(:display_order, :name)
     end
@@ -15,12 +17,14 @@ module Admin
       end
     end
 
+    def edit
+    end
+
     def update
-      title = Organization.first!.position_titles.find(params[:id])
-      if title.update(position_title_params)
+      if @position_title.update(position_title_params)
         redirect_to admin_position_titles_path, notice: "Post position updated."
       else
-        redirect_to admin_position_titles_path, alert: title.errors.full_messages.to_sentence
+        render :edit, status: :unprocessable_entity
       end
     end
 
@@ -33,8 +37,12 @@ module Admin
 
     private
 
+    def set_position_title
+      @position_title = Organization.first!.position_titles.find(params[:id])
+    end
+
     def position_title_params
-      params.require(:position_title).permit(:name, :active, :grants_full_membership_access)
+      params.require(:position_title).permit(:name, :active, :grants_full_membership_access, :contact_description, :contact_examples_text, :website_officer_listing)
     end
   end
 end

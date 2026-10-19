@@ -1,48 +1,45 @@
-/* Contact the Post composes the existing card and member-row vocabulary. */
+/* A contact directory using the shared 1919 section headings and member rows. */
 .post-contact-page { max-width: var(--w-main); font-size: 16px; line-height: 1.5; }
-.post-contact-page .page-lead { margin-bottom: 22px; }
-.post-contact-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-bottom: 22px; }
-.post-contact-choice.card { display: flex; flex-direction: column; margin-bottom: 0; }
-.post-contact-choice .card-body { display: flex; flex-direction: column; flex: 1; gap: 14px; }
-.post-contact-choice .post-contact-office { margin: 0; font-size: 14px; }
-.post-contact-need { color: var(--color-navy); font-size: 22px; font-weight: 700; line-height: 1.3; }
-.post-contact-examples > p { color: var(--color-navy); font-weight: 650; margin-bottom: 6px; }
-.post-contact-examples ul { list-style: disc; padding-left: 22px; }
-.post-contact-examples li + li { margin-top: 6px; }
-.post-contact-choice-people { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--rule); }
-.post-contact-choice-people .post-contact-person { flex-direction: column; align-items: stretch; gap: 14px; }
-.post-contact-choice-people .post-contact-person + .post-contact-person { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--rule); }
-.post-contact-choice-people .post-contact-actions { align-self: flex-start; }
-.post-contact-fallback { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-navy); text-decoration: underline; text-underline-offset: 3px; }
-.post-contact-general.card { border-top: 3px solid var(--color-gold); }
-.post-contact-email { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px; margin-top: 14px; }
-.post-contact-address { color: var(--color-navy); font-size: 20px; font-weight: 650; overflow-wrap: anywhere; }
-.post-contact-page .btn-primary, .post-contact-page .btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; }
-.post-contact-note { margin-top: 6px; color: var(--color-muted); font-size: 14px; }
-.post-contact-mailing { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); }
-.post-contact-mailing h3 { color: var(--color-navy); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.post-contact-page .page-lead { margin-bottom: 18px; }
+.post-contact-page .page-sub { color: var(--color-ink); }
+.post-contact-page a { color: var(--color-navy); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.post-contact-page a:hover { text-decoration-thickness: 2px; }
+.post-contact-page a:focus-visible { outline: 3px solid var(--color-navy); outline-offset: 3px; border-radius: 2px; }
+.post-contact-general { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; margin-bottom: 28px; }
+.post-contact-address { font-weight: 600; }
+.post-contact-row.mrow { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); align-items: start; gap: 32px; padding: 24px; }
+.post-contact-identity { min-width: 0; overflow-wrap: anywhere; }
+.post-contact-office { margin: 0 0 6px; color: var(--color-navy); font-size: 20px; font-weight: 700; line-height: 1.3; }
+.post-contact-person + .post-contact-person { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.post-contact-name { display: inline-block; font-size: 17px; font-weight: 600; line-height: 1.5; }
+.post-contact-details { margin-top: 6px; }
+.post-contact-details p + p { margin-top: 4px; }
+.post-contact-details a, .post-contact-address, .post-contact-directory a { display: inline-block; min-height: 24px; }
+.post-contact-role-help { min-width: 0; }
+.post-contact-responsibility { margin: 0; }
+.post-contact-examples { margin-top: 12px; }
+.post-contact-examples > p { margin-bottom: 4px; color: var(--color-ink); font-size: 14px; }
+.post-contact-examples ul { list-style: disc; padding-left: 20px; }
+.post-contact-examples li + li { margin-top: 2px; }
+.post-contact-examples li::marker { color: var(--color-gold-ink); }
+.post-contact-note { margin-top: 6px; color: var(--color-ink); font-size: 14px; }
+.post-contact-fallback a { display: inline-block; min-height: 24px; font-size: 16px; line-height: 1.5; }
+.post-contact-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 24px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--rule-strong); }
+.post-contact-directory p, .post-contact-mailing h2 { margin-bottom: 6px; font-size: 14px; font-weight: 400; color: var(--color-ink); }
 .post-contact-mailing address { font-style: normal; overflow-wrap: anywhere; }
-.post-contact-officer.mrow { display: block; padding: 20px; }
-.post-contact-person { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; }
-.post-contact-role-help { margin: 6px 0 14px; }
-.post-contact-role-examples { margin-top: 4px; color: var(--color-ink); }
-.post-contact-identity { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.post-contact-office { color: var(--color-gold-ink); font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-.post-contact-name { display: inline-block; color: var(--color-navy); font-size: 19px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
-.post-contact-details { color: var(--color-ink); font-size: 16px; margin-top: 6px; }
-.post-contact-actions { display: flex; flex-wrap: wrap; gap: 10px; flex: 0 0 auto; }
-.post-contact-actions .btn-secondary { min-width: 82px; }
-.post-contact-directory { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; margin-top: 26px; }
-.post-contact-page a:focus-visible { outline: 3px solid var(--color-navy); outline-offset: 3px; }
 
 @media (max-width: 900px) {
-  .post-contact-choices { grid-template-columns: minmax(0, 1fr); }
+  .post-contact-row.mrow { grid-template-columns: minmax(0, 1fr); gap: 18px; }
 }
 
 @media (max-width: 560px) {
-  .post-contact-officer.mrow { padding: 18px 16px; }
-  .post-contact-person { flex-direction: column; align-items: stretch; gap: 14px; }
-  .post-contact-actions { align-self: flex-start; }
-  .post-contact-general .card-body { padding: 18px 16px; }
-  .post-contact-email { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .post-contact-row.mrow { padding: 20px 18px; }
+  .post-contact-general { margin-bottom: 24px; }
+  .post-contact-footer { flex-direction: column; }
 }
+
+.post-contact-editor { max-width: 660px; }
+.post-contact-editor > p { margin: 0 0 20px; font-size: 16px; line-height: 1.6; }
+.post-contact-editor .post-contact-editor-hint { margin: 0 0 6px; font-size: 14px; line-height: 1.5; color: var(--color-ink); }
+.post-contact-editor textarea.f { resize: vertical; line-height: 1.6; }
+.position-public-note { display: block; margin-top: 3px; font-size: 14px; color: var(--color-ink); }

@@ -67,8 +67,8 @@ class PersonTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "John", last_name: "Doe")
     commander = PositionTitle.create!(organization: org, name: "Commander", display_order: 1)
     adjutant = PositionTitle.create!(organization: org, name: "Adjutant", display_order: 2)
-    PositionAssignment.create!(person: person, position_title: adjutant, starts_on: Date.current)
-    PositionAssignment.create!(person: person, position_title: commander, starts_on: Date.current)
+    PositionAssignment.create!(person: person, position_title: adjutant, starts_on: Organization.current_local_date)
+    PositionAssignment.create!(person: person, position_title: commander, starts_on: Organization.current_local_date)
 
     assert_equal "Commander", person.current_role_label
   end
@@ -83,7 +83,7 @@ class PersonTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Past", last_name: "Officer")
     title = PositionTitle.create!(organization: org, name: "Historian", display_order: 5)
     PositionAssignment.create!(person: person, position_title: title,
-      starts_on: Date.current - 400, ends_on: Date.current - 30)
+      starts_on: Organization.current_local_date - 400, ends_on: Organization.current_local_date - 30)
 
     assert_nil person.current_role_label
   end

@@ -1,0 +1,736 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LegionPostTools public officers API",
+    "version": "1.0.0",
+    "description": "Read-only server-to-server feed for public officer names, offices, saved role guidance and general Post email. Personal contacts and portraits are excluded. Confirm the backend release is deployed before enabling consumer requests. See ../PUBLIC_OFFICERS_API.md for selection, turnover, cache and recovery rules."
+  },
+  "servers": [
+    {
+      "url": "https://{publisher_host}",
+      "variables": {
+        "publisher_host": {
+          "default": "members.wipost165.org",
+          "description": "Use the intended Post installation publisher host."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "websiteToken": []
+    }
+  ],
+  "paths": {
+    "/public/v1/officers": {
+      "description": "No supported filters, pagination, historical-date parameter or write methods. Authentication precedes method and conditional-response handling.",
+      "parameters": [
+        {
+          "name": "If-None-Match",
+          "in": "header",
+          "required": false,
+          "description": "ETag of the previously cached representation, including quotes. Authentication is always required.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getPublicOfficers",
+        "summary": "Read the complete current public officers list",
+        "description": "Uses the token Post local date, inclusive assignment dates, active/publicly listed offices and directory-visible people. Multiple offices remain separate rows. Replace the whole collection after revalidation.",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Officers"
+          },
+          "304": {
+            "$ref": "#/components/responses/NotModified"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "head": {
+        "operationId": "headPublicOfficers",
+        "summary": "Read response metadata without a body",
+        "responses": {
+          "200": {
+            "description": "Complete current eligible officer collection, which may be empty. HEAD has no response body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Private caching only; directive order is not significant. Carry forward the remaining 300-second freshness budget.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "private, max-age=300, must-revalidate"
+              },
+              "Vary": {
+                "description": "Includes Authorization; separate caches by origin and credential.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Authorization"
+              },
+              "ETag": {
+                "description": "Opaque representation validator; return it verbatim in If-None-Match.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Date": {
+                "description": "HTTP date used when calculating remaining freshness.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Age": {
+                "description": "Origin response age in seconds.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "0"
+              },
+              "X-Content-Type-Options": {
+                "description": "Prevent content-type sniffing.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "nosniff"
+              }
+            }
+          },
+          "304": {
+            "description": "Authorized cached representation is unchanged. No body; reuse the saved body and refreshed cache metadata. HEAD has no response body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Private caching only; directive order is not significant. Carry forward the remaining 300-second freshness budget.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "private, max-age=300, must-revalidate"
+              },
+              "Vary": {
+                "description": "Includes Authorization; separate caches by origin and credential.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Authorization"
+              },
+              "ETag": {
+                "description": "Opaque representation validator; return it verbatim in If-None-Match.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Date": {
+                "description": "HTTP date used when calculating remaining freshness.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Age": {
+                "description": "Origin response age in seconds.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "0"
+              },
+              "X-Content-Type-Options": {
+                "description": "Prevent content-type sniffing.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "nosniff"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, invalid or revoked Post-owned website token. HEAD has no response body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Errors are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              },
+              "Vary": {
+                "description": "Includes Authorization; separate caches by origin and credential.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Authorization"
+              },
+              "WWW-Authenticate": {
+                "description": "Website bearer authentication challenge.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer realm=\"website\""
+              }
+            }
+          },
+          "405": {
+            "description": "Authenticated request used a method other than GET or HEAD. HEAD has no response body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Errors are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              },
+              "Vary": {
+                "description": "Includes Authorization; separate caches by origin and credential.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Authorization"
+              },
+              "Allow": {
+                "description": "Only these methods are supported.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "GET, HEAD"
+              }
+            }
+          },
+          "429": {
+            "description": "The shared 240-requests/minute per-client-IP feed limit was reached. HEAD has no response body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Errors are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              },
+              "Vary": {
+                "description": "Includes Authorization; separate caches by origin and credential.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Authorization"
+              },
+              "Retry-After": {
+                "description": "Delay in seconds before trying again.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "60"
+              }
+            }
+          },
+          "503": {
+            "description": "Publisher is temporarily unavailable. Expired cached content cannot be served. HEAD has no response body.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Errors are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              },
+              "Vary": {
+                "description": "Includes Authorization; separate caches by origin and credential.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Authorization"
+              },
+              "Retry-After": {
+                "description": "Delay in seconds before trying again.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "60"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "websiteToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "lptw_<24 hex>_<64 hex>",
+        "description": "Post-owned website connection created by a human administrator in Administration > Website connections. Keep it server-side. Browser sessions, personal tokens and query credentials are rejected. No token creation API exists."
+      }
+    },
+    "responses": {
+      "Officers": {
+        "description": "Complete current eligible officer collection, which may be empty.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Private caching only; directive order is not significant. Carry forward the remaining 300-second freshness budget.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "private, max-age=300, must-revalidate"
+          },
+          "Vary": {
+            "description": "Includes Authorization; separate caches by origin and credential.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Authorization"
+          },
+          "ETag": {
+            "description": "Opaque representation validator; return it verbatim in If-None-Match.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "Date": {
+            "description": "HTTP date used when calculating remaining freshness.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "Age": {
+            "description": "Origin response age in seconds.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
+          },
+          "X-Content-Type-Options": {
+            "description": "Prevent content-type sniffing.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "nosniff"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Officers"
+            },
+            "examples": {
+              "current": {
+                "summary": "Synthetic current officers",
+                "value": {
+                  "schema_version": 1,
+                  "complete": true,
+                  "as_of": "2026-10-18",
+                  "timezone": "America/Chicago",
+                  "post": {
+                    "name": "Example American Legion Post",
+                    "email": "post@example.test"
+                  },
+                  "officers": [
+                    {
+                      "name": "Morgan Example",
+                      "office": "Commander",
+                      "responsibility": "Leads the Post's work and coordinates its officers and committees.",
+                      "examples": [
+                        "You have a concern about a Post decision or how you were treated.",
+                        "You want to raise an issue at a Post meeting."
+                      ],
+                      "primary_contact": true,
+                      "display_order": 1
+                    },
+                    {
+                      "name": "Drew Example",
+                      "office": "Assistant Chaplain",
+                      "responsibility": "Assists the Chaplain.",
+                      "examples": [],
+                      "primary_contact": false,
+                      "display_order": 11
+                    }
+                  ]
+                }
+              },
+              "empty": {
+                "summary": "Valid empty list with no Post email",
+                "value": {
+                  "schema_version": 1,
+                  "complete": true,
+                  "as_of": "2026-10-18",
+                  "timezone": "America/Chicago",
+                  "post": {
+                    "name": "Example American Legion Post",
+                    "email": null
+                  },
+                  "officers": []
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotModified": {
+        "description": "Authorized cached representation is unchanged. No body; reuse the saved body and refreshed cache metadata.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Private caching only; directive order is not significant. Carry forward the remaining 300-second freshness budget.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "private, max-age=300, must-revalidate"
+          },
+          "Vary": {
+            "description": "Includes Authorization; separate caches by origin and credential.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Authorization"
+          },
+          "ETag": {
+            "description": "Opaque representation validator; return it verbatim in If-None-Match.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "Date": {
+            "description": "HTTP date used when calculating remaining freshness.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "Age": {
+            "description": "Origin response age in seconds.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
+          },
+          "X-Content-Type-Options": {
+            "description": "Prevent content-type sniffing.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "nosniff"
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing, malformed, invalid or revoked Post-owned website token.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Errors are not cached.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "no-store"
+          },
+          "Vary": {
+            "description": "Includes Authorization; separate caches by origin and credential.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Authorization"
+          },
+          "WWW-Authenticate": {
+            "description": "Website bearer authentication challenge.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer realm=\"website\""
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "schema_version": 1,
+              "error": {
+                "code": "unauthorized",
+                "message": "A valid website token is required"
+              }
+            }
+          }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "Authenticated request used a method other than GET or HEAD.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Errors are not cached.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "no-store"
+          },
+          "Vary": {
+            "description": "Includes Authorization; separate caches by origin and credential.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Authorization"
+          },
+          "Allow": {
+            "description": "Only these methods are supported.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "GET, HEAD"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "schema_version": 1,
+              "error": {
+                "code": "method_not_allowed",
+                "message": "Use GET or HEAD"
+              }
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "The shared 240-requests/minute per-client-IP feed limit was reached.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Errors are not cached.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "no-store"
+          },
+          "Vary": {
+            "description": "Includes Authorization; separate caches by origin and credential.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Authorization"
+          },
+          "Retry-After": {
+            "description": "Delay in seconds before trying again.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "60"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "schema_version": 1,
+              "error": {
+                "code": "rate_limited",
+                "message": "Try again later"
+              }
+            }
+          }
+        }
+      },
+      "Unavailable": {
+        "description": "Publisher is temporarily unavailable. Expired cached content cannot be served.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Errors are not cached.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "no-store"
+          },
+          "Vary": {
+            "description": "Includes Authorization; separate caches by origin and credential.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Authorization"
+          },
+          "Retry-After": {
+            "description": "Delay in seconds before trying again.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "60"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "schema_version": 1,
+              "error": {
+                "code": "unavailable",
+                "message": "Temporarily unavailable"
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Officers": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "complete",
+          "as_of",
+          "timezone",
+          "post",
+          "officers"
+        ],
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1
+          },
+          "complete": {
+            "type": "boolean",
+            "const": true
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "description": "Post-local assignment selection date, not a historical-query parameter."
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "description": "IANA timezone used for as_of."
+          },
+          "post": {
+            "$ref": "#/components/schemas/Post"
+          },
+          "officers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Officer"
+            },
+            "description": "Complete ordered list. Names are not unique ids; retain different people and offices."
+          }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "email"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "General Post email only; null if unset."
+          }
+        }
+      },
+      "Officer": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "office",
+          "responsibility",
+          "examples",
+          "primary_contact",
+          "display_order"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Saved directory display name; not a unique identifier."
+          },
+          "office": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Configured office title; custom titles are supported."
+          },
+          "responsibility": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000,
+            "description": "Saved plain-text role sentence; null when blank."
+          },
+          "examples": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "description": "Ordered plain-text member situations. Assistants have an empty array."
+          },
+          "primary_contact": {
+            "type": "boolean",
+            "description": "True for Commander and Service Officer; false otherwise."
+          },
+          "display_order": {
+            "type": "integer",
+            "description": "Configured office ordering; need not be positive, contiguous or unique."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "error"
+        ],
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1
+          },
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "unauthorized",
+                  "method_not_allowed",
+                  "not_found",
+                  "rate_limited",
+                  "unavailable"
+                ]
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

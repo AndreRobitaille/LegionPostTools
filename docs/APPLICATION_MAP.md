@@ -62,6 +62,12 @@ acting for a person and inherits that person's current authority.
 | Personal agent token | Private `/api`; current enabled user's effective authority; expiry/revocation and idempotency checks | [API base](../app/controllers/api/base_controller.rb), [token](../app/models/agent_access_token.rb) |
 | Post-owned website token | Organization-scoped approved website feed only; independent of creator's continued login authority | [Website connections](WEBSITE_CONNECTIONS.md), [feed controller](../app/controllers/public/v1/publications_controller.rb) |
 
+The website feed's [public officers API](PUBLIC_OFFICERS_API.md) returns currently
+listed officer names, saved role guidance and the general Post email under an
+explicit public-listing policy. Its [OpenAPI contract](api/public-officers.openapi.json)
+and [website handoff](PUBLIC_OFFICERS_WEBSITE_HANDOFF.md) document the consumer boundary;
+personal officer contacts and private member fields remain excluded.
+
 This is preset policy, not a statement about any live officer, grant, or token.
 Position authority requires an active position and an assignment current on the
 installation's date, including its end date. Manual grants remain independent.

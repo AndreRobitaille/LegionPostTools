@@ -45,6 +45,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
     assert_equal @organization.timezone, body.dig("installation", "timezone")
     assert_equal @commander.person.full_name, body.dig("caller", "name")
     assert_equal [], body.dig("caller", "roles")
+    assert_includes body.dig("website_access", "routes"), "/public/v1/officers"
     assert_includes body.dig("caller", "capabilities"), "manage_settings"
     assert_includes body.dig("caller", "capabilities"), "manage_agendas"
     assert_equal "full_membership", body.dig("caller", "people_access")
@@ -136,7 +137,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
 
   test "handbook identifies current assigned post roles" do
     commander_title = PositionTitle.create!(organization: @organization, name: "Commander", display_order: 1)
-    PositionAssignment.create!(person: @commander.person, position_title: commander_title, starts_on: Date.current)
+    PositionAssignment.create!(person: @commander.person, position_title: commander_title, starts_on: @organization.calendar_time_zone.today)
     sign_in_as(@commander)
 
     get "/api", as: :json
@@ -199,7 +200,7 @@ class ApiHandbookControllerTest < ActionDispatch::IntegrationTest
       organization: @organization, name: "Membership Leader", display_order: 1,
       grants_full_membership_access: true
     )
-    PositionAssignment.create!(person: @member.person, position_title: title, starts_on: Date.current)
+    PositionAssignment.create!(person: @member.person, position_title: title, starts_on: @organization.calendar_time_zone.today)
     sign_in_as(@member)
 
     get "/api", as: :json

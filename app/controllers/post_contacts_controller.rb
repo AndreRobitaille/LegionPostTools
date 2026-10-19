@@ -13,11 +13,12 @@ class PostContactsController < ApplicationController
       .includes(:person, :position_title)
       .order("position_titles.display_order", "position_titles.name", "people.last_name", "people.first_name", :id)
       .to_a.uniq { |assignment| [ assignment.position_title_id, assignment.person_id ] }
-    @primary_contacts = PostContactGuidance::PRIMARY_CONTACTS.map do |office, guidance|
-      { office:, guidance:, assignments: @officer_assignments.select { |assignment| assignment.position_title.name == office } }
+    titles = @organization.position_titles.where(active: true, name: PostContactGuidance::PRIMARY_OFFICES).index_by(&:name)
+    @primary_contacts = PostContactGuidance::PRIMARY_OFFICES.map do |office|
+      { office:, guidance: titles[office]&.contact_guidance, assignments: @officer_assignments.select { |assignment| assignment.position_title.name == office } }
     end
     @other_officer_assignments = @officer_assignments.reject do |assignment|
-      PostContactGuidance::PRIMARY_CONTACTS.key?(assignment.position_title.name)
+      PostContactGuidance::PRIMARY_OFFICES.include?(assignment.position_title.name)
     end
   end
 end
