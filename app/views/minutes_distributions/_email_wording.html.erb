@@ -1,0 +1,72 @@
+<% wording = @settings.email_wording %>
+<% values = minutes_email_example_values(@settings, @organization) %>
+<div id="email-wording" data-controller="email-wording"
+     data-email-wording-values-value="<%= values.to_json %>"
+     data-email-wording-subject-value="<%= wording.fetch('subject') %>"
+     data-email-wording-cover-note-value="<%= wording.fetch('cover_note') %>"
+     data-email-wording-correction-notice-value="<%= MinutesDistribution::EmailTemplate::CORRECTION_NOTICE %>">
+  <%= render "shared/section_panel", label: "Email wording" do %>
+    <% if @editing == "wording" %>
+      <%= render "settings_errors" %>
+      <p>Edit the subject and short cover note. The greeting, signature and minutes status are added automatically.</p>
+      <%= form_with model: @settings, url: wording_minutes_distribution_path, method: :patch, class: "minutes-email-wording-form" do |form| %>
+        <%= form.hidden_field :lock_version %>
+        <div class="entry-field">
+          <%= form.label :email_subject_template, "Subject" %>
+          <%= form.text_field :email_subject_template, value: wording.fetch("subject"), required: true, maxlength: 500,
+            data: { email_wording_target: "subject", action: "focus->email-wording#selectField input->email-wording#render" }, aria: { describedby: "minutes-subject-help" } %>
+          <p id="minutes-subject-help" class="minutes-email-secondary">Keep <code>{{copy_label}}</code> in the subject. It becomes “Minutes” or “Corrected minutes”.</p>
+        </div>
+        <div class="entry-field">
+          <%= form.label :email_cover_note_template, "Cover note" %>
+          <%= form.text_area :email_cover_note_template, value: wording.fetch("cover_note"), required: true, maxlength: 4000, rows: 5,
+            data: { email_wording_target: "coverNote", action: "focus->email-wording#selectField input->email-wording#render" } %>
+        </div>
+        <div class="minutes-email-variables">
+          <p class="minutes-email-variable-destination" data-email-wording-target="destination" aria-live="polite">Insert a variable into: Subject</p>
+          <div class="minutes-email-variable-buttons">
+            <% MinutesDistribution::EmailTemplate::VARIABLES.each do |key, label| %>
+              <button type="button" class="btn-secondary" data-action="email-wording#insert" data-email-wording-token-param="{{<%= key %>}}">
+                <span><%= label %></span><code>{{<%= key %>}}</code>
+              </button>
+            <% end %>
+          </div>
+          <p class="minutes-email-secondary">Select the subject or cover note first, then choose a variable. Its value is filled in for each meeting.</p>
+        </div>
+        <p class="minutes-email-secondary">Changes apply to future attestations. Already-recorded mailings keep their saved wording. Saving does not send email.</p>
+        <div class="btnrow">
+          <%= form.submit "Save email wording", class: "btn-primary", disabled: @stale_settings %>
+          <%= link_to "Cancel", minutes_distribution_path(anchor: "email-wording"), class: "btn-secondary" %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="minutes-email-secondary">Text in <code>{{braces}}</code> is filled in for each meeting.</p>
+      <dl class="minutes-email-summary">
+        <dt>Subject</dt><dd class="minutes-email-template"><%= minutes_email_template_markup(wording.fetch("subject")) %></dd>
+        <dt>Cover note</dt><dd class="minutes-email-template"><%= minutes_email_template_markup(wording.fetch("cover_note")) %></dd>
+      </dl>
+      <%= link_to "Edit email wording", minutes_distribution_path(edit: "wording", anchor: "email-wording"), class: "btn-secondary" %>
+    <% end %>
+    <details class="minutes-email-preview" <%= "open" if @editing == "wording" %>>
+      <summary>Preview an example email</summary>
+      <p class="minutes-email-secondary">Example only, using today’s date. No email is sent.</p>
+      <div class="entry-field">
+        <label for="minutes-email-example-copy">Example copy</label>
+        <select id="minutes-email-example-copy" data-email-wording-target="kind" data-action="email-wording#render">
+          <option value="first">First attested copy</option><option value="corrected">Corrected copy</option>
+        </select>
+      </div>
+      <p class="minutes-email-preview-subject"><strong>Subject</strong><br><span data-email-wording-target="subjectPreview"><%= minutes_email_example(wording.fetch("subject"), values) %></span></p>
+      <p>Example recipient,</p>
+      <p class="minutes-email-preview-note" data-email-wording-target="notePreview"><%= minutes_email_example(wording.fetch("cover_note"), values) %></p>
+      <p data-email-wording-target="correctionPreview" hidden><%= MinutesDistribution::EmailTemplate::CORRECTION_NOTICE %></p>
+      <div class="minutes-email-automatic">
+        <p class="minutes-email-secondary"><strong>Minutes status — added automatically</strong></p>
+        <p>They have been attested by the Adjutant but have not yet been approved by the meeting body; corrections may be made at its next meeting.</p>
+      </div>
+      <p><%= @organization.name %></p>
+      <p><strong>Attachment:</strong> Minutes PDF</p>
+    </details>
+    <p class="minutes-email-secondary minutes-email-wording-help">The status follows the minutes, including approval when recorded. Corrected copies include a replacement notice. The PDF keeps its Record of authority; unchanged approval sends no second email.</p>
+  <% end %>
+</div>

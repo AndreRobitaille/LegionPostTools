@@ -1969,7 +1969,10 @@ CREATE TABLE public.minutes_distribution_settings (
     audiences_reviewed boolean DEFAULT false NOT NULL,
     enabled boolean DEFAULT false NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    email_subject_template text,
+    email_cover_note_template text,
+    lock_version integer DEFAULT 0 NOT NULL
 );
 
 
@@ -2014,7 +2017,8 @@ CREATE TABLE public.minutes_distributions (
     error_message character varying,
     first_submitted_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    email_wording jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -8335,6 +8339,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261019030000'),
 ('20261019020000'),
 ('20261018010100'),
 ('20261018010000'),

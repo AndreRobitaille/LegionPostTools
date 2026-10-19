@@ -1,0 +1,61 @@
+<div id="delivery-settings">
+  <%= render "shared/section_panel", label: "Delivery settings" do %>
+    <p class="minutes-email-enabled<%= " minutes-email-enabled--active" if @settings.enabled? %>"><strong><%= @settings.enabled? ? "Automatic email enabled" : "Automatic email paused" %></strong></p>
+    <p>Minutes go only to the designated recipients on this page, after Adjutant attestation.</p>
+    <% if @editing == "delivery" %>
+      <%= render "settings_errors" %>
+      <%= form_with model: @settings, url: minutes_distribution_path, method: :patch, class: "minutes-email-settings" do |form| %>
+        <%= form.hidden_field :lock_version %>
+        <div class="entry-field"><%= form.label :reply_to, "Address for replies" %><%= form.email_field :reply_to %></div>
+        <fieldset><legend>Meetings to email</legend>
+          <%= hidden_field_tag "minutes_distribution_setting[meeting_type_ids][]", "" %>
+          <% @organization.meeting_types.order(:position, :name).each do |type| %>
+            <label class="form-toggle"><%= check_box_tag "minutes_distribution_setting[meeting_type_ids][]", type.id, @settings.meeting_type_ids.include?(type.id), id: "email-meeting-#{type.id}" %><span><%= type.name %></span></label>
+          <% end %>
+        </fieldset>
+        <label class="form-toggle"><%= form.check_box :enabled %><span>Email future minutes after Adjutant attestation.</span></label>
+        <p class="minutes-email-secondary">Pausing stops unsent mail. After resuming, review and release any held copies separately.</p>
+        <details class="minutes-email-connection" <%= "open" unless @settings.groups_configured? && @settings.template_id.present? %>>
+          <summary>Loops connection setup</summary>
+          <p class="minutes-email-secondary">These connections keep regular Post email separate from minutes for outside offices.</p>
+          <% if @settings.list_connections_in_use? %>
+            <dl class="minutes-email-summary">
+              <dt>Post members list ID</dt><dd><code><%= @settings.post_members_list_id %></code></dd>
+              <dt>Minutes recipients list ID</dt><dd><code><%= @settings.minutes_recipients_list_id %></code></dd>
+            </dl>
+            <p class="minutes-email-secondary">These lists are already in use. Their connections cannot be changed here.</p>
+          <% else %>
+            <div class="entry-field"><%= form.label :post_members_list_id, "Post members list ID" %><%= form.text_field :post_members_list_id %></div>
+            <div class="entry-field"><%= form.label :minutes_recipients_list_id, "Minutes recipients list ID" %><%= form.text_field :minutes_recipients_list_id %></div>
+          <% end %>
+          <div class="entry-field"><%= form.label :template_id, "Loops delivery template ID" %><%= form.text_field :template_id %></div>
+          <p class="minutes-email-secondary">The Loops template delivers the attachment. Edit the subject and cover note under Email wording. Loops must have enabled PDF attachments for this account.</p>
+          <label class="form-toggle"><%= form.check_box :audiences_reviewed %><span>I checked that regular Post emails in Loops use the Post members list.</span></label>
+          <p class="minutes-email-secondary">In Loops, choose Post members for membership emails. All audience would also include outside minutes recipients. This check records your review; it does not change emails in Loops.</p>
+        </details>
+        <div class="btnrow">
+          <%= form.submit "Save delivery settings", class: "btn-primary", disabled: @stale_settings %>
+          <%= link_to "Cancel", minutes_distribution_path(anchor: "delivery-settings"), class: "btn-secondary" %>
+        </div>
+      <% end %>
+    <% else %>
+      <dl class="minutes-email-summary">
+        <dt>Meetings</dt>
+        <dd><%= @organization.meeting_types.where(id: @settings.meeting_type_ids).order(:position).pluck(:name).to_sentence.presence || "No meetings selected" %></dd>
+        <dt>Address for replies</dt><dd><%= @settings.reply_to.presence || "Not set" %></dd>
+        <dt>Recipients</dt><dd>Only the designated Minutes recipients — not the general Post membership.</dd>
+      </dl>
+      <%= link_to "Edit delivery settings", minutes_distribution_path(edit: "delivery", anchor: "delivery-settings"), class: "btn-secondary" %>
+      <details class="minutes-email-connection">
+        <summary>View Loops connection details</summary>
+        <dl class="minutes-email-summary">
+          <dt>Post members list ID</dt><dd><code><%= @settings.post_members_list_id.presence || "Not connected" %></code></dd>
+          <dt>Minutes recipients list ID</dt><dd><code><%= @settings.minutes_recipients_list_id.presence || "Not connected" %></code></dd>
+          <dt>Loops delivery template ID</dt><dd><code><%= @settings.template_id.presence || "Not connected" %></code></dd>
+          <dt>Regular Post emails use Post members</dt><dd><%= @settings.audiences_reviewed? ? "Setup review recorded" : "Needs review in Loops" %></dd>
+        </dl>
+        <p class="minutes-email-secondary">Roster sync maintains Post members only. Minutes recipients and other lists are kept separately.</p>
+      </details>
+    <% end %>
+  <% end %>
+</div>

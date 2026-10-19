@@ -1,0 +1,9 @@
+<% if @settings.errors.any? %>
+  <div class="minutes-email-errors" role="alert">
+    <h2>Check your changes</h2>
+    <ul><% @settings.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    <% if @stale_settings %>
+      <%= link_to "Reload latest settings", minutes_distribution_path(edit: @editing, anchor: @editing == "wording" ? "email-wording" : "delivery-settings"), class: "btn-secondary" %>
+    <% end %>
+  </div>
+<% end %>

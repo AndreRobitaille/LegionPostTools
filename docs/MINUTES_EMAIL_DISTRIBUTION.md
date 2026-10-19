@@ -91,6 +91,46 @@ Corrected copies retain the original destinations and recheck their current auth
 new entries are not added to an existing meeting's correction chain. These recipient and
 delivery controls are website-only; a delegated API attestation uses the same sending rules.
 
+## Delivery settings and email wording
+
+The normal page shows saved settings. Choose **Edit delivery settings** to change the
+meetings, address for replies or automatic sending, then **Save delivery settings**.
+**Cancel** discards unsaved changes. **View Loops connection details** exposes the saved
+technical IDs without making them editable. The existing restriction on changing list
+connections after enrollments or mailings remains in force.
+
+Under connection setup, “I checked that regular Post emails in Loops use the Post members
+list” records a human review. It does not retarget emails in Loops. For regular membership
+email, select Post members in Loops; All audience also includes outside minutes contacts.
+
+Choose **Edit email wording** to change the subject and short cover note on this page.
+Select a field, then choose a variable button to insert at the caret:
+
+| Variable | Filled-in value |
+| --- | --- |
+| `{{post_name}}` | This Post's name |
+| `{{meeting_label}}` | The minutes' meeting title |
+| `{{meeting_date}}` | The meeting date |
+| `{{copy_label}}` | Minutes or Corrected minutes |
+
+The subject must keep Copy label so corrected copies are identifiable. Unknown or incomplete
+variables and subject line breaks are rejected without losing the entered text. The example
+preview updates as wording changes and can show a first or corrected copy; it sends no email.
+The greeting, signature, approval status and corrected-copy notice are added automatically.
+The status always follows the minutes, including approval when recorded.
+
+**Save email wording** captures changes for future attestations. Each attestation records
+its wording with its distribution; later edits cannot change that queued copy or its retry.
+A future corrected attestation uses the wording then in effect, but unchanged minutes still
+send no duplicate merely because wording changed. Older distributions retain their original
+standard wording. Editing wording does not change the minutes or the PDF.
+
+Both editors reject stale forms rather than overwrite another officer's changes. If the
+page says the settings changed while editing, use **Reload latest settings** before saving.
+Wording and delivery choices are saved separately and all changes retain officer audit
+provenance. The Loops delivery template ID remains a separate technical connection; the
+existing published template still receives `subject` and `cover_note` from this application.
+
 ## Attestation and corrections
 
 The existing human attestation confirmation states the external-mail consequence. The

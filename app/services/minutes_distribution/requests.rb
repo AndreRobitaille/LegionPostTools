@@ -9,6 +9,7 @@ module MinutesDistribution::Requests
     first_issue = minutes.email_distributions.order(:id).first
     issue = minutes.email_distributions.create!(
       organization: minutes.organization, minutes_revision: minutes.current_revision,
+      email_wording: settings.email_wording,
       content_digest: MinutesDistribution::Content.digest(minutes.current_revision.payload),
       corrected: first_issue.present?, state: MinutesDistributionEvent.held?(minutes) ? "held" : "pending"
     )

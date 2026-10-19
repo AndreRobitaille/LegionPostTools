@@ -1,4 +1,24 @@
 module MinutesDistributionsHelper
+  def minutes_email_template_markup(text)
+    safe_join(text.to_s.split(/(\{\{.*?\}\})/).map do |part|
+      part.match?(MinutesDistribution::EmailTemplate::TOKEN) ? tag.code(part, class: "minutes-email-variable") : part
+    end)
+  end
+
+  def minutes_email_example_values(settings, organization)
+    meeting_type = organization.meeting_types.where(id: settings.meeting_type_ids).order(:position).first
+    {
+      "post_name" => organization.name, "meeting_label" => meeting_type&.name || "Example meeting",
+      "meeting_date" => Time.current.in_time_zone(organization.timezone).strftime("%B %-d, %Y"), "copy_label" => "Minutes"
+    }
+  end
+
+  def minutes_email_example(text, values)
+    return text if MinutesDistribution::EmailTemplate.problems(text).any?
+
+    MinutesDistribution::EmailTemplate.render(text, values)
+  end
+
   def minutes_email_status(minutes)
     settings = minutes.organization.minutes_distribution_setting
     issue = minutes.email_distributions.order(:id).last

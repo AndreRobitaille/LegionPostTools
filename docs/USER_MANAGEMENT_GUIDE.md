@@ -271,6 +271,13 @@ See [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md#manage-minutes-recipien
 recipient replacement, delivery results and the dated live setup, and
 [roster sync](LOOPS_ROSTER_SYNC.md) for eligibility and review problems.
 
+Delivery settings are shown as saved information until you choose **Edit delivery settings**.
+Use **Edit email wording** to change the subject and cover note; variable buttons insert the
+Post name, meeting name, meeting date or copy label, and the preview shows an example.
+Greeting, signature and the minutes' status stay automatic. **Cancel** discards unsaved
+changes. Saved wording applies to future attestations; already-recorded mailings keep their
+saved wording. See [the editing guide](MINUTES_EMAIL_DISTRIBUTION.md#delivery-settings-and-email-wording).
+
 ## Membership Drive Volunteers and Paper Call Sheets
 
 Membership managers assign volunteers under **Membership → Drives → drive → Assign

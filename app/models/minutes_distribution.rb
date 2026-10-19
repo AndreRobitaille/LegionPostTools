@@ -9,6 +9,7 @@ class MinutesDistribution < ApplicationRecord
   validates :content_digest, presence: true
   validates :state, inclusion: { in: %w[pending ready held completed superseded needs_attention] }
   validate :submitted_copy_is_frozen, on: :update
+  validate :saved_wording_is_frozen, on: :update
   scope :recoverable, -> { where(state: %w[pending ready]) }
 
   after_create_commit :enqueue_delivery
@@ -21,6 +22,10 @@ class MinutesDistribution < ApplicationRecord
   end
 
   private
+
+  def saved_wording_is_frozen
+    errors.add(:email_wording, "is saved with this mailing and cannot be changed") if will_save_change_to_email_wording?
+  end
 
   def submitted_copy_is_frozen
     return unless first_submitted_at_in_database
