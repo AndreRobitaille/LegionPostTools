@@ -42,6 +42,15 @@ item and outcome must be accounted for. A separate AI pass checks the complete s
 missed material, false matches, and unsupported facts. Summaries are generated from the
 verified facts and original passages, then verified before automatic publication.
 
+Automatic paid runs start when membership or executive minutes become attested, and when
+a corrected revision is attested again. That includes a corrected re-attestation recorded
+as membership-approved with a new revision. The minutes callback enqueues one
+`EndeavorHistoryRefreshJob` for each non-withdrawn Endeavor in that organization.
+`Processing.request` still reuses a prior run when the fingerprint does not need new work,
+so an unchanged Endeavor does not call the provider. Creating an Endeavor does not enqueue
+a run. Drafting, Commander approval, and membership approval of the same revision do not
+enqueue a run. Draft and approved-but-unattested text never enter sources.
+
 Each stage has at most one repair cycle. Unknown citations, missing required facts,
 ambiguous matches, incomplete responses, budget limits, or failed verification prevent
 publication. Original decisions render deterministically. No routine human review queue
@@ -115,7 +124,7 @@ by this feature.
 
 | Variable | Default / purpose |
 | --- | --- |
-| `ENDEAVOR_HISTORY_ENABLED` | Disabled unless `1`; allows generation and automatic reconciliation. |
+| `ENDEAVOR_HISTORY_ENABLED` | Disabled unless `1`; allows generation, attestation-triggered refresh, and stalled-run recovery. |
 | `OPENAI_ENDEAVOR_MODEL` | Optional override for every stage; otherwise the defaults below. |
 | `OPENAI_ENDEAVOR_DISCOVERY_MODEL` | `gpt-6-astra` |
 | `OPENAI_ENDEAVOR_VERIFY_DISCOVERY_MODEL` | `gpt-6-astra` |
@@ -184,13 +193,25 @@ IDs/digests and prior run states. A bounded initial queue operation is
 `LIMIT=10 AFTER_ID=0 bin/rails endeavor_history:backfill`; use its `next_after_id` to continue.
 The task requires activation and may incur paid usage when workers execute.
 
-When enabled, attestation/new-Endeavor events and a 15-minute reconciliation job ensure
-all eligible Endeavors are processed, including existing history. Budget and call limits
-bound paid processing; choose them deliberately before activation. Identical automatic
-requests reuse prior success/failure state. Transient queue/provider/stalled failures get
-at most three attempts per fingerprint with a delay; semantic failures await an admin
-rerun. Daily-budget failures retry automatically on the next day. Stalled running jobs expire after 15 minutes without a heartbeat. No exactly-once
-provider-cost guarantee is possible after a timeout.
+When enabled, attestation of membership or executive minutes enqueues a durable refresh
+job for each non-withdrawn Endeavor in that organization. The same enqueue happens when a
+corrected re-attestation changes the attested revision, including a correction recorded as
+membership-approved with a new revision. Creating an Endeavor does not enqueue a run.
+No attested minutes have changed, and a catalog edit must not spend by itself. Paid
+provider work still happens only when `Processing.request` sees a real fingerprint need.
+An unchanged fingerprint reuses the prior run. Budget and call limits bound paid
+processing; choose them deliberately before activation.
+
+The 15-minute reconciliation job only recovers runs that already exist. It requeues a
+pending run older than five minutes, marks a running run failed as `worker_stalled` after
+15 minutes without a heartbeat, and retries `queue_error`, `worker_stalled`, `timeout`,
+`rate_limit`, and `provider_error` at most three times per fingerprint after a 15-minute
+delay. A `daily_budget` failure retries with force on the next day. Semantic failures wait
+for an explicit Refresh. Reconciliation does not scan fingerprints and does not enqueue a
+refresh for every Endeavor. If attestation fails before any refresh job is enqueued, the
+15-minute job does not discover that gap: a fingerprint sweep would start paid runs for
+unrelated catalog changes. An officer uses Refresh to cover a missed attestation enqueue.
+No exactly-once provider-cost guarantee is possible after a timeout.
 
 Disable generation with `ENDEAVOR_HISTORY_ENABLED=0`, or withdraw a particular Endeavor's
 generated history. Withdrawal also suppresses its generated member display. Source minutes,

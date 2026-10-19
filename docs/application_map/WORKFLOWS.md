@@ -514,10 +514,10 @@ Policy/source basis: [governance](../ENDEAVOR_GOVERNANCE.md),
 ### END-04 — Generate and manage derived meeting history (P1)
 
 - **Start:** Existing human-defined Endeavor, eligible immutable member minutes, enabled configuration/worker/budgets; manager for guidance/refresh/withdraw/resume.
-- **Action:** Automatic source-triggered processing/reconciliation, or deliberate manager operation with scope/guidance/version.
+- **Action:** Attested membership or executive minutes enqueue a refresh for each non-withdrawn Endeavor. The 15-minute job recovers stalled or failed runs only. Manager refresh, guidance, withdraw, and resume stay explicit.
 - **Result:** Source-grounded extraction and separate checks, retained verified results/reuse, immutable replacement edition only after successful validation; failure preserves still-valid prior edition.
 - **Observe:** Member overview/dated accounts and coverage date; manager sees runs/cost/error/source/reuse and withdrawn state.
-- **Then:** New source processes incrementally; corrected source invalidates affected material; membership approval changes labels without paid regeneration; withdrawal/resume preserves audit.
+- **Then:** A new or corrected attested source processes incrementally and invalidates affected generated material. Creating an Endeavor does not start a paid run. Membership approval of the same revision changes labels without paid regeneration. Withdrawal and resume preserve the audit.
 - **Failures:** Unsupported fact, missed/unknown citations, budget/input limit, interruption/provider failure, stale guidance, ambiguous identity; never create/merge/complete an Endeavor or alter minutes automatically. Runtime model quality remains separate evidence.
 
 ### CAL-01 — Inspect schedule, deadlines, or public preview (P1)

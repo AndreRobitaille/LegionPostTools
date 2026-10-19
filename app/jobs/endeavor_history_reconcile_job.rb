@@ -1,13 +1,14 @@
 class EndeavorHistoryReconcileJob < ApplicationJob
   queue_as :background
 
+  # Attestation enqueues refresh jobs. This job only recovers runs that already exist.
+  # A fingerprint sweep would start paid work when the catalog changes without new minutes.
   def perform(organization_id = nil)
     return unless EndeavorHistory::Config.enabled?
     scope = organization_id ? Organization.where(id: organization_id) : Organization.all
     scope.find_each do |organization|
       organization.endeavors.where(history_withdrawn: false).find_each do |endeavor|
         recover_stalled(endeavor)
-        EndeavorHistoryRefreshJob.perform_later(endeavor.id)
       end
     end
   end

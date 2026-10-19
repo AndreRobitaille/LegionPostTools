@@ -432,7 +432,11 @@ class MeetingMinutes < ApplicationRecord
   end
 
   def schedule_endeavor_history
-    EndeavorHistoryReconcileJob.perform_later(organization_id) if EndeavorHistory::Config.enabled?
+    return unless EndeavorHistory::Config.enabled?
+
+    organization.endeavors.where(history_withdrawn: false).find_each do |endeavor|
+      EndeavorHistoryRefreshJob.perform_later(endeavor.id)
+    end
   end
 
   def latest_successful_draft_run

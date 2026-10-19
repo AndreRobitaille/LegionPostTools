@@ -287,12 +287,12 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert_raises(EndeavorHistory::Error) { EndeavorHistory::Validate.discovery!(data, document) }
   end
 
-  test "only new or corrected attestation queues AI reconciliation" do
+  test "only new or corrected attestation queues a history refresh" do
     process
     clear_enqueued_jobs
     confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
       action: "reopen", evidence_note: "Synthetic correction.", action_payload: { "reason" => "Correct wording." })
-    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob) do
+    assert_no_enqueued_jobs(only: [ EndeavorHistoryRefreshJob, EndeavorHistoryReconcileJob ]) do
       @minutes.reopen_with_confirmation!(confirmation: confirmation)
       @item.update!(body: "Corrected Car Show report.")
       approval = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
@@ -302,26 +302,25 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert EndeavorHistory::Presenter.new(@endeavor).overview.any?
     confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @adjutant,
       action: "attest", evidence_note: "Synthetic corrected attestation.")
-    assert_enqueued_with(job: EndeavorHistoryReconcileJob, args: [ @organization.id ]) do
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) do
       @minutes.attest_with_confirmation!(confirmation: confirmation)
     end
+    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob)
     assert_empty EndeavorHistory::Presenter.new(@endeavor).overview
   end
 
-  test "new attested meeting queues history and missed callbacks are recovered without duplicate runs" do
+  test "new attested meeting queues one refresh and an unchanged fingerprint does not start another run" do
     process
     clear_enqueued_jobs
     meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.day.ago, title: "Later meeting")
     minutes = nil
-    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob) do
+    assert_no_enqueued_jobs(only: EndeavorHistoryRefreshJob) do
       minutes = MeetingMinutes.create_from_meeting!(meeting: meeting)
       minutes.sections.first.items.create!(title: "Car Show", behavior_type: "report_slot", position: 1, body: "Volunteers confirmed.")
     end
-    assert_enqueued_with(job: EndeavorHistoryReconcileJob, args: [ @organization.id ]) { attest(minutes) }
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) { attest(minutes) }
+    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob)
     clear_enqueued_jobs
-    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) do
-      EndeavorHistoryReconcileJob.perform_now(@organization.id)
-    end
     assert_difference "EndeavorHistoryRun.count", 1 do
       EndeavorHistoryRefreshJob.perform_now(@endeavor.id)
     end
@@ -333,19 +332,176 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     end
   end
 
+  test "attestation queues a refresh for membership and executive minutes without withdrawn or foreign endeavors" do
+    sibling = @organization.endeavors.create!(title: "Picnic", summary: "Family picnic", created_by: @manager)
+    completed = @organization.endeavors.create!(title: "Done show", summary: "Finished fundraiser", created_by: @manager,
+      status: "completed", completed_by: @manager, completed_at: Time.current)
+    withdrawn = @organization.endeavors.create!(title: "Retired", summary: "Old project", created_by: @manager, history_withdrawn: true)
+    other = Organization.create!(name: "Other Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    foreign = other.endeavors.create!(title: "Foreign", summary: "Other post", created_by: @manager)
+    executive = @organization.meeting_bodies.create!(name: "Executive Committee", slug: "executive-committee")
+    meeting = create_meeting!(organization: @organization, meeting_body: executive, starts_at: 3.hours.ago, title: "Executive meeting")
+    minutes = MeetingMinutes.create_from_meeting!(meeting: meeting)
+    minutes.sections.first.items.create!(title: "Car Show", behavior_type: "report_slot", position: 1, body: "The committee confirmed the show date.")
+    clear_enqueued_jobs
+
+    assert_enqueued_jobs 3, only: EndeavorHistoryRefreshJob do
+      attest(minutes)
+    end
+    queued = enqueued_jobs.select { |job| job[:job] == EndeavorHistoryRefreshJob }.map { |job| job[:args] }
+    assert_equal [ [ @endeavor.id ], [ sibling.id ], [ completed.id ] ].sort, queued.sort
+    assert_not_includes queued.flatten, withdrawn.id
+    assert_not_includes queued.flatten, foreign.id
+    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob)
+  end
+
+  test "creating an endeavor does not enqueue history processing" do
+    assert_no_difference "EndeavorHistoryRun.count" do
+      assert_no_enqueued_jobs(only: [ EndeavorHistoryRefreshJob, EndeavorHistoryReconcileJob, EndeavorHistoryJob ]) do
+        created = @organization.endeavors.create!(title: "Breakfast", summary: "Monthly breakfast", created_by: @manager)
+        assert_empty created.history_runs
+      end
+    end
+  end
+
+  test "disabled processing does not enqueue a refresh when minutes are attested" do
+    ENV["ENDEAVOR_HISTORY_ENABLED"] = "0"
+    meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 4.hours.ago, title: "Quiet meeting")
+    minutes = MeetingMinutes.create_from_meeting!(meeting: meeting)
+    minutes.sections.first.items.create!(title: "Car Show", behavior_type: "report_slot", position: 1, body: "Date confirmed.")
+    assert_no_enqueued_jobs(only: [ EndeavorHistoryRefreshJob, EndeavorHistoryReconcileJob ]) { attest(minutes) }
+  end
+
+  test "corrected re-attestation that changes the revision queues a refresh" do
+    clear_enqueued_jobs
+    approving = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.hour.ago, title: "Approval meeting")
+    confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
+      action: "record_membership_approval", evidence_note: "Synthetic correction decision.",
+      action_payload: { "approving_meeting_id" => approving.id, "disposition" => "approved_as_corrected",
+        "corrections_pending" => true, "factual_note" => "Correct the volunteer count." })
+    assert_no_enqueued_jobs(only: EndeavorHistoryRefreshJob) do
+      @minutes.record_membership_approval_with_confirmation!(confirmation: confirmation)
+    end
+    assert_predicate @minutes.reload, :draft?
+    @item.update!(body: "Corrected Car Show volunteer count.")
+    previous_revision_id = @minutes.current_revision_id
+    assert_enqueued_with(job: EndeavorHistoryRefreshJob, args: [ @endeavor.id ]) do
+      @minutes.attest_with_confirmation!(confirmation: OfficialActionConfirmation.record_external!(
+        minutes: @minutes, user: @adjutant, action: "attest", evidence_note: "Synthetic corrected attestation."
+      ))
+    end
+    assert_predicate @minutes.reload, :membership_approved?
+    assert_not_equal previous_revision_id, @minutes.current_revision_id
+  end
+
   test "membership approval updates authority without regenerating unchanged minutes" do
     process
     clear_enqueued_jobs
     manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+    revision_id = @minutes.current_revision_id
     meeting = create_meeting!(organization: @organization, meeting_body: @body, starts_at: 1.day.ago, title: "Approval meeting")
     confirmation = OfficialActionConfirmation.record_external!(minutes: @minutes, user: @manager,
       action: "record_membership_approval", evidence_note: "Synthetic membership approval.",
       action_payload: { "approving_meeting_id" => meeting.id, "disposition" => "approved_as_presented" })
-    assert_no_enqueued_jobs(only: EndeavorHistoryReconcileJob) do
+    assert_no_enqueued_jobs(only: [ EndeavorHistoryReconcileJob, EndeavorHistoryRefreshJob ]) do
       @minutes.record_membership_approval_with_confirmation!(confirmation: confirmation)
     end
+    assert_predicate @minutes.reload, :membership_approved?
+    assert_equal revision_id, @minutes.current_revision_id
     assert_equal manifest, EndeavorHistory::Sources.new(@endeavor).manifest
     assert_equal "Official minutes", EndeavorHistory::Presenter.new(@endeavor).entries.first[:authority]
+  end
+
+  test "recurring reconcile leaves a catalog change unpaid until an explicit refresh" do
+    process
+    @provider.calls.clear
+    clear_enqueued_jobs
+    created = @organization.endeavors.create!(title: "Breakfast", summary: "Monthly breakfast", created_by: @manager)
+    clear_enqueued_jobs
+    assert_empty created.history_runs
+    assert_no_difference "EndeavorHistoryRun.count" do
+      assert_no_enqueued_jobs(only: [ EndeavorHistoryRefreshJob, EndeavorHistoryJob ]) do
+        EndeavorHistoryReconcileJob.perform_now
+        EndeavorHistoryReconcileJob.perform_now(@organization.id)
+      end
+    end
+    assert_empty created.reload.history_runs
+    assert_difference "@endeavor.history_runs.count", 1 do
+      EndeavorHistoryRefreshJob.perform_now(@endeavor.id)
+    end
+    assert_empty @provider.calls
+  end
+
+  test "recurring reconcile requeues an old pending run and marks a stalled worker" do
+    pending = history_run(@endeavor, status: "pending")
+    pending.update_columns(created_at: 6.minutes.ago)
+    ENV["ENDEAVOR_HISTORY_ENABLED"] = "0"
+    assert_no_enqueued_jobs(only: EndeavorHistoryJob) { EndeavorHistoryReconcileJob.perform_now }
+    ENV["ENDEAVOR_HISTORY_ENABLED"] = "1"
+    pending.update_columns(created_at: 2.minutes.ago)
+    assert_no_enqueued_jobs(only: EndeavorHistoryJob) { EndeavorHistoryReconcileJob.perform_now }
+    pending.update_columns(created_at: 6.minutes.ago)
+    assert_enqueued_with(job: EndeavorHistoryJob, args: [ pending.id ]) { EndeavorHistoryReconcileJob.perform_now }
+    assert_equal "pending", pending.reload.status
+    pending.update!(status: "failed", error_category: "coverage", finished_at: Time.current)
+
+    stalled_endeavor = @organization.endeavors.create!(title: "Stalled", summary: "Recovery", created_by: @manager)
+    stalled = history_run(stalled_endeavor, status: "running", heartbeat_at: 16.minutes.ago, started_at: 20.minutes.ago)
+    clear_enqueued_jobs
+    assert_no_difference "EndeavorHistoryRun.count" do
+      EndeavorHistoryReconcileJob.perform_now
+    end
+    assert_equal "failed", stalled.reload.status
+    assert_equal "worker_stalled", stalled.error_category
+    travel 16.minutes do
+      assert_difference "EndeavorHistoryRun.count", 1 do
+        assert_enqueued_jobs 1, only: EndeavorHistoryJob do
+          EndeavorHistoryReconcileJob.perform_now
+        end
+      end
+    end
+    retried = stalled_endeavor.history_runs.recent.first
+    assert_equal "pending", retried.status
+    assert_not_equal stalled.id, retried.id
+    assert_empty @provider.calls
+  end
+
+  test "recurring reconcile retries documented failures and ignores clean exhausted and semantic runs" do
+    retryable = %w[timeout rate_limit provider_error queue_error worker_stalled]
+    endeavors = retryable.to_h do |category|
+      [ category, @organization.endeavors.create!(title: category, summary: category, created_by: @manager) ]
+    end
+    budget = @organization.endeavors.create!(title: "Budget", summary: "Next day", created_by: @manager)
+    today = @organization.endeavors.create!(title: "Today", summary: "Same day budget", created_by: @manager)
+    semantic = @organization.endeavors.create!(title: "Semantic", summary: "Coverage failure", created_by: @manager)
+    worker_error = @organization.endeavors.create!(title: "Worker", summary: "Worker error", created_by: @manager)
+    recent = @organization.endeavors.create!(title: "Recent", summary: "Too soon", created_by: @manager)
+    capped = @organization.endeavors.create!(title: "Capped", summary: "Three attempts", created_by: @manager)
+    clean = @organization.endeavors.create!(title: "Clean", summary: "Succeeded", created_by: @manager)
+    endeavors.each_value { |endeavor| failed_history_run(endeavor, endeavor.title) }
+    failed_history_run(budget, "daily_budget", finished_at: 1.day.ago)
+    failed_history_run(today, "daily_budget", finished_at: Time.current)
+    failed_history_run(semantic, "coverage", finished_at: 1.day.ago)
+    failed_history_run(worker_error, "worker_error", finished_at: 1.day.ago)
+    failed_history_run(recent, "timeout", finished_at: 5.minutes.ago)
+    failed_history_run(capped, "timeout", count: 3)
+    succeeded = history_run(clean, status: "succeeded")
+    clear_enqueued_jobs
+
+    assert_difference "EndeavorHistoryRun.count", retryable.size + 1 do
+      assert_no_enqueued_jobs(only: EndeavorHistoryRefreshJob) do
+        EndeavorHistoryReconcileJob.perform_now
+      end
+    end
+    (endeavors.values + [ budget ]).each do |endeavor|
+      assert_equal "pending", endeavor.history_runs.recent.first.status
+    end
+    [ today, semantic, worker_error, recent ].each do |endeavor|
+      assert_equal [ "failed" ], endeavor.history_runs.pluck(:status)
+    end
+    assert_equal [ "failed", "failed", "failed" ], capped.history_runs.order(:id).pluck(:status)
+    assert_equal succeeded, clean.history_runs.recent.first
+    assert_empty @provider.calls
   end
 
   test "new meeting reuses verified old evidence and preserves its account byte for byte" do
@@ -679,6 +835,21 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     run = new_run
     EndeavorHistory::Processing.new(run, provider: @provider).call
     run.reload
+  end
+
+  def history_run(endeavor, status:, heartbeat_at: nil, started_at: nil)
+    manifest = EndeavorHistory::Sources.new(endeavor).manifest
+    endeavor.history_runs.create!(manifest: manifest, fingerprint: EndeavorHistory::Sources.digest(manifest),
+      status: status, heartbeat_at: heartbeat_at, started_at: started_at)
+  end
+
+  def failed_history_run(endeavor, category, finished_at: 16.minutes.ago, count: 1)
+    manifest = EndeavorHistory::Sources.new(endeavor).manifest
+    fingerprint = EndeavorHistory::Sources.digest(manifest)
+    count.times do
+      endeavor.history_runs.create!(manifest: manifest, fingerprint: fingerprint, status: "failed",
+        error_category: category, finished_at: finished_at)
+    end
   end
 
   def attest(minutes)
