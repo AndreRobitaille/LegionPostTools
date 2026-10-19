@@ -65,6 +65,11 @@ test address. Defaults do not overwrite other installations' custom wording. The
 Post 165 rollout saves the newly approved subject and cover note along with the new template
 connection; subsequent officer wording edits remain authoritative.
 
+Use the `commander` sender username in Loops; Post 165's sending domain resolves it to
+`commander@mail.wipost165.org`. The user requested this sender for templates created for
+this installation after reviewing the styled test. Apply the sender correction to both
+minutes template versions while preserving their content and the configured reply address.
+
 Verify source formatting and variable validation; synthetic first/corrected/approved email
 payloads, legacy copy and frozen retries; rendered desktop/390/320px preview; ordinary and
 browser suites, security/lint and deployment health. Validate the provider draft with
