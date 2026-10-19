@@ -232,7 +232,9 @@ runtime, a live Solid Queue worker/scheduler and `MinutesDistributionReconcileJo
 15 minutes. Its selected template is saved on Minutes distribution, separate from
 `LOOPS_MAGIC_LINK_TEMPLATE_ID`. `MAIL_PROVIDER=action_mailer` does not supply an SMTP
 fallback for this minutes feature. A deploy or enabling the setting creates no historical
-mailings. Activation was verified without sending real test or historical emails.
+mailings. Initial activation was verified without sending real test or historical emails.
+The later authorized styled-email test, recipient feedback and sender correction are
+recorded in the live setup guide; the sender correction itself sent no additional email.
 
 ### Buddy Checks for iPhone
 
