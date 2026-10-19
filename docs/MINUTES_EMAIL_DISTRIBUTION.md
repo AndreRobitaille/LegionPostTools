@@ -109,13 +109,15 @@ Select a field, then choose a variable button to insert at the caret:
 | Variable | Filled-in value |
 | --- | --- |
 | `{{post_name}}` | This Post's name |
+| `{{post_label}}` | Short Post name, such as Post 165; full name when a Post number is unavailable |
+| `{{meeting_name}}` | Meeting type without a trailing “Meeting” |
 | `{{meeting_label}}` | The minutes' meeting title |
 | `{{meeting_date}}` | The meeting date |
 | `{{copy_label}}` | Minutes or Corrected minutes |
 
 The subject must keep Copy label so corrected copies are identifiable. Unknown or incomplete
 variables and subject line breaks are rejected without losing the entered text. The example
-preview updates as wording changes and can show a first or corrected copy; it sends no email.
+preview updates as wording changes and can show an attested, corrected or approved copy; it sends no email.
 The greeting, signature, approval status and corrected-copy notice are added automatically.
 The status always follows the minutes, including approval when recorded.
 
@@ -129,7 +131,30 @@ Both editors reject stale forms rather than overwrite another officer's changes.
 page says the settings changed while editing, use **Reload latest settings** before saving.
 Wording and delivery choices are saved separately and all changes retain officer audit
 provenance. The Loops delivery template ID remains a separate technical connection; the
-existing published template still receives `subject` and `cover_note` from this application.
+legacy template still receives `subject` and the combined `cover_note` from this application.
+
+### Styled PDF cover email
+
+The versioned [LMX layout](../emails/minutes-v2.lmx) and [sending metadata](../emails/minutes-v2.json)
+provide a bounded Post letterhead, meeting heading/date, a prominent **Minutes PDF attached**
+instruction, and a separate status block. The standard cover note says, “Open the attached
+PDF to read, save or print the minutes.” There is no website sign-in or download button in
+the email; recipients use their email application's attachment controls.
+
+The standard subject uses Short Post name, Copy label, Meeting name and Meeting date once.
+Short Post name uses the configured Post number where available, with the full installation
+name as fallback. Meeting name comes from the configured meeting type, with a trailing
+“Meeting” removed. Full meeting title remains available for custom wording and the saved
+official title remains in the PDF. These email labels are captured before submission and
+remain frozen with submitted messages.
+
+The styled template receives `subject`, `recipient_name`, `post_name`, `meeting_date`,
+`document_heading`, `message_note`, `status_label`, `status_note`, `correction_notice` and
+`reply_to`. The correction notice is optional/empty for an initial copy and shown in a
+conditional section for corrected copies. Status uses the actual recorded approving body.
+Use a new template ID for this layout; keep the previous template published for existing
+frozen submissions and retries. Do not replace the old template with one requiring new
+variables. See [presentation design and rollout](MINUTES_EMAIL_PRESENTATION.md).
 
 ## Attestation and corrections
 

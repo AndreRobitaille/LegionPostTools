@@ -1,0 +1,17 @@
+<Style backgroundColor="#FFFFFF" backgroundXPadding="12" backgroundYPadding="24" bodyColor="#FFFFFF" bodyXPadding="24" bodyYPadding="24" bodyFontFamily="Arial" bodyFontCategory="sans-serif" textBaseColor="#1B222B" textBaseFontSize="18" textBaseLineHeight="160" heading1Color="#0A2240" heading1FontSize="28" heading1LineHeight="120" heading2Color="#0A2240" heading2FontSize="20" heading2LineHeight="135" dividerColor="#C6A15B" dividerBorderWidth="2" />
+<Paragraph fontSize="16" paddingBottom="14"><Strong textColor="#0A2240">{data.post_name}</Strong></Paragraph>
+<Divider color="#C6A15B" borderWidth="2" paddingBottom="24" />
+<H1 paddingBottom="10"><Strong>{data.document_heading}</Strong></H1>
+<Paragraph fontSize="16" paddingBottom="28"><Text textColor="#526172">{data.meeting_date}</Text></Paragraph>
+<Paragraph paddingBottom="20">{data.recipient_name},</Paragraph>
+<Section blockColor="#FBF7EC" blockBorderWidth="1" blockBorderColor="#E7DFCD" paddingTop="20" paddingRight="20" paddingBottom="20" paddingLeft="20">
+  <H2 paddingBottom="10"><Strong>Minutes PDF attached</Strong></H2>
+  <Paragraph>{data.message_note}</Paragraph>
+</Section>
+<Section if="{data.correction_notice}" paddingTop="20">
+  <Paragraph><Strong textColor="#0A2240">{data.correction_notice}</Strong></Paragraph>
+</Section>
+<Divider color="#E7DFCD" borderWidth="1" paddingTop="24" paddingBottom="20" />
+<Paragraph fontSize="16" paddingBottom="8"><Strong textColor="#0A2240">{data.status_label}</Strong></Paragraph>
+<Paragraph fontSize="16" paddingBottom="24">{data.status_note}</Paragraph>
+<Paragraph fontSize="16"><Text textColor="#526172">{data.post_name}</Text></Paragraph>

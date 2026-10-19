@@ -7,6 +7,10 @@ module MinutesDistribution::Document
     {
       "status" => minutes.membership_approved? ? "membership_approved" : "attested",
       "organization" => organization.attributes.slice("name", "locality", "mailing_address", "public_email"),
+      "email_presentation" => {
+        "post_label" => MinutesDistribution::Presentation.post_label(organization),
+        "meeting_name" => MinutesDistribution::Presentation.meeting_name(minutes.meeting_type&.name || minutes.meeting_body.name)
+      },
       "approval" => approval && {
         "disposition_label" => approval.disposition_label,
         "meeting_title" => approval.approving_meeting.title,

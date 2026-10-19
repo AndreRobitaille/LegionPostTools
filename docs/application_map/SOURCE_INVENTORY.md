@@ -254,6 +254,10 @@ The [live setup](../MINUTES_EMAIL_DISTRIBUTION.md#post-165-live-setup-verified-o
 records separate production evidence; this source ledger does not claim live email delivery.
 The settings and wording editor adds `update_wording`, the three settings/wording
 partials, the email template renderer and its preview controller to this scope.
+The [presentation update](../MINUTES_EMAIL_PRESENTATION.md) adds
+[presentation.rb](../../app/services/minutes_distribution/presentation.rb),
+[versioned LMX](../../emails/minutes-v2.lmx) and [sending metadata](../../emails/minutes-v2.json)
+for short email labels, the attachment instruction and separate automatic status.
 
 | Source area | Files and responsibility |
 | --- | --- |

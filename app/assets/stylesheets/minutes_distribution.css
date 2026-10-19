@@ -37,6 +37,19 @@
 .minutes-email-errors ul { padding-left: 18px; font-size: 16px; line-height: 1.6; }
 .minutes-email-layout textarea { min-height: 150px; width: 100%; font-size: 16px; line-height: 1.6; }
 .minutes-email-layout .minutes-email-wording-help { margin: 18px 0 0; }
+.minutes-email-letter { max-width: 600px; margin: 20px auto; padding: 24px; background: #fff; color: #1b222b; border: 1px solid #e7dfcd; font-family: Arial, Helvetica, sans-serif; }
+.minutes-email-letter p { font-size: 18px; line-height: 1.6; margin: 0 0 20px; }
+.minutes-email-letter .minutes-email-letter-post { color: #0a2240; font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.minutes-email-letter-rule { border-top: 2px solid #c6a15b; margin-bottom: 24px; }
+.minutes-email-letter .minutes-email-letter-heading { color: #0a2240; font-size: 28px; font-weight: 700; line-height: 1.2; margin: 0 0 10px; }
+.minutes-email-letter .minutes-email-letter-date { color: #526172; font-size: 16px; margin-bottom: 28px; }
+.minutes-email-letter-attachment { background: #fbf7ec; padding: 20px; margin: 24px 0; border: 1px solid #e7dfcd; }
+.minutes-email-letter-attachment h3 { color: #0a2240; font-size: 20px; font-weight: 700; line-height: 1.35; margin: 0 0 10px; }
+.minutes-email-letter-attachment p { margin-bottom: 0; }
+.minutes-email-letter-status { border-top: 1px solid #e7dfcd; padding-top: 20px; margin: 24px 0; }
+.minutes-email-letter-status p { font-size: 16px; line-height: 1.6; margin-bottom: 8px; }
+.minutes-email-letter-status strong { color: #0a2240; }
+.minutes-email-letter .minutes-email-letter-signature { color: #526172; font-size: 16px; margin: 24px 0 0; }
 @media (max-width: 900px) {
   .minutes-email-layout, .minutes-email-groups { grid-template-columns: minmax(0, 1fr); }
   .minutes-email-groups { gap: 12px; }
@@ -45,4 +58,6 @@
 }
 @media (max-width: 560px) {
   .minutes-email-variable-buttons { grid-template-columns: minmax(0, 1fr); }
+  .minutes-email-letter { padding: 18px 14px; }
+  .minutes-email-letter-attachment { padding: 16px 14px; }
 }

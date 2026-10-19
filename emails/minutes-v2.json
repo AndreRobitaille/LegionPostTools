@@ -1,0 +1,9 @@
+{
+  "subject": "{data.subject}",
+  "previewText": "Minutes PDF attached — {data.document_heading}, {data.meeting_date}",
+  "fromName": "{data.post_name}",
+  "fromEmail": "no-reply",
+  "replyToEmail": "{data.reply_to}",
+  "emailFormat": "styled",
+  "dataVariablesFallbacks": { "correction_notice": "" }
+}

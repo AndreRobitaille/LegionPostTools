@@ -108,7 +108,7 @@ class MinutesDistributionSystemTest < ApplicationSystemTestCase
     click_link "Edit email wording"
     assert_field "Subject", with: MinutesDistribution::EmailTemplate::DEFAULT_SUBJECT
     fill_in "Cover note", with: "Please retain this copy for "
-    click_button "Post name"
+    find("button", text: /\APost name\s*\{\{post_name\}\}\z/).click
     assert_field "Cover note", with: "Please retain this copy for {{post_name}}"
     within ".minutes-email-preview" do
       assert_text "Please retain this copy for Synthetic Legion Post"
@@ -116,6 +116,11 @@ class MinutesDistributionSystemTest < ApplicationSystemTestCase
       assert_selector "[data-email-wording-target='subjectPreview']", text: /Corrected minutes/
       assert_text MinutesDistribution::EmailTemplate::CORRECTION_NOTICE
       assert_text "Minutes status — added automatically"
+      assert_text "Minutes PDF attached"
+      select "Approved copy", from: "Example copy"
+      assert_text "Attested and approved"
+      assert_no_text MinutesDistribution::EmailTemplate::CORRECTION_NOTICE
+      select "Corrected copy", from: "Example copy"
     end
     [ 1400, 390, 320 ].each do |width|
       page.current_window.resize_to(width, width == 1400 ? 1200 : 844)
@@ -123,6 +128,8 @@ class MinutesDistributionSystemTest < ApplicationSystemTestCase
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
       assert page.evaluate_script("Array.from(document.querySelectorAll('#email-wording input, #email-wording textarea, #email-wording button, #email-wording select')).filter(e => e.getClientRects().length && e.type !== 'hidden').every(e => parseFloat(getComputedStyle(e).fontSize) >= 16)")
       capture_system_screenshot("minutes-wording-edit-#{width}")
+      page.execute_script("arguments[0].scrollIntoView({block: 'start'})", find(".minutes-email-letter"))
+      capture_system_screenshot("minutes-email-letter-#{width}")
     end
     fill_in "Cover note", with: "Please retain {{unknown}}."
     click_button "Save email wording"

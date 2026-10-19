@@ -6,6 +6,54 @@ class MinutesDistributionEmailWordingTest < ActiveSupport::TestCase
   include MinutesDistributionData
   setup { setup_distribution }
 
+  test "new email presents the attachment with short identifiers and separate truthful status" do
+    organization.update!(unit_number: "42")
+    type.update!(name: "Membership Meeting")
+    minutes.update!(title: "Membership Meeting — 06 OCT 2026")
+    issue = attest
+    dispatch(issue)
+    message = provider.messages.sole.fetch(:dataVariables)
+    date = minutes.starts_at.strftime("%B %-d, %Y")
+    assert_equal "Post 42 · Minutes · Membership · #{date}", message.fetch("subject")
+    assert_equal "Membership minutes", message.fetch("document_heading")
+    assert_equal "Open the attached PDF to read, save or print the minutes.", message.fetch("message_note")
+    assert_equal "Attested — awaiting membership approval", message.fetch("status_label")
+    assert_includes message.fetch("status_note"), "Attested by the Adjutant"
+    assert_includes message.fetch("status_note"), "next membership meeting"
+    assert_equal "", message.fetch("correction_notice")
+    assert_includes message.fetch("cover_note"), "not yet been approved"
+    assert_equal "Membership Meeting — 06 OCT 2026", issue.minutes_revision.payload.fetch("title")
+    organization.update!(unit_number: "43")
+    type.update!(name: "Renamed meeting")
+    dispatch(issue)
+    assert_equal 1, provider.messages.size
+    assert_equal message, issue.deliveries.sole.reload.variables
+  end
+
+  test "corrected approved copies identify replacement and the actual approving body" do
+    dispatch(attest)
+    corrected = correct("Balance: $123.")
+    approve
+    dispatch(corrected)
+    message = provider.messages.last.fetch(:dataVariables)
+    assert_match(/corrected copy/, message.fetch("document_heading"))
+    assert_equal MinutesDistribution::EmailTemplate::CORRECTION_NOTICE, message.fetch("correction_notice")
+    assert_equal "Attested and approved", message.fetch("status_label")
+    assert_equal "Attested by the Adjutant and approved by the membership.", message.fetch("status_note")
+    assert_not_includes message.fetch("message_note"), "replaces"
+    assert_not_includes message.fetch("status_note"), "pending"
+  end
+
+  test "short labels respect other installations and dated titles remain intact" do
+    assert_equal organization.name, MinutesDistribution::Presentation.post_label(organization)
+    organization.unit_type = "auxiliary_unit"
+    organization.unit_number = "42"
+    assert_equal organization.name, MinutesDistribution::Presentation.post_label(organization)
+    assert_equal "PEC", MinutesDistribution::Presentation.meeting_name("PEC Meeting")
+    assert_equal "Committee review", MinutesDistribution::Presentation.meeting_name("Committee review")
+    assert_equal "Attested — awaiting PEC approval", MinutesDistribution::Presentation.status(approved: false, body_name: "PEC Meeting").fetch("label")
+  end
+
   test "wording is captured at attestation and editing before dispatch or retry cannot change that copy" do
     settings = organization.minutes_distribution_setting
     settings.update!(email_subject_template: "County copy — {{copy_label}} — {{meeting_date}}",
@@ -61,6 +109,7 @@ class MinutesDistributionEmailWordingTest < ActiveSupport::TestCase
     assert_match(/\AAttached are the corrected minutes of our /, message.fetch("cover_note"))
     assert_includes message.fetch("cover_note"), "This copy replaces the earlier copy."
     assert_not_includes message.fetch("cover_note"), "Later custom note"
+    assert_includes message.fetch("subject"), "Synthetic Legion Post — Corrected minutes"
   end
 
   test "unknown incomplete and misleading subject templates cannot be saved" do
