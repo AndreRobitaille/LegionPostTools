@@ -32,7 +32,7 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     @organization.position_titles.create!(name: "Historian", website_officer_listing: true)
     other = Organization.create!(name: "Separate Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     assign(other.position_titles.create!(name: "Service Officer", website_officer_listing: true), "Foreign", "Officer")
-    @member.person.update!(first_name: "Charlie", last_name: "Example", roster_name: "Example, Charles Q. Sr.",
+    @member.person.update!(first_name: "Charlie", last_name: "Example", roster_name: "Example, Sr. Charles Q.",
       email_address: "private-officer@example.test", phone_number: "9205550199", member_number: "PRIVATE-MEMBER")
 
     get "/public/v1/officers", headers: @headers
@@ -58,7 +58,7 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     end
     assert_equal "Charlie", @member.person.reload.first_name
     assert_equal "Example", @member.person.last_name
-    assert_equal "Example, Charles Q. Sr.", @member.person.roster_name
+    assert_equal "Example, Sr. Charles Q.", @member.person.roster_name
 
     etag = response.headers.fetch("ETag")
     @member.person.update!(roster_name: "Example, Charles Q. Jr.")

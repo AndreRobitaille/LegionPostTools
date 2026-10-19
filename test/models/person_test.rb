@@ -18,6 +18,10 @@ class PersonTest < ActiveSupport::TestCase
       [ "Charles", "Example Sr.", "Charles Example, Sr." ],
       [ "Charles Sr.", "Example", "Charles Example, Sr." ],
       [ "Charles, Sr.", "Example", "Charles Example, Sr." ],
+      [ "Sr. Charles", "Example", "Charles Example, Sr." ],
+      [ "Sr., Charles", "Example", "Charles Example, Sr." ],
+      [ "Charles", "Sr. Example", "Charles Example, Sr." ],
+      [ "Jr Don", "Example", "Don Example, Jr" ],
       [ "Don Jr", "Example", "Don Example, Jr" ],
       [ "Don", "Example, Jr.", "Don Example, Jr." ],
       [ "Alex Q. III", "de la Example", "Alex Q. de la Example III" ],
@@ -57,6 +61,8 @@ class PersonTest < ActiveSupport::TestCase
   test "first last display preserves the current roster name even when split fields are older" do
     [
       [ "Example, Charles Sr.", "Charles Example, Sr." ],
+      [ "Example, Sr. Charles", "Charles Example, Sr." ],
+      [ "Example, Jr. Don", "Don Example, Jr." ],
       [ "Example Jr., Don", "Don Example, Jr." ],
       [ "Example, Don, Jr.", "Don Example, Jr." ],
       [ "Charles Example, Sr.", "Charles Example, Sr." ],

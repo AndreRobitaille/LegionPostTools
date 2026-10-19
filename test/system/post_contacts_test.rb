@@ -7,11 +7,11 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     Installation.singleton.update!(setup_completed_at: Time.current)
     @member = User.create!(person: Person.create!(first_name: "Alex", last_name: "Member"), email_address: "member@example.test")
     [
-      [ "Commander", "Morgan", "Reed", "morgan@example.test", "(920) 555-0101", "Reed, Morgan Sr." ],
+      [ "Commander", "Morgan", "Reed", "morgan@example.test", "(920) 555-0101", "Reed, Sr. Morgan" ],
       [ "1st Vice Commander", "Patricia", "Ellis", "patricia@example.test", "(920) 555-0102" ],
       [ "Adjutant", "James", "Bennett", "james@example.test", nil ],
       [ "Chaplain", "Robin", "Hayes", nil, "(920) 555-0103" ],
-      [ "Service Officer", "Casey", "Brooks", "casey@example.test", "(920) 555-0104", "Brooks, Casey Jr." ],
+      [ "Service Officer", "Casey", "Brooks", "casey@example.test", "(920) 555-0104", "Brooks, Jr. Casey" ],
       [ "Historian", "Taylor", "Lane", nil, nil ],
       [ "Assistant Chaplain", "Drew", "Parker", "drew@example.test", nil ]
     ].each_with_index do |(office, first_name, last_name, email, phone, roster_name), index|
@@ -77,7 +77,7 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     click_link "Contact the Post", exact: true
     assert_current_path post_contact_path
     click_link "Morgan Reed, Sr."
-    assert_selector "h1", text: "Reed, Morgan Sr."
+    assert_selector "h1", text: "Reed, Sr. Morgan"
     assert_link "morgan@example.test", href: "mailto:morgan@example.test"
   end
 
@@ -86,7 +86,7 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     system_sign_in(@member)
     commander = PositionAssignment.joins(:position_title).find_by!(position_titles: { name: "Commander" })
     commander.person.update!(first_name: "Morgan-Alexandra", last_name: "Reed-Worthington",
-      roster_name: "Reed-Worthington, Morgan-Alexandra Sr.", email_address: "morgan.alexandra.reed.worthington@example.test")
+      roster_name: "Reed-Worthington, Sr. Morgan-Alexandra", email_address: "morgan.alexandra.reed.worthington@example.test")
     @organization.update!(public_email: "general.questions.for.our.american.legion.post@example.test")
     visit post_contact_path
     assert_contact_layout

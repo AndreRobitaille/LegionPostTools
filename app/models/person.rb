@@ -59,6 +59,11 @@ class Person < ApplicationRecord
     suffixes = []
     names = first_last_display_parts.map do |name|
       part = name.to_s.strip
+      prefix = part.match(/\A((?:jr|sr)\.?)[,\s]+(.+)\z/i)
+      if prefix
+        suffixes << prefix[1]
+        part = prefix[2]
+      end
       match = part.match(/\A(.+?)(?:,\s*|\s+)((?:jr|sr)\.?|II|III|IV)\z/i)
       if match
         suffixes << match[2]

@@ -659,7 +659,7 @@
           "name": {
             "type": "string",
             "minLength": 1,
-            "description": "Current roster display name formatted in first-name then last-name order, falling back to split first/last fields when no roster name exists. Preserves middle names and initials. Trailing suffixes (Sr/Jr with optional periods, or II, III or IV) from either name part appear once at the end with their recorded capitalization and optional periods. A comma precedes Sr/Jr; a space precedes Roman numerals. Display as supplied; not a unique identifier."
+            "description": "Current roster display name formatted in first-name then last-name order, falling back to split first/last fields when no roster name exists. Preserves middle names and initials. Sr/Jr prefixes and trailing suffixes (Sr/Jr with optional periods, or II, III or IV) from either name part appear once at the end with their recorded capitalization and optional periods. A comma precedes Sr/Jr; a space precedes Roman numerals. Display as supplied; not a unique identifier."
           },
           "office": {
             "type": "string",

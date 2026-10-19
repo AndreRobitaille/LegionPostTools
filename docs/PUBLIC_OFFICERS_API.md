@@ -101,11 +101,13 @@ Names prefer the current saved `roster_name`, matching the member directory, and
 reorder a `Last, First` label. The split `first_name` and `last_name` fields are the
 fallback when no roster name exists; they can predate later roster imports. Names
 already in first-name-first order retain that order. Preserve middle names and
-initials. A trailing generational suffix (`Sr`, `Jr`, with or without a period, or
+initials. A roster Sr/Jr prefix before a name moves to the end as well. A trailing
+generational suffix (`Sr`, `Jr`, with or without a period, or
 II, III or IV) in either name part appears once at the end of the display name,
 with its recorded capitalization and optional period. Put a comma before Sr/Jr and
 a space before Roman numerals. For example, a roster name of
-“Example, Charles Sr.” displays as “Charles Example, Sr.” The raw roster label is
+“Example, Sr. Charles” and “Example, Charles Sr.” both display as
+“Charles Example, Sr.” The raw roster label is
 not returned; consumers should display the supplied name without parsing or
 rearranging it. This formatting does not rewrite the saved name fields.
 

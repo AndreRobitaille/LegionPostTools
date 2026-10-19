@@ -18,7 +18,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
 
   test "imported suffix formats display in first last order without rewriting roster data on reimport" do
     names = [
-      [ "SUFFIX1", "Example, Charles Sr.", "Charles Sr.", "Example", "Charles Example, Sr." ],
+      [ "SUFFIX1", "Example, Sr. Charles", "Sr. Charles", "Example", "Charles Example, Sr." ],
       [ "SUFFIX2", "Example Jr., Don", "Don", "Example Jr.", "Don Example, Jr." ],
       [ "SUFFIX3", "Example, Don, Jr.", "Don, Jr.", "Example", "Don Example, Jr." ],
       [ "SUFFIX4", "de la Example, Alex Q. III", "Alex Q. III", "de la Example", "Alex Q. de la Example III" ]
@@ -80,13 +80,13 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     person = Person.find_by!(member_number: "SUFFIX5")
     assert_equal "Charles Example", person.first_last_display_name
 
-    corrected_csv = csv.sub("Example, Charles", "Example, Charles Sr.")
+    corrected_csv = csv.sub("Example, Charles", "Example, Sr. Charles")
     corrected = RosterImports::Importer.new(csv_text: corrected_csv, filename: "after-suffix.csv").import
     assert corrected.success?
     assert_equal 1, corrected.updated_count
     person.reload
     assert_equal [ "Charles", "Example" ], [ person.first_name, person.last_name ]
-    assert_equal "Example, Charles Sr.", person.roster_name
+    assert_equal "Example, Sr. Charles", person.roster_name
     assert_equal "Charles Example, Sr.", person.first_last_display_name
     assert_not person.changed?
   end
