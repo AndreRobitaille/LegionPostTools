@@ -42,6 +42,17 @@ Other standard Post offices also receive a short responsibility sentence and two
 Assistant roles receive only “Assists the [primary role].” with no examples or extra duties,
 as Andre requested in the design revision. Their officer names and contact details remain.
 
+Display officer names in first-name then last-name order using the person's saved
+`first_name` and `last_name` fields. Move a trailing generational suffix (`Sr`, `Jr`,
+with or without a period, or II, III or IV) from either field to the end of the
+display name. Put a comma before Sr/Jr and a space before Roman numerals. Preserve
+recorded capitalization and optional periods, middle names, initials and compound
+surnames; show a suffix once if both fields repeat it. Only recognize
+complete trailing suffix tokens, not ordinary initials or parts of a name.
+Use `Person#first_last_display_name` on both this page and the public officers API.
+Keep the existing row layout, 17px name links and wrapping. Format names at display
+time without rewriting roster fields or changing other name/official-record workflows.
+
 These are member-facing summaries informed by the [2026 American Legion Officer's Guide](https://www.legion.org/getmedia/9886852f-7570-4d04-85e8-2832116fdb63/27ia0226-post-officers-guide.pdf),
 printed pages 19–20 and 26–29. The guide supplies general role context; Andre's instructions
 establish the two main contacts and the 2nd Vice Commander's focus on fundraising and

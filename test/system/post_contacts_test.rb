@@ -7,16 +7,16 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     Installation.singleton.update!(setup_completed_at: Time.current)
     @member = User.create!(person: Person.create!(first_name: "Alex", last_name: "Member"), email_address: "member@example.test")
     [
-      [ "Commander", "Morgan", "Reed", "morgan@example.test", "(920) 555-0101" ],
+      [ "Commander", "Morgan Sr.", "Reed", "morgan@example.test", "(920) 555-0101" ],
       [ "1st Vice Commander", "Patricia", "Ellis", "patricia@example.test", "(920) 555-0102" ],
       [ "Adjutant", "James", "Bennett", "james@example.test", nil ],
       [ "Chaplain", "Robin", "Hayes", nil, "(920) 555-0103" ],
-      [ "Service Officer", "Casey", "Brooks", "casey@example.test", "(920) 555-0104" ],
+      [ "Service Officer", "Casey Jr.", "Brooks", "casey@example.test", "(920) 555-0104" ],
       [ "Historian", "Taylor", "Lane", nil, nil ],
       [ "Assistant Chaplain", "Drew", "Parker", "drew@example.test", nil ]
     ].each_with_index do |(office, first_name, last_name, email, phone), index|
       title = @organization.position_titles.create!(name: office, display_order: index)
-      person = Person.create!(first_name:, last_name:, email_address: email, phone_number: phone)
+      person = Person.create!(first_name:, last_name:, roster_name: "#{last_name}, #{first_name}", email_address: email, phone_number: phone)
       PositionAssignment.create!(person:, position_title: title, starts_on: Organization.current_local_date - 30)
     end
   end
@@ -38,8 +38,8 @@ class PostContactsSystemTest < ApplicationSystemTestCase
       assert_link "wipost165@gmail.com", href: "mailto:wipost165@gmail.com"
       assert_selector ".post-contact-name", count: 7
       within ".post-contact-choices" do
-        assert_selector ".post-contact-name", text: "Morgan Reed"
-        assert_selector ".post-contact-name", text: "Casey Brooks"
+        assert_selector ".post-contact-name", exact_text: "Morgan Reed, Sr."
+        assert_selector ".post-contact-name", exact_text: "Casey Brooks, Jr."
         assert_text "You have a concern about a Post decision or how you were treated."
         assert_text "You need help getting started with a VA claim."
         assert_selector ".post-contact-examples li", count: 4
@@ -76,8 +76,8 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     click_button "Menu"
     click_link "Contact the Post", exact: true
     assert_current_path post_contact_path
-    click_link "Morgan Reed"
-    assert_selector "h1", text: "Morgan Reed"
+    click_link "Morgan Reed, Sr."
+    assert_selector "h1", text: "Reed, Morgan Sr."
     assert_link "morgan@example.test", href: "mailto:morgan@example.test"
   end
 
@@ -85,11 +85,11 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 1000)
     system_sign_in(@member)
     commander = PositionAssignment.joins(:position_title).find_by!(position_titles: { name: "Commander" })
-    commander.person.update!(first_name: "Morgan-Alexandra", last_name: "Reed-Worthington", email_address: "morgan.alexandra.reed.worthington@example.test")
+    commander.person.update!(first_name: "Morgan-Alexandra Sr.", last_name: "Reed-Worthington", email_address: "morgan.alexandra.reed.worthington@example.test")
     @organization.update!(public_email: "general.questions.for.our.american.legion.post@example.test")
     visit post_contact_path
     assert_contact_layout
-    commander_link = find_link("Morgan-Alexandra Reed-Worthington")
+    commander_link = find_link("Morgan-Alexandra Reed-Worthington, Sr.")
     commander_link.send_keys(:tab)
     assert_equal "mailto:morgan.alexandra.reed.worthington@example.test", page.evaluate_script("document.activeElement.getAttribute('href')")
     assert page.evaluate_script("document.activeElement.matches(':focus-visible')")
@@ -100,7 +100,7 @@ class PostContactsSystemTest < ApplicationSystemTestCase
     visit people_path
     click_button "Menu"
     click_link "Contact the Post", exact: true
-    assert_no_text "Morgan-Alexandra Reed-Worthington"
+    assert_no_text "Morgan-Alexandra Reed-Worthington, Sr."
     assert_selector ".post-contact-name", count: 6
     assert_text "A current Commander is not listed yet."
     @organization.update!(public_email: nil, mailing_address: nil)

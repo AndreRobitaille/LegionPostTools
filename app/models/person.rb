@@ -54,6 +54,26 @@ class Person < ApplicationRecord
     [ first_name, last_name ].compact_blank.join(" ")
   end
 
+  def first_last_display_name
+    # Roster imports can leave a generational suffix in either name field.
+    suffixes = []
+    names = [ first_name, last_name ].map do |name|
+      part = name.to_s.strip
+      match = part.match(/\A(.+?)(?:,\s*|\s+)((?:jr|sr)\.?|II|III|IV)\z/i)
+      if match
+        suffixes << match[2]
+        match[1]
+      else
+        part
+      end
+    end
+    unique_suffixes = suffixes.uniq { |suffix| suffix.delete_suffix(".").downcase }
+    unique_suffixes.reduce(names.compact_blank.join(" ")) do |name, suffix|
+      separator = suffix.match?(/\A(?:jr|sr)\.?\z/i) ? ", " : " "
+      "#{name}#{separator}#{suffix}"
+    end
+  end
+
   def roster_display_name
     roster_name.presence || full_name
   end

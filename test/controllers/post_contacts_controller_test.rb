@@ -10,7 +10,7 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "signed out visitors see no contacts and return after signing in" do
-    assignment = assign_officer("Commander", "Morgan", email_address: "commander@example.test")
+    assign_officer("Commander", "Morgan", email_address: "commander@example.test")
     get post_contact_path
     assert_redirected_to new_session_path
     assert_not_includes response.body, "commander@example.test"
@@ -18,7 +18,7 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to post_contact_path
     follow_redirect!
     assert_response :success
-    assert_select ".post-contact-name", assignment.person.roster_display_name
+    assert_select ".post-contact-name", "Morgan Officer"
     assert_select ".nav-tab[aria-current=page][href=?]", post_contact_path, text: "Contact the Post"
     assert_select ".app-menu-link[aria-current=page][href=?]", post_contact_path, text: "Contact the Post"
     assert_includes response.headers["Cache-Control"], "no-store"
@@ -44,7 +44,8 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "Commander and Service Officer explain the two main needs before the remaining directory" do
-    commander = assign_officer("Commander", "Morgan", order: 9, email_address: "commander@example.test")
+    commander = assign_officer("Commander", "Morgan Q. Jr.", order: 9, email_address: "commander@example.test",
+      roster_name: "Officer, Morgan Q. Jr.")
     service = assign_officer("Service Officer", "Casey", order: 20, phone_number: "9205550104")
     assign_officer("Adjutant", "James", order: 1)
     assign_officer("Past Post Commander", "Former", order: 0)
@@ -54,7 +55,7 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
       assert_equal [ "Commander", "Service Officer" ], offices.map(&:text)
     end
     assert_select ".post-contact-choice .post-contact-name" do |names|
-      assert_equal [ "Morgan Officer", "Casey Officer" ], names.map(&:text)
+      assert_equal [ "Morgan Q. Officer, Jr.", "Casey Officer" ], names.map(&:text)
     end
     assert_select ".post-contact-responsibility", "Helps veterans and families understand benefits and find help with claims and other needs."
     assert_select ".post-contact-choice", count: 2 do
@@ -83,7 +84,7 @@ class PostContactsControllerTest < ActionDispatch::IntegrationTest
       assert_select "article[aria-labelledby='officer-#{assignment.id}']" do
         assert_select ".post-contact-responsibility", "Assists the #{primary_role}."
         assert_select ".post-contact-examples", count: 0
-        assert_select ".post-contact-name", assignment.person.roster_display_name
+        assert_select ".post-contact-name", assignment.person.full_name
       end
     end
     assert_select "a[href='mailto:assistant@example.test']", text: "assistant@example.test"

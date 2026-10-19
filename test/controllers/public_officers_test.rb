@@ -32,7 +32,8 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     @organization.position_titles.create!(name: "Historian", website_officer_listing: true)
     other = Organization.create!(name: "Separate Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     assign(other.position_titles.create!(name: "Service Officer", website_officer_listing: true), "Foreign", "Officer")
-    @member.person.update!(roster_name: "Synthetic Public Officer", email_address: "private-officer@example.test", phone_number: "9205550199", member_number: "PRIVATE-MEMBER")
+    @member.person.update!(first_name: "Charles Q. Sr.", last_name: "Example", roster_name: "Example, Charles Q. Sr.",
+      email_address: "private-officer@example.test", phone_number: "9205550199", member_number: "PRIVATE-MEMBER")
 
     get "/public/v1/officers", headers: @headers
     assert_response :success
@@ -42,7 +43,7 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     assert_equal true, body["complete"]
     assert_equal({ "name" => "Synthetic Post", "email" => "post@example.test" }, body["post"])
     assert_equal [ "Chaplain", "Commander", "Assistant Chaplain", "Community Liaison" ], body["officers"].pluck("office")
-    assert_equal [ "Robin Officer", "Synthetic Public Officer", "Drew Assistant", "Taylor Liaison" ], body["officers"].pluck("name")
+    assert_equal [ "Robin Officer", "Charles Q. Example, Sr.", "Drew Assistant", "Taylor Liaison" ], body["officers"].pluck("name")
     body["officers"].each do |officer|
       assert_equal %w[display_order examples name office primary_contact responsibility], officer.keys.sort
     end
@@ -55,6 +56,9 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     %w[private-officer@example.test member@example.test 9205550199 PRIVATE-MEMBER Private Foreign Inactive Historian].each do |private_value|
       assert_not_includes response.body, private_value
     end
+    assert_equal "Charles Q. Sr.", @member.person.reload.first_name
+    assert_equal "Example", @member.person.last_name
+    assert_equal "Example, Charles Q. Sr.", @member.person.roster_name
   end
 
   test "editing through administration changes persisted member copy and the website representation on later requests" do
@@ -151,7 +155,7 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
       get "/public/v1/officers", headers: @headers.merge("If-None-Match" => etag)
       assert_response :success
       assert_equal "2026-10-19", response.parsed_body["as_of"]
-      assert_equal [ incoming.person.roster_display_name, "Synthetic Member" ], response.parsed_body["officers"].pluck("name")
+      assert_equal [ "Incoming Officer", "Synthetic Member" ], response.parsed_body["officers"].pluck("name")
     end
   end
 
@@ -173,7 +177,7 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_empty response.parsed_body["officers"]
     get post_contact_path
-    assert_select ".post-contact-choice .post-contact-name", @member.person.roster_display_name
+    assert_select ".post-contact-choice .post-contact-name", "Synthetic Member"
     post "/public/v1/officers", headers: @headers
     assert_response :method_not_allowed
     assert_equal "GET, HEAD", response.headers["Allow"]

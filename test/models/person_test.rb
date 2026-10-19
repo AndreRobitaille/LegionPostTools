@@ -13,6 +13,47 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal "Alber, Vincent", person.roster_display_name
   end
 
+  test "first last display puts generational suffixes after the surname without changing saved fields" do
+    [
+      [ "Charles", "Example Sr.", "Charles Example, Sr." ],
+      [ "Charles Sr.", "Example", "Charles Example, Sr." ],
+      [ "Charles, Sr.", "Example", "Charles Example, Sr." ],
+      [ "Don Jr", "Example", "Don Example, Jr" ],
+      [ "Don", "Example, Jr.", "Don Example, Jr." ],
+      [ "Alex Q. III", "de la Example", "Alex Q. de la Example III" ],
+      [ "Alex-Casey IV", "O'Example-Smith", "Alex-Casey O'Example-Smith IV" ],
+      [ "Charles SR", "Example Sr.", "Charles Example, SR" ],
+      [ "  Don Q., jr.  ", " Example ", "Don Q. Example, jr." ]
+    ].each do |first, last, expected|
+      person = Person.new(first_name: first, last_name: last)
+      assert_equal expected, person.first_last_display_name
+      assert_equal first, person.first_name
+      assert_equal last, person.last_name
+    end
+    %w[Sr Sr. SR sr. Jr Jr. JR jr.].each do |suffix|
+      assert_equal "Alex Example, #{suffix}", Person.new(first_name: "Alex #{suffix}", last_name: "Example").first_last_display_name
+    end
+    %w[II III IV].each do |suffix|
+      assert_equal "Alex Example #{suffix}", Person.new(first_name: "Alex #{suffix}", last_name: "Example").first_last_display_name
+    end
+  end
+
+  test "first last display preserves ordinary initials names and partial names" do
+    [
+      [ "John V", "Example", "John V Example" ],
+      [ "John I.", "Example", "John I. Example" ],
+      [ "Jrue", "Example", "Jrue Example" ],
+      [ "Srikanth", "Example", "Srikanth Example" ],
+      [ "Alex", "Srinivasan", "Alex Srinivasan" ],
+      [ "Alex Jr. Q.", "Example", "Alex Jr. Q. Example" ],
+      [ "Cher", nil, "Cher" ],
+      [ nil, "Example", "Example" ],
+      [ nil, nil, "" ]
+    ].each do |first, last, expected|
+      assert_equal expected, Person.new(first_name: first, last_name: last).first_last_display_name
+    end
+  end
+
   test "roster display name falls back to full name" do
     person = Person.new(first_name: "Jane", last_name: "Doe")
 
