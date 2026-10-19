@@ -54,6 +54,8 @@ class MinutesDistributionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     post hold_minutes_distribution_path(minutes_id: minutes.id), params: { reason: "Unapproved hold" }
     assert_redirected_to root_path
+    patch wording_minutes_distribution_path, params: { minutes_distribution_setting: { email_cover_note_template: "Denied", lock_version: 0 } }
+    assert_redirected_to root_path
     assert_equal before, recipient.reload.attributes
     assert_empty organization.minutes_distribution_events
   end
@@ -176,9 +178,75 @@ class MinutesDistributionsControllerTest < ActionDispatch::IntegrationTest
     assert officer.can_manage_minutes_distribution?(organization: other)
   end
 
+  test "saved settings and email wording require an explicit edit mode" do
+    get minutes_distribution_path
+    assert_select "a", text: "Edit delivery settings"
+    assert_select "a", text: "Edit email wording"
+    assert_select "input[name='minutes_distribution_setting[reply_to]']", count: 0
+    assert_select "input[name='minutes_distribution_setting[email_subject_template]']", count: 0
+    assert_select "code.minutes-email-variable", text: "{{post_name}}"
+    assert_no_match(/General campaigns, scheduled sends/, response.body)
+    get minutes_distribution_path(edit: "delivery")
+    assert_select "input[name='minutes_distribution_setting[reply_to]']", value: "reply@example.test"
+    assert_select "input[name='minutes_distribution_setting[post_members_list_id]']", count: 0
+    assert_select "label", text: /I checked that regular Post emails in Loops use the Post members list/
+    assert_select "input[name='minutes_distribution_setting[email_subject_template]']", count: 0
+  end
+
+  test "wording updates persist and cannot alter delivery choices or send mail" do
+    settings = organization.minutes_distribution_setting
+    patch wording_minutes_distribution_path, params: { minutes_distribution_setting: {
+      email_subject_template: "County copy — {{copy_label}} — {{meeting_date}}",
+      email_cover_note_template: "Please retain these minutes for {{post_name}}.", lock_version: settings.lock_version,
+      enabled: false, minutes_recipients_list_id: "wrong", meeting_type_ids: [] } }
+    assert_redirected_to minutes_distribution_path
+    settings.reload
+    assert settings.enabled?
+    assert_equal "minutes", settings.minutes_recipients_list_id
+    assert_equal [ type.id ], settings.meeting_type_ids
+    assert_equal "Please retain these minutes for {{post_name}}.", settings.email_cover_note_template
+    get minutes_distribution_path
+    assert_select ".minutes-email-template", text: /County copy/
+    assert_empty organization.minutes_distributions
+    assert_empty provider.messages
+    assert_equal "email_wording_updated", organization.minutes_distribution_events.sole.action
+    patch minutes_distribution_path, params: { minutes_distribution_setting: settings_params.merge(email_cover_note_template: "Not permitted here") }
+    assert_equal "Please retain these minutes for {{post_name}}.", settings.reload.email_cover_note_template
+  end
+
+  test "invalid wording keeps entered text visible without saving or sending" do
+    patch wording_minutes_distribution_path, params: { minutes_distribution_setting: {
+      email_subject_template: "{{copy_label}} — {{meeting_date}}", email_cover_note_template: "Please retain {{private_roster}}.",
+      lock_version: organization.minutes_distribution_setting.lock_version } }
+    assert_response :unprocessable_entity
+    assert_select "[role='alert']", text: /Unknown variable \{\{private_roster\}\}/
+    assert_select "textarea", text: "Please retain {{private_roster}}."
+    assert_nil organization.minutes_distribution_setting.reload.email_cover_note_template
+    assert_empty organization.minutes_distribution_events
+    assert_empty provider.messages
+  end
+
+  test "stale or missing form versions cannot overwrite saved changes" do
+    settings = organization.minutes_distribution_setting
+    old_version = settings.lock_version
+    settings.update!(reply_to: "new-reply@example.test")
+    [ old_version, nil ].each do |version|
+      patch minutes_distribution_path, params: { minutes_distribution_setting: { reply_to: "stale@example.test", lock_version: version } }
+      assert_response :conflict
+      assert_select "a", text: "Reload latest settings"
+      assert_select "input[type='submit'][disabled]"
+      assert_equal "new-reply@example.test", settings.reload.reply_to
+      patch wording_minutes_distribution_path, params: { minutes_distribution_setting: {
+        email_subject_template: "Stale — {{copy_label}}", email_cover_note_template: "Stale", lock_version: version } }
+      assert_response :conflict
+      assert_nil settings.reload.email_cover_note_template
+    end
+    assert_empty organization.minutes_distribution_events
+  end
+
   private
 
   def settings_params
-    organization.minutes_distribution_setting.attributes.slice("post_members_list_id", "minutes_recipients_list_id", "template_id", "reply_to", "audiences_reviewed", "meeting_type_ids")
+    organization.minutes_distribution_setting.reload.attributes.slice("post_members_list_id", "minutes_recipients_list_id", "template_id", "reply_to", "audiences_reviewed", "meeting_type_ids", "lock_version")
   end
 end

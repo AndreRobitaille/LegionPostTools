@@ -396,6 +396,11 @@ confirmation that general campaigns have been retargeted before outside enrollme
 
 ## Implementation validation
 
+The subsequent [settings and wording design](MINUTES_DISTRIBUTION_EDITING.md) replaces the
+always-open setup form with saved summaries and explicit editing, and adds application-owned
+subject/cover-note wording with named variables, previews, attestation snapshots and stale-form
+protection. It preserves the existing recipient, official-record and provider boundaries.
+
 The local implementation preserves PR #158's transactional Endeavor History request and
 adds separate email intents. Offline provider checks exercise initial/corrected/final
 attestation, unchanged approval, separate/shared office addresses, partial failure,

@@ -87,6 +87,76 @@ class MinutesDistributionSystemTest < ApplicationSystemTestCase
     end
   end
 
+  test "officers deliberately edit settings and wording with visible variables and a filled in preview" do
+    system_sign_in(officer)
+    visit minutes_distribution_path
+    assert_no_field "Address for replies"
+    assert_no_field "Subject"
+    within "#delivery-settings" do
+      assert_text "Automatic email enabled"
+      click_link "Edit delivery settings"
+    end
+    fill_in "Address for replies", with: "unsaved@example.test"
+    find("summary", text: "Loops connection setup").click
+    assert_no_field "Post members list ID"
+    assert_text "These lists are already in use"
+    assert_text "This check records your review"
+    capture_system_screenshot("minutes-delivery-edit-1400")
+    click_link "Cancel"
+    assert_equal "reply@example.test", organization.minutes_distribution_setting.reload.reply_to
+    assert_no_field "Address for replies"
+    click_link "Edit email wording"
+    assert_field "Subject", with: MinutesDistribution::EmailTemplate::DEFAULT_SUBJECT
+    fill_in "Cover note", with: "Please retain this copy for "
+    click_button "Post name"
+    assert_field "Cover note", with: "Please retain this copy for {{post_name}}"
+    within ".minutes-email-preview" do
+      assert_text "Please retain this copy for Synthetic Legion Post"
+      select "Corrected copy", from: "Example copy"
+      assert_selector "[data-email-wording-target='subjectPreview']", text: /Corrected minutes/
+      assert_text MinutesDistribution::EmailTemplate::CORRECTION_NOTICE
+      assert_text "Minutes status — added automatically"
+    end
+    [ 1400, 390, 320 ].each do |width|
+      page.current_window.resize_to(width, width == 1400 ? 1200 : 844)
+      page.execute_script("arguments[0].scrollIntoView({block: 'start'})", find("#email-wording"))
+      assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+      assert page.evaluate_script("Array.from(document.querySelectorAll('#email-wording input, #email-wording textarea, #email-wording button, #email-wording select')).filter(e => e.getClientRects().length && e.type !== 'hidden').every(e => parseFloat(getComputedStyle(e).fontSize) >= 16)")
+      capture_system_screenshot("minutes-wording-edit-#{width}")
+    end
+    fill_in "Cover note", with: "Please retain {{unknown}}."
+    click_button "Save email wording"
+    assert_selector "[role='alert']", text: /Unknown variable/
+    assert_field "Cover note", with: "Please retain {{unknown}}."
+    fill_in "Cover note", with: "Please retain the {{meeting_label}} minutes."
+    click_button "Save email wording"
+    assert_text "Email wording saved for future attestations"
+    assert_no_field "Subject"
+    assert_equal "Please retain the {{meeting_label}} minutes.", organization.minutes_distribution_setting.reload.email_cover_note_template
+    [ 1400, 390, 320 ].each do |width|
+      page.current_window.resize_to(width, width == 1400 ? 1200 : 844)
+      visit minutes_distribution_path
+      assert_no_field "Address for replies"
+      assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+      page.execute_script("arguments[0].scrollIntoView({block: 'start'})", find("#delivery-settings"))
+      capture_system_screenshot("minutes-delivery-saved-#{width}")
+    end
+    click_link "Edit email wording"
+    fill_in "Cover note", with: "Unsaved older form."
+    organization.minutes_distribution_setting.reload.update!(email_cover_note_template: "A newer officer's wording.")
+    click_button "Save email wording"
+    assert_selector "[role='alert']", text: "These settings changed while you were editing"
+    assert_field "Cover note", with: "Unsaved older form."
+    assert_button "Save email wording", disabled: true
+    click_link "Reload latest settings"
+    assert_field "Cover note", with: "A newer officer's wording."
+    assert_button "Save email wording", disabled: false
+    assert_empty provider.messages
+    assert_empty organization.minutes_distributions
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   private
 
   def pdf_text(bytes)

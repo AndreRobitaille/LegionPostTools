@@ -206,6 +206,7 @@ Rails.application.routes.draw do
   resource :dashboard, only: %i[show], controller: "dashboard"
   get "officer-tools", to: "officer_tools#show", as: :officer_tools
   resource :minutes_distribution, only: %i[show update], controller: "minutes_distributions" do
+    patch :wording, action: :update_wording
     post :create_recipient
     patch "recipients/:recipient_id", action: :update_recipient, as: :recipient
     post "recipients/:recipient_id/enroll", action: :enroll_recipient, as: :enroll_recipient

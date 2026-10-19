@@ -5,29 +5,22 @@ class MinutesDistributionsController < ApplicationController
   before_action :private_response
 
   def show
-    @settings = @organization.minutes_distribution_setting || @organization.build_minutes_distribution_setting
-    @recipients = @organization.minutes_recipients.order(:office, :name, :id)
-    @issues = @organization.minutes_distributions.includes(:meeting_minutes, :deliveries).order(id: :desc).limit(30)
-    @events = @organization.minutes_distribution_events.includes(:actor).order(id: :desc).limit(20)
+    @editing = params[:edit].presence_in(%w[delivery wording])
+    load_workspace
   end
 
   def update
-    @organization.with_lock do
-      settings = @organization.minutes_distribution_setting || @organization.build_minutes_distribution_setting
-      attributes = params.require(:minutes_distribution_setting).permit(:post_members_list_id, :minutes_recipients_list_id,
-        :template_id, :reply_to, :audiences_reviewed, :enabled, meeting_type_ids: [])
-      if attributes.key?(:meeting_type_ids)
-        attributes[:meeting_type_ids] = Array(attributes[:meeting_type_ids]).reject(&:blank?).map(&:to_i)
-      end
-      settings.update!(attributes)
-      audit!("settings_updated", details: settings.saved_changes.except("updated_at"))
-      unless settings.enabled?
-        @organization.minutes_distributions.recoverable.update_all(state: "held", error_message: "Automatic email paused. Review before releasing this copy.")
-      end
+    attributes = params.require(:minutes_distribution_setting).permit(:post_members_list_id, :minutes_recipients_list_id,
+      :template_id, :reply_to, :audiences_reviewed, :enabled, :lock_version, meeting_type_ids: [])
+    if attributes.key?(:meeting_type_ids)
+      attributes[:meeting_type_ids] = Array(attributes[:meeting_type_ids]).reject(&:blank?).map(&:to_i)
     end
-    redirect_to minutes_distribution_path, notice: "Minutes email settings saved. Held mailings require a separate release."
-  rescue ActiveRecord::RecordInvalid => error
-    redirect_to minutes_distribution_path, alert: error.record.errors.full_messages.to_sentence
+    persist_settings(attributes, editing: "delivery", action: "settings_updated", notice: "Delivery settings saved.", hold_unsent: true)
+  end
+
+  def update_wording
+    attributes = params.require(:minutes_distribution_setting).permit(:email_subject_template, :email_cover_note_template, :lock_version)
+    persist_settings(attributes, editing: "wording", action: "email_wording_updated", notice: "Email wording saved for future attestations.")
   end
 
   def create_recipient
@@ -145,6 +138,37 @@ class MinutesDistributionsController < ApplicationController
   end
 
   private
+
+  def load_workspace
+    @settings ||= @organization.minutes_distribution_setting || @organization.build_minutes_distribution_setting
+    @recipients = @organization.minutes_recipients.order(:office, :name, :id)
+    @issues = @organization.minutes_distributions.includes(:meeting_minutes, :deliveries).order(id: :desc).limit(30)
+    @events = @organization.minutes_distribution_events.includes(:actor).order(id: :desc).limit(20)
+  end
+
+  def persist_settings(attributes, editing:, action:, notice:, hold_unsent: false)
+    @editing = editing
+    @organization.with_lock do
+      @settings = @organization.minutes_distribution_setting || @organization.build_minutes_distribution_setting
+      if @settings.persisted? && attributes[:lock_version].blank?
+        raise ActiveRecord::StaleObjectError.new(@settings, "update")
+      end
+      @settings.update!(attributes)
+      audit!(action, details: @settings.saved_changes.except("updated_at", "lock_version"))
+      if hold_unsent && !@settings.enabled?
+        @organization.minutes_distributions.recoverable.update_all(state: "held", error_message: "Automatic email paused. Review before releasing this copy.")
+      end
+    end
+    redirect_to minutes_distribution_path, notice: notice
+  rescue ActiveRecord::RecordInvalid
+    load_workspace
+    render :show, status: :unprocessable_entity
+  rescue ActiveRecord::StaleObjectError
+    @stale_settings = true
+    @settings.errors.add(:base, "These settings changed while you were editing. Reload the latest settings before saving.")
+    load_workspace
+    render :show, status: :conflict
+  end
 
   def require_distribution_authority
     return if current_user.can_manage_minutes_distribution?
