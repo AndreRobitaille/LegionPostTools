@@ -90,19 +90,24 @@ Every field below is present. Nullable values are JSON `null`, not omitted keys.
 | `post.name` | string | Configured Post name |
 | `post.email` | string or null | Configured general Post email; never an officer's personal email |
 | `officers` | array of officer objects | Zero or more current, eligible officer/office pairs |
-| `officers[].name` | string | Saved first and last names joined in first-name then last-name order; no stable person identifier is supplied |
+| `officers[].name` | string | Current directory name formatted in first-name then last-name order; no stable person identifier is supplied |
 | `officers[].office` | string | Configured office title; custom titles are possible |
 | `officers[].responsibility` | string or null | Saved role sentence, at most 1,000 characters; null when blank |
 | `officers[].examples` | string array | Zero to two ordered member situations; each is nonblank and at most 300 characters |
 | `officers[].primary_contact` | boolean | True for offices named Commander or Service Officer; false otherwise |
 | `officers[].display_order` | integer | Configured office order; values need not be contiguous, positive or unique |
 
-Names use the saved `first_name` and `last_name` fields, preserving middle names and
-initials. A trailing generational suffix (`Sr`, `Jr`, with or without a period, or
-II, III or IV) in either field appears once at the end of the display name,
+Names prefer the current saved `roster_name`, matching the member directory, and
+reorder a `Last, First` label. The split `first_name` and `last_name` fields are the
+fallback when no roster name exists; they can predate later roster imports. Names
+already in first-name-first order retain that order. Preserve middle names and
+initials. A roster Sr/Jr prefix before a name moves to the end as well. A trailing
+generational suffix (`Sr`, `Jr`, with or without a period, or
+II, III or IV) in either name part appears once at the end of the display name,
 with its recorded capitalization and optional period. Put a comma before Sr/Jr and
 a space before Roman numerals. For example, a roster name of
-“Example, Charles Sr.” displays as “Charles Example, Sr.” The raw roster label is
+“Example, Sr. Charles” and “Example, Charles Sr.” both display as
+“Charles Example, Sr.” The raw roster label is
 not returned; consumers should display the supplied name without parsing or
 rearranging it. This formatting does not rewrite the saved name fields.
 

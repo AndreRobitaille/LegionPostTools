@@ -18,7 +18,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
 
   test "imported suffix formats display in first last order without rewriting roster data on reimport" do
     names = [
-      [ "SUFFIX1", "Example, Charles Sr.", "Charles Sr.", "Example", "Charles Example, Sr." ],
+      [ "SUFFIX1", "Example, Sr. Charles", "Sr. Charles", "Example", "Charles Example, Sr." ],
       [ "SUFFIX2", "Example Jr., Don", "Don", "Example Jr.", "Don Example, Jr." ],
       [ "SUFFIX3", "Example, Don, Jr.", "Don, Jr.", "Example", "Don Example, Jr." ],
       [ "SUFFIX4", "de la Example, Alex Q. III", "Alex Q. III", "de la Example", "Alex Q. de la Example III" ]
@@ -68,6 +68,27 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal result.roster_import.created_members, result.roster_import.created_accounts
     assert_equal "NEW11", result.roster_import.created_members.last["member_number"]
     assert_not_includes result.roster_import.summary.to_json, "new11@example.test"
+  end
+
+  test "later roster suffix corrections reach the display while existing split fields stay unchanged" do
+    csv = CSV.generate do |output|
+      output << RosterImports::CsvParser::REQUIRED_HEADERS
+      output << [ "SUFFIX5", "Example, Charles", 165, "Member", "", "", "", "", "", "", 1, 2026, "Active" ]
+    end
+    initial = RosterImports::Importer.new(csv_text: csv, filename: "before-suffix.csv").import
+    assert initial.success?
+    person = Person.find_by!(member_number: "SUFFIX5")
+    assert_equal "Charles Example", person.first_last_display_name
+
+    corrected_csv = csv.sub("Example, Charles", "Example, Sr. Charles")
+    corrected = RosterImports::Importer.new(csv_text: corrected_csv, filename: "after-suffix.csv").import
+    assert corrected.success?
+    assert_equal 1, corrected.updated_count
+    person.reload
+    assert_equal [ "Charles", "Example" ], [ person.first_name, person.last_name ]
+    assert_equal "Example, Sr. Charles", person.roster_name
+    assert_equal "Charles Example, Sr.", person.first_last_display_name
+    assert_not person.changed?
   end
 
   test "names an existing member receiving their first account and flags their deceased status reversal" do

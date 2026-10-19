@@ -18,6 +18,10 @@ class PersonTest < ActiveSupport::TestCase
       [ "Charles", "Example Sr.", "Charles Example, Sr." ],
       [ "Charles Sr.", "Example", "Charles Example, Sr." ],
       [ "Charles, Sr.", "Example", "Charles Example, Sr." ],
+      [ "Sr. Charles", "Example", "Charles Example, Sr." ],
+      [ "Sr., Charles", "Example", "Charles Example, Sr." ],
+      [ "Charles", "Sr. Example", "Charles Example, Sr." ],
+      [ "Jr Don", "Example", "Don Example, Jr" ],
       [ "Don Jr", "Example", "Don Example, Jr" ],
       [ "Don", "Example, Jr.", "Don Example, Jr." ],
       [ "Alex Q. III", "de la Example", "Alex Q. de la Example III" ],
@@ -51,6 +55,24 @@ class PersonTest < ActiveSupport::TestCase
       [ nil, nil, "" ]
     ].each do |first, last, expected|
       assert_equal expected, Person.new(first_name: first, last_name: last).first_last_display_name
+    end
+  end
+
+  test "first last display preserves the current roster name even when split fields are older" do
+    [
+      [ "Example, Charles Sr.", "Charles Example, Sr." ],
+      [ "Example, Sr. Charles", "Charles Example, Sr." ],
+      [ "Example, Jr. Don", "Don Example, Jr." ],
+      [ "Example Jr., Don", "Don Example, Jr." ],
+      [ "Example, Don, Jr.", "Don Example, Jr." ],
+      [ "Charles Example, Sr.", "Charles Example, Sr." ],
+      [ "Charles Example Sr.", "Charles Example, Sr." ],
+      [ "Alex Example, III", "Alex Example III" ],
+      [ "Alex Example", "Alex Example" ]
+    ].each do |roster, expected|
+      person = Person.new(first_name: "Older", last_name: "Fields", roster_name: roster)
+      assert_equal expected, person.first_last_display_name
+      assert_equal [ "Older", "Fields", roster ], [ person.first_name, person.last_name, person.roster_name ]
     end
   end
 

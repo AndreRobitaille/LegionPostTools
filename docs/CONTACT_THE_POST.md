@@ -42,9 +42,13 @@ Other standard Post offices also receive a short responsibility sentence and two
 Assistant roles receive only “Assists the [primary role].” with no examples or extra duties,
 as Andre requested in the design revision. Their officer names and contact details remain.
 
-Display officer names in first-name then last-name order using the person's saved
-`first_name` and `last_name` fields. Move a trailing generational suffix (`Sr`, `Jr`,
-with or without a period, or II, III or IV) from either field to the end of the
+Display officer names in first-name then last-name order. Prefer the current
+`roster_name`, as the member directory does, and reorder a `Last, First` label.
+Existing people's split fields can predate a later roster import; use `first_name`
+and `last_name` only when the roster name is blank. Preserve roster labels already
+in first-name-first order, including `First Last, Sr.`. Roster exports may place
+Sr/Jr before a given name; move that prefix to the end as well. Move a trailing suffix (`Sr`, `Jr`,
+with or without a period, or II, III or IV) from either name part to the end of the
 display name. Put a comma before Sr/Jr and a space before Roman numerals. Preserve
 recorded capitalization and optional periods, middle names, initials and compound
 surnames; show a suffix once if both fields repeat it. Only recognize
