@@ -203,6 +203,33 @@ Treat this as the accessory's persistent directory. Active Storage uses the Dock
 
 Passkeys require HTTPS and do not work by IP address.
 
+### Minutes distribution and Loops lists
+
+Post 165 activated automatic PEC and monthly membership minutes email on October 19, 2026,
+after deployment of `7d60cca71efda7883958f6758530afee3fe21e5d` (PR #159). Loops support
+confirmed transactional PDF attachments are enabled. The
+[live setup record](MINUTES_EMAIL_DISTRIBUTION.md#post-165-live-setup-verified-october-19-2026)
+contains the three private list IDs, published template, selected meeting types and dated
+activation evidence. Keep these installation values in saved settings; an ordinary deploy
+must not recreate lists, replace recipient entries or re-enroll opted-out contacts.
+
+- **Post members** receives general campaigns and is the only list managed by roster sync.
+- **Minutes recipients** receives automatic minutes only for active, explicitly enrolled
+  website office entries. Maintain them through **Officer tools → Minutes distribution**.
+- **Post officers** is reserved for future use and has no automatic application sync.
+
+General campaigns must select Post members rather than All audience, including newly
+created or duplicated campaigns. The existing unsent campaign and inactive sample workflow
+were retargeted during activation; sent history was left unchanged. Roster import and
+**Sync email audience** do not send campaigns or minutes.
+
+The minutes worker uses `LOOPS_API_KEY` directly and requires the existing Chromium PDF
+runtime, a live Solid Queue worker/scheduler and `MinutesDistributionReconcileJob` every
+15 minutes. Its selected template is saved on Minutes distribution, separate from
+`LOOPS_MAGIC_LINK_TEMPLATE_ID`. `MAIL_PROVIDER=action_mailer` does not supply an SMTP
+fallback for this minutes feature. A deploy or enabling the setting creates no historical
+mailings. Activation was verified without sending real test or historical emails.
+
 ### Buddy Checks for iPhone
 
 Post 165's mobile profile uses the permanent `https://members.wipost165.org`

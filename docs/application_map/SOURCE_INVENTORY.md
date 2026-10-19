@@ -3,7 +3,7 @@
 Baseline: `5adda175d67e9603f58fdf8574ad6f7a0313d6b9`, October 10, 2026.
 Purpose and evidence limits: [Application map](../APPLICATION_MAP.md) and [maintenance](MAINTENANCE.md).
 
-This ledger accounts for 108 controller/support files, 196 view files, 19 Stimulus files and 7 job files. Each is classified into a workflow or technical support. These are file counts, not route, page, test or coverage counts. Supporting models/services are listed separately.
+At the initial baseline, this ledger accounted for 108 controller/support files, 196 view files, 19 Stimulus files and 7 job files. Later scoped additions are recorded below. Each is classified into a workflow or technical support. These are file counts, not route, page, test or coverage counts. Supporting models/services are listed separately.
 
 Declared methods below are source-level methods before the first private/protected marker, not compiled routes or proof of callable/authorized actions. Inherited actions, callbacks, mounted engine routes and a template rendered from another controller require separate tracing. Source files remain the authority for exact details.
 
@@ -244,6 +244,22 @@ These source links support the domain/dependency discovery. They are not new use
 | `app/services/minutes_endeavors` | [confirm.rb](../../app/services/minutes_endeavors/confirm.rb) |
 | `app/services/roster_imports` | [csv_parser.rb](../../app/services/roster_imports/csv_parser.rb), [importer.rb](../../app/services/roster_imports/importer.rb) |
 | `app/services/website_publishing` | [boundary.rb](../../app/services/website_publishing/boundary.rb), [calendar_policy.rb](../../app/services/website_publishing/calendar_policy.rb), [feed.rb](../../app/services/website_publishing/feed.rb) |
+
+## Minutes distribution addition, October 19, 2026
+
+Scoped source review at `7d60cca71efda7883958f6758530afee3fe21e5d` adds the following
+files to [MIN-13](WORKFLOWS.md#min-13--distribute-attested-minutes-to-outside-offices-p0)
+and [ADMIN-06](WORKFLOWS.md#admin-06--synchronize-the-post-email-audience-p1).
+The [live setup](../MINUTES_EMAIL_DISTRIBUTION.md#post-165-live-setup-verified-october-19-2026)
+records separate production evidence; this source ledger does not claim live email delivery.
+
+| Source area | Files and responsibility |
+| --- | --- |
+| Website controls | [minutes_distributions_controller.rb](../../app/controllers/minutes_distributions_controller.rb): `show`, `update`, `create_recipient`, `update_recipient`, `enroll_recipient`, `hold`, `release`, `retry_delivery`, `resolve_delivery`; [show.html.erb](../../app/views/minutes_distributions/show.html.erb), [_recipient_fields.html.erb](../../app/views/minutes_distributions/_recipient_fields.html.erb), [_meeting_status.html.erb](../../app/views/minutes_distributions/_meeting_status.html.erb) |
+| Records | [minutes_distribution.rb](../../app/models/minutes_distribution.rb), [minutes_distribution_event.rb](../../app/models/minutes_distribution_event.rb), [minutes_distribution_setting.rb](../../app/models/minutes_distribution_setting.rb), [minutes_email_delivery.rb](../../app/models/minutes_email_delivery.rb), [minutes_recipient.rb](../../app/models/minutes_recipient.rb), [loops_roster_enrollment.rb](../../app/models/loops_roster_enrollment.rb) |
+| Minutes services | [requests.rb](../../app/services/minutes_distribution/requests.rb), [processor.rb](../../app/services/minutes_distribution/processor.rb), [message.rb](../../app/services/minutes_distribution/message.rb), [groups.rb](../../app/services/minutes_distribution/groups.rb), [enrollment.rb](../../app/services/minutes_distribution/enrollment.rb), [document.rb](../../app/services/minutes_distribution/document.rb), [content.rb](../../app/services/minutes_distribution/content.rb) |
+| Roster list ownership | [roster_list_sync.rb](../../app/services/loops/roster_list_sync.rb): sparse Post members updates and reconciliation of previously managed enrollments |
+| Background work | [minutes_distribution_job.rb](../../app/jobs/minutes_distribution_job.rb), [minutes_distribution_reconcile_job.rb](../../app/jobs/minutes_distribution_reconcile_job.rb) |
 
 ## Route, infrastructure and runner references
 
