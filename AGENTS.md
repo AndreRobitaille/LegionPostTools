@@ -205,6 +205,8 @@ reset development data. Simplicity guidance does not waive authorization or audi
 - `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for Minutes.
 - `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — current Commander handoff, Adjutant attestation, meeting approval, corrections, and delegated provenance.
+- `docs/MINUTES_EMAIL_DISTRIBUTION.md` — live Loops lists, website-only office recipient management, attestation/corrected-copy PDFs, holds and recovery.
+- `docs/LOOPS_ROSTER_SYNC.md` — post-import sync, Post members ownership, independent list preservation, opt-outs and removal review.
 - `docs/DEPLOYMENT.md` — deployment/operator notes.
 - `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` — private JSON + handbook so Grok Bot can operate the app for the signed-in user with that user's current grants.
 - `docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md` — agent parity for dated-agenda items, historical business backfill, roll calls, catalog changes, and destructive boundaries.

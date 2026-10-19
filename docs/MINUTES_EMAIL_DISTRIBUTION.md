@@ -5,6 +5,11 @@ minutes email. Commander/Adjutant position authority or `manage_settings` is req
 a draft-editing grant alone does not expose recipient addresses or controls. Changes are
 audited and sensitive pages disable caching. Recipients gain no application access.
 
+Automatic minutes emails go only to designated website office entries with an effective
+**Minutes recipients** enrollment. They do not go to **Post members**, **Post officers**,
+or All audience. A person who also belongs to another list receives minutes only through
+their designated minutes entry. Adding a contact to the Loops list alone is insufficient.
+
 ## Group ownership
 
 - **Post members** is the private Loops list for general membership campaigns. The roster
@@ -12,6 +17,59 @@ audited and sensitive pages disable caching. Recipients gain no application acce
 - **Minutes recipients** is a distinct private Loops list for designated outside offices.
   This workflow owns enrollment in that list only. The same list receives both configured
   meeting types.
+- Other lists, including Post 165's private **Post officers** list, are not managed by
+  either workflow. A website Post role does not automatically populate that list.
+
+For general membership campaigns in Loops, select **Post members** instead of All audience.
+Review the audience when creating or duplicating a campaign; the application cannot
+enforce that selection in the Loops dashboard. Roster imports do not themselves run a
+Loops sync; use **Sync email audience** after reviewing a completed import.
+
+## Post 165 live setup, verified October 19, 2026
+
+Minutes distribution was deployed in [PR #159](https://github.com/AndreRobitaille/LegionPostTools/pull/159)
+at `7d60cca71efda7883958f6758530afee3fe21e5d` and activated at 2:54 PM Central.
+These are installation values, not application defaults:
+
+| Private Loops list | ID | Live use |
+| --- | --- | --- |
+| Post members | `cmvfnwl200v3k0jy9atkaga70` | General membership campaigns; roster sync owns its recorded enrollments |
+| Minutes recipients | `cmvfnx3n20vfi0jx71z2tfmpg` | Designated office addresses for both meeting types |
+| Post officers | `cmvfnxk7o0vxb0jy9ghcd1jh8` | Reserved for future use; no application sync or automatic minutes targeting |
+
+Automatic email and the general-audience review are enabled. Selected meeting types are
+**PEC Meeting** (9) and **Membership Meeting** (10). The published transactional template
+is `cmvfhh6pj01t60jzj8d0s8mkr`; replies use the configured Organization public email.
+Loops support confirmed PDF attachments are enabled. Delivery uses individual messages,
+without the optional CC arrangement offered by support.
+
+At activation, three office addresses were enrolled and outside Post members. Roster import
+6 had 85 eligible addresses. Sync 6 added 76 and retained nine opt-outs; sync 7 reported
+76 unchanged and retained the same nine opt-outs. Both completed with zero failures, and
+provider read-back confirmed the minutes recipients and other list memberships survived.
+These are dated verification counts; use the website for the current register and results.
+
+The worker, scheduler and 15-minute reconciler were running. No historical distributions
+were created and no real emails were sent during activation. Attestation and corrected-copy
+flows were tested with an offline provider; actual inbox delivery was not tested.
+
+## Manage minutes recipients
+
+Open **Officer tools → Minutes distribution** (or the Administration shortcut). Current
+Commander/Adjutant position authority or **Manage app settings** permits these controls;
+minutes drafting permission alone does not. Keep the recipient register on this page,
+rather than adding contacts only in Loops:
+
+1. Expand **Add an office**, enter the name, office and email, and choose **Add office entry**.
+2. Choose **Enroll address in Loops** on the active entry. Confirm the result is **Enrolled**.
+   An opt-out or provider error needs review; enrollment does not override email choices.
+3. Use **Pause** when an office should stop receiving minutes. **Resume** restores its local
+   designation, subject to its current enrollment and provider choices.
+4. To replace an officeholder or address, use **Edit office entry → Save entry**, then enroll
+   the changed address explicitly. Pause the old entry first when replacing it with a new
+   entry. Neither approach redirects already-recorded deliveries to a successor.
+5. Inspect **Recent mailings → Delivery results** for per-address outcomes. **Sent to Loops**
+   means provider acceptance, not confirmed inbox delivery or reading.
 
 An office entry contains a name, office, address and active state. Two offices held by the
 same person can use different addresses and both receive minutes. Two entries sharing a
@@ -27,6 +85,11 @@ subscription choices, then reads back the effective result. A contact added only
 does not authorize sharing PEC records outside the website's register. List opt-outs,
 global opt-outs, missing identities and suppression stop transactional delivery as well.
 No contact is deleted, recreated or unsuppressed to obtain delivery.
+
+Recipients added after a meeting's first mailing apply to future meetings' initial mailings.
+Corrected copies retain the original destinations and recheck their current authorization;
+new entries are not added to an existing meeting's correction chain. These recipient and
+delivery controls are website-only; a delegated API attestation uses the same sending rules.
 
 ## Attestation and corrections
 
@@ -106,8 +169,8 @@ Settings start paused and no recipient contacts are seeded. Before activation:
 4. Save the template ID and monitored reply address. Select the installation's PEC and
    monthly meeting types by ID; names and Post numbers are not hard-coded.
 5. Add and explicitly enroll the designated office entries. Inspect read-back opt-out results.
-   Test delivery to an authorized synthetic address before enabling future attestation mail.
-   This implementation's automated checks use a fake provider and send no real emails.
+   Verify attestation and corrected-copy flows with a fake provider. Any live test email
+   requires explicit authorization; Post 165 activated without sending a real test email.
 6. Ensure the Solid Queue worker and recurring reconciler run. A worker rendering PDFs must
    reach this installation's web service through `PDF_RENDER_PORT` (default `PORT` or 3000)
    on loopback. Do not point it at another application's listener. Chromium is already a
@@ -136,7 +199,8 @@ and [PDF delivery](PDF_DOCUMENT_DELIVERY.md).
 
 ## Local verification, October 19, 2026
 
-Verified against the local implementation based on `e40df49` / PR #158:
+The following records the pre-deployment local verification, based on `e40df49` / PR #158.
+It is separate from the subsequent Post 165 live activation recorded above:
 
 - `PARALLEL_WORKERS=4 bin/rails test`: 1,619 tests, 16,882 assertions, zero failures,
   errors or skips. All expected tests completed and the command exited 0. Restricted-home
@@ -149,5 +213,6 @@ Verified against the local implementation based on `e40df49` / PR #158:
 - RuboCop: 682 files, no offenses. Brakeman: no warnings. Bundler Audit: no vulnerabilities.
   Zeitwerk eager-loading check passed. Changed documentation links and diff whitespace
   passed review.
-- The development/production databases, live Loops account and real mail delivery were
-  not used. Only the test database was migrated; no production deployment was performed.
+- During those local checks, the development/production databases, live Loops account and
+  real mail delivery were not used. Only the test database was migrated; that local run
+  did not deploy production.

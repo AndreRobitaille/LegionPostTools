@@ -1,4 +1,4 @@
-# Loops Roster Sync Design
+# Loops roster sync
 
 ## Purpose
 
@@ -19,6 +19,11 @@ one mailing-list key: the configured private **Post members** list. It must not 
 replacement map of all lists. The separate private **Minutes recipients** list belongs
 to [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md), and roster sync never changes
 it. Distinct valid list IDs are required; there is no All audience fallback.
+
+The same boundary covers **Post officers** and any other independent list: roster sync
+neither adds nor removes their members. It does not turn website Post roles into mailing
+list assignments. Minutes recipient management belongs to **Officer tools → Minutes
+distribution**, not to the roster import or sync button.
 
 Existing global and list opt-outs remain in effect. Read back effective enrollment and
 report retained opt-outs truthfully. Keep unsubscribed contacts in Loops; never delete,
@@ -47,7 +52,8 @@ one member's name would be misleading.
 
 ## Workflow
 
-1. From the Roster tile or a completed roster-import result, choose
+1. Review the completed National roster import. Importing alone does not contact Loops.
+   From the Roster tile or the completed import result, choose
    **Sync email audience**.
 2. Review the source import date and four counts: ready, no email, invalid
    email, and shared email. Review the count of previously managed addresses that need
@@ -62,6 +68,23 @@ one member's name would be misleading.
 Only `manage_settings` users may preview, start, or view a sync. Only one sync
 may be queued or running at a time. A job refuses to use its preview if a newer
 roster import has completed in the meantime.
+
+For general mail in Loops, choose **Post members** instead of All audience. The sync does
+not edit campaigns or send email. It also does not delete contacts, clear minutes
+recipients, or replace the entire audience with the roster. Review any identity or
+removal problems reported by a completed run before treating the sync as fully successful.
+
+## Post 165 activation evidence
+
+On October 19, 2026, roster import 6 contained 85 eligible addresses. Persisted sync 6
+added 76 Post members enrollments and retained nine opt-outs. After the three minutes
+office addresses were enrolled, sync 7 reported 76 unchanged and the same nine retained
+opt-outs. Both runs completed with zero failures. Provider comparisons confirmed that
+minutes recipients and all other list memberships were preserved. No emails were sent.
+
+See [the live setup](MINUTES_EMAIL_DISTRIBUTION.md#post-165-live-setup-verified-october-19-2026)
+for the private list IDs and separate minutes recipient procedure. These counts describe
+that activation, not a permanent audience size.
 
 ## Failure and Rate-Limit Behavior
 

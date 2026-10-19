@@ -46,7 +46,29 @@ user grants or configured current position assignments, never from imported rost
 Post positions and committee-lead-style roles are assigned to people with effective dates
 so officer history is preserved.
 
-Administrators can synchronize current Active and Grace roster members to the Post's Loops audience after reviewing exclusions for missing, invalid, or shared roster email addresses. The Loops upsert sends roster identity fields but never sends subscription state, user group, or mailing-list choices, preserving existing opt-outs and audience organization. See `docs/LOOPS_ROSTER_SYNC.md`.
+Administrators can synchronize current Active and Grace roster members to the private
+**Post members** Loops list after reviewing missing, invalid or shared roster emails.
+The upsert sends roster identity fields and patches only that list's key. It never sends
+global `subscribed`, `userGroup`, or a replacement map of all list memberships. Persisted
+enrollment provenance permits removal of previously managed, now-ineligible addresses
+from Post members only. Independent Minutes recipients, Post officers and other list
+memberships remain untouched. See [roster sync](LOOPS_ROSTER_SYNC.md).
+
+## Minutes email distribution
+
+An enabled meeting type's human attestation records durable distribution intent and
+original recipient snapshots in the same transaction. Solid Queue then renders the
+immutable revision through the existing PDF renderer and sends individual transactional
+messages with attachments. Corrected text is compared deterministically per address;
+unchanged re-attestation or approval does not send a second copy. No AI call is involved.
+
+Recipients must be designated in the website's office register and retain an effective
+**Minutes recipients** enrollment, matching provider identity and current permission to
+receive mail. Membership in Post members, Post officers or the wider Loops audience grants
+no minutes delivery. The worker rechecks local pauses, identity, subscriptions and suppression.
+Recipient management does not grant application access or alter official-record authority.
+See [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md) for the live setup, recipient
+procedure, held-copy review and retry boundaries.
 
 ## Authentication
 
