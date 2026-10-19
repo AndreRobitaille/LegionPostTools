@@ -71,8 +71,7 @@ Post 165 minutes templates use **commander@mail.wipost165.org** as the From addr
 including the previous template retained for retries. Use this sender for future templates
 created for this installation. The versioned sending metadata specifies `commander` as the
 sender username; Loops appends this account's sending domain. Reply-to still uses the
-configured Organization public email. Changing the From address alone does not establish
-why a recipient's email application filed a message as junk.
+configured Organization public email.
 
 Production read-back confirmed the published content and zero Loops Guardian errors or
 warnings. Activation preserved both list connections, selected meeting types, reply address,
@@ -84,7 +83,19 @@ One separately authorized test to Andre's requested address was accepted by Loop
 4:27 PM Central with the October 6 attested minutes PDF, using the existing application
 PDF renderer. It had a `[TEST]` subject prefix, one recipient, no CC/BCC and
 `addToAudience: false`. Read-back confirmed contact and local records were preserved.
-Provider acceptance does not confirm inbox receipt or appearance in an email application.
+Andre subsequently confirmed receipt and improved presentation, and reported that the
+message landed in junk. That test preceded the later sender correction to `commander`.
+No additional message was sent for the sender correction, so inbox placement with the
+new From address has not been tested. Provider acceptance alone is not inbox confirmation.
+
+### Remaining related work
+
+The rollout in PRs #159–#163 is complete. Finalized immutable-revision PDFs are covered by
+[#51](https://github.com/AndreRobitaille/LegionPostTools/issues/51). Broader membership email
+([#49](https://github.com/AndreRobitaille/LegionPostTools/issues/49)) and officer action
+notifications ([#48](https://github.com/AndreRobitaille/LegionPostTools/issues/48)) are separate
+open work. Neither should be inferred from the designated-office mailing or used to expand
+its recipients automatically.
 
 ## Manage minutes recipients
 

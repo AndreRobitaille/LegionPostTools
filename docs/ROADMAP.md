@@ -192,7 +192,9 @@ See `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md`,
 
 Structured minutes, lifecycle-aware PDFs, transcript review, AI runs, background-job
 status, account controls, exact approval, and exact attestation are now in the generated
-handbook. Member distribution begins at attestation.
+handbook. Members can read the attested record in the application. Automatic minutes
+email goes only to the designated, enrolled office entries on Minutes distribution;
+it does not mail the wider membership. See [the live setup](MINUTES_EMAIL_DISTRIBUTION.md).
 
 ## Completed: Agent Sign-in and Access
 
@@ -334,8 +336,12 @@ audited reopening, and recording membership approval against an exact revision.
   tokens carry the same human capability, may execute the exact explicitly requested act,
   and must preserve idempotency plus agent-token provenance.
 
-The remaining minutes slices (amendments, official delivery, and delegated access) are tracked
-in GitHub Issues.
+Attested and official PDFs render immutable revisions. Automatic PDF email to designated
+office recipients, corrected copies and per-address delivery records are implemented; see
+[minutes email distribution](MINUTES_EMAIL_DISTRIBUTION.md). Broader membership email
+([#49](https://github.com/AndreRobitaille/LegionPostTools/issues/49)), officer action
+notifications ([#48](https://github.com/AndreRobitaille/LegionPostTools/issues/48)), later
+amendments and remaining delegated actions are still tracked in GitHub Issues.
 
 ## Open Work
 

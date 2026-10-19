@@ -1,6 +1,6 @@
 # Structured Minutes Lifecycle
 
-**Current lifecycle (October 4, 2026):** Adjutant attestation is the electronic
+**Current lifecycle (October 19, 2026):** Adjutant attestation is the electronic
 endorsement that shares minutes with members. Commander drafting/handoff is optional;
 the Adjutant may edit that copy without repeated Commander approval. The real meeting
 body's approval locks the record. Approval with pending corrections is recorded first;
@@ -8,8 +8,10 @@ final Adjutant confirmation attests the corrected text and locks it without anot
 vote. See `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` for the current UI and
 transaction contract; it supersedes earlier lifecycle mockups and planned details
 below. Restricted transcript drafting, human AI review, Jobs, immutable revisions,
-member-visible copies, and exact meeting approval are implemented. Later amendments
-remain planned.
+member-visible copies, and exact meeting approval are implemented. Attested and official
+PDFs render immutable revisions. [Automatic PDF email](MINUTES_EMAIL_DISTRIBUTION.md)
+to designated office recipients is implemented; it does not mail the wider membership.
+Later amendments, officer action notifications and wider membership email remain planned.
 
 ## Purpose
 
@@ -1196,8 +1198,10 @@ before each minutes slice is considered complete.
    visibility, and transparent audited reopening.
 9. **Membership approval complete; amendments pending:** Add later same-body membership
    approval, post-approval correction amendments, and remaining database-layer immutability.
-10. **Partly complete:** Add shared print-shell integration and verified draft, approved,
-    attested, and membership-approved PDFs. Amended documents wait for that lifecycle state.
+10. **Attested and official PDFs complete; amended documents pending:** Shared print-shell
+    integration renders the immutable attested or membership-approved revision with truthful
+    authority labels; officer-only working proofs remain available. Amended documents wait
+    for that lifecycle state.
 11. **Partly complete:** Add draft API/handbook parity plus approval and attestation only
     through confirmed pending actions with agent provenance. Reopening and membership
     approval are available in the signed-in website; delegated parity and amendments remain pending.
@@ -1210,7 +1214,8 @@ before each minutes slice is considered complete.
 - audio/video ingestion or automated transcription;
 - multiple transcript/source files per Meeting;
 - configurable transcript retention windows beyond the two explicit initial policies;
-- document email distribution and receipt tracking;
+- wider membership email and inbox/read-receipt tracking beyond provider acceptance;
+  [designated-office PDF distribution](MINUTES_EMAIL_DISTRIBUTION.md) is implemented;
 - public records; and
 - generalized amendment, evidence, or document-management infrastructure outside minutes.
 
