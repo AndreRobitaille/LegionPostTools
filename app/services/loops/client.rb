@@ -37,46 +37,111 @@ module Loops
       ensure
         @http = nil
       end
-    rescue Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError => error
+    rescue Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError, IOError => error
       raise NetworkError, "Loops connection failed (#{error.class.name})."
     end
 
     def update_contact(payload)
+      request_json(:put, "contacts/update", payload: payload)
+    end
+
+    def find_contact(email: nil, user_id: nil)
+      query = email ? { email: email } : { userId: user_id }
+      contacts = request_json(:get, "contacts/find", query: query)
+      unless contacts.is_a?(Array) && contacts.size <= 1 &&
+          (contacts.empty? || (contacts.first.is_a?(Hash) && contacts.first["id"].present? &&
+            contacts.first["email"].present? && contacts.first["mailingLists"].is_a?(Hash)))
+        raise RequestError, "Loops contact identity or subscriptions are unreadable or ambiguous."
+      end
+      contacts.first
+    end
+
+    def mailing_lists
+      result = request_json(:get, "lists")
+      raise RequestError, "Loops returned unreadable mailing lists." unless result.is_a?(Array)
+      result
+    end
+
+    def suppressed?(email:)
+      result = request_json(:get, "contacts/suppression", query: { email: email })
+      unless result.is_a?(Hash) && [ true, false ].include?(result["isSuppressed"])
+        raise RequestError, "Loops suppression status is unknown."
+      end
+      result.fetch("isSuppressed")
+    end
+
+    def send_transactional(payload, idempotency_key:)
+      request_json(:post, "transactional", payload: payload, idempotency_key: idempotency_key)
+    end
+
+    private
+
+    def request_json(method, path, payload: nil, query: nil, idempotency_key: nil)
       raise "Open a Loops client session before updating contacts." unless @http
 
       attempts = 0
       loop do
-        response = @http.request(build_request(payload))
+        if @last_request_at
+          remaining = 0.12 - (Process.clock_gettime(Process::CLOCK_MONOTONIC) - @last_request_at)
+          @sleeper.call(remaining) if remaining.positive?
+        end
+        @last_request_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        response = @http.request(build_request(method, path, payload, query, idempotency_key))
         if response.code.to_i == 429 && attempts < MAX_RATE_LIMIT_RETRIES
           attempts += 1
           @sleeper.call(retry_after(response))
           next
         end
 
-        return validate_response!(response)
+        # Only this dedicated endpoint/key uses a 409 as acknowledgement.
+        if method == :post && path == "transactional" && duplicate_acknowledgement?(response, idempotency_key)
+          return { "success" => true }
+        end
+        return validate_response!(response,
+          array_response: method == :get && path.in?(%w[contacts/find lists]),
+          suppression_response: method == :get && path == "contacts/suppression")
       end
-    rescue Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError => error
+    rescue Timeout::Error, SocketError, SystemCallError, OpenSSL::SSL::SSLError, IOError => error
       raise NetworkError, "Loops request failed (#{error.class.name})."
     end
 
-    private
-
-    def build_request(payload)
-      request = Net::HTTP::Put.new(ENDPOINT)
+    def build_request(method, path, payload, query, idempotency_key)
+      uri = URI("https://app.loops.so/api/v1/#{path}")
+      uri.query = URI.encode_www_form(query) if query
+      request = { get: Net::HTTP::Get, put: Net::HTTP::Put, post: Net::HTTP::Post }.fetch(method).new(uri)
       request["Authorization"] = "Bearer #{@api_key}"
       request["Content-Type"] = "application/json"
-      request.body = JSON.generate(payload)
+      request["Idempotency-Key"] = idempotency_key if idempotency_key
+      request.body = JSON.generate(payload) if payload
       request
     end
 
-    def validate_response!(response)
+    def validate_response!(response, array_response:, suppression_response:)
       body = JSON.parse(response.body)
-      return body if response.code.to_i.between?(200, 299) && body["success"] == true
+      accepted = if array_response
+        body.is_a?(Array)
+      elsif suppression_response
+        body.is_a?(Hash) && body.key?("isSuppressed")
+      else
+        body.is_a?(Hash) && body["success"] == true
+      end
+      return body if response.code.to_i.between?(200, 299) && accepted
 
-      message = body["message"].presence || "Loops rejected the contact update."
+      message = body.is_a?(Hash) && body["message"].presence
+      message ||= "Loops returned an unsuccessful or unreadable response."
       raise RequestError.new(message, status: response.code.to_i)
     rescue JSON::ParserError
       raise RequestError.new("Loops returned an unreadable response.", status: response.code.to_i)
+    end
+
+    def duplicate_acknowledgement?(response, key)
+      return false unless response.code.to_i == 409
+
+      body = JSON.parse(response.body)
+      body.is_a?(Hash) && body["success"] == false &&
+        body["message"] == "Request with idempotency key #{key} has already been processed."
+    rescue JSON::ParserError
+      false
     end
 
     def retry_after(response)

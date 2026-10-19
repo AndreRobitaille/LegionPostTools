@@ -15,6 +15,7 @@ module Admin::DashboardHelper
         { label: "Website connections", description: "Manage your public website's access.", path: admin_website_access_tokens_path }
       ] },
       { key: "operations", column: :settings, label: "Operations", destinations: [
+        { label: "Minutes distribution", description: "Manage outside minutes recipients and automatic delivery.", path: minutes_distribution_path },
         { label: "Background Jobs", description: "Check processing progress and work needing attention.", path: admin_jobs_path }
       ] }
     ]
@@ -24,6 +25,7 @@ module Admin::DashboardHelper
     groups = [
       { key: "meeting-work", column: :work, label: "Meeting work", destinations: [
         officer_meeting_destination,
+        { label: "Minutes distribution", description: "Send attested PEC and monthly minutes to designated outside offices.", path: minutes_distribution_path, visible: current_user.can_manage_minutes_distribution? },
         { label: "Manage Endeavors", description: "Keep continuing Post work moving.", path: admin_endeavors_path, visible: current_user.can?("manage_agendas") }
       ] },
       { key: "membership", column: :post, label: "Membership", destinations: [

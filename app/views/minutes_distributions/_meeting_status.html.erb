@@ -1,0 +1,20 @@
+<% if current_user.can_manage_minutes_distribution? %>
+  <section class="card minutes-email-meeting" aria-label="Minutes email">
+    <div class="card-head"><span class="card-dia" aria-hidden="true">◆</span><h2 class="card-head-label">Minutes email</h2></div>
+    <div class="card-body">
+      <p><strong><%= minutes_email_status(minutes) %></strong></p>
+      <p class="minutes-email-secondary">Recipients' current email choices are checked before each delivery.</p>
+      <%= link_to "Review minutes distribution", minutes_distribution_path, class: "lnk" %>
+      <% if MinutesDistributionEvent.held?(minutes) %>
+        <%= button_to "Release mailing hold", release_minutes_distribution_path(minutes_id: minutes.id), class: "btn-secondary" %>
+      <% else %>
+        <details><summary>Hold this meeting's email</summary>
+          <%= form_with url: hold_minutes_distribution_path(minutes_id: minutes.id) do |form| %>
+            <div class="entry-field"><%= form.label :reason, "Reason for holding email" %><%= form.text_field :reason, required: true %></div>
+            <%= form.submit "Hold mailing", class: "btn-secondary" %>
+          <% end %>
+        </details>
+      <% end %>
+    </div>
+  </section>
+<% end %>

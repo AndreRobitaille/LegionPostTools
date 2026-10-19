@@ -16,13 +16,17 @@ module Loops
       failures = []
       synced_count = 0
       client = @client || Client.new
+      organization = Organization.first!
+      settings = organization.minutes_distribution_setting
 
       client.open do |session|
+        MinutesDistribution::Groups.verify!(settings, session)
+        @list_sync = RosterListSync.new(organization, settings, session)
         audience.contacts.each_with_index do |contact, index|
           @sleeper.call(REQUEST_INTERVAL) if index.positive?
 
           begin
-            session.update_contact(contact.payload)
+            @list_sync.sync(contact)
             synced_count += 1
           rescue Client::RequestError => error
             failures << failure_for(contact, error)
@@ -31,10 +35,17 @@ module Loops
               synced_count: synced_count,
               failed_count: failures.size,
               failures: failures,
+              list_results: @list_sync.results,
               updated_at: Time.current
             )
           end
         end
+        if RosterImport.latest_successful != @roster_sync.roster_import
+          raise Client::RequestError, "A newer roster import completed during this sync. Review partial results before starting again."
+        end
+        @list_sync.reconcile(audience)
+        failures.concat(@list_sync.review_failures)
+        @roster_sync.update!(list_results: @list_sync.results)
       end
 
       @roster_sync.update!(
@@ -86,6 +97,7 @@ module Loops
       @roster_sync.update!(
         status: "failed",
         error_message: error.message,
+        list_results: @list_sync&.results || @roster_sync.list_results,
         finished_at: Time.current
       )
     end

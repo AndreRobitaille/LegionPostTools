@@ -10,6 +10,10 @@
 #     schedule: at 5am every day
 
 production:
+  reconcile_minutes_distribution:
+    class: MinutesDistributionReconcileJob
+    queue: background
+    schedule: every 15 minutes
   expire_mobile_token_responses:
     class: ExpireMobileTokenResponsesJob
     queue: background

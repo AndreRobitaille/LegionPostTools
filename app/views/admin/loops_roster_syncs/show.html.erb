@@ -49,7 +49,10 @@
     <span class="who"><%= @roster_sync.roster_import.uploaded_filename %></span>
     <span class="meta">· imported <%= legion_datetime(@roster_sync.roster_import.imported_at) %></span>
   </div>
-  <p class="ownernote">The sync does not send Loops a subscription value, user group, or mailing-list choice. Existing opt-outs remain unchanged.</p>
+  <p class="ownernote">Updates Post members only. Minutes recipients and other groups are preserved. Existing opt-outs remain unchanged.</p>
+  <% if @roster_sync.list_results.any? %>
+    <dl><% @roster_sync.list_results.each do |result, count| %><div><dt><%= result.humanize %></dt><dd><%= count %></dd></div><% end %></dl>
+  <% end %>
 <% end %>
 
 <% if @roster_sync.failures.any? %>

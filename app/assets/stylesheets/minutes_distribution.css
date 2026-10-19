@@ -1,0 +1,24 @@
+.minutes-email-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; border-top: 3px solid var(--color-gold); padding: 20px 0; margin-bottom: 12px; }
+.minutes-email-groups strong { color: var(--color-navy); font-size: 19px; }
+.minutes-email-groups p { margin: 6px 0; font-size: 16px; line-height: 1.55; }
+.minutes-email-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; }
+.minutes-email-layout > *, .minutes-email-layout .card { min-width: 0; }
+.minutes-email-layout p, .minutes-email-meeting p, .minutes-email-audit p { font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; margin: 0 0 14px; }
+.minutes-email-layout h2 { font-size: 19px; color: var(--color-navy); margin: 0 0 8px; }
+.minutes-email-layout .minutes-email-secondary, .minutes-email-meeting .minutes-email-secondary { font-size: 14px; color: #526172; }
+.minutes-email-recipient, .minutes-email-issue { border-top: 1px solid var(--rule); padding: 20px 0; }
+.minutes-email-layout summary, .minutes-email-meeting summary, .minutes-email-audit summary { cursor: pointer; font-size: 16px; line-height: 1.6; color: var(--color-navy); padding: 12px 0; }
+.minutes-email-layout details form, .minutes-email-meeting details form { margin-top: 12px; }
+.minutes-email-layout .entry-field { margin-bottom: 16px; }
+.minutes-email-settings fieldset { border: 0; padding: 12px 0; min-width: 0; }
+.minutes-email-settings legend { font-size: 16px; font-weight: 700; color: var(--color-navy); }
+.minutes-email-settings .form-toggle { font-size: 16px; }
+.minutes-email-layout .btnrow { margin-bottom: 8px; }
+.minutes-email-meeting { margin-bottom: 24px; }
+.minutes-email-meeting .card-body > form { margin-top: 14px; }
+@media (max-width: 700px) {
+  .minutes-email-layout, .minutes-email-groups { grid-template-columns: minmax(0, 1fr); }
+  .minutes-email-groups { gap: 12px; }
+  .minutes-email-layout .btnrow { align-items: stretch; flex-direction: column; }
+  .minutes-email-layout .btnrow form, .minutes-email-layout .btnrow button { width: 100%; }
+}

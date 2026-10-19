@@ -35,7 +35,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
       css_select(".workspace-group h2").map(&:text)
     assert_workspace_destinations new_admin_roster_import_path, admin_roster_imports_path,
       new_admin_loops_roster_sync_path, admin_position_titles_path,
-      admin_website_access_tokens_path, admin_jobs_path, admin_administrators_path, admin_agent_access_tokens_path
+      admin_website_access_tokens_path, admin_jobs_path, admin_administrators_path, admin_agent_access_tokens_path, minutes_distribution_path
     [ admin_meetings_path, admin_endeavors_path, admin_agenda_item_catalog_entries_path,
       admin_meeting_types_path, admin_website_publications_path ].each do |path|
       assert_select "a.workspace-destination[href=?]", path, count: 0
@@ -44,6 +44,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_admin_loops_roster_sync_path, text: /Sync email audience/
     assert_select "a[href=?]", admin_roster_imports_path, text: /Import history/
     assert_select "a[href=?]", admin_jobs_path, text: /Background Jobs/
+    assert_select "a.workspace-destination[href=?]", minutes_distribution_path, text: /Minutes distribution/
     assert_select "a[href=?]", admin_position_titles_path, text: /Post positions/
     assert_select "a[href=?]", admin_administrators_path, text: /Administrators/
   end

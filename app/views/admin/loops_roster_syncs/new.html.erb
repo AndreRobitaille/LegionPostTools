@@ -3,7 +3,7 @@
 
 <div class="page-lead">
   <h1 class="page-title">Sync roster to Loops</h1>
-  <p class="page-sub">Update the Post’s email audience from the latest National roster.</p>
+  <p class="page-sub">Update Post members from the latest National roster.</p>
 </div>
 
 <% if @roster_import %>
@@ -39,8 +39,9 @@
   </div>
   <div class="whatnext">
     <b>Existing email choices stay in Loops.</b>
-    The sync never sends a subscription setting, user group, or mailing-list choice. An existing Loops contact who opted out stays opted out. Keep unsubscribed contacts in Loops so that history remains available.
+    Updates Post members only. Other email groups and opt-outs are preserved. An existing Loops contact who opted out stays opted out. Keep unsubscribed contacts in Loops so that history remains available.
   </div>
+  <p class="ownernote"><%= @managed_removals %> previously managed addresses will be checked for removal from Post members. Contacts and their Minutes recipients membership remain in Loops. Identity conflicts require review.</p>
 <% end %>
 
 <% if @active_sync %>
@@ -49,9 +50,9 @@
     <%= link_to "View current sync", admin_loops_roster_sync_path(@active_sync), class: "btn-primary" %>
   </div>
 <% elsif !@loops_configured %>
-  <p role="alert" class="app-flash app-flash-alert">Loops is not configured for this installation. Set the Loops API key before syncing.</p>
-<% elsif @roster_import && @audience.eligible_count.positive? %>
-  <%= button_to "Sync #{@audience.eligible_count} members to Loops", admin_loops_roster_syncs_path, method: :post, class: "btn-primary" %>
+  <p role="alert" class="app-flash app-flash-alert">Configure Loops and its two distinct private email groups before syncing. <%= link_to "Review minutes distribution settings", minutes_distribution_path, class: "lnk" %></p>
+<% elsif @roster_import && (@audience.eligible_count.positive? || @managed_removals.positive?) %>
+  <%= button_to "Sync #{@audience.eligible_count} members to Loops", admin_loops_roster_syncs_path, method: :post, params: { roster_import_id: @roster_import.id }, class: "btn-primary" %>
 <% end %>
 
 <% if @latest_sync && @latest_sync != @active_sync %>
