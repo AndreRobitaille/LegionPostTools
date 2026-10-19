@@ -184,7 +184,7 @@ class MinutesDistributionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Edit email wording"
     assert_select "input[name='minutes_distribution_setting[reply_to]']", count: 0
     assert_select "input[name='minutes_distribution_setting[email_subject_template]']", count: 0
-    assert_select "code.minutes-email-variable", text: "{{post_name}}"
+    assert_select "code.minutes-email-variable", text: "{{post_label}}"
     assert_no_match(/General campaigns, scheduled sends/, response.body)
     get minutes_distribution_path(edit: "delivery")
     assert_select "input[name='minutes_distribution_setting[reply_to]']", value: "reply@example.test"

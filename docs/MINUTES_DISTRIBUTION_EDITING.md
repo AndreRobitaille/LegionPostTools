@@ -1,5 +1,9 @@
 # Minutes distribution settings and email wording
 
+The later [email presentation design](MINUTES_EMAIL_PRESENTATION.md) extends this editor
+with short Post/meeting labels, a styled PDF attachment callout and separate status preview.
+It preserves the saved-wording and retry boundaries described here.
+
 ## User job and accepted direction
 
 An officer needs to understand who receives minutes, check the saved setup, and deliberately

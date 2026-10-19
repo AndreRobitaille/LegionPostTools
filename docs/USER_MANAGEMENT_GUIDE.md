@@ -273,7 +273,9 @@ recipient replacement, delivery results and the dated live setup, and
 
 Delivery settings are shown as saved information until you choose **Edit delivery settings**.
 Use **Edit email wording** to change the subject and cover note; variable buttons insert the
-Post name, meeting name, meeting date or copy label, and the preview shows an example.
+Post name, short Post name, meeting name, full meeting title, meeting date or copy label.
+The preview shows the Post letterhead, PDF attachment instruction and separate status block,
+with attested, corrected and approved examples.
 Greeting, signature and the minutes' status stay automatic. **Cancel** discards unsaved
 changes. Saved wording applies to future attestations; already-recorded mailings keep their
 saved wording. See [the editing guide](MINUTES_EMAIL_DISTRIBUTION.md#delivery-settings-and-email-wording).

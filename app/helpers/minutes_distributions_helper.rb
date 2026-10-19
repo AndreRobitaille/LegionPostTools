@@ -8,7 +8,9 @@ module MinutesDistributionsHelper
   def minutes_email_example_values(settings, organization)
     meeting_type = organization.meeting_types.where(id: settings.meeting_type_ids).order(:position).first
     {
-      "post_name" => organization.name, "meeting_label" => meeting_type&.name || "Example meeting",
+      "post_name" => organization.name, "post_label" => MinutesDistribution::Presentation.post_label(organization),
+      "meeting_name" => MinutesDistribution::Presentation.meeting_name(meeting_type&.name || "Example meeting"),
+      "meeting_label" => meeting_type&.name || "Example meeting",
       "meeting_date" => Time.current.in_time_zone(organization.timezone).strftime("%B %-d, %Y"), "copy_label" => "Minutes"
     }
   end
