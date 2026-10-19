@@ -37,7 +37,9 @@ officer has exactly `name` (first-name then last-name display string), `office` 
 `primary_contact` (boolean), and `display_order` (integer). Treat strings as text,
 not HTML. Display the supplied name without parsing or rearranging it; the backend
 places generational suffixes at the end, with a comma before Sr./Jr. and a space
-before Roman numerals such as III. Names are not
+before Roman numerals such as III. It uses the current roster label when present,
+falling back to split name fields, so later roster corrections reach the page.
+Names are not
 stable ids; retain separate rows for multiple offices or
 people with identical display names. Keep configured array order, or deliberately
 group current officers under their office without losing entries.

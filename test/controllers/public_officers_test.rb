@@ -32,7 +32,7 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     @organization.position_titles.create!(name: "Historian", website_officer_listing: true)
     other = Organization.create!(name: "Separate Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     assign(other.position_titles.create!(name: "Service Officer", website_officer_listing: true), "Foreign", "Officer")
-    @member.person.update!(first_name: "Charles Q. Sr.", last_name: "Example", roster_name: "Example, Charles Q. Sr.",
+    @member.person.update!(first_name: "Charlie", last_name: "Example", roster_name: "Example, Charles Q. Sr.",
       email_address: "private-officer@example.test", phone_number: "9205550199", member_number: "PRIVATE-MEMBER")
 
     get "/public/v1/officers", headers: @headers
@@ -56,9 +56,17 @@ class PublicOfficersTest < ActionDispatch::IntegrationTest
     %w[private-officer@example.test member@example.test 9205550199 PRIVATE-MEMBER Private Foreign Inactive Historian].each do |private_value|
       assert_not_includes response.body, private_value
     end
-    assert_equal "Charles Q. Sr.", @member.person.reload.first_name
+    assert_equal "Charlie", @member.person.reload.first_name
     assert_equal "Example", @member.person.last_name
     assert_equal "Example, Charles Q. Sr.", @member.person.roster_name
+
+    etag = response.headers.fetch("ETag")
+    @member.person.update!(roster_name: "Example, Charles Q. Jr.")
+    get "/public/v1/officers", headers: @headers.merge("If-None-Match" => etag)
+    assert_response :success
+    assert_not_equal etag, response.headers["ETag"]
+    assert_equal "Charles Q. Example, Jr.", response.parsed_body["officers"][1]["name"]
+    assert_equal "Charlie", @member.person.reload.first_name
   end
 
   test "editing through administration changes persisted member copy and the website representation on later requests" do

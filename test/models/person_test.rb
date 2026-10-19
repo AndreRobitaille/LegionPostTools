@@ -54,6 +54,22 @@ class PersonTest < ActiveSupport::TestCase
     end
   end
 
+  test "first last display preserves the current roster name even when split fields are older" do
+    [
+      [ "Example, Charles Sr.", "Charles Example, Sr." ],
+      [ "Example Jr., Don", "Don Example, Jr." ],
+      [ "Example, Don, Jr.", "Don Example, Jr." ],
+      [ "Charles Example, Sr.", "Charles Example, Sr." ],
+      [ "Charles Example Sr.", "Charles Example, Sr." ],
+      [ "Alex Example, III", "Alex Example III" ],
+      [ "Alex Example", "Alex Example" ]
+    ].each do |roster, expected|
+      person = Person.new(first_name: "Older", last_name: "Fields", roster_name: roster)
+      assert_equal expected, person.first_last_display_name
+      assert_equal [ "Older", "Fields", roster ], [ person.first_name, person.last_name, person.roster_name ]
+    end
+  end
+
   test "roster display name falls back to full name" do
     person = Person.new(first_name: "Jane", last_name: "Doe")
 
