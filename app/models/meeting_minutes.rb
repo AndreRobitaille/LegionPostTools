@@ -220,6 +220,7 @@ class MeetingMinutes < ApplicationRecord
           occurred_at: now,
           metadata: { "membership_approval_decision_event_id" => decision&.id }.compact
         )
+        EndeavorHistory::Requests.record_attestation(self)
       end
     end
     current_revision.attestation
@@ -432,7 +433,11 @@ class MeetingMinutes < ApplicationRecord
   end
 
   def schedule_endeavor_history
-    EndeavorHistoryReconcileJob.perform_later(organization_id) if EndeavorHistory::Config.enabled?
+    return unless EndeavorHistory::Config.enabled?
+
+    organization.endeavors.where(history_withdrawn: false).find_each do |endeavor|
+      EndeavorHistory::Requests.enqueue(endeavor)
+    end
   end
 
   def latest_successful_draft_run

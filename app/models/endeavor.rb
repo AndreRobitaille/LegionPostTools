@@ -37,7 +37,6 @@ class Endeavor < ApplicationRecord
   has_many :history_editions, class_name: "EndeavorHistoryEdition", dependent: :restrict_with_exception
   has_many :history_guidances, class_name: "EndeavorHistoryGuidance", dependent: :restrict_with_exception
   has_many :history_events, class_name: "EndeavorHistoryEvent", dependent: :restrict_with_exception
-  after_create_commit :schedule_history
   has_rich_text :details
 
   before_validation :normalize_optional_fields
@@ -99,10 +98,6 @@ class Endeavor < ApplicationRecord
 
   def due_date_is_valid
     errors.add(:due_on, "must be a valid date") if raise_by_on_before_type_cast.present? && due_on.nil?
-  end
-
-  def schedule_history
-    EndeavorHistoryRefreshJob.perform_later(id) if EndeavorHistory::Config.enabled?
   end
 
   def normalize_optional_fields

@@ -128,16 +128,21 @@ evaluation. Its cost savings cannot be assumed here.
 
 ### Changes and processing scope
 
+The October 19 [trigger policy](ENDEAVOR_HISTORY_TRIGGER_DESIGN.md) supersedes the
+original automatic identity-search behavior. Per-Endeavor discovery remains the implemented
+path; this change does not qualify shared discovery or promise one run per attestation.
+
 | Trigger | Paid processing scope |
 | --- | --- |
 | New attested minutes | The new revision once for the catalog; new accounts and overview updates only for affected Endeavors. |
 | Corrected re-attestation | The replacement revision; replace its derived evidence and update affected overviews. Retain other meetings. |
 | Membership acceptance of an unchanged revision | None; update authority labels from the existing record. |
 | Draft edits, Commander approval, agenda changes, tasks, or officer updates | None; retain the existing source eligibility boundary. |
-| New Endeavor | Search current source revisions for that identity in bounded batches; no blanket regeneration of existing identities. |
-| Existing Endeavor title/summary or identity guidance changes | Reassess that identity and demonstrated matching conflicts, using retained sources. A shared catalog change alone does not force every history to regenerate. |
+| New Endeavor | No automatic paid work; wait for a later attestation or explicit refresh. |
+| Existing Endeavor title/summary, catalog, or identity guidance changes | No new automatic spending authority. Defer incompatible outstanding work; reassess on a later attestation or explicit refresh. Preserve fingerprint checks. |
 | Withdrawal/resume | Honor withdrawal immediately; resume reuses current verified work and processes missing or invalidated results. |
-| Reconciliation or member page read | Local comparison only; enqueue missing stages, never unconditional paid refreshes. |
+| Reconciliation | Recover durable attestation requests and established authorized retries, never infer work from changed fingerprints or missing editions. |
+| Member page read | No provider work. |
 | Explicit selected-meeting refresh | Reprocess the selected revision and affected summaries, reusing all other meetings. |
 | Explicit full-history rebuild | A separate scoped operation with a source count, estimated usage, and an explicit reason to bypass reusable results. |
 

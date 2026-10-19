@@ -12,13 +12,15 @@ module EndeavorHistory
 
     def documents = revisions.map { |revision| SourceDocument.new(revision).payload }
 
-    def manifest
+    def manifest = request_inputs.merge("configuration" => Config.signature)
+
+    # Committing an official attestation must not depend on valid provider settings.
+    def request_inputs
       { "revisions" => revisions.map { |revision| { "id" => revision.id, "sha256" => revision.sha256 } },
         "endeavor" => { "id" => @endeavor.id, "title" => @endeavor.title, "summary" => @endeavor.summary },
         "catalog" => @endeavor.organization.endeavors.order(:id).pluck(:id, :title, :summary),
         "guidance_id" => @endeavor.history_guidances.maximum(:id), "generation" => @endeavor.history_generation,
-        "quality_policy" => QUALITY_POLICY,
-        "configuration" => Config.signature }
+        "quality_policy" => QUALITY_POLICY }
     end
 
     def self.digest(value) = Digest::SHA256.hexdigest(JSON.generate(canonical(value)))
