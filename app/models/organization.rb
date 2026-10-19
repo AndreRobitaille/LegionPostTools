@@ -1,4 +1,9 @@
 class Organization < ApplicationRecord
+  has_one :minutes_distribution_setting, dependent: :restrict_with_exception
+  has_many :minutes_recipients, dependent: :restrict_with_exception
+  has_many :minutes_distributions, dependent: :restrict_with_exception
+  has_many :minutes_distribution_events, dependent: :restrict_with_exception
+  has_many :loops_roster_enrollments, dependent: :restrict_with_exception
   has_many :website_access_tokens, dependent: :restrict_with_exception
   has_many :dated_agendas, dependent: :restrict_with_exception
   has_many :calendar_events, dependent: :restrict_with_exception

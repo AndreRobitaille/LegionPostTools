@@ -1231,6 +1231,42 @@ ALTER SEQUENCE public.installations_id_seq OWNED BY public.installations.id;
 
 
 --
+-- Name: loops_roster_enrollments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.loops_roster_enrollments (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    member_user_id character varying NOT NULL,
+    email character varying NOT NULL,
+    loops_contact_id character varying NOT NULL,
+    list_id character varying NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: loops_roster_enrollments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.loops_roster_enrollments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: loops_roster_enrollments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.loops_roster_enrollments_id_seq OWNED BY public.loops_roster_enrollments.id;
+
+
+--
 -- Name: loops_roster_syncs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1250,7 +1286,8 @@ CREATE TABLE public.loops_roster_syncs (
     started_at timestamp(6) without time zone,
     finished_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    list_results jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -1882,6 +1919,125 @@ ALTER SEQUENCE public.minutes_attestations_id_seq OWNED BY public.minutes_attest
 
 
 --
+-- Name: minutes_distribution_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.minutes_distribution_events (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    meeting_minutes_id bigint,
+    minutes_recipient_id bigint,
+    actor_id bigint NOT NULL,
+    action character varying NOT NULL,
+    details jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: minutes_distribution_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.minutes_distribution_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: minutes_distribution_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.minutes_distribution_events_id_seq OWNED BY public.minutes_distribution_events.id;
+
+
+--
+-- Name: minutes_distribution_settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.minutes_distribution_settings (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    post_members_list_id character varying,
+    minutes_recipients_list_id character varying,
+    template_id character varying,
+    reply_to character varying,
+    meeting_type_ids jsonb DEFAULT '[]'::jsonb NOT NULL,
+    audiences_reviewed boolean DEFAULT false NOT NULL,
+    enabled boolean DEFAULT false NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: minutes_distribution_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.minutes_distribution_settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: minutes_distribution_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.minutes_distribution_settings_id_seq OWNED BY public.minutes_distribution_settings.id;
+
+
+--
+-- Name: minutes_distributions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.minutes_distributions (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    meeting_minutes_id bigint NOT NULL,
+    minutes_revision_id bigint NOT NULL,
+    content_digest character varying NOT NULL,
+    state character varying DEFAULT 'pending'::character varying NOT NULL,
+    corrected boolean DEFAULT false NOT NULL,
+    document_context jsonb DEFAULT '{}'::jsonb NOT NULL,
+    filename character varying,
+    pdf_sha256 character varying,
+    template_id character varying,
+    minutes_list_id character varying,
+    post_members_list_id character varying,
+    reply_to character varying,
+    error_message character varying,
+    first_submitted_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: minutes_distributions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.minutes_distributions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: minutes_distributions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.minutes_distributions_id_seq OWNED BY public.minutes_distributions.id;
+
+
+--
 -- Name: minutes_draft_runs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1986,6 +2142,47 @@ CREATE SEQUENCE public.minutes_draft_suggestions_id_seq
 --
 
 ALTER SEQUENCE public.minutes_draft_suggestions_id_seq OWNED BY public.minutes_draft_suggestions.id;
+
+
+--
+-- Name: minutes_email_deliveries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.minutes_email_deliveries (
+    id bigint NOT NULL,
+    minutes_distribution_id bigint NOT NULL,
+    email character varying NOT NULL,
+    loops_contact_id character varying,
+    recipient_snapshot jsonb DEFAULT '[]'::jsonb NOT NULL,
+    variables jsonb DEFAULT '{}'::jsonb NOT NULL,
+    status character varying DEFAULT 'pending'::character varying NOT NULL,
+    idempotency_key character varying NOT NULL,
+    first_attempt_at timestamp(6) without time zone,
+    accepted_at timestamp(6) without time zone,
+    attempt_count integer DEFAULT 0 NOT NULL,
+    error_message character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: minutes_email_deliveries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.minutes_email_deliveries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: minutes_email_deliveries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.minutes_email_deliveries_id_seq OWNED BY public.minutes_email_deliveries.id;
 
 
 --
@@ -2153,6 +2350,44 @@ CREATE SEQUENCE public.minutes_outcomes_id_seq
 --
 
 ALTER SEQUENCE public.minutes_outcomes_id_seq OWNED BY public.minutes_outcomes.id;
+
+
+--
+-- Name: minutes_recipients; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.minutes_recipients (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    name character varying NOT NULL,
+    office character varying NOT NULL,
+    email character varying NOT NULL,
+    loops_contact_id character varying,
+    enrolled_list_id character varying,
+    enrollment_status character varying DEFAULT 'not_enrolled'::character varying NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: minutes_recipients_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.minutes_recipients_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: minutes_recipients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.minutes_recipients_id_seq OWNED BY public.minutes_recipients.id;
 
 
 --
@@ -2640,7 +2875,7 @@ CREATE TABLE public.permission_grants (
     capability character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT permission_grants_capability_check CHECK (((capability)::text = ANY ((ARRAY['manage_settings'::character varying, 'manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying, 'use_mobile_buddy_checks'::character varying, 'export_buddy_contacts'::character varying])::text[])))
+    CONSTRAINT permission_grants_capability_check CHECK (((capability)::text = ANY (ARRAY[('manage_settings'::character varying)::text, ('manage_people'::character varying)::text, ('manage_meeting_bodies'::character varying)::text, ('manage_agendas'::character varying)::text, ('manage_minutes'::character varying)::text, ('approve_minutes'::character varying)::text, ('attest_minutes'::character varying)::text, ('record_minutes_approval'::character varying)::text, ('view_internal_records'::character varying)::text, ('publish_public_content'::character varying)::text, ('use_mobile_buddy_checks'::character varying)::text, ('export_buddy_contacts'::character varying)::text])))
 );
 
 
@@ -2708,7 +2943,7 @@ CREATE TABLE public.position_capability_grants (
     capability character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT position_capability_grants_capability_check CHECK (((capability)::text = ANY ((ARRAY['manage_people'::character varying, 'manage_meeting_bodies'::character varying, 'manage_agendas'::character varying, 'manage_minutes'::character varying, 'approve_minutes'::character varying, 'attest_minutes'::character varying, 'record_minutes_approval'::character varying, 'view_internal_records'::character varying, 'publish_public_content'::character varying, 'use_mobile_buddy_checks'::character varying, 'export_buddy_contacts'::character varying])::text[])))
+    CONSTRAINT position_capability_grants_capability_check CHECK (((capability)::text = ANY (ARRAY[('manage_people'::character varying)::text, ('manage_meeting_bodies'::character varying)::text, ('manage_agendas'::character varying)::text, ('manage_minutes'::character varying)::text, ('approve_minutes'::character varying)::text, ('attest_minutes'::character varying)::text, ('record_minutes_approval'::character varying)::text, ('view_internal_records'::character varying)::text, ('publish_public_content'::character varying)::text, ('use_mobile_buddy_checks'::character varying)::text, ('export_buddy_contacts'::character varying)::text])))
 );
 
 
@@ -3281,6 +3516,13 @@ ALTER TABLE ONLY public.installations ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: loops_roster_enrollments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.loops_roster_enrollments ALTER COLUMN id SET DEFAULT nextval('public.loops_roster_enrollments_id_seq'::regclass);
+
+
+--
 -- Name: loops_roster_syncs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3393,6 +3635,27 @@ ALTER TABLE ONLY public.minutes_attestations ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: minutes_distribution_events id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_events ALTER COLUMN id SET DEFAULT nextval('public.minutes_distribution_events_id_seq'::regclass);
+
+
+--
+-- Name: minutes_distribution_settings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_settings ALTER COLUMN id SET DEFAULT nextval('public.minutes_distribution_settings_id_seq'::regclass);
+
+
+--
+-- Name: minutes_distributions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distributions ALTER COLUMN id SET DEFAULT nextval('public.minutes_distributions_id_seq'::regclass);
+
+
+--
 -- Name: minutes_draft_runs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3404,6 +3667,13 @@ ALTER TABLE ONLY public.minutes_draft_runs ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY public.minutes_draft_suggestions ALTER COLUMN id SET DEFAULT nextval('public.minutes_draft_suggestions_id_seq'::regclass);
+
+
+--
+-- Name: minutes_email_deliveries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_email_deliveries ALTER COLUMN id SET DEFAULT nextval('public.minutes_email_deliveries_id_seq'::regclass);
 
 
 --
@@ -3432,6 +3702,13 @@ ALTER TABLE ONLY public.minutes_membership_approvals ALTER COLUMN id SET DEFAULT
 --
 
 ALTER TABLE ONLY public.minutes_outcomes ALTER COLUMN id SET DEFAULT nextval('public.minutes_outcomes_id_seq'::regclass);
+
+
+--
+-- Name: minutes_recipients id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_recipients ALTER COLUMN id SET DEFAULT nextval('public.minutes_recipients_id_seq'::regclass);
 
 
 --
@@ -3835,6 +4112,14 @@ ALTER TABLE ONLY public.installations
 
 
 --
+-- Name: loops_roster_enrollments loops_roster_enrollments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.loops_roster_enrollments
+    ADD CONSTRAINT loops_roster_enrollments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: loops_roster_syncs loops_roster_syncs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3963,6 +4248,30 @@ ALTER TABLE ONLY public.minutes_attestations
 
 
 --
+-- Name: minutes_distribution_events minutes_distribution_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_events
+    ADD CONSTRAINT minutes_distribution_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: minutes_distribution_settings minutes_distribution_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_settings
+    ADD CONSTRAINT minutes_distribution_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: minutes_distributions minutes_distributions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distributions
+    ADD CONSTRAINT minutes_distributions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: minutes_draft_runs minutes_draft_runs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3976,6 +4285,14 @@ ALTER TABLE ONLY public.minutes_draft_runs
 
 ALTER TABLE ONLY public.minutes_draft_suggestions
     ADD CONSTRAINT minutes_draft_suggestions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: minutes_email_deliveries minutes_email_deliveries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_email_deliveries
+    ADD CONSTRAINT minutes_email_deliveries_pkey PRIMARY KEY (id);
 
 
 --
@@ -4008,6 +4325,14 @@ ALTER TABLE ONLY public.minutes_membership_approvals
 
 ALTER TABLE ONLY public.minutes_outcomes
     ADD CONSTRAINT minutes_outcomes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: minutes_recipients minutes_recipients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_recipients
+    ADD CONSTRAINT minutes_recipients_pkey PRIMARY KEY (id);
 
 
 --
@@ -5016,6 +5341,20 @@ CREATE UNIQUE INDEX index_installations_on_singleton_key ON public.installations
 
 
 --
+-- Name: index_loops_enrollments_on_organization_email_list; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_loops_enrollments_on_organization_email_list ON public.loops_roster_enrollments USING btree (organization_id, email, list_id);
+
+
+--
+-- Name: index_loops_roster_enrollments_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_loops_roster_enrollments_on_organization_id ON public.loops_roster_enrollments USING btree (organization_id);
+
+
+--
 -- Name: index_loops_roster_syncs_on_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5464,6 +5803,69 @@ CREATE INDEX index_minutes_attestations_on_recorded_by_id ON public.minutes_atte
 
 
 --
+-- Name: index_minutes_deliveries_on_issue_and_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_minutes_deliveries_on_issue_and_email ON public.minutes_email_deliveries USING btree (minutes_distribution_id, email);
+
+
+--
+-- Name: index_minutes_distribution_events_on_actor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_distribution_events_on_actor_id ON public.minutes_distribution_events USING btree (actor_id);
+
+
+--
+-- Name: index_minutes_distribution_events_on_meeting_minutes_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_distribution_events_on_meeting_minutes_id ON public.minutes_distribution_events USING btree (meeting_minutes_id);
+
+
+--
+-- Name: index_minutes_distribution_events_on_minutes_recipient_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_distribution_events_on_minutes_recipient_id ON public.minutes_distribution_events USING btree (minutes_recipient_id);
+
+
+--
+-- Name: index_minutes_distribution_events_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_distribution_events_on_organization_id ON public.minutes_distribution_events USING btree (organization_id);
+
+
+--
+-- Name: index_minutes_distribution_settings_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_minutes_distribution_settings_on_organization_id ON public.minutes_distribution_settings USING btree (organization_id);
+
+
+--
+-- Name: index_minutes_distributions_on_meeting_minutes_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_distributions_on_meeting_minutes_id ON public.minutes_distributions USING btree (meeting_minutes_id);
+
+
+--
+-- Name: index_minutes_distributions_on_minutes_revision_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_minutes_distributions_on_minutes_revision_id ON public.minutes_distributions USING btree (minutes_revision_id);
+
+
+--
+-- Name: index_minutes_distributions_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_distributions_on_organization_id ON public.minutes_distributions USING btree (organization_id);
+
+
+--
 -- Name: index_minutes_draft_runs_on_discarded_by_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5566,6 +5968,20 @@ CREATE INDEX index_minutes_draft_suggestions_on_run_and_review_state ON public.m
 --
 
 CREATE INDEX index_minutes_draft_suggestions_on_source_dated_agenda_item_id ON public.minutes_draft_suggestions USING btree (source_dated_agenda_item_id);
+
+
+--
+-- Name: index_minutes_email_deliveries_on_idempotency_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_minutes_email_deliveries_on_idempotency_key ON public.minutes_email_deliveries USING btree (idempotency_key);
+
+
+--
+-- Name: index_minutes_email_deliveries_on_minutes_distribution_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_email_deliveries_on_minutes_distribution_id ON public.minutes_email_deliveries USING btree (minutes_distribution_id);
 
 
 --
@@ -5685,6 +6101,20 @@ CREATE INDEX index_minutes_outcomes_on_mover_person_id ON public.minutes_outcome
 --
 
 CREATE INDEX index_minutes_outcomes_on_seconder_person_id ON public.minutes_outcomes USING btree (seconder_person_id);
+
+
+--
+-- Name: index_minutes_recipients_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_recipients_on_organization_id ON public.minutes_recipients USING btree (organization_id);
+
+
+--
+-- Name: index_minutes_recipients_on_organization_id_and_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_minutes_recipients_on_organization_id_and_email ON public.minutes_recipients USING btree (organization_id, email);
 
 
 --
@@ -6435,6 +6865,14 @@ ALTER TABLE ONLY public.meetings
 
 
 --
+-- Name: minutes_distribution_events fk_rails_0aa65f0433; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_events
+    ADD CONSTRAINT fk_rails_0aa65f0433 FOREIGN KEY (actor_id) REFERENCES public.users(id);
+
+
+--
 -- Name: endeavor_history_events fk_rails_0cf82669d9; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6520,6 +6958,14 @@ ALTER TABLE ONLY public.oauth_access_grants
 
 ALTER TABLE ONLY public.minutes_outcomes
     ADD CONSTRAINT fk_rails_1c2f86c356 FOREIGN KEY (minutes_item_id) REFERENCES public.minutes_items(id);
+
+
+--
+-- Name: minutes_distributions fk_rails_1f771275a5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distributions
+    ADD CONSTRAINT fk_rails_1f771275a5 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -6803,6 +7249,14 @@ ALTER TABLE ONLY public.membership_dues_records
 
 
 --
+-- Name: loops_roster_enrollments fk_rails_4f1aa1b16e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.loops_roster_enrollments
+    ADD CONSTRAINT fk_rails_4f1aa1b16e FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: buddy_follow_ups fk_rails_4fe27d16d2; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6883,6 +7337,14 @@ ALTER TABLE ONLY public.membership_contacts
 
 
 --
+-- Name: minutes_email_deliveries fk_rails_5e6f2f339b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_email_deliveries
+    ADD CONSTRAINT fk_rails_5e6f2f339b FOREIGN KEY (minutes_distribution_id) REFERENCES public.minutes_distributions(id);
+
+
+--
 -- Name: dated_agenda_roll_call_entries fk_rails_5f41172ffc; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6896,6 +7358,14 @@ ALTER TABLE ONLY public.dated_agenda_roll_call_entries
 
 ALTER TABLE ONLY public.buddy_operations
     ADD CONSTRAINT fk_rails_5f526408ad FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: minutes_recipients fk_rails_60d360fbce; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_recipients
+    ADD CONSTRAINT fk_rails_60d360fbce FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -7395,6 +7865,14 @@ ALTER TABLE ONLY public.minutes_draft_runs
 
 
 --
+-- Name: minutes_distribution_events fk_rails_a9959bb9ba; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_events
+    ADD CONSTRAINT fk_rails_a9959bb9ba FOREIGN KEY (minutes_recipient_id) REFERENCES public.minutes_recipients(id);
+
+
+--
 -- Name: minutes_lifecycle_events fk_rails_aa011690e6; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7448,6 +7926,14 @@ ALTER TABLE ONLY public.meeting_bodies
 
 ALTER TABLE ONLY public.oauth_access_grants
     ADD CONSTRAINT fk_rails_b4b53e07b8 FOREIGN KEY (application_id) REFERENCES public.oauth_applications(id);
+
+
+--
+-- Name: minutes_distributions fk_rails_b5ed2ac232; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distributions
+    ADD CONSTRAINT fk_rails_b5ed2ac232 FOREIGN KEY (meeting_minutes_id) REFERENCES public.meeting_minutes(id);
 
 
 --
@@ -7603,6 +8089,14 @@ ALTER TABLE ONLY public.membership_contacts
 
 
 --
+-- Name: minutes_distribution_events fk_rails_d4347cc224; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_events
+    ADD CONSTRAINT fk_rails_d4347cc224 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: minutes_revisions fk_rails_d4c292c6b3; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7683,6 +8177,14 @@ ALTER TABLE ONLY public.mobile_token_exchanges
 
 
 --
+-- Name: minutes_distribution_events fk_rails_e65ceaf481; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_events
+    ADD CONSTRAINT fk_rails_e65ceaf481 FOREIGN KEY (meeting_minutes_id) REFERENCES public.meeting_minutes(id);
+
+
+--
 -- Name: dated_agenda_sections fk_rails_e70ffa8b9f; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7704,6 +8206,14 @@ ALTER TABLE ONLY public.minutes_lifecycle_events
 
 ALTER TABLE ONLY public.membership_drives
     ADD CONSTRAINT fk_rails_eb5ef11ea4 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: minutes_distribution_settings fk_rails_eccead8bfd; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distribution_settings
+    ADD CONSTRAINT fk_rails_eccead8bfd FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -7744,6 +8254,14 @@ ALTER TABLE ONLY public.buddy_follow_ups
 
 ALTER TABLE ONLY public.website_access_tokens
     ADD CONSTRAINT fk_rails_f4d74abc1b FOREIGN KEY (created_by_id) REFERENCES public.users(id);
+
+
+--
+-- Name: minutes_distributions fk_rails_f4fc178643; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.minutes_distributions
+    ADD CONSTRAINT fk_rails_f4fc178643 FOREIGN KEY (minutes_revision_id) REFERENCES public.minutes_revisions(id);
 
 
 --
@@ -7817,6 +8335,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261019020000'),
 ('20261018010100'),
 ('20261018010000'),
 ('20261013010000'),

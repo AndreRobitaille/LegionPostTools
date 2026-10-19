@@ -21,6 +21,7 @@
 </div>
 
 <%= render "workflow", minutes: @minutes %>
+<%= render "minutes_distributions/meeting_status", minutes: @minutes %>
 
 <% if editable %>
   <div class="btnrow minutes-editor-actions">

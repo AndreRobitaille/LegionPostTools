@@ -1,20 +1,19 @@
 require "application_system_test_case"
+require_relative "../support/minutes_distribution_provider"
 
 class LoopsRosterSyncsSystemTest < ApplicationSystemTestCase
-  class PartialClient
-    def open
-      yield self
-    end
-
+  class PartialClient < MinutesDistributionProvider
     def update_contact(payload)
-      return unless payload[:email] == "rejected@example.test"
-
-      raise Loops::Client::RequestError.new("Synthetic contact rejected", status: 400)
+      if payload[:email] == "rejected@example.test"
+        raise Loops::Client::RequestError.new("Synthetic contact rejected", status: 400)
+      end
+      super
     end
   end
 
   test "administrator reads actual partial sync output and loses access after grant removal" do
     Organization.create!(name: "Synthetic email audience Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Organization.first!.create_minutes_distribution_setting!(post_members_list_id: "members", minutes_recipients_list_id: "minutes")
     Installation.singleton.update!(setup_completed_at: Time.current)
     admin = User.create!(person: Person.create!(first_name: "Audience", last_name: "Administrator"),
       email_address: "audience-admin@example.test", email_verified_at: Time.current)

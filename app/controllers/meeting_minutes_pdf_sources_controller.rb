@@ -20,7 +20,16 @@ class MeetingMinutesPdfSourcesController < ApplicationController
 
     response.headers["Cache-Control"] = "private, no-store"
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
-    if payload.key?("member_revision_id")
+    if payload.key?("distribution_id")
+      issue = @organization.minutes_distributions.find(payload.fetch("distribution_id"))
+      raise ActiveRecord::RecordNotFound unless issue.meeting_minutes_id == @minutes.id &&
+        issue.minutes_revision_id == payload.fetch("revision_id") && issue.minutes_revision.attestation &&
+        issue.document_context.present?
+
+      @minutes = MinutesDistribution::Document.minutes(issue)
+      @organization = MinutesDistribution::Document.organization(issue)
+      render "meeting_minutes/print", layout: "print"
+    elsif payload.key?("member_revision_id")
       @revision = @minutes.member_revision
       raise ActiveRecord::RecordNotFound unless @revision&.attestation && @revision.id == payload.fetch("member_revision_id")
 

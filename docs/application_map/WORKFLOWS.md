@@ -225,9 +225,9 @@ Policy/source basis: [roles](../ROLES.md), [account guide](../USER_MANAGEMENT_GU
 
 ### ADMIN-06 — Synchronize the Post email audience (P1)
 
-- **Start:** Technical administrator; completed roster, configured Loops and usable unique eligible emails.
+- **Start:** Technical administrator; completed roster, configured Loops with distinct private Post members/Minutes recipients lists; eligible members or previously managed removal candidates.
 - **Action:** Inspect audience/skips/freshness, request sync, leave and return to status.
-- **Result:** One durable queued/running sync; contacts processed with recorded success/failure/skips.
+- **Result:** One durable queued/running sync; contacts processed with recorded success/failure/skips. Only Post members membership changes; Minutes recipients, other lists, global opt-outs and stable identities are preserved. Previously managed ineligible addresses are reconciled only within the owned list.
 - **Observe:** Queued/running/completed/failed state and actual counts; missing/shared/invalid emails explained.
 - **Then:** Jobs/result pages retain outcome and source import; repeat request while active points to existing work.
 - **Failures:** Missing roster/configuration, zero eligible contacts, provider outage, partial failure or absent worker cannot be reported as successful full delivery. This operation does not send a meeting notice.
@@ -473,6 +473,20 @@ minutes controllers in [inventory](SOURCE_INVENTORY.md).
 - **Observe:** Durable ledger/status/filter counts, failure category, enqueue error and review destination.
 - **Then:** Returning after worker completion finds same run; discarded run stays auditable; agenda-only manager sees history jobs without minutes evidence, admin sees Loops separately.
 - **Failures:** Retry running/succeeded run, deleted attempt, duplicate retries, absent source/worker, misleading queue health or viewing Jobs triggering paid work.
+
+### MIN-13 — Distribute attested minutes to outside offices (P0)
+
+- **Start:** Commander/Adjutant position authority or `manage_settings`; distinct private Loops groups, reviewed general targeting, enrolled office entries and configured meeting types/template. Settings default paused.
+- **Action:** Manage office entries, explicitly enroll addresses, enable future attestation mail, then use the existing human attestation workflow.
+- **Result:** Durable per-attestation intent, immutable revision and original destination snapshots; after-commit worker prepares the officer PDF with frozen closing authority and submits one message per eligible address. No additional AI call.
+- **Observe:** Existing confirmation discloses outside mail; workspace shows preparing/held/accepted/attention states, per-address results and officer audit history. Desktop/narrow layouts retain separate offices even for one person.
+- **Then:** Reopening does not send; changed re-attested content sends to still-eligible original addresses; unchanged approval/re-attestation sends nothing. Roster sync twice preserves outside recipients and their minutes list. A → B → A, partial delivery and frozen retry payloads remain correct.
+- **Failures:** Changed/paused identity, list/global opt-out, suppression, missing configuration, PDF failure, oversize, timeout, worker interruption and queue failure do not reverse attestation. Unknown submissions keep their saved key, block newer content to that address when unresolved, and require officer verification after the retry window. Global resume does not silently release held copies.
+
+Policy/source: [Minutes distribution](../MINUTES_EMAIL_DISTRIBUTION.md),
+[attestation intent](../../app/services/minutes_distribution/requests.rb),
+[dispatch](../../app/services/minutes_distribution/processor.rb).
+
 
 ## Endeavors, activities, and derived evidence
 

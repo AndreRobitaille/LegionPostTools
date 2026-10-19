@@ -34,6 +34,7 @@ class MeetingMinutes < ApplicationRecord
     dependent: :restrict_with_exception,
     inverse_of: :meeting_minutes
   has_many :official_action_confirmations, dependent: :restrict_with_exception
+  has_many :email_distributions, class_name: "MinutesDistribution", dependent: :restrict_with_exception
   has_one :membership_approval,
     class_name: "MinutesMembershipApproval",
     dependent: :restrict_with_exception,
@@ -221,6 +222,7 @@ class MeetingMinutes < ApplicationRecord
           metadata: { "membership_approval_decision_event_id" => decision&.id }.compact
         )
         EndeavorHistory::Requests.record_attestation(self)
+        MinutesDistribution::Requests.record_attestation(self)
       end
     end
     current_revision.attestation

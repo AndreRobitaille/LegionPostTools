@@ -205,6 +205,15 @@ Rails.application.routes.draw do
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
   get "officer-tools", to: "officer_tools#show", as: :officer_tools
+  resource :minutes_distribution, only: %i[show update], controller: "minutes_distributions" do
+    post :create_recipient
+    patch "recipients/:recipient_id", action: :update_recipient, as: :recipient
+    post "recipients/:recipient_id/enroll", action: :enroll_recipient, as: :enroll_recipient
+    post "minutes/:minutes_id/hold", action: :hold, as: :hold
+    post "minutes/:minutes_id/release", action: :release, as: :release
+    post "issues/:issue_id/retry", action: :retry_delivery, as: :retry_delivery
+    post "issues/:issue_id/deliveries/:delivery_id/resolve", action: :resolve_delivery, as: :resolve_delivery
+  end
   namespace :buddy_checks, path: "buddy-checks" do
     root to: "workspace#index"
     get "post-activity", to: "coordination#index", as: :activity

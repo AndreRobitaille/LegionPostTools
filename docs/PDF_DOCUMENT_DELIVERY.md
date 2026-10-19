@@ -158,3 +158,13 @@ do not include Endeavor narrative, officer notes, agendas, or minutes.
 This fixes page dimensions before the PDF reaches the user's browser, avoiding mixed
 orientation and margin overrides in HTML print dialogs. The screen view and selected
 filters remain intact. See `CALENDAR.md` for the low-ink handout design and pagination.
+
+## Outside minutes attachments
+
+Minutes distribution uses the existing officer document, including its closing Record of
+authority. A distribution-specific signed loopback token binds the issue and immutable
+revision; captured letterhead/approval context freezes the document independently of
+subsequent reopen, attestation or approval. The same resource policy and no-store response
+apply. This route does not weaken the normal member PDF's current-revision restriction.
+Stored private PDFs and saved cover variables are reused for retries. See
+[Minutes email distribution](MINUTES_EMAIL_DISTRIBUTION.md).

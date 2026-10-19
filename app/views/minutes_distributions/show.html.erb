@@ -1,0 +1,107 @@
+<% content_for :title, "Minutes distribution" %>
+<% content_for :head do %><meta name="turbo-cache-control" content="no-cache"><% end %>
+<%= link_to "← Officer tools", officer_tools_path, class: "back" %>
+<div class="page-lead">
+  <h1 class="page-title">Minutes distribution</h1>
+  <p class="page-sub">Attested PEC and monthly minutes, delivered to the outside offices you designate.</p>
+</div>
+<div class="minutes-email-groups" aria-label="Email group ownership">
+  <div><strong>Post members</strong><p>General membership mail. Roster sync maintains this group.</p></div>
+  <div><strong>Minutes recipients</strong><p>PEC and monthly minutes. You maintain these office entries.</p></div>
+</div>
+<div class="minutes-email-layout">
+  <div>
+    <%= render "shared/section_panel", label: "Recipient offices" do %>
+      <p>Both meeting types use this list. Separate offices may receive copies at separate addresses, even when held by the same person.</p>
+      <% if @recipients.empty? %><p>No outside offices have been added yet.</p><% end %>
+      <% @recipients.each do |recipient| %>
+        <article class="minutes-email-recipient">
+          <h2><%= recipient.office %></h2>
+          <p><strong><%= recipient.name %></strong><br><%= recipient.email %></p>
+          <p class="minutes-email-secondary"><%= recipient.active? ? recipient.enrollment_status.humanize : "Paused" %></p>
+          <div class="btnrow">
+            <% if recipient.active? %>
+              <%= button_to "Pause", recipient_minutes_distribution_path(recipient), method: :patch, params: { minutes_recipient: { active: false } }, class: "btn-secondary", aria: { label: "Pause #{recipient.office}" } %>
+              <% if recipient.enrollment_status != "enrolled" %>
+                <%= button_to "Enroll address in Loops", enroll_recipient_minutes_distribution_path(recipient), class: "btn-primary", disabled: !@settings.audiences_reviewed? %>
+              <% end %>
+            <% else %>
+              <%= button_to "Resume", recipient_minutes_distribution_path(recipient), method: :patch, params: { minutes_recipient: { active: true } }, class: "btn-secondary", aria: { label: "Resume #{recipient.office}" } %>
+            <% end %>
+          </div>
+          <details><summary>Edit office entry</summary>
+            <%= form_with model: recipient, url: recipient_minutes_distribution_path(recipient), method: :patch do |form| %>
+              <%= render "recipient_fields", form: form, suffix: recipient.id %>
+              <%= form.submit "Save entry", class: "btn-secondary" %>
+            <% end %>
+          </details>
+        </article>
+      <% end %>
+      <details class="minutes-email-add" <%= "open" if @recipients.empty? %>><summary>Add an office</summary>
+        <%= form_with model: MinutesRecipient.new, url: create_recipient_minutes_distribution_path do |form| %>
+          <%= render "recipient_fields", form: form, suffix: "new" %>
+          <%= form.submit "Add office entry", class: "btn-primary" %>
+        <% end %>
+      </details>
+    <% end %>
+    <%= render "shared/section_panel", label: "Recent mailings" do %>
+      <% if @issues.empty? %><p>Future attestations will appear here. Existing minutes are not emailed automatically.</p><% end %>
+      <% @issues.each do |issue| %>
+        <article class="minutes-email-issue">
+          <h2><%= link_to issue.meeting_minutes.title, admin_meeting_minutes_path(issue.meeting_minutes.meeting) %></h2>
+          <p><%= issue.corrected? ? "Corrected copy" : "First copy" %> · Revision <%= issue.minutes_revision.number %> · <%= issue.state.humanize %></p>
+          <% if issue.error_message.present? %><p><%= issue.error_message %></p><% end %>
+          <details><summary>Delivery results</summary>
+            <% issue.deliveries.order(:id).each do |delivery| %>
+              <p><strong><%= delivery.email %></strong> — <%= delivery.status == "sent" ? "Sent to Loops" : delivery.status.humanize %><br><%= delivery.error_message %></p>
+              <% if delivery.status == "needs_attention" && delivery.first_attempt_at %>
+                <p class="minutes-email-secondary">Check this address and request <code><%= delivery.idempotency_key %></code> in Loops before recording an outcome.</p>
+                <div class="btnrow">
+                  <%= button_to "I verified this was sent", resolve_delivery_minutes_distribution_path(issue_id: issue.id, delivery_id: delivery.id), params: { outcome: "sent" }, class: "btn-secondary" %>
+                  <%= button_to "I verified this was not sent", resolve_delivery_minutes_distribution_path(issue_id: issue.id, delivery_id: delivery.id), params: { outcome: "not_sent" }, class: "btn-secondary" %>
+                </div>
+              <% end %>
+            <% end %>
+          </details>
+          <div class="btnrow">
+            <% if issue.state == "held" %><%= button_to "Release current copy", release_minutes_distribution_path(minutes_id: issue.meeting_minutes_id), class: "btn-secondary" %><% end %>
+            <% if issue.state.in?(%w[ready needs_attention pending]) %><%= button_to "Retry delivery checks", retry_delivery_minutes_distribution_path(issue_id: issue.id), class: "btn-secondary" %><% end %>
+          </div>
+        </article>
+      <% end %>
+    <% end %>
+  </div>
+  <aside>
+    <%= render "shared/section_panel", label: "The email" do %>
+      <p><strong>Subject</strong><br>Your Post — Minutes — Meeting — Date</p>
+      <p>Hello Recipient,</p>
+      <p>Attached are the minutes of our meeting held on the meeting date.</p>
+      <p>They have been attested by the Adjutant but have not yet been approved by the meeting body; corrections may be made at its next meeting.</p>
+      <p>Your Post</p>
+      <p class="minutes-email-secondary">The attached PDF includes its existing Record of authority. Corrected copies identify themselves and replace the earlier copy. Unchanged approval sends no second email.</p>
+    <% end %>
+    <%= render "shared/section_panel", label: "Delivery settings" do %>
+      <p><strong><%= @settings.enabled? ? "Automatic email enabled" : "Automatic email paused" %></strong></p>
+      <%= form_with model: @settings, url: minutes_distribution_path, method: :patch, class: "minutes-email-settings" do |form| %>
+        <div class="entry-field"><%= form.label :post_members_list_id, "Post members list ID" %><%= form.text_field :post_members_list_id %></div>
+        <div class="entry-field"><%= form.label :minutes_recipients_list_id, "Minutes recipients list ID" %><%= form.text_field :minutes_recipients_list_id %></div>
+        <div class="entry-field"><%= form.label :template_id, "Minutes email template ID" %><%= form.text_field :template_id %></div>
+        <div class="entry-field"><%= form.label :reply_to, "Monitored reply address" %><%= form.email_field :reply_to %></div>
+        <fieldset><legend>Meetings to email</legend>
+          <%= hidden_field_tag "minutes_distribution_setting[meeting_type_ids][]", "" %>
+          <% @organization.meeting_types.order(:position, :name).each do |type| %>
+            <label class="form-toggle"><%= check_box_tag "minutes_distribution_setting[meeting_type_ids][]", type.id, @settings.meeting_type_ids.include?(type.id), id: "email-meeting-#{type.id}" %><span><%= type.name %></span></label>
+          <% end %>
+        </fieldset>
+        <label class="form-toggle"><%= form.check_box :audiences_reviewed %><span>General campaigns, scheduled sends and contact-added workflows now target Post members.</span></label>
+        <p class="minutes-email-secondary">Use two distinct private lists. Before enabling, Loops must enable attachments and the template must use the configured reply address. Both groups are checked when work runs.</p>
+        <label class="form-toggle"><%= form.check_box :enabled %><span>Email future minutes after Adjutant attestation.</span></label>
+        <p class="minutes-email-secondary">Pausing stops unsent mail. Resuming does not release held copies; review each mailing first.</p>
+        <%= form.submit "Save delivery settings", class: "btn-primary" %>
+      <% end %>
+    <% end %>
+  </aside>
+</div>
+<details class="minutes-email-audit"><summary>Officer change history</summary>
+  <% @events.each do |event| %><p><%= legion_datetime(event.created_at) %> · <%= event.actor.person.full_name %> · <%= event.action.humanize %></p><% end %>
+</details>
