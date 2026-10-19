@@ -67,6 +67,13 @@ The saved cover note is “Open the attached PDF to read, save or print the minu
 remain editable on Minutes distribution. The layout adds a Post letterhead, automatic
 **Minutes PDF attached** heading, separate approval status and corrected-copy notice.
 
+Post 165 minutes templates use **commander@mail.wipost165.org** as the From address,
+including the previous template retained for retries. Use this sender for future templates
+created for this installation. The versioned sending metadata specifies `commander` as the
+sender username; Loops appends this account's sending domain. Reply-to still uses the
+configured Organization public email. Changing the From address alone does not establish
+why a recipient's email application filed a message as junk.
+
 Production read-back confirmed the published content and zero Loops Guardian errors or
 warnings. Activation preserved both list connections, selected meeting types, reply address,
 all three recipient records (two active and enrolled at this verification) and all 85 roster

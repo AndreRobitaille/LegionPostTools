@@ -192,6 +192,10 @@ Treat this as the accessory's persistent directory. Active Storage uses the Dock
 
 - `MAIL_PROVIDER=loops` uses the Loops transactional API and is the preferred/default Post 165 path.
 - Set `LOOPS_API_KEY` and `LOOPS_MAGIC_LINK_TEMPLATE_ID` when using Loops.
+- Templates created for Post 165 must use **commander@mail.wipost165.org** as From.
+  Set the Loops sender username to `commander`; its account supplies the sending domain.
+  Keep Reply-to on the configured monitored address. Do not create `no-reply` templates
+  for this installation.
 - The selected transactional template must accept scalar `name`, `login_url`, and
   `login_code` variables and present the code and continuation link in one email.
 - The Loops backend validates provider success responses, uses short network timeouts,
