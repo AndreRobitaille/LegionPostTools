@@ -32,10 +32,13 @@ transport, credential-scoped private cache, error handling and ETag machinery.
 
 The response has `schema_version: 1`, `complete: true`, `as_of` (Post-local ISO date),
 `timezone`, `post: {name, email}` and `officers: [...]`. Post email may be null. Each
-officer has exactly `name` (display-name string), `office` (role-title string),
+officer has exactly `name` (first-name then last-name display string), `office` (role-title string),
 `responsibility` (string or null), `examples` (ordered array of zero to two strings),
 `primary_contact` (boolean), and `display_order` (integer). Treat strings as text,
-not HTML. Names are not stable ids; retain separate rows for multiple offices or
+not HTML. Display the supplied name without parsing or rearranging it; the backend
+places generational suffixes at the end, with a comma before Sr./Jr. and a space
+before Roman numerals such as III. Names are not
+stable ids; retain separate rows for multiple offices or
 people with identical display names. Keep configured array order, or deliberately
 group current officers under their office without losing entries.
 

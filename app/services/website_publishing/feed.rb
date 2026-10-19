@@ -22,7 +22,7 @@ module WebsitePublishing
         .to_a.uniq { |assignment| [ assignment.position_title_id, assignment.person_id ] }
       officers = assignments.map do |assignment|
         title = assignment.position_title
-        { name: assignment.person.roster_display_name, office: title.name,
+        { name: assignment.person.first_last_display_name, office: title.name,
           responsibility: title.contact_description.presence, examples: title.contact_examples,
           display_order: title.display_order, primary_contact: PostContactGuidance::PRIMARY_OFFICES.include?(title.name) }
       end

@@ -3,7 +3,7 @@
 <% phone = person.directory_phone_number %>
 <% phone_href = post_contact_phone_href(phone) %>
 <div class="post-contact-person">
-  <%= link_to person.roster_display_name, person_path(person), class: "post-contact-name" %>
+  <%= link_to person.first_last_display_name, person_path(person), class: "post-contact-name" %>
   <div class="post-contact-details">
     <% if email.present? %>
       <p><%= mail_to email %></p>

@@ -659,7 +659,7 @@
           "name": {
             "type": "string",
             "minLength": 1,
-            "description": "Saved directory display name; not a unique identifier."
+            "description": "Saved first and last names in first-name then last-name order, preserving middle names and initials. Trailing suffixes (Sr/Jr with optional periods, or II, III or IV) from either field appear once at the end with their recorded capitalization and optional periods. A comma precedes Sr/Jr; a space precedes Roman numerals. Display as supplied; not a unique identifier."
           },
           "office": {
             "type": "string",

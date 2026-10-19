@@ -16,6 +16,42 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal result.roster_import.created_members, result.roster_import.created_accounts
   end
 
+  test "imported suffix formats display in first last order without rewriting roster data on reimport" do
+    names = [
+      [ "SUFFIX1", "Example, Charles Sr.", "Charles Sr.", "Example", "Charles Example, Sr." ],
+      [ "SUFFIX2", "Example Jr., Don", "Don", "Example Jr.", "Don Example, Jr." ],
+      [ "SUFFIX3", "Example, Don, Jr.", "Don, Jr.", "Example", "Don Example, Jr." ],
+      [ "SUFFIX4", "de la Example, Alex Q. III", "Alex Q. III", "de la Example", "Alex Q. de la Example III" ]
+    ]
+    csv = CSV.generate do |output|
+      output << RosterImports::CsvParser::REQUIRED_HEADERS
+      names.each do |member_number, roster_name, *_|
+        output << [ member_number, roster_name, 165, "Member", "", "", "", "", "", "", 1, 2026, "Active" ]
+      end
+    end
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "suffixes.csv").import
+    assert result.success?
+    assert_equal 4, result.created_count
+    names.each do |member_number, roster_name, first, last, expected|
+      person = Person.find_by!(member_number: member_number)
+      assert_equal expected, person.first_last_display_name
+      assert_equal first, person.first_name
+      assert_equal last, person.last_name
+      assert_equal roster_name, person.roster_display_name
+      assert_not person.changed?
+    end
+
+    reimport = RosterImports::Importer.new(csv_text: csv, filename: "suffixes.csv").import
+    assert reimport.success?
+    assert_equal 4, reimport.unchanged_count
+    names.each do |member_number, _, first, last, expected|
+      person = Person.find_by!(member_number: member_number)
+      assert_equal [ first, last ], [ person.first_name, person.last_name ]
+      assert_equal expected, person.first_last_display_name
+    end
+  end
+
   test "retains every new member and account name beyond ten records" do
     csv = CSV.generate do |output|
       output << RosterImports::CsvParser::REQUIRED_HEADERS
