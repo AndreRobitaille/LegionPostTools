@@ -22,6 +22,15 @@ closes the SSH master. Use `bin/release check` for a non-mutating transport pref
 Use `bin/kamal setup` for the First install only, when provisioning a new deployment
 target. Do not use a server-side git clone or web UI as the primary flow.
 
+The remote builder shares the VPS with live applications. The Dockerfile installs
+gems with `bundle install --jobs 1` so native extensions compile one gem at a time;
+Bundler otherwise defaults to the available processor count. Preserve this limit
+when changing the image build. It reduces concurrent build memory use, but does not
+reserve RAM for the applications or impose a total build memory limit. If a build
+stalls or all hosted sites fail together, stop the build and inspect host memory,
+pressure, and remaining compiler processes before retrying through the same SSH
+master. Follow the connection cooldown above if that connection fails.
+
 ## Naming convention
 
 Use install-specific names in the form:
