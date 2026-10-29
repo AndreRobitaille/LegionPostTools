@@ -135,7 +135,7 @@ commit order; selection now uses recorded authority within the source snapshot i
 
 The local Bundler version changed only its lockfile metadata during verification; that
 incidental change was removed, and the final browser checks ran with `BUNDLE_FROZEN=true`.
-No dependency change is included. At that initial local-verification stage, no paid provider
+No dependency change was included at that initial local-verification stage. No paid provider
 request, production access, commit, push, or deployment had occurred. Release verification
 is recorded separately in the pull request and deployed handoff. The reported invoice attribution and actual savings remain
 unverified. This implementation retains target-specific Astra discovery/verification and
@@ -156,3 +156,14 @@ vulnerabilities. The signed-in handbook test verifies the current search label, 
 acknowledgment, status fields, and midnight-retry policy before pushing. No paid AI
 evaluation or production member data was used. Exact CI/release revisions and live
 verification belong to the pull request and deployment handoff.
+
+## Release dependency follow-up
+
+The first PR check refreshed Ruby's advisory database and detected the existing Crass
+1.0.7 CSS tokenizer issue, [GHSA-pq4g-8rxf-4g29](https://github.com/rgrove/crass/security/advisories/GHSA-pq4g-8rxf-4g29).
+The earlier local audit used an older installed advisory database. The release now
+updates only Crass to the upstream patched 1.0.8, with its lockfile checksum; other
+dependency versions remain unchanged. The fresh database reproduces the failure on
+the old lockfile. This patch is required to pass the existing release gate; the advisory
+is not ignored and no branch rule is bypassed. Final patched-head CI evidence belongs
+to the PR and release handoff.
