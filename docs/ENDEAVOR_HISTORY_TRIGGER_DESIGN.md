@@ -2,6 +2,11 @@
 
 October 19, 2026. Implements issue #157; replaces the incomplete enqueue-only design in PR #158.
 
+October 29 update: [spend control](ENDEAVOR_HISTORY_SPEND_CONTROL.md) supersedes the
+full-corpus automatic processing and next-day budget recovery described below.
+Automatic runs select attestation-journal revisions and retain published history;
+budget failures stay stopped. Manual archive searches require cost acknowledgment.
+
 ## Spending authority and durable work
 
 Each successful attestation records an `attestation_requested` event for each currently

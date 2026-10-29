@@ -149,6 +149,9 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     attest(@minutes)
     assert_empty EndeavorHistory::Presenter.new(@endeavor).overview
     assert_not_includes EndeavorHistory::Presenter.new(@endeavor).entries.to_json, "not confirmed"
+    overview = EndeavorHistory::Overview.new(@organization)
+    assert_equal "outdated", overview.rows.find { |row| row[:endeavor] == @endeavor }.fetch(:status)
+    assert_includes overview.filtered("attention").map { |row| row[:endeavor].id }, @endeavor.id
   end
 
   test "new approved payload freezes primary identity without rewriting older revisions" do
@@ -457,15 +460,15 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     succeeded = history_run(clean, status: "succeeded")
     clear_enqueued_jobs
 
-    assert_difference "EndeavorHistoryRun.count", retryable.size + 1 do
+    assert_difference "EndeavorHistoryRun.count", retryable.size do
       assert_no_enqueued_jobs(only: EndeavorHistoryRefreshJob) do
         EndeavorHistoryReconcileJob.perform_now
       end
     end
-    (endeavors.values + [ budget ]).each do |endeavor|
+    endeavors.values.each do |endeavor|
       assert_equal "pending", endeavor.history_runs.recent.first.status
     end
-    [ today, semantic, worker_error, recent ].each do |endeavor|
+    [ budget, today, semantic, worker_error, recent ].each do |endeavor|
       assert_equal [ "failed" ], endeavor.history_runs.pluck(:status)
     end
     assert_equal [ "failed", "failed", "failed" ], capped.history_runs.order(:id).pluck(:status)
@@ -671,19 +674,17 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
 
   test "automatic recovery preserves manual scope authority and completed refresh work" do
     automatic_process
-    previous = ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"]
-    @provider.alter = ->(stage, _input, _data) { ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = "1" if stage == "verify_discovery" }
+    @provider.alter = ->(stage, _input, _data) { raise EndeavorHistory::Error, "provider_error" if stage == "summary" }
     token, = AgentAccessToken.issue!(user: @manager, name: "Scoped refresh delegate", expires_in: 1.day)
     first = Current.set(agent_access_token: token) do
       EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true, meeting_id: @meeting.id)
     end
     assert_equal token.id, first.agent_access_token_id
     EndeavorHistory::Processing.new(first, provider: @provider).call
-    assert_equal "daily_budget", first.reload.error_category
-    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous
+    assert_equal "provider_error", first.reload.error_category
     @provider.alter = nil
     @provider.calls.clear
-    second = travel(1.day) { EndeavorHistory::Processing.request(@endeavor, retry_run: first) }
+    second = travel(16.minutes) { EndeavorHistory::Processing.request(@endeavor, retry_run: first) }
     assert_equal @manager, second.requested_by
     assert_equal token.id, second.agent_access_token_id
     event = @endeavor.history_events.find_by!(action: "requested", endeavor_history_run: second)
@@ -695,8 +696,6 @@ class EndeavorHistoryTest < ActiveSupport::TestCase
     assert_equal "succeeded", second.reload.status
     assert_equal token.id, second.agent_access_token_id
     assert_equal %w[summary verify_summary], @provider.calls.map(&:first)
-  ensure
-    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous
   end
 
   test "adopted legacy evidence remains reusable across later incremental editions" do

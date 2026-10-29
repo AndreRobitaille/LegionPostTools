@@ -18,6 +18,14 @@ module EndeavorHistory
 
     def context(manifest) = Sources.dependencies(manifest).except("revisions")
 
+    def revision_ids(endeavor, manifest)
+      # Journal IDs are allocated before commit and do not establish commit order.
+      # The run's frozen source snapshot bounds work, including overlapping requests.
+      endeavor.history_events.where(action: "attestation_requested").filter_map do |request|
+        request.metadata["revision_id"] if valid?(endeavor, request, manifest)
+      end.uniq & manifest.fetch("revisions").pluck("id")
+    end
+
     def valid?(endeavor, request, manifest)
       request && request.persisted? && request.endeavor_id == endeavor.id &&
         request.action == "attestation_requested" &&
@@ -86,9 +94,6 @@ module EndeavorHistory
 
     def retryable?(run)
       return false unless run.status == "failed" && authorized_run?(run) && run.finished_at
-      if run.error_category == "daily_budget"
-        return run.finished_at < Time.current.beginning_of_day
-      end
       %w[queue_error worker_stalled timeout rate_limit provider_error].include?(run.error_category) &&
         run.finished_at < 15.minutes.ago && attempts(run) < 3
     end

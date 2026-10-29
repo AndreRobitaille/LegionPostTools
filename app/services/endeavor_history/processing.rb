@@ -68,6 +68,9 @@ module EndeavorHistory
         metadata["retry_root_id"] = retry_run ? Requests.retry_root(retry_run) : run.id
         metadata["retry_of_id"] = retry_run.id if retry_run
         metadata["attestation_request_id"] = attestation_request.id if attestation_request
+        if attestation_request && !recovery
+          metadata["revision_ids"] = Requests.revision_ids(endeavor, manifest)
+        end
         metadata["refresh_id"] ||= run.id if metadata["refresh"]
         endeavor.history_events.create!(action: "requested", actor: requester, endeavor_history_run: run,
           agent_access_token_id: run.agent_access_token_id, metadata: metadata)
@@ -106,7 +109,20 @@ module EndeavorHistory
       documents = Sources.new(@endeavor).documents
       @guidance = @endeavor.history_guidances.find_by(id: @run.manifest["guidance_id"])&.body.to_s
       @request = @endeavor.history_events.where(endeavor_history_run: @run, action: "requested").last&.metadata || {}
-      meetings = documents.map { |document| discover(document) }
+      automatic = @request["attestation_request_id"].present?
+      selected_ids = if automatic
+        @request["revision_ids"] || Requests.revision_ids(@endeavor, @run.manifest)
+      elsif @request["meeting_id"]
+        documents.select { |document| document["meeting_id"] == @request["meeting_id"] }.pluck("revision_id")
+      end
+      meetings = documents.filter_map do |document|
+        if selected_ids && !refresh?(document) && (retained = retained_meeting(document))
+          record_reuse("discovery", "edition_id" => previous_edition.id, "revision_id" => document["revision_id"], "retained" => true)
+          retained
+        elsif !selected_ids || selected_ids.include?(document["revision_id"])
+          discover(document)
+        end
+      end
       summary = compose(meetings)
       publish!(summary, meetings)
     rescue Error => error
@@ -118,6 +134,20 @@ module EndeavorHistory
     end
 
     private
+
+    def previous_edition
+      return @previous_edition if defined?(@previous_edition)
+      @previous_edition = @endeavor.history_editions.order(id: :desc).detect do |edition|
+        Sources.identity(edition.manifest) == Sources.identity(@run.manifest)
+      end
+    end
+
+    def retained_meeting(document)
+      return unless previous_edition
+      previous_edition.payload.fetch("evidence").find do |meeting|
+        meeting["revision_id"] == document["revision_id"] && meeting["sha256"] == document["sha256"]
+      end
+    end
 
     def discover(document)
       unless refresh?(document)
@@ -160,7 +190,7 @@ module EndeavorHistory
     end
 
     def compose(meetings)
-      previous = @endeavor.history_editions.order(id: :desc).detect { |edition| Sources.identity(edition.manifest) == Sources.identity(@run.manifest) }
+      previous = previous_edition
       evidence = previous ? previous.payload.fetch("evidence").index_by { |meeting| meeting["revision_id"] } : {}
       retained = previous ? previous.payload.fetch("meetings").select do |account|
         meeting = meetings.find { |entry| entry["revision_id"] == account["revision_id"] }
@@ -299,8 +329,10 @@ module EndeavorHistory
         @endeavor.with_lock do
           ensure_current!
           payload = summary.merge("evidence" => meetings)
+          covered_ids = meetings.pluck("revision_id")
+          covered_manifest = @run.manifest.merge("revisions" => @run.manifest["revisions"].select { |source| covered_ids.include?(source["id"]) })
           edition = @endeavor.history_editions.create!(endeavor_history_run: @run, payload: payload,
-            manifest: @run.manifest, sha256: Sources.digest(payload))
+            manifest: covered_manifest, sha256: Sources.digest(payload))
           meetings.each do |meeting|
             ids = meeting["facts"].flat_map { |fact| fact["source_ids"] }.uniq
             meeting["items"].each do |item|

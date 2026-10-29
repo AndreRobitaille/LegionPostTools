@@ -29,7 +29,8 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@manager)
     get admin_endeavor_history_path(@endeavor)
     assert_response :success
-    assert_select "h1", text: "AI history"
+    assert_select "h1", text: "Meeting history"
+    assert_select "input[name=cost_acknowledged][required]"
     version = @endeavor.lock_version
     post admin_endeavor_history_path(@endeavor), params: { operation: "guidance", guidance: "The annual fundraiser.", lock_version: version }
     assert_redirected_to admin_endeavor_history_path(@endeavor)
@@ -38,6 +39,31 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
       post admin_endeavor_history_path(@endeavor), params: { operation: "guidance", guidance: "Stale", lock_version: version }
     end
     assert_match "changed", flash[:alert]
+  end
+
+  test "web and API require cost acknowledgment before refresh or resume" do
+    with_enabled_history do |provider|
+      source_fixture
+      sign_in_as(@manager)
+      %w[refresh resume].each do |operation|
+        @endeavor.update!(history_withdrawn: operation == "resume")
+        [ nil, false, "no" ].each do |acknowledgment|
+          payload = { operation: operation, lock_version: @endeavor.lock_version, cost_acknowledged: acknowledgment }
+          assert_no_difference "EndeavorHistoryRun.count" do
+            assert_no_difference "EndeavorHistoryEvent.count" do
+              post admin_endeavor_history_path(@endeavor), params: payload
+              assert_redirected_to admin_endeavor_history_path(@endeavor)
+              assert_includes flash[:alert], "costs the Post money"
+              post api_endeavor_history_path(@endeavor), params: payload, as: :json
+              assert_response :unprocessable_entity
+              assert_includes response.body, "costs the Post money"
+            end
+          end
+          assert_equal operation == "resume", @endeavor.reload.history_withdrawn?
+        end
+      end
+      assert_empty provider.calls
+    end
   end
 
   test "history manager gets Jobs without gaining minutes-run access" do
@@ -218,7 +244,57 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "no_minutes", EndeavorHistory::Overview.new(@organization).rows.first[:status]
     source_fixture
     assert_equal "not_generated", EndeavorHistory::Overview.new(@organization).rows.first[:status]
-    assert_equal 1, EndeavorHistory::Overview.new(@organization).filtered("attention").size
+    assert_empty EndeavorHistory::Overview.new(@organization).filtered("attention")
+    sign_in_as(@manager)
+    get api_endeavor_history_path(@endeavor), as: :json
+    assert_equal "not_generated", response.parsed_body["history_status"]
+    assert_equal false, response.parsed_body["needs_attention"]
+    get admin_endeavors_path, params: { filter: "attention" }
+    assert_select ".endeavor-management-row", count: 0
+  end
+
+  test "optional archive gaps and catalog edits do not flag valid saved history for attention" do
+    minutes, = source_fixture
+    manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+    run = @endeavor.history_runs.create!(status: "succeeded", manifest: manifest, fingerprint: "fixture")
+    @endeavor.history_editions.create!(endeavor_history_run: run, manifest: manifest, payload: { overview: [] }, sha256: "fixture")
+    older_meeting = create_meeting!(organization: @organization, meeting_body: minutes.meeting_body,
+      starts_at: 2.weeks.ago, title: "Older meeting")
+    older = MeetingMinutes.create_from_meeting!(meeting: older_meeting)
+    older.sections.first.items.create!(title: "Other work", behavior_type: "report_slot", position: 1, body: "Synthetic older discussion.")
+    { "approve" => @manager, "attest" => User.find_by!(email_address: "adjutant@example.com") }.each do |action, actor|
+      confirmation = OfficialActionConfirmation.record_external!(minutes: older, user: actor, action: action, evidence_note: "Synthetic older minutes.")
+      older.public_send("#{action}_with_confirmation!", confirmation: confirmation)
+    end
+    @organization.endeavors.create!(title: "New work", created_by: @manager)
+    row = EndeavorHistory::Overview.new(@organization).rows.find { |entry| entry[:endeavor] == @endeavor }
+    assert_equal "current", row[:status]
+    assert_empty EndeavorHistory::Overview.new(@organization).filtered("attention")
+    sign_in_as(@manager)
+    get api_endeavor_history_path(@endeavor), as: :json
+    assert_equal "current", response.parsed_body["history_status"]
+    assert_equal false, response.parsed_body["needs_attention"]
+    @endeavor.update!(summary: "Changed identity")
+    get api_endeavor_history_path(@endeavor), as: :json
+    assert_equal "outdated", response.parsed_body["history_status"]
+    assert_equal true, response.parsed_body["needs_attention"]
+  end
+
+  test "the signed-in handbook explains search costs and the neutral history status" do
+    sign_in_as(@manager)
+    get "/api", as: :json
+    assert_response :success
+    handbook = response.parsed_body
+    inspection = handbook.fetch("common_actions").find { |action| action["name"] == "inspect_endeavor_ai_history" }
+    assert_includes inspection.fetch("summary"), "history_status"
+    assert_includes inspection.fetch("summary"), "needs_attention"
+    assert_includes inspection.fetch("summary"), "New histories and optional archive gaps require no action"
+    search = handbook.fetch("only_when_asked").find { |action| action["name"] == "manage_endeavor_ai_history" }
+    assert_includes search.fetch("summary"), "Search past minutes"
+    assert_includes search.fetch("summary"), "costs the Post money"
+    assert_includes search.fetch("summary"), "cost_acknowledged: true"
+    assert_includes search.fetch("summary"), "do not retry automatically after midnight"
+    assert_equal true, JSON.parse(search.fetch("example").lines.drop(1).join)["cost_acknowledged"]
   end
 
   test "web guidance stays unpaid until explicit refresh and a later member request sees the edition" do
@@ -231,7 +307,7 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
         perform_enqueued_jobs { 2.times { EndeavorHistoryReconcileJob.perform_now(@organization.id) } }
       end
       assert_empty provider.calls
-      post admin_endeavor_history_path(@endeavor), params: { operation: "refresh" }
+      post admin_endeavor_history_path(@endeavor), params: { operation: "refresh", cost_acknowledged: "1" }
       assert_redirected_to admin_endeavor_history_path(@endeavor)
       perform_enqueued_jobs(only: EndeavorHistoryJob)
       assert_equal "succeeded", @endeavor.history_runs.recent.first.status
@@ -250,7 +326,7 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
       minutes, = source_fixture
       token, plaintext = AgentAccessToken.issue!(user: @manager, name: "History test delegate", expires_in: 1.day)
       headers = { "Authorization" => "Bearer #{plaintext}", "Idempotency-Key" => SecureRandom.uuid }
-      payload = { operation: "refresh", meeting_id: minutes.meeting_id }
+      payload = { operation: "refresh", meeting_id: minutes.meeting_id, cost_acknowledged: true }
       assert_difference "EndeavorHistoryRun.count", 1 do
         2.times do
           post api_endeavor_history_path(@endeavor), params: payload, headers: headers, as: :json
@@ -266,7 +342,7 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
         headers: headers.merge("Idempotency-Key" => SecureRandom.uuid), as: :json
       assert_response :success
       assert_predicate @endeavor.reload, :history_withdrawn?
-      post api_endeavor_history_path(@endeavor), params: { operation: "resume", lock_version: @endeavor.lock_version },
+      post api_endeavor_history_path(@endeavor), params: { operation: "resume", lock_version: @endeavor.lock_version, cost_acknowledged: true },
         headers: headers.merge("Idempotency-Key" => SecureRandom.uuid), as: :json
       assert_response :success
       perform_enqueued_jobs(only: EndeavorHistoryJob)

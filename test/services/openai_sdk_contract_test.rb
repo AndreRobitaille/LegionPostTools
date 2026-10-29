@@ -41,6 +41,8 @@ class OpenaiSdkContractTest < ActiveSupport::TestCase
     body = JSON.parse(transport.requests.first.body)
     assert_equal true, body["background"]
     assert_equal false, body["store"]
+    assert_equal({ "mode" => "explicit" }, body["prompt_cache_options"])
+    assert_kind_of String, body["input"]
     assert_equal 60, transport.requests.first.timeout
   end
 
@@ -68,6 +70,9 @@ class OpenaiSdkContractTest < ActiveSupport::TestCase
     assert_equal 2, result["cache_write_tokens"]
     assert_equal 15, result["reasoning_tokens"]
     assert_equal 1, transport.requests.size
+    body = JSON.parse(transport.requests.first.body)
+    assert_equal({ "mode" => "explicit" }, body["prompt_cache_options"])
+    assert_kind_of String, body["input"]
   end
 
   private

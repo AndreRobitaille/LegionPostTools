@@ -88,6 +88,13 @@ Optional clear tuning values are `OPENAI_MINUTES_MODEL` (default `gpt-6-astra`),
 Do not lower the model merely to reduce cost without evaluating representative Post
 transcripts.
 
+Both OpenAI providers disable implicit prompt cache writes. Endeavor History processes
+recorded attestation revisions and retains existing published evidence; a release must
+not initiate an archive rebuild or backfill. Officers explicitly authorize paid older-minute
+searches through **Search past minutes** (API `operation: refresh`, `cost_acknowledged: true`).
+Daily-token-budget failures stay stopped after midnight. No migration or new configuration
+is needed for these [spend controls](ENDEAVOR_HISTORY_SPEND_CONTROL.md).
+
 For Astra, use supported reasoning (`low` or higher), not `none` or `minimal`.
 The provider uses Responses background mode with no tools, strict JSON output, and
 `store: false`; do not add sampling/logprob parameters. Existing model overrides remain intentional

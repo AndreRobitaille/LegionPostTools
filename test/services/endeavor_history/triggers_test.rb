@@ -1,6 +1,120 @@
 require_relative "history_test"
 
 class EndeavorHistoryTest
+  test "attestation recovery retains both sources when commit order differs from journal IDs" do
+    first = add_meeting
+    second = add_meeting(body: "More volunteers confirmed.")
+    manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+    # Concurrent transactions allocate journal IDs before commit. The lower-ID
+    # transaction can commit last, after a higher-ID request has been dispatched.
+    late_request = @endeavor.history_events.create!(action: "attestation_requested",
+      metadata: { "revision_id" => second.id, "manifest" => manifest.except("configuration").merge("revisions" => manifest["revisions"].select { |entry| entry["id"] == second.id }) })
+    early_manifest = manifest.merge("revisions" => manifest["revisions"].select { |entry| entry["id"] == first.id })
+    early_request = @endeavor.history_events.create!(action: "attestation_requested",
+      metadata: { "revision_id" => first.id, "manifest" => early_manifest.except("configuration") })
+    superseded = @endeavor.history_runs.create!(manifest: early_manifest, fingerprint: EndeavorHistory::Sources.digest(early_manifest),
+      status: "superseded", error_category: "source_changed", finished_at: Time.current)
+    @endeavor.history_events.create!(action: "requested", endeavor_history_run: superseded,
+      metadata: { "trigger" => "attestation", "attestation_request_id" => early_request.id })
+    assert_equal late_request, EndeavorHistory::Requests.pending(@endeavor)
+    reconcile_and_process
+    run = @endeavor.history_runs.recent.first
+    assert_equal "succeeded", run.status
+    assert_equal [ first.id, second.id ], run.edition.manifest["revisions"].pluck("id")
+    assert_equal [ first.id, second.id ], @provider.calls.select { |stage, _| stage == "discovery" }.map { |_, input| input["source"]["revision_id"] }
+  end
+
+  test "queued attestation from before spend control cannot search unrequested archive revisions" do
+    minutes = attest_later_minutes
+    request = EndeavorHistory::Requests.latest(@endeavor)
+    manifest = EndeavorHistory::Sources.new(@endeavor).manifest
+    run = @endeavor.history_runs.create!(manifest: manifest, fingerprint: EndeavorHistory::Sources.digest(manifest))
+    @endeavor.history_events.create!(action: "requested", endeavor_history_run: run,
+      metadata: { "trigger" => "attestation", "attestation_request_id" => request.id })
+    clear_enqueued_jobs
+    with_offline_history_provider { EndeavorHistoryJob.perform_now(run.id) }
+    assert_latest_history(minutes)
+    assert_equal [ minutes.member_revision.id ], @provider.calls.select { |stage, _| stage == "discovery" }.map { |_, input| input["source"]["revision_id"] }
+    assert_equal [ minutes.member_revision.id ], run.reload.edition.manifest["revisions"].pluck("id")
+  end
+
+  test "scoped refresh leaves unprocessed archive untouched and full refresh can explicitly search it" do
+    later = add_meeting
+    run = EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true, meeting_id: later.meeting_minutes.meeting_id)
+    with_offline_history_provider { perform_enqueued_jobs(only: EndeavorHistoryJob) }
+    assert_equal "succeeded", run.reload.status
+    assert_equal [ later.id ], @provider.calls.select { |stage, _| stage == "discovery" }.map { |_, input| input["source"]["revision_id"] }
+    assert_equal [ later.id ], run.edition.manifest["revisions"].pluck("id")
+    @provider.calls.clear
+    full = EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true)
+    with_offline_history_provider { perform_enqueued_jobs(only: EndeavorHistoryJob) }
+    assert_equal "succeeded", full.reload.status
+    assert_equal [ @revision.id, later.id ], full.edition.manifest["revisions"].pluck("id")
+    assert_equal [ @revision.id, later.id ], @provider.calls.select { |stage, _| stage == "discovery" }.map { |_, input| input["source"]["revision_id"] }
+  end
+
+  test "budget failure stays stopped across midnight until a new explicit request" do
+    previous_budget = ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"]
+    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = "1"
+    minutes = attest_later_minutes
+    reconcile_and_process
+    failed = @endeavor.history_runs.recent.first
+    assert_equal "daily_budget", failed.error_category
+    assert_empty @provider.calls
+    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous_budget
+
+    [ 1.day, 3.days ].each do |delay|
+      travel delay do
+        assert_no_difference "EndeavorHistoryRun.count" do
+          2.times { reconcile_and_process }
+        end
+        assert_nil EndeavorHistory::Processing.request(@endeavor, retry_run: failed)
+        assert_empty @provider.calls
+      end
+    end
+    EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true)
+    with_offline_history_provider { perform_enqueued_jobs(only: EndeavorHistoryJob) }
+    assert_latest_history(minutes)
+  ensure
+    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous_budget
+  end
+
+  test "attestation checks only requested minutes and does not search an untouched archive" do
+    untouched = @revision
+    first = attest_later_minutes
+    second = attest_later_minutes(body: "More volunteers confirmed.")
+    reconcile_and_process
+    run = @endeavor.history_runs.recent.first
+    assert_equal "succeeded", run.status
+    assert_equal [ first.member_revision.id, second.member_revision.id ],
+      @provider.calls.select { |stage, _| stage == "discovery" }.map { |_, input| input["source"]["revision_id"] }
+    assert_equal [ first.member_revision.id, second.member_revision.id ].sort, run.edition.manifest["revisions"].pluck("id").sort
+    assert_not_includes run.edition.payload["evidence"].pluck("revision_id"), untouched.id
+    assert EndeavorHistory::Presenter.new(@endeavor.reload).newer_minutes?
+    assert_equal untouched.sha256, untouched.reload.sha256
+  end
+
+  test "attestation after catalog growth retains historical evidence without auditing it again" do
+    previous = process.edition
+    new_endeavor = @organization.endeavors.create!(title: "New work never discussed", created_by: @manager)
+    minutes = attest_later_minutes
+    @provider.calls.clear
+    reconcile_and_process
+    original_run = @endeavor.history_runs.recent.first
+    new_run = new_endeavor.history_runs.recent.first
+    discoveries = @provider.calls.select { |stage, _| %w[discovery verify_discovery].include?(stage) }
+    assert_equal [ minutes.member_revision.id ], discoveries.map { |_, input| input["source"]["revision_id"] }.uniq
+    assert_equal 4, discoveries.size
+    assert_equal previous.payload["meetings"].first, original_run.edition.payload["meetings"].first
+    assert_equal [ minutes.member_revision.id ], new_run.edition.payload["evidence"].pluck("revision_id")
+    assert @endeavor.history_events.where(action: "reused", endeavor_history_run: original_run).any? { |event| event.metadata["edition_id"] == previous.id }
+    calls = @provider.calls.length
+    assert_no_difference "EndeavorHistoryRun.count" do
+      travel(1.day) { reconcile_and_process }
+    end
+    assert_equal calls, @provider.calls.length
+  end
+
   test "trigger recovery covers a newer attestation after an older pending run is superseded" do
     original = EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true)
     clear_enqueued_jobs
@@ -85,18 +199,16 @@ class EndeavorHistoryTest
 
   test "trigger recovery retries a scoped manual failure using its original authority and cached stages" do
     automatic_process
-    previous_budget = ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"]
     token, = AgentAccessToken.issue!(user: @manager, name: "Scoped retry delegate", expires_in: 3.days)
-    @provider.alter = ->(stage, _input, _data) { ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = "1" if stage == "verify_discovery" }
+    @provider.alter = ->(stage, _input, _data) { raise EndeavorHistory::Error, "provider_error" if stage == "summary" }
     original = Current.set(agent_access_token: token) do
       EndeavorHistory::Processing.request(@endeavor, requester: @manager, force: true, meeting_id: @meeting.id)
     end
     with_offline_history_provider { perform_enqueued_jobs(only: EndeavorHistoryJob) }
-    assert_equal "daily_budget", original.reload.error_category
-    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous_budget
+    assert_equal "provider_error", original.reload.error_category
     @provider.alter = nil
     @provider.calls.clear
-    travel 1.day do
+    travel 16.minutes do
       reconcile_and_process
       recovered = @endeavor.history_runs.recent.first
       assert_equal "succeeded", recovered.status
@@ -107,8 +219,6 @@ class EndeavorHistoryTest
       assert_equal original.id, metadata["retry_root_id"]
       assert_equal %w[summary verify_summary], @provider.calls.map(&:first)
     end
-  ensure
-    ENV["ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET"] = previous_budget
   end
 
   %w[capability token disabled].each do |revocation|
