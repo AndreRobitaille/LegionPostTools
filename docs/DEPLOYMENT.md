@@ -29,7 +29,8 @@ when changing the image build. It reduces concurrent build memory use, but does 
 reserve RAM for the applications or impose a total build memory limit. If a build
 stalls or all hosted sites fail together, stop the build and inspect host memory,
 pressure, and remaining compiler processes before retrying through the same SSH
-master. Follow the connection cooldown above if that connection fails.
+master. If that connection fails, stop and wait at least five minutes before a
+single chosen replacement attempt; do not use direct or parallel SSH as a fallback.
 
 ## Naming convention
 
