@@ -162,9 +162,19 @@ Deploy only when Andre explicitly asks. A merge to master is not a deploy. Produ
 
 Follow `docs/DEPLOYMENT.md` exactly. Use `bin/release check` for the preflight and `bin/release push-deploy` to deploy.
 
+Before every image build, follow the
+[shared-host build safeguards](docs/DEPLOYMENT.md#shared-host-build-safeguards):
+preserve serial gem installation, verify the builder's
+1,536 MiB memory limit and host memory headroom, coordinate one build/deploy at a
+time across hosted apps, and check all three sites. `bin/release check` verifies
+transport; it does not enforce these resource safeguards.
+
 Use one persistent control-master connection for the whole operation, including read-only checks. No direct or parallel ssh to the server, and no retry loops. If something fails, stop and report. Wait at least 5 minutes before any single further attempt.
 
-`bin/release check` closes its control master on exit, so any extra Kamal read must run inside that same session.
+`bin/release check` closes its control master by default. For authorized work spanning
+preflight, resource checks, deployment, and verification, set
+`RELEASE_KEEP_SSH_MASTER=true` on each release command, retain that one master, and
+close it only after final verification. This option does not authorize retries.
 
 Do not copy production data (real member data) anywhere without Andre's explicit yes.
 

@@ -12,7 +12,7 @@ The app is not a SaaS or multi-tenant platform. Each installation gets its own K
 
 - Hostname: `members.wipost165.org`
 - Server: shared Hetzner VPS `178.156.250.235`
-- Co-hosted app: `TwoRiversReporter`
+- Co-hosted apps: `TwoRiversReporter` and the public `wipost165` site
 - First production setup: completed for Robert E. Burns Post 165 on July 12, 2026.
 
 Primary repeat-deployment flow from the maintainer workstation is `bin/release
@@ -21,6 +21,8 @@ remote Docker builder, runs Kamal, verifies the live revision and public endpoin
 closes the SSH master. Use `bin/release check` for a non-mutating transport preflight.
 Use `bin/kamal setup` for the First install only, when provisioning a new deployment
 target. Do not use a server-side git clone or web UI as the primary flow.
+
+## Shared-host build safeguards
 
 The remote builder shares the VPS with live applications. The Dockerfile installs
 gems with `bundle install --jobs 1` so native extensions compile one gem at a time;
@@ -38,9 +40,42 @@ Docker memory limit, set during the October 29, 2026 recovery. Its memory-plus-s
 limit is the same, and the host has no swap. This protects the other applications
 by allowing an oversized build to fail within the builder's limit. The limit is
 host configuration, not declared in Kamal: verify it with `docker inspect` through
-the existing SSH master before a recovery build, especially after recreating the
+the existing SSH master before every build, especially after recreating the
 builder. Reapply with `docker update --memory 1536m --memory-swap 1536m` to that
 builder container if needed; never apply it to the application or database containers.
+
+Before each release, through the same retained SSH master:
+
+1. Run `bin/release check` with `RELEASE_KEEP_SSH_MASTER=true`. This checks transport,
+   **not** available host memory or the builder's memory limit. Keep that option on
+   subsequent release commands and close the master after final verification.
+2. Check `free -m`, `/proc/pressure/memory`, and `docker stats --no-stream`. Use
+   **available** RAM, not just free RAM. Leave headroom for the running applications
+   beyond the builder's possible 1,536 MiB usage; postpone if memory pressure is
+   sustained or that headroom is absent. The healthy October 29 pre-build snapshot
+   had about 2.1 GB available; the failed-build snapshot had only 28 MB.
+3. Verify the builder's `HostConfig.Memory` and `HostConfig.MemorySwap` both equal
+   `1610612736` bytes. A zero value is not this safeguard. Restore a missing limit
+   before building; do not raise it to get a failing build through. Preserve
+   `bundle install --jobs 1`. These checks are manual, not enforced by `bin/release`.
+4. Coordinate with the other hosted applications: run only one image build or
+   deployment at a time on this VPS. Check all three sites before, during, and after
+   the build: `members.wipost165.org/up`, `tworiversmatters.com`, and `wipost165.org`.
+   The wrapper checks members and Two Rivers; check the public Post site separately.
+
+If a build stalls or sites begin returning 504s, stop the build before trying another
+deployment. Canceling the local client does not prove remote compiler processes have
+stopped. Identify remaining build processes by parentage and cgroup, and verify host
+memory and site health recover before retrying. Do not kill application/database
+processes or use a blanket compiler kill. If the SSH connection fails, use the
+five-minute cooldown above rather than opening fallback connections.
+
+Check host resource pressure before attributing simultaneous site failures to Hetzner.
+The October 29 outage recovered after an authorized reboot; the limited build then
+completed while sites stayed healthy. An older October 21 kernel OOM killed BuildKit,
+but no matching OOM-kill entry was found for October 29. These observations support
+build-time resource exhaustion as a lead; they do not establish an application leak
+or a provider-wide outage. Rebooting is recovery, not a substitute for the safeguards.
 
 ## Naming convention
 
@@ -303,7 +338,7 @@ and approval status. See also the [initial activation handoff](MOBILE_BUDDY_CHEC
 8. Run `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` once as a preflight check.
 9. Run the same `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` command a second time; it should reuse the shared control connection.
 10. Run `bin/kamal setup` from the local repo for the First install only.
-11. Run `bin/kamal deploy` from the local repo.
+11. For later releases, use `bin/release push-deploy` and the shared-host safeguards above.
 12. Verify the app, sign-in email, passkeys, and persistence.
 13. Tear down the SSH control master.
 
@@ -388,7 +423,8 @@ For deployment-specific checks, also confirm:
 - `ControlMaster` / `ControlPersist` / `ControlPath`
 - two successful `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` runs before Kamal
 - only run `bin/kamal setup` for first provisioning
-- run `bin/kamal deploy` only after SSH preflight succeeds
+- use `bin/release check` and `bin/release push-deploy` for repeat releases
+- complete the shared-host memory, builder-limit, and all-site checks above; transport preflight alone is insufficient
 - if SSH fails, fix `~/.ssh/config` before touching Kamal secrets
 - if Kamal opens fresh sessions, inspect `ControlMaster` / `ControlPersist` / `ControlPath`
 - if auth tries 1Password identities, verify `IdentityAgent none`
