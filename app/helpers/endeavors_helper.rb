@@ -5,9 +5,9 @@ module EndeavorsHelper
       "processing" => "An update is queued or running.",
       "failed" => "The latest attempt failed. Open history to inspect it.",
       "no_minutes" => "History can begin when attested minutes are available.",
-      "not_generated" => "Minutes are available to build a first update.",
-      "outdated" => "Minutes or generation inputs have changed since publication.",
-      "current" => "Published history matches the current minutes and settings."
+      "not_generated" => "Future minutes will add updates. Search older discussions only if needed.",
+      "outdated" => "The saved summary needs an update.",
+      "current" => "Saved meeting summaries are available."
     }.fetch(status)
   end
 
@@ -88,7 +88,8 @@ module EndeavorsHelper
       "withdrawn" => "Automatic history is paused. Resume it before refreshing.",
       "forbidden" => "The requester no longer has permission to manage this history.",
       "source_changed" => "The sources or guidance changed. A fresh run will use the current record.",
-      "daily_budget" => "The daily AI token budget has been reached. Retry after the budget resets.",
+      "daily_budget" => "Today's history processing limit has been reached. This search will not restart automatically. You can request a new search tomorrow.",
+      "cost_confirmation_required" => "Confirm that this search costs the Post money before continuing.",
       "call_budget" => "This run reached its call limit. An administrator can adjust the processing budget.",
       "input_limit" => "The complete source exceeds the configured input limit; no text was discarded.",
       "verification_failed" => "The generated update did not pass its source check. Review the findings or rerun with guidance.",

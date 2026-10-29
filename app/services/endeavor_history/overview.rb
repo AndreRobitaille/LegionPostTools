@@ -1,10 +1,10 @@
 module EndeavorHistory
   class Overview
     LABELS = { "all" => "All", "attention" => "Needs attention", "processing" => "Processing",
-      "failed" => "Failed", "outdated" => "Outdated", "not_generated" => "Not generated",
-      "withdrawn" => "Withdrawn", "no_minutes" => "No minutes yet", "current" => "Current" }.freeze
+      "failed" => "Needs help", "outdated" => "Update available", "not_generated" => "No history yet",
+      "withdrawn" => "Paused", "no_minutes" => "No minutes yet", "current" => "History available" }.freeze
     FILTERS = %w[all attention processing failed outdated not_generated withdrawn].freeze
-    ATTENTION = %w[failed outdated not_generated].freeze
+    ATTENTION = %w[failed outdated].freeze
 
     def initialize(organization)
       @organization = organization
@@ -42,7 +42,12 @@ module EndeavorHistory
       return "failed" if run&.status == "failed"
       return "no_minutes" if manifest.fetch("revisions").empty?
       return "not_generated" unless edition
-      Sources.dependencies(edition.manifest) == Sources.dependencies(manifest) ? "current" : "outdated"
+      # An optional archive search is not maintenance an officer needs to perform.
+      # Saved evidence remains usable when its identity and covered sources match.
+      previous = Sources.dependencies(edition.manifest).except("catalog", "revisions")
+      current = Sources.dependencies(manifest).except("catalog", "revisions")
+      covered_sources_current = (edition.manifest.fetch("revisions") - manifest.fetch("revisions")).empty?
+      previous == current && covered_sources_current ? "current" : "outdated"
     end
   end
 end

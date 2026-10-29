@@ -37,6 +37,7 @@
       <%= form.label :details, "Background and context" %>
       <%= form.rich_text_area :details, attachments: "false" %>
     </div>
+    <%= render "endeavors/history_help" if endeavor.new_record? %>
     <div class="btnrow">
       <%= form.submit(endeavor.persisted? ? "Save changes" : "Create Endeavor", class: "btn-primary") %>
       <%= link_to "Cancel", endeavor.persisted? ? endeavor_path(endeavor) : endeavors_path, class: "btn-secondary" %>

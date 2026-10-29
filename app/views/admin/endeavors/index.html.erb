@@ -17,7 +17,6 @@
     <% end %>
   <% end %>
 </nav>
-<p class="history-note">Statuses describe AI history, not the progress of the Endeavor. Open Manage history to refresh it or add clarifying guidance.</p>
 <div class="endeavor-management-list">
   <% @rows.each do |row| %>
     <% endeavor = row[:endeavor] %>
@@ -25,7 +24,7 @@
       <div>
         <p class="endeavor-management-lifecycle"><%= endeavor.completed? ? "Completed Endeavor" : "Active Endeavor" %></p>
         <h2><%= link_to endeavor.title, endeavor_path(endeavor) %></h2>
-        <p class="history-note"><%= row[:published_at] ? "Last published update: #{legion_datetime(row[:published_at])}" : "No published AI update yet." %></p>
+        <p class="history-note"><%= row[:published_at] ? "Last history update: #{legion_datetime(row[:published_at])}" : "No history yet." %></p>
       </div>
       <div class="endeavor-management-state">
         <strong class="<%= 'endeavor-management-attention' if EndeavorHistory::Overview::ATTENTION.include?(row[:status]) %>"><%= EndeavorHistory::Overview::LABELS.fetch(row[:status]) %></strong>

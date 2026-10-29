@@ -24,6 +24,11 @@ requirements. The inherited generic `simplify` skill assumes React/TypeScript an
 to `http://CLAUDE.md`; root guidance makes language applicability and local authority clear.
 No new framework conventions or mandatory simplification pass were introduced.
 
+October 29 spend-control update: the current OpenAI SDK is 0.103.0. Both providers
+now set `prompt_cache_options.mode` to `explicit` without breakpoints, avoiding
+implicit cache writes for their changing inputs. The earlier migration observations
+below remain historical. See [current spend controls](ENDEAVOR_HISTORY_SPEND_CONTROL.md).
+
 ## Model compatibility
 
 The minutes provider now defaults to `gpt-6-astra`. `OPENAI_MINUTES_MODEL` still overrides

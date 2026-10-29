@@ -6,7 +6,9 @@ module Api
     def show
       runs = @endeavor.history_runs.recent.limit(20)
       reuses = @endeavor.history_events.where(action: "reused", endeavor_history_run_id: runs.pluck(:id)).group_by(&:endeavor_history_run_id)
+      history_status = EndeavorHistory::Overview.new(organization).rows.find { |row| row[:endeavor].id == @endeavor.id }.fetch(:status)
       render json: {
+        history_status: history_status, needs_attention: EndeavorHistory::Overview::ATTENTION.include?(history_status),
         enabled: EndeavorHistory::Config.enabled?, withdrawn: @endeavor.history_withdrawn?, lock_version: @endeavor.lock_version,
         guidance: @endeavor.history_guidances.order(id: :desc).first&.slice(:id, :body, :created_at),
         runs: runs.map do |run|
@@ -18,6 +20,7 @@ module Api
     end
 
     def create
+      EndeavorHistory::Manage.confirm_cost!(params[:cost_acknowledged]) if %w[refresh resume].include?(params[:operation])
       case params[:operation]
       when "refresh"
         meeting = organization.meetings.find(params[:meeting_id]) if params[:meeting_id].present?

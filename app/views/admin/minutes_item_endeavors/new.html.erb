@@ -62,6 +62,7 @@
         <span class="fl-help">Link only when this discussion concerns the same continuing Post work.</span>
       </div>
     <% end %>
+    <%= render "endeavors/history_help" if creating %>
     <div class="btnrow">
       <%= form.submit creating ? "Create and link" : "Link Endeavor", class: "btn-primary" %>
       <% if creating || current_user.can?("manage_agendas") %>

@@ -52,6 +52,13 @@ Replays use current authority and visibility, so restricted summaries may be fil
 Calendar-management permission differs from manage_agendas;
 never infer one from the other. Re-read `/api` after a deployment or role change.
 
+Creating an Endeavor does not authorize a search of older minutes. New histories and
+unsearched older records are normal; do not start paid work merely to fill them in.
+For a requested **Search past minutes** (`operation: refresh`) or **Resume and search**,
+explain that it costs the Post money and obtain the human's acknowledgment before
+submitting `cost_acknowledged: true`. Follow the current `/api` for exact scope and
+idempotency. Daily-budget failures do not restart automatically the next day.
+
 Local maintainers: `docs/CALENDAR_API.md` and `docs/WEBSITE_PUBLISHING_API.md` document
 the endpoint/field contracts and local implementation boundaries. Operational agents
 must use the current `/api`, not a cached local

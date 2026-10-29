@@ -12,6 +12,7 @@ module Admin
     end
 
     def create
+      EndeavorHistory::Manage.confirm_cost!(params[:cost_acknowledged]) if %w[refresh resume].include?(params[:operation])
       case params[:operation]
       when "refresh"
         meeting = @endeavor.organization.meetings.find(params[:meeting_id]) if params[:meeting_id].present?
@@ -28,7 +29,13 @@ module Admin
       else
         raise EndeavorHistory::Error, "invalid_action"
       end
-      redirect_to admin_endeavor_history_path(@endeavor), notice: "Endeavor history updated."
+      notice = case params[:operation]
+      when "refresh" then "History search started."
+      when "resume" then "History search started. Future updates resumed."
+      when "withdraw" then "History hidden. Future updates paused."
+      else "Search hints saved."
+      end
+      redirect_to admin_endeavor_history_path(@endeavor), notice: notice
     rescue EndeavorHistory::Error => error
       redirect_to admin_endeavor_history_path(@endeavor), alert: helpers.endeavor_history_error(error.category)
     rescue ActiveRecord::StaleObjectError

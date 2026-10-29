@@ -59,7 +59,7 @@
         <div class="card-body">
           <% if @endeavor.active? %><p class="history-note"><%= endeavor_reason(@endeavor, with_date: true) %></p><% end %>
           <div class="endeavor-fact-actions">
-            <%= link_to "AI history", admin_endeavor_history_path(@endeavor), class: "btn-secondary" %>
+            <%= link_to "Manage history", admin_endeavor_history_path(@endeavor), class: "btn-secondary" %>
             <%= link_to "Edit details", edit_endeavor_path(@endeavor), class: "btn-secondary" %>
             <% if @endeavor.active? %>
               <%= button_to "Mark complete", complete_endeavor_path(@endeavor), method: :patch, class: "btn-primary", data: { turbo_confirm: "Mark “#{@endeavor.title}” complete? Its history stays available." } %>

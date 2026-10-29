@@ -2,7 +2,7 @@
 
 A read-only officer overview at Administration / Officer tools → Manage Endeavors shows
 whether continuing Post work has current generated history and where an officer may need
-to act. Detailed refresh, guidance, withdrawal, and diagnostics stay on each AI history
+to act. Search hints, pause/resume, saved summaries, and diagnostics stay under **More options** on each Meeting history
 page. Opening or filtering this overview never starts AI calls.
 
 Use the existing `manage_agendas` capability for the page and all entry links. Scope rows
@@ -21,13 +21,21 @@ Rows stack on phones. A wrapping filter strip has counts and a clear current sel
 Avoid charts and duplicate editing forms. Keep active/completed lifecycle separate.
 
 Status precedence: withdrawn; queued/running; latest run failed; no available minutes;
-not generated; outdated; current. Outdated compares the latest edition manifest against
-current revisions, identity/catalog, guidance generation, and model/prompt configuration,
-matching processing inputs. A failure can coexist with an older published edition; retain
+not generated; outdated; current. The internal status codes remain stable, with plain labels
+such as **No history yet**, **History available**, **Update available**, and **Paused**.
+No-history is a neutral state and does not appear under Needs attention. Optional unsearched
+older minutes and catalog-only changes do not make saved history outdated. Outdated means
+the covered sources, target identity, guidance/generation, or quality policy changed. A failure can coexist with an older published edition; retain
 its date and explain that the latest attempt failed. Superseded attempts are not failures.
-Filters: all, needs attention (failed/outdated/not generated), processing, failed, outdated,
+Filters: all, needs attention (failed/outdated), processing, failed, outdated,
 not generated, withdrawn. No-minutes rows should explain the prerequisite without calling
 for a pointless rerun. Include completed Endeavors so their history remains manageable.
+
+The management API exposes matching `history_status` and `needs_attention` fields.
+`current` describes the validity of saved evidence, not complete archive coverage.
+The member history API's `newer_minutes` field continues to report uncovered records,
+including optional older ones. Finding earlier discussions is **Search past minutes**
+in the website and `operation: refresh` in the API; cost acknowledgment is required.
 
 Verify status precedence and stale-input detection, organization scope, member denial and
 hidden links, officer access, empty/filter states, desktop/390px readability, and focus.

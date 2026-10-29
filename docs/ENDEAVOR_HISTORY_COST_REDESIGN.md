@@ -1,5 +1,10 @@
 # Endeavor history with incremental meeting processing
 
+October 29 update: [spend control](ENDEAVOR_HISTORY_SPEND_CONTROL.md) replaces automatic
+catalog audits and new-identity archive searches with journal-scoped automatic updates
+and explicit, cost-acknowledged historical searches. The October 2 rationale and results
+below remain historical evidence.
+
 Status: incremental processing implemented and verified locally, October 2, 2026;
 releases use the repository's guarded deployment workflow. Shared multi-Endeavor generation remains an unqualified
 optimization. This document records the requested
