@@ -32,6 +32,16 @@ pressure, and remaining compiler processes before retrying through the same SSH
 master. If that connection fails, stop and wait at least five minutes before a
 single chosen replacement attempt; do not use direct or parallel SSH as a fallback.
 
+The existing Post 165 BuildKit container
+(`buildx_buildkit_kamal-remote-ssh---root-178-156-250-2350`) also has a 1,536 MiB
+Docker memory limit, set during the October 29, 2026 recovery. Its memory-plus-swap
+limit is the same, and the host has no swap. This protects the other applications
+by allowing an oversized build to fail within the builder's limit. The limit is
+host configuration, not declared in Kamal: verify it with `docker inspect` through
+the existing SSH master before a recovery build, especially after recreating the
+builder. Reapply with `docker update --memory 1536m --memory-swap 1536m` to that
+builder container if needed; never apply it to the application or database containers.
+
 ## Naming convention
 
 Use install-specific names in the form:
