@@ -22,6 +22,26 @@ closes the SSH master. Use `bin/release check` for a non-mutating transport pref
 Use `bin/kamal setup` for the First install only, when provisioning a new deployment
 target. Do not use a server-side git clone or web UI as the primary flow.
 
+The remote builder shares the VPS with live applications. The Dockerfile installs
+gems with `bundle install --jobs 1` so native extensions compile one gem at a time;
+Bundler otherwise defaults to the available processor count. Preserve this limit
+when changing the image build. It reduces concurrent build memory use, but does not
+reserve RAM for the applications or impose a total build memory limit. If a build
+stalls or all hosted sites fail together, stop the build and inspect host memory,
+pressure, and remaining compiler processes before retrying through the same SSH
+master. If that connection fails, stop and wait at least five minutes before a
+single chosen replacement attempt; do not use direct or parallel SSH as a fallback.
+
+The existing Post 165 BuildKit container
+(`buildx_buildkit_kamal-remote-ssh---root-178-156-250-2350`) also has a 1,536 MiB
+Docker memory limit, set during the October 29, 2026 recovery. Its memory-plus-swap
+limit is the same, and the host has no swap. This protects the other applications
+by allowing an oversized build to fail within the builder's limit. The limit is
+host configuration, not declared in Kamal: verify it with `docker inspect` through
+the existing SSH master before a recovery build, especially after recreating the
+builder. Reapply with `docker update --memory 1536m --memory-swap 1536m` to that
+builder container if needed; never apply it to the application or database containers.
+
 ## Naming convention
 
 Use install-specific names in the form:
