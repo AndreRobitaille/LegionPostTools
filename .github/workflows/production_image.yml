@@ -5,10 +5,11 @@ on:
     inputs:
       baseline:
         description: Baseline commit to compare with this revision
-        required: true
-        default: 2cb6a64fbb195d4a1af9ac20de7fd4947ac196a5
-  push:
-    branches: [codex/production-image-memory]
+        required: false
+      export_image:
+        description: Export the verified image for off-server publication
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -27,13 +28,30 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Measure cold baseline
+        if: inputs.baseline != ''
         env:
-          BASELINE: ${{ inputs.baseline || '2cb6a64fbb195d4a1af9ac20de7fd4947ac196a5' }}
+          BASELINE: ${{ inputs.baseline }}
         run: bash script/profile_production_image "$BASELINE" baseline "$RUNNER_TEMP/profile/baseline"
       - name: Measure cold production bundle and check runtime
         run: bash script/profile_production_image "$GITHUB_SHA" candidate "$RUNNER_TEMP/profile/candidate"
+      - name: Verify production startup with synthetic databases
+        run: bash script/smoke_production_startup "$RUNNER_TEMP/profile/candidate"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: production-image-profile
           path: ${{ runner.temp }}/profile
+      - name: Export verified image
+        if: inputs.export_image
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-image"
+          docker save legion-profile:candidate | gzip -1 > "$RUNNER_TEMP/release-image/image.tar.gz"
+          cd "$RUNNER_TEMP/release-image"
+          sha256sum image.tar.gz > SHA256SUMS
+      - uses: actions/upload-artifact@v7
+        if: inputs.export_image
+        with:
+          name: production-image-${{ github.sha }}
+          path: ${{ runner.temp }}/release-image
+          retention-days: 3
+          compression-level: 0

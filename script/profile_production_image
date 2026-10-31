@@ -47,6 +47,9 @@ monitor_pid="$!"
 
 build_status=0
 docker buildx build --builder "$builder" --platform linux/amd64 --progress plain \
+  --label service=legion_post_165_wi_tools \
+  --label "org.opencontainers.image.revision=$(git rev-parse "$revision")" \
+  --label org.opencontainers.image.source=https://github.com/AndreRobitaille/LegionPostTools \
   --provenance=false --load --tag "$image" "$context" 2>&1 | tee "$output/build.log" || build_status="$?"
 cat "$cgroup/memory.peak" > "$output/memory.peak"
 cat "$cgroup/memory.events" > "$output/memory.events"
