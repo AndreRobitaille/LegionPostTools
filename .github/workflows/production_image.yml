@@ -9,6 +9,10 @@ on:
       - Gemfile.lock
       - .github/workflows/production_image.yml
       - bin/release
+      - bin/docker-entrypoint
+      - config/database.yml
+      - config/puma.rb
+      - config/queue.yml
       - script/profile_production_image
       - script/production_image_smoke.rb
       - script/smoke_production_startup

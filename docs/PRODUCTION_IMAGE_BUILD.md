@@ -33,7 +33,14 @@ Do not start an on-server build unless it leaves application headroom. If the me
 build cannot fit, use a verified image built away from production or report the
 remaining release blocker; do not change application capacity or buy RAM implicitly.
 
-This change does not alter official records, permissions, data, or worker settings.
+The startup smoke exposed a fresh-database failure: the primary SQL schema setting
+made `db:prepare` look for nonexistent SQL dumps for cache and queue. Their committed
+schemas are Ruby. Explicit `schema_format: ruby` on those two database connections
+lets the entrypoint initialize them and start Solid Queue. Keep the primary database
+in SQL format so official-record triggers survive schema loads. Existing initialized
+cache/queue databases are not reloaded by `db:prepare`.
+
+This change does not alter official records, permissions, production data, or worker counts.
 Validation must establish that excluded gems are absent, workstation Kamal still
 loads, Rails boots in the final production image, and Chromium PDF rendering,
 libvips processing, PostgreSQL tools, and compiled assets remain available. The
@@ -74,3 +81,37 @@ master disappears; they must not silently open another outer connection. Optiona
 the default). Check all three sites and worker health, and close the master at the
 end. An off-server build still needs room for image extraction and the temporary
 overlap of old/new app containers; inspect resources before deploying.
+
+## October 31 cold-build comparison
+
+[Run 41253729492](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/41253729492)
+used two fresh BuildKit v0.32.2 builders on an amd64 GitHub runner with Docker
+28.0.4. Both had memory and memory-plus-swap limits of 1,610,612,736 bytes, no
+imported build cache, and the same Ruby 4.0.7 slim base digest
+`sha256:6c6b7b8c7d750604178aa60c2fa436890cd17c5695bdbd3213db2e4efbf98eb9`.
+
+| Observation | Baseline `2cb6a64f` | Trimmed `28014586` |
+| --- | ---: | ---: |
+| Builder cgroup peak, MiB | 1,465.7 | 1,477.0 |
+| Largest sampled anonymous memory, MiB | 123.0 | 104.5 |
+| Largest sampled file memory, MiB | 1,283.1 | 1,325.8 |
+| Uncompressed final image, MiB | 1,203.0 | 1,116.8 |
+| Installed gems reported by Bundler | 134 | 99 |
+| Builder OOM / OOM kills | 0 / 0 | 0 / 0 |
+
+The image is 86.2 MiB (7.2%) smaller. The measured builder peak did not fall; most
+sampled memory was file cache. This does not establish a 1.5 GiB minimum or measure
+the Docker daemon's separate memory. Anonymous/file samples are once per second;
+their maxima are not necessarily simultaneous. The cgroup peak is kernel-recorded.
+Both builds included gem installation, Bootsnap, assets, and image export.
+
+Bundler's build logs establish the gem counts above. The initial `gems.json` files
+enumerated Ruby's default gem path, not the versioned bundle directory, and must
+not be used as installed-bundle inventory. The profiler and runtime absence check
+now read physical bundle gemspec files explicitly. The trimmed image passed Rails
+boot, compiled assets, synthetic PDF rendering (15,798 bytes), libvips, and PostgreSQL
+client checks. This comparison did not access production or measure live traffic.
+
+With approximately 800 MiB available at the preceding production inspection, use
+the off-server publication path rather than infer that this build fits safely on
+the shared host. Reinspect production before replacement; these are dated snapshots.

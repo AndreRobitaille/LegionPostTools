@@ -5,7 +5,8 @@ require "vips"
 
 abort "Expected production" unless Rails.env.production?
 excluded = %w[capybara selenium-webdriver debug brakeman rubocop kamal sshkit net-ssh]
-present = Gem::Specification.map(&:name) & excluded
+installed_specs = Dir["#{ENV.fetch('BUNDLE_PATH')}/ruby/*/specifications/*.gemspec"].map { |file| Gem::Specification.load(file) }
+present = installed_specs.map(&:name) & excluded
 abort "Non-runtime gems installed: #{present.join(', ')}" if present.any?
 abort "No compiled assets" unless Dir["/rails/public/assets/*"].any?
 
