@@ -43,7 +43,7 @@ gem "image_processing", "~> 2.2"
 gem "ruby-vips", require: false
 
 # Modern Action Text rich-text editor (replaces the default Trix editor)
-gem "lexxy", "~> 1.0.1"
+gem "lexxy", "~> 1.0.2"
 gem "csv"
 gem "webauthn"
 # Human native-app authorization code + PKCE; separate from agent credentials.

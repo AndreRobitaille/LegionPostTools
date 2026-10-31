@@ -87,6 +87,9 @@ class SharedLinkSignInSystemTest < ApplicationSystemTestCase
     credential = @user.passkey_credentials.sole
     click_button "Menu"
     click_button "Sign out"
+    assert_current_path new_session_path
+    assert_button "Sign in with a passkey"
+    assert_equal 0, @user.sessions.count
     visit dated_agenda_path(@agenda)
     assert_current_path new_session_path
     click_button "Sign in with a passkey"
