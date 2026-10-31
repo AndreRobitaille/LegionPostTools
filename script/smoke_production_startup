@@ -46,7 +46,7 @@ for ((attempt = 1; attempt <= 30; attempt++)); do
   sleep 1
 done
 [[ "$workers" -gt 0 ]]
-docker top "$application" -eo args | awk '/puma: cluster worker/ {count++} END {exit count != 2}'
+docker top "$application" -eo pid,args | awk '/puma: cluster worker/ {count++} END {exit count != 2}'
 pid="$(docker inspect --format '{{.State.Pid}}' "$application")"
 cgroup="/sys/fs/cgroup$(awk -F: '$1 == "0" {print $3}' "/proc/$pid/cgroup")"
 cat "$cgroup/memory.peak" > "$output/startup-memory.peak"
