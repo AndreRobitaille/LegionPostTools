@@ -148,3 +148,15 @@ saved credential use, one new session, the agenda destination, and refresh.
 
 This is a test synchronization change; the application authentication and destination
 policy stay intact. Per-PR CI must run on the additional pushed commit before merge.
+
+The six focused sign-in and Buddy Checks browser workflows passed together with
+156 assertions. PR #171's final head `102e49ac` then passed CI run 41250030272:
+1,640 Rails tests / 17,204 assertions and 115 browser tests / 6,145 assertions,
+with no failures, errors, or skips; lint and both security jobs passed too.
+It merged as `dbe9480676cbd91b724f3c8d36da9f34922d0f38` before updating #150.
+
+That CI run's first test attempt stopped during Ubuntu mirror downloads in
+`apt-get update`, before checkout or application tests. After ten minutes without
+advancing, it was cancelled and only the test job was rerun on the same source
+revision. The fresh runner completed setup and both full test suites. The failed
+shared-agenda assertion above was corrected in code before that green run.
