@@ -1,6 +1,18 @@
 name: Profile production image
 
 on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - Gemfile
+      - Gemfile.lock
+      - .github/workflows/production_image.yml
+      - bin/release
+      - script/profile_production_image
+      - script/production_image_smoke.rb
+      - script/smoke_production_startup
+      - test/scripts/release_test.rb
   workflow_dispatch:
     inputs:
       baseline:

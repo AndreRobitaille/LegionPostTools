@@ -21,7 +21,9 @@ without production secrets or an SSH connection. Its output is evidence for the
 measured revision, BuildKit version, architecture, and cache state. A cold CI build
 does not establish the shared VPS's future peak or available application headroom.
 Supply an optional baseline commit for a cold comparison; omit it to measure only
-the selected revision. An OOM within the isolated builder is a failed measurement, not permission to raise
+the selected revision. Pull requests changing the bundle or image/release tooling
+also build and smoke-test the production image. An OOM within the isolated builder
+is a failed measurement, not permission to raise
 the production cap. The runtime smoke uses synthetic HTML/image data and performs
 no database access, email delivery, or AI generation.
 
