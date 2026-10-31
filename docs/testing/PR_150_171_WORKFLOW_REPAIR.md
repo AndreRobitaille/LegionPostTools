@@ -129,3 +129,22 @@ fixes between PRs #150 and #171. Per-PR CI is verified separately against each p
 revision before merge; the local results above do not establish that CI or production
 verification. No production data, deployment, paid AI, or official-record actions
 were involved.
+
+## Additional sign-in boundary found by per-PR CI
+
+PR #171's CI run 41249285101 passed all 1,640 ordinary tests / 17,204 assertions,
+then failed the shared-agenda passkey browser test: authentication returned to `/`
+instead of the agenda. Its Buddy Checks checks passed. The failure screenshot
+shows a signed-in dashboard, not a rejected passkey.
+
+`docs/MEMBERS_SITE_SHARING.md` requires the same-browser shared destination after
+passkey sign-in. The test clicked Sign out and immediately visited the protected
+agenda, overlapping asynchronous sign-out and destination capture. With 300ms CDP
+network latency and seed 56703, the original test reproduced the exact wrong path.
+Wait for the sign-in page and its passkey button, and confirm zero saved sessions,
+before visiting the protected agenda. The corrected real virtual-authenticator
+journey passes under the same latency and seed: 1 test / 19 assertions, including
+saved credential use, one new session, the agenda destination, and refresh.
+
+This is a test synchronization change; the application authentication and destination
+policy stay intact. Per-PR CI must run on the additional pushed commit before merge.
