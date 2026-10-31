@@ -13,6 +13,69 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal "Alber, Vincent", person.roster_display_name
   end
 
+  test "first last display puts generational suffixes after the surname without changing saved fields" do
+    [
+      [ "Charles", "Example Sr.", "Charles Example, Sr." ],
+      [ "Charles Sr.", "Example", "Charles Example, Sr." ],
+      [ "Charles, Sr.", "Example", "Charles Example, Sr." ],
+      [ "Sr. Charles", "Example", "Charles Example, Sr." ],
+      [ "Sr., Charles", "Example", "Charles Example, Sr." ],
+      [ "Charles", "Sr. Example", "Charles Example, Sr." ],
+      [ "Jr Don", "Example", "Don Example, Jr" ],
+      [ "Don Jr", "Example", "Don Example, Jr" ],
+      [ "Don", "Example, Jr.", "Don Example, Jr." ],
+      [ "Alex Q. III", "de la Example", "Alex Q. de la Example III" ],
+      [ "Alex-Casey IV", "O'Example-Smith", "Alex-Casey O'Example-Smith IV" ],
+      [ "Charles SR", "Example Sr.", "Charles Example, SR" ],
+      [ "  Don Q., jr.  ", " Example ", "Don Q. Example, jr." ]
+    ].each do |first, last, expected|
+      person = Person.new(first_name: first, last_name: last)
+      assert_equal expected, person.first_last_display_name
+      assert_equal first, person.first_name
+      assert_equal last, person.last_name
+    end
+    %w[Sr Sr. SR sr. Jr Jr. JR jr.].each do |suffix|
+      assert_equal "Alex Example, #{suffix}", Person.new(first_name: "Alex #{suffix}", last_name: "Example").first_last_display_name
+    end
+    %w[II III IV].each do |suffix|
+      assert_equal "Alex Example #{suffix}", Person.new(first_name: "Alex #{suffix}", last_name: "Example").first_last_display_name
+    end
+  end
+
+  test "first last display preserves ordinary initials names and partial names" do
+    [
+      [ "John V", "Example", "John V Example" ],
+      [ "John I.", "Example", "John I. Example" ],
+      [ "Jrue", "Example", "Jrue Example" ],
+      [ "Srikanth", "Example", "Srikanth Example" ],
+      [ "Alex", "Srinivasan", "Alex Srinivasan" ],
+      [ "Alex Jr. Q.", "Example", "Alex Jr. Q. Example" ],
+      [ "Cher", nil, "Cher" ],
+      [ nil, "Example", "Example" ],
+      [ nil, nil, "" ]
+    ].each do |first, last, expected|
+      assert_equal expected, Person.new(first_name: first, last_name: last).first_last_display_name
+    end
+  end
+
+  test "first last display preserves the current roster name even when split fields are older" do
+    [
+      [ "Example, Charles Sr.", "Charles Example, Sr." ],
+      [ "Example, Sr. Charles", "Charles Example, Sr." ],
+      [ "Example, Jr. Don", "Don Example, Jr." ],
+      [ "Example Jr., Don", "Don Example, Jr." ],
+      [ "Example, Don, Jr.", "Don Example, Jr." ],
+      [ "Charles Example, Sr.", "Charles Example, Sr." ],
+      [ "Charles Example Sr.", "Charles Example, Sr." ],
+      [ "Alex Example, III", "Alex Example III" ],
+      [ "Alex Example", "Alex Example" ]
+    ].each do |roster, expected|
+      person = Person.new(first_name: "Older", last_name: "Fields", roster_name: roster)
+      assert_equal expected, person.first_last_display_name
+      assert_equal [ "Older", "Fields", roster ], [ person.first_name, person.last_name, person.roster_name ]
+    end
+  end
+
   test "roster display name falls back to full name" do
     person = Person.new(first_name: "Jane", last_name: "Doe")
 
@@ -67,8 +130,8 @@ class PersonTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "John", last_name: "Doe")
     commander = PositionTitle.create!(organization: org, name: "Commander", display_order: 1)
     adjutant = PositionTitle.create!(organization: org, name: "Adjutant", display_order: 2)
-    PositionAssignment.create!(person: person, position_title: adjutant, starts_on: Date.current)
-    PositionAssignment.create!(person: person, position_title: commander, starts_on: Date.current)
+    PositionAssignment.create!(person: person, position_title: adjutant, starts_on: Organization.current_local_date)
+    PositionAssignment.create!(person: person, position_title: commander, starts_on: Organization.current_local_date)
 
     assert_equal "Commander", person.current_role_label
   end
@@ -83,7 +146,7 @@ class PersonTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Past", last_name: "Officer")
     title = PositionTitle.create!(organization: org, name: "Historian", display_order: 5)
     PositionAssignment.create!(person: person, position_title: title,
-      starts_on: Date.current - 400, ends_on: Date.current - 30)
+      starts_on: Organization.current_local_date - 400, ends_on: Organization.current_local_date - 30)
 
     assert_nil person.current_role_label
   end

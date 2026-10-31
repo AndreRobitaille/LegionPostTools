@@ -1,0 +1,63 @@
+.minutes-email-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; border-top: 3px solid var(--color-gold); padding: 20px 0; margin-bottom: 12px; }
+.minutes-email-groups strong { color: var(--color-navy); font-size: 19px; }
+.minutes-email-groups p { margin: 6px 0; font-size: 16px; line-height: 1.55; }
+.minutes-email-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.minutes-email-layout > *, .minutes-email-layout .card { min-width: 0; }
+.minutes-email-layout p, .minutes-email-meeting p, .minutes-email-audit p { font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; margin: 0 0 14px; }
+.minutes-email-layout h2 { font-size: 19px; color: var(--color-navy); margin: 0 0 8px; }
+.minutes-email-layout .minutes-email-secondary, .minutes-email-meeting .minutes-email-secondary { font-size: 14px; color: #526172; }
+.minutes-email-recipient, .minutes-email-issue { border-top: 1px solid var(--rule); padding: 20px 0; }
+.minutes-email-layout summary, .minutes-email-meeting summary, .minutes-email-audit summary { cursor: pointer; font-size: 16px; line-height: 1.6; color: var(--color-navy); padding: 12px 0; }
+.minutes-email-layout details form, .minutes-email-meeting details form { margin-top: 12px; }
+.minutes-email-layout .entry-field { margin-bottom: 16px; }
+.minutes-email-settings fieldset { border: 0; padding: 12px 0; min-width: 0; }
+.minutes-email-settings legend { font-size: 16px; font-weight: 700; color: var(--color-navy); }
+.minutes-email-settings .form-toggle { font-size: 16px; }
+.minutes-email-layout .btnrow { margin-bottom: 8px; }
+.minutes-email-meeting { margin-bottom: 24px; }
+.minutes-email-meeting .card-body > form { margin-top: 14px; }
+.minutes-email-summary { margin: 0 0 20px; }
+.minutes-email-summary dt { font-size: 14px; font-weight: 700; color: var(--color-navy); margin: 16px 0 6px; }
+.minutes-email-summary dd { margin: 0; font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+.minutes-email-summary code { font-size: 16px; overflow-wrap: anywhere; }
+.minutes-email-template, .minutes-email-preview-note { white-space: pre-wrap; }
+.minutes-email-template .minutes-email-variable { display: inline-block; border-bottom: 2px solid var(--color-gold); background: var(--color-cream); padding: 0 3px; font-size: 16px; }
+.minutes-email-enabled { color: var(--color-navy); }
+.minutes-email-enabled--active { color: var(--color-green); }
+.minutes-email-connection, .minutes-email-preview { border-top: 1px solid var(--rule); margin-top: 20px; padding-top: 4px; }
+.minutes-email-layout .minutes-email-preview-subject { padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+.minutes-email-layout .minutes-email-automatic { border-left: 3px solid var(--color-gold); padding-left: 14px; margin-bottom: 16px; }
+.minutes-email-layout .minutes-email-automatic p { margin-bottom: 8px; }
+.minutes-email-variables { margin: 20px 0; }
+.minutes-email-variable-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.minutes-email-variable-buttons button { display: flex; flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; min-width: 0; }
+.minutes-email-variable-buttons code { font-size: 14px; overflow-wrap: anywhere; }
+.minutes-email-variable-destination { font-weight: 700; }
+.minutes-email-errors { border-left: 3px solid var(--color-legionred); padding: 12px 16px; margin-bottom: 20px; }
+.minutes-email-errors ul { padding-left: 18px; font-size: 16px; line-height: 1.6; }
+.minutes-email-layout textarea { min-height: 150px; width: 100%; font-size: 16px; line-height: 1.6; }
+.minutes-email-layout .minutes-email-wording-help { margin: 18px 0 0; }
+.minutes-email-letter { max-width: 600px; margin: 20px auto; padding: 24px; background: #fff; color: #1b222b; border: 1px solid #e7dfcd; font-family: Arial, Helvetica, sans-serif; }
+.minutes-email-letter p { font-size: 18px; line-height: 1.6; margin: 0 0 20px; }
+.minutes-email-letter .minutes-email-letter-post { color: #0a2240; font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.minutes-email-letter-rule { border-top: 2px solid #c6a15b; margin-bottom: 24px; }
+.minutes-email-letter .minutes-email-letter-heading { color: #0a2240; font-size: 28px; font-weight: 700; line-height: 1.2; margin: 0 0 10px; }
+.minutes-email-letter .minutes-email-letter-date { color: #526172; font-size: 16px; margin-bottom: 28px; }
+.minutes-email-letter-attachment { background: #fbf7ec; padding: 20px; margin: 24px 0; border: 1px solid #e7dfcd; }
+.minutes-email-letter-attachment h3 { color: #0a2240; font-size: 20px; font-weight: 700; line-height: 1.35; margin: 0 0 10px; }
+.minutes-email-letter-attachment p { margin-bottom: 0; }
+.minutes-email-letter-status { border-top: 1px solid #e7dfcd; padding-top: 20px; margin: 24px 0; }
+.minutes-email-letter-status p { font-size: 16px; line-height: 1.6; margin-bottom: 8px; }
+.minutes-email-letter-status strong { color: #0a2240; }
+.minutes-email-letter .minutes-email-letter-signature { color: #526172; font-size: 16px; margin: 24px 0 0; }
+@media (max-width: 900px) {
+  .minutes-email-layout, .minutes-email-groups { grid-template-columns: minmax(0, 1fr); }
+  .minutes-email-groups { gap: 12px; }
+  .minutes-email-layout .btnrow { align-items: stretch; flex-direction: column; }
+  .minutes-email-layout .btnrow form, .minutes-email-layout .btnrow button { width: 100%; }
+}
+@media (max-width: 560px) {
+  .minutes-email-variable-buttons { grid-template-columns: minmax(0, 1fr); }
+  .minutes-email-letter { padding: 18px 14px; }
+  .minutes-email-letter-attachment { padding: 16px 14px; }
+}

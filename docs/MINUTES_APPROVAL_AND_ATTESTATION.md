@@ -82,3 +82,13 @@ member-only boundary; administrative workspaces and PDF documents retain their l
   provenance, then locks the minutes atomically.
 - Existing membership-approved records and historical meetings remain protected. No
   production record is approved, attested, corrected, or otherwise changed by this work.
+
+## Optional outside minutes email
+
+When enabled for a meeting type, attestation also records a durable email intent for the
+designated outside offices. Its consequence is disclosed in the existing confirmation.
+Initial and corrected-copy delivery use immutable revisions and do not alter the approval
+workflow. Unchanged meeting approval sends no second email. Provider/PDF work happens
+after commit and cannot reverse attestation. See
+[Minutes email distribution](MINUTES_EMAIL_DISTRIBUTION.md) for group ownership, holds,
+recipient choices and recovery. Existing Endeavor History request/recovery remains intact.

@@ -2,6 +2,10 @@ module EndeavorHistory
   module Manage
     module_function
 
+    def confirm_cost!(value)
+      raise Error, "cost_confirmation_required" unless [ true, "true", "1" ].include?(value)
+    end
+
     def change(endeavor, user:, action:, lock_version:, guidance: nil)
       raise Error, "forbidden" unless user.can?("manage_agendas")
       raise Error, "invalid_action" unless %w[guidance withdraw resume].include?(action)

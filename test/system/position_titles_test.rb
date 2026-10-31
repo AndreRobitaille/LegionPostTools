@@ -88,6 +88,56 @@ class PositionTitlesSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(1400, 1400)
   end
 
+  test "administrators save member contact guidance and recover from invalid examples on desktop and phone" do
+    @own.position_assignments.create!(person: Person.create!(first_name: "Synthetic", last_name: "Historian"), starts_on: Date.new(2020, 1, 1))
+    [ [ 1400, 1200 ], [ 390, 1000 ] ].each do |width, height|
+      page.current_window.resize_to(width, height)
+      visit admin_position_titles_path
+      within ".pos[data-reorder-id='#{@own.id}']" do
+        click_link "Edit contact guidance"
+      end
+      assert_current_path edit_admin_position_title_path(@own)
+      assert_text "current officer's name"
+      original = @own.reload.attributes.slice("contact_description", "contact_examples", "website_officer_listing")
+      description = "Preserves our Post's photographs and history."
+      fill_in "Responsibility", with: description
+      fill_in "Contact them when…", with: "You have an old photograph.\nYou want to identify a past officer.\nOne example too many."
+      click_button "Save guidance"
+      assert_selector ".error-summary", text: /up to two examples/
+      assert_field "Responsibility", with: description
+      assert_equal original, @own.reload.attributes.slice("contact_description", "contact_examples", "website_officer_listing")
+
+      examples = "You have an old photograph.\nYou want to identify a past officer."
+      fill_in "Contact them when…", with: examples
+      check "List current officers on the public website"
+      assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth"), "Guidance editor overflow at #{width}px"
+      assert page.all("textarea").all? { |field| field.evaluate_script("parseFloat(getComputedStyle(this).fontSize) >= 16") }
+      click_button "Save guidance"
+      assert_current_path admin_position_titles_path
+      assert_equal description, @own.reload.contact_description
+      assert_equal examples.lines.map(&:strip), @own.contact_examples
+      assert @own.website_officer_listing?
+      visit edit_admin_position_title_path(@own)
+      assert_field "Contact them when…", with: examples
+      page.scroll_to(:top)
+      capture_system_screenshot("contact-guidance-editor-#{width}")
+      visit post_contact_path
+      within ".post-contact-officer", text: @own.name do
+        assert_text description
+        assert_text "You have an old photograph."
+        assert_text "You want to identify a past officer."
+      end
+    end
+
+    assistant = @organization.position_titles.create!(name: "Assistant Chaplain")
+    visit edit_admin_position_title_path(assistant)
+    assert_text "Assists the Chaplain."
+    assert_no_selector "textarea"
+    assert_unchecked_field "List current officers on the public website"
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   private
 
   def position_graph(*titles)

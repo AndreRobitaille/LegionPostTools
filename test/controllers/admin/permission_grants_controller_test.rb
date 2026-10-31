@@ -47,7 +47,7 @@ class Admin::PermissionGrantsControllerTest < ActionDispatch::IntegrationTest
     user = prepare_admin_user_with_permissions(%w[manage_minutes])
     title = PositionTitle.create!(organization: Organization.first, name: "Adjutant", display_order: 1)
     title.position_capability_grants.create!(capability: "manage_minutes")
-    PositionAssignment.create!(person: user.person, position_title: title, starts_on: Date.current)
+    PositionAssignment.create!(person: user.person, position_title: title, starts_on: Organization.current_local_date)
 
     patch admin_user_permission_grants_path(user), params: {
       permission_grant: { capabilities: [ "manage_minutes", "approve_minutes" ] }

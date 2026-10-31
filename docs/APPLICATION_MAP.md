@@ -62,6 +62,12 @@ acting for a person and inherits that person's current authority.
 | Personal agent token | Private `/api`; current enabled user's effective authority; expiry/revocation and idempotency checks | [API base](../app/controllers/api/base_controller.rb), [token](../app/models/agent_access_token.rb) |
 | Post-owned website token | Organization-scoped approved website feed only; independent of creator's continued login authority | [Website connections](WEBSITE_CONNECTIONS.md), [feed controller](../app/controllers/public/v1/publications_controller.rb) |
 
+The website feed's [public officers API](PUBLIC_OFFICERS_API.md) returns currently
+listed officer names, saved role guidance and the general Post email under an
+explicit public-listing policy. Its [OpenAPI contract](api/public-officers.openapi.json)
+and [website handoff](PUBLIC_OFFICERS_WEBSITE_HANDOFF.md) document the consumer boundary;
+personal officer contacts and private member fields remain excluded.
+
 This is preset policy, not a statement about any live officer, grant, or token.
 Position authority requires an active position and an assignment current on the
 installation's date, including its end date. Manual grants remain independent.
@@ -135,6 +141,7 @@ flowchart LR
   Minutes --> Revision[Immutable revision and attestation]
   Revision --> Approval[Later same-body meeting approval]
   Revision -->|Member-visible evidence| History[Derived Endeavor history]
+  Revision -->|Enabled meeting type| Distribution[Queued minutes PDF for designated office recipients]
   Endeavor[Human-defined Endeavor] -->|Optional identity link| Agenda
   Endeavor -->|Optional identity link| Minutes
   Endeavor --> Tasks[Next steps and deadlines]
@@ -163,7 +170,8 @@ evidence, never substitutes for official minutes.
 | Task | Open ↔ completed | Completion actor/time retained; optional due date separate from event schedule |
 | Event | Scheduled ↔ cancelled; deletable ordinary event → removed | Meetings use their own occurrence/document rules; meeting-like calendar entries cannot be deleted as ordinary events |
 | Roster import | Completed/failed or pending confirmation → completed/discarded | Pending/superseded confirmation must not silently remove members; histories retained |
-| Loops sync | Queued → running → completed/failed | Counts/progress expose partial success; external service availability remains separate |
+| Loops sync | Queued → running → completed/failed | Owns Post members only; preserves minutes/other lists and opt-outs; counts/progress expose partial success |
+| Minutes distribution | Attestation intent → pending/ready → completed, held, superseded or needs attention | Only designated, active website office entries with effective Minutes recipients enrollment; original destinations and submitted payloads are retained |
 | Introduction | Working draft → consent/review → published snapshot → withdrawn | Saving does not publish; consent matches text and portrait; withdrawal removes feed/portrait access |
 | Website calendar | Legacy snapshots → reviewed activation → live policy listings | One-way activation, explicit stored types and Show/Hide overrides; attendance and website visibility are separate |
 
@@ -178,11 +186,11 @@ Sources: models named in the [source inventory](application_map/SOURCE_INVENTORY
 | Rails routing, middleware, cookies, CSRF, Turbo | Actual Sign out/form controls must complete the intended method and transition. An isolated service call is insufficient evidence. HTML denials usually redirect; API denials use JSON statuses. |
 | PostgreSQL transactions, foreign keys, optimistic locks | Saves persist completely or fail visibly; stale edits require review; official revisions/events are immutable. Session deletion must preserve historical confirmation records. |
 | Action Text/Lexxy and Stimulus | Rich text and order survive saving/reloading; menus, confirmation dialogs, date/time inputs, pickers, source reader, passkeys, and run monitoring must work through their real controls. |
-| MailDelivery / Action Mailer or Loops | Email identity flows depend on delivery. A generic “check email” notice does not prove delivery or account existence. No ordinary meeting-distribution workflow is mapped. |
+| MailDelivery / Action Mailer or Loops | Email identity flows depend on delivery. A generic “check email” notice does not prove delivery or account existence. Minutes distribution separately uses Loops transactional PDF attachments with per-address identity/subscription checks; see MIN-13. |
 | WebAuthn and browser platform | Passkeys need supported browser/origin/authenticator and user verification. Cancellation or failed verification must not create credentials or sessions. |
 | Active Storage | Authorized roster/transcript uploads only; application direct uploads return 404. Attachment-engine routes are technical exposure, not a general file cabinet. |
 | Chromium PDF renderer | Inline PDF delivery depends on runtime Chromium, signed loopback source, resource allowlist, and timeout; controlled failure returns guidance rather than a partial document. |
-| Solid Queue worker / recurring jobs | AI drafts, Loops sync, derived-history work, cleanup; queue health and recorded run state are separate evidence. Viewing a status page must not itself start paid generation. |
+| Solid Queue worker / recurring jobs | AI drafts, Loops sync, minutes distribution/reconciliation, derived-history work, cleanup; queue health and recorded run state are separate evidence. Viewing a status page must not itself start paid generation. |
 | OpenAI | Minutes suggestions and derived Endeavor history depend on provider/configuration/budget/source checks. Synthetic tests may verify mechanics; live model quality and paid recovery require separate evidence/authority. |
 | Website consumer | A separate site fetches feed JSON/portraits server-side with a Post token and obeys private caching/revocation. Publisher source checks do not prove companion rendering. |
 
@@ -190,6 +198,12 @@ Configuration evidence lives in [Gemfile](../Gemfile), [importmap](../config/imp
 [recurring jobs](../config/recurring.yml), services/jobs, and
 [deployment guide](DEPLOYMENT.md). No current provider account, worker, email service,
 consumer, or production activation was checked by this mapping pass.
+
+Subsequent scoped update, October 19, 2026: minutes email distribution and Post members
+sync ownership were traced at `7d60cca71efda7883958f6758530afee3fe21e5d`. The
+[Post 165 activation record](MINUTES_EMAIL_DISTRIBUTION.md#post-165-live-setup-verified-october-19-2026)
+records the separate live setup and provider read-back evidence. It does not establish
+production behavior for unrelated workflows or actual inbox delivery.
 
 ## Validation priorities
 

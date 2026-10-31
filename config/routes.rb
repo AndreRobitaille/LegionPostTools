@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     match "member_stories/:id/portrait/:revision/:size.webp", action: :portrait, via: :all
     match "events", action: :events, via: :all
     match "events/:id", action: :event, via: :all
+    match "officers", action: :officers, via: :all
     match "*path", action: :missing, via: :all
   end
 
@@ -59,6 +60,7 @@ Rails.application.routes.draw do
     get :revoke, on: :member
   end
   resources :people, only: %i[index show]
+  get "contact", to: "post_contacts#show", as: :post_contact
   get "calendar", to: "calendar#show", as: :calendar
   get "calendar/print", to: "calendar#print", as: :print_calendar
   get "calendar/manage", to: "calendar#manage", as: :manage_calendar
@@ -123,7 +125,7 @@ Rails.application.routes.draw do
       delete :discard, on: :member
     end
     resources :loops_roster_syncs, only: %i[new create show]
-    resources :position_titles, only: %i[index create update] do
+    resources :position_titles, only: %i[index create edit update] do
       post :reorder, on: :collection
     end
     resources :agenda_item_catalog_entries, except: :show do
@@ -203,6 +205,16 @@ Rails.application.routes.draw do
   resource :roster_email_review, only: %i[update]
   resource :dashboard, only: %i[show], controller: "dashboard"
   get "officer-tools", to: "officer_tools#show", as: :officer_tools
+  resource :minutes_distribution, only: %i[show update], controller: "minutes_distributions" do
+    patch :wording, action: :update_wording
+    post :create_recipient
+    patch "recipients/:recipient_id", action: :update_recipient, as: :recipient
+    post "recipients/:recipient_id/enroll", action: :enroll_recipient, as: :enroll_recipient
+    post "minutes/:minutes_id/hold", action: :hold, as: :hold
+    post "minutes/:minutes_id/release", action: :release, as: :release
+    post "issues/:issue_id/retry", action: :retry_delivery, as: :retry_delivery
+    post "issues/:issue_id/deliveries/:delivery_id/resolve", action: :resolve_delivery, as: :resolve_delivery
+  end
   namespace :buddy_checks, path: "buddy-checks" do
     root to: "workspace#index"
     get "post-activity", to: "coordination#index", as: :activity

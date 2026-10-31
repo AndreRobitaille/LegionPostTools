@@ -27,7 +27,7 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
       name: "Membership Chair",
       grants_full_membership_access: true
     )
-    PositionAssignment.create!(person: person, position_title: title, starts_on: Date.current)
+    PositionAssignment.create!(person: person, position_title: title, starts_on: Organization.current_local_date)
     sign_in_as(user)
   end
 

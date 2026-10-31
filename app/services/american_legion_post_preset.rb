@@ -50,6 +50,7 @@ class AmericanLegionPostPreset
   def create_position_titles
     POSITION_TITLES.each_with_index do |policy, index|
       position_title = organization.position_titles.find_or_initialize_by(name: policy.fetch(:name))
+      position_title.website_officer_listing = true if position_title.new_record?
       position_title.display_order = index + 1
       position_title.required_by_default = policy.fetch(:required)
       position_title.grants_full_membership_access = policy.fetch(:membership_access)

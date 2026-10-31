@@ -54,6 +54,31 @@ class Person < ApplicationRecord
     [ first_name, last_name ].compact_blank.join(" ")
   end
 
+  def first_last_display_name
+    # Roster imports can leave a generational suffix in either name field.
+    suffixes = []
+    names = first_last_display_parts.map do |name|
+      part = name.to_s.strip
+      prefix = part.match(/\A((?:jr|sr)\.?)[,\s]+(.+)\z/i)
+      if prefix
+        suffixes << prefix[1]
+        part = prefix[2]
+      end
+      match = part.match(/\A(.+?)(?:,\s*|\s+)((?:jr|sr)\.?|II|III|IV)\z/i)
+      if match
+        suffixes << match[2]
+        match[1]
+      else
+        part
+      end
+    end
+    unique_suffixes = suffixes.uniq { |suffix| suffix.delete_suffix(".").downcase }
+    unique_suffixes.reduce(names.compact_blank.join(" ")) do |name, suffix|
+      separator = suffix.match?(/\A(?:jr|sr)\.?\z/i) ? ", " : " "
+      "#{name}#{separator}#{suffix}"
+    end
+  end
+
   def roster_display_name
     roster_name.presence || full_name
   end
@@ -111,5 +136,16 @@ class Person < ApplicationRecord
       .select { |assignment| assignment.active_on?(today) }
       .sort_by { |assignment| [ assignment.position_title.display_order, assignment.position_title.name ] }
       .map { |assignment| assignment.position_title.name }
+  end
+
+  private
+
+  def first_last_display_parts
+    return [ first_name, last_name ] if roster_name.blank?
+
+    last, first = roster_name.split(",", 2).map(&:strip)
+    return [ roster_name ] if first.blank? || first.match?(/\A(?:(?:jr|sr)\.?|II|III|IV)\z/i)
+
+    [ first, last ]
   end
 end

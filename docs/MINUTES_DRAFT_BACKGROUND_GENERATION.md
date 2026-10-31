@@ -16,6 +16,10 @@ reports `queued` or `in_progress`, schedule another Solid Queue job after ten se
 to retrieve that response. Polling jobs release the worker between checks. Disable SDK
 retries, so a lost submission response cannot silently start another paid generation.
 
+October 29 spend control: creation also sets `prompt_cache_options.mode` to `explicit`
+without breakpoints, avoiding implicit cache writes for the changing minutes input.
+Polling continues to retrieve the same response. See [spend control](ENDEAVOR_HISTORY_SPEND_CONTROL.md).
+
 Keep the current model, high reasoning, prompt, output cap, citation validation, and
 human review. The existing dispatch page continues to show `running` until a complete,
 validated result creates suggestions. No visual layout or user action changes are needed.

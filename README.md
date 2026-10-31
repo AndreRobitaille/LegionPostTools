@@ -37,9 +37,14 @@ The current application foundation includes:
 - Optional Commander draft handoff, exact immutable Adjutant-attested revisions,
   member-visible minutes awaiting meeting approval, and matching signed-in and
   bearer-token actions with audit provenance.
+- Automatic attested PEC/monthly minutes PDFs for designated office recipients, with
+  corrected-copy handling and separate private Loops lists. Roster sync manages only
+  Post members and preserves Minutes recipients, Post officers and existing opt-outs.
 
-Meeting approval and audited corrections are implemented. Later amendments and email
-workflow notifications remain planned.
+Meeting approval, audited corrections and minutes distribution are implemented. Post 165
+enabled minutes distribution on October 19, 2026; see the
+[live setup and recipient guide](docs/MINUTES_EMAIL_DISTRIBUTION.md).
+Later amendments and broader workflow notifications remain planned.
 
 ## Who This Is For
 
@@ -62,6 +67,8 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/ENDEAVOR_ACTIVITIES.md` — next steps, deadlines, scheduled activities, and seed provenance.
 - `docs/CALENDAR_API.md` — private calendar/activity API fields, permissions, and operator examples.
 - `docs/PUBLIC_PUBLISHING_HANDOFF.md` — authenticated website feed, caching contract, and synthetic preview access.
+- [Public officers API](docs/PUBLIC_OFFICERS_API.md) — officer names, role guidance, general Post contact, field definitions, HTTP/cache behavior and OpenAPI contract.
+- [Public officers website handoff](docs/PUBLIC_OFFICERS_WEBSITE_HANDOFF.md) — implementation brief for the separate public website.
 - `docs/WEBSITE_PUBLISHING_API.md` — authenticated publishing workflow API, consent, portraits, and agent documentation.
 - `docs/ENDEAVOR_DEVELOPMENT_PLAN.md` — completed Endeavor foundation, minutes integration, and deferred work.
 - `docs/MEETING_FOUNDATION_AND_MEMBER_ARCHIVE.md` — the implemented first-class Meeting and archive boundary.
@@ -75,6 +82,10 @@ Most ordinary post members are not expected to log in during early versions. The
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for minutes.
 - `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — current Commander handoff,
   Adjutant release, member presentation, and delegated API provenance.
+- [Minutes email distribution](docs/MINUTES_EMAIL_DISTRIBUTION.md) — live Loops setup,
+  recipient management, attestation/corrected-copy delivery, holds and recovery.
+- [Loops roster sync](docs/LOOPS_ROSTER_SYNC.md) — Post members list ownership,
+  eligibility, opt-out preservation and the post-import sync procedure.
 - `docs/superpowers/specs/2026-08-31-agent-minutes-api-parity-design.md` — delegated
   officer/admin parity for accounts, transcripts, working minutes, AI review, and Jobs.
 - `docs/ROLES.md` — people, Post roles, membership-information access, and delegated-agent authority.

@@ -17,6 +17,7 @@ module MinutesDraftProviders
           instructions: MinutesDrafting::Prompt::DEVELOPER_PROMPT,
           input: input,
           reasoning: { effort: REASONING_EFFORT },
+          prompt_cache_options: { mode: :explicit },
           text: {
             format: {
               type: :json_schema,

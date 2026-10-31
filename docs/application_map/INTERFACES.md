@@ -63,6 +63,7 @@ Scoped controllers inherit their own guards; technical screens use Admin::BaseCo
 | Dated items | Catalog selector, new discussion, edit rich wording/summary/private cues/wording flags/behavior/section, remove/reorder | Copies independent of catalog/template; same-organization/parent checks | AGN-02–04 |
 | Officer roll call | Edit dated office/person snapshots and ordering, refresh from assignments for meeting date | `manage_agendas`, draft agenda, roll-call item; member rendering excludes working notes fields | AGN-05 |
 | Minutes workspace `/admin/meetings/:id/minutes` | Heading edit; sections/items/outcomes/attendance forms; move/remove; transcript, draft runs, PDFs, lifecycle actions/history | Read: minutes/handoff/attestation/internal capability; edit: `manage_minutes` and editable state | MIN-01–03, MIN-07–11 |
+| Minutes distribution `/minutes_distribution` | Office-address register, explicit Loops enrollment, delivery settings, mailing holds/releases, saved results and verified outcome reconciliation | Current Commander/Adjutant position authority or `manage_settings`; private/no-store; same list for PEC/monthly; roster owns Post members only | MIN-13, ADMIN-06 |
 | Restricted transcript | New pasted/plain-text source, retention selection, restricted detail | Write: `manage_minutes`; read: that capability or `view_internal_records`; one source per Meeting | MIN-04 |
 | AI draft run | Request form, progress/status polling, successful review page, error category, source lines, suggestions and attendance sheet | `manage_minutes`, editable minutes, available source; paid request distinct from viewing | MIN-05–06 |
 | Suggestion review | Use, edit-and-use, discard; attendance choices, counters; explicit Endeavor confirm/create/reuse | Human review; creating Endeavor additionally needs `manage_agendas`; no automatic official-record action | MIN-06, AGN-04 |
@@ -86,7 +87,7 @@ Sources: corresponding [controller ledger](SOURCE_INVENTORY.md),
 | Next-step forms `/endeavors/:id/tasks` | New/edit title/due date, complete/reopen | `manage_agendas`; independent task actor/completion state | END-02 |
 | Officer update form | Append dated update on Endeavor detail | `manage_agendas`; append-only, no edit/delete route | END-01 |
 | Manage Endeavors `/admin/endeavors` | Active/completed overview, attention/status filters, last history publication; Manage history link | `manage_agendas`; viewing/filtering makes no paid calls | END-04 |
-| Manage history `/admin/endeavors/:id/history` | Sources, run/result/edition/reuse evidence, guidance, refresh scope, withdraw/resume | `manage_agendas`; paid refresh/resume separate from reading; versioned guidance not factual evidence | END-04 |
+| Manage history `/admin/endeavors/:id/history` | Short Search past minutes form and cost acknowledgment; More options contains search hints, pause/resume, previous summaries and technical records | `manage_agendas`; paid searches/resume require cost acknowledgment in web and API; reading and hints remain unpaid; new histories and optional archive gaps are neutral | END-04 |
 | Manage calendar `/calendar/manage` | Existing entries, event create/edit/delete/cancel/restore; meetings link to separate workspace | `can_manage_calendar?`; not automatically granted by `manage_agendas` | CAL-02–03 |
 | Person administration in People detail | Create/change login email, disable/enable, return to roster control; dated position assignment; permission form | `manage_settings`; roster eligibility, manual override, unique email and last-admin protections | ADMIN-01–03 |
 | Post Positions `/admin/position_titles` | Add/rename/reorder/deactivate title, membership-access setting | `manage_settings`; no routed general position-capability editor; assignments live on People | ADMIN-03 |
@@ -153,7 +154,7 @@ Examples and request fields live in the existing focused API documents and handb
 | Rails Active Storage/Action Text engine paths | Framework attachment/representation/rich-text integration; direct-upload action explicitly returns 404; do not classify as an authorized generic document workflow |
 | Static assets/icons/importmaps | Layout/editor/print/runtime dependencies; no independent business state |
 | `/letter_opener` | Mounted only in development; local email preview, never a production member feature |
-| Recurring jobs | Finished-job cleanup, agent-execution cleanup, history reconciliation; background operational transitions, not a nightly test-quality reviewer |
+| Recurring jobs | Finished-job cleanup, agent-execution cleanup, Endeavor history recorded-request and stalled-run recovery; background operational transitions, not a nightly test-quality reviewer |
 | Accepted-minutes amendments, transcript purge UI/job, full-roster CSV export | Planned/unmapped; stored policy/metadata or old design prose does not establish an available action |
 | General Person creation/edit, installation settings after setup, Meeting Body CRUD, general document archive, event registration/volunteer scheduling, recurring meetings | No mapped dedicated current web workflow; do not invent screens or tests from generic examples |
 

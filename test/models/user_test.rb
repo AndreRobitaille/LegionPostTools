@@ -276,15 +276,15 @@ class UserTest < ActiveSupport::TestCase
     user = User.create!(person:, email_address: "current-adjutant@example.com")
     title = PositionTitle.create!(organization:, name: "Adjutant", display_order: 1)
     title.position_capability_grants.create!(capability: "manage_minutes")
-    assignment = PositionAssignment.create!(person:, position_title: title, starts_on: Date.current - 1)
+    assignment = PositionAssignment.create!(person:, position_title: title, starts_on: Organization.current_local_date - 1)
 
     assert user.can?("manage_minutes")
     assert_equal({ "manage_minutes" => [ "Adjutant" ] }, user.position_capability_sources)
 
-    assignment.update!(ends_on: Date.current)
+    assignment.update!(ends_on: Organization.current_local_date)
     assert user.can?("manage_minutes"), "the assignment remains active through its inclusive end date"
 
-    assignment.update!(ends_on: Date.current - 1)
+    assignment.update!(ends_on: Organization.current_local_date - 1)
     assert_not user.can?("manage_minutes")
   end
 
@@ -294,11 +294,11 @@ class UserTest < ActiveSupport::TestCase
     user = User.create!(person:, email_address: "future-adjutant@example.com")
     title = PositionTitle.create!(organization:, name: "Adjutant", display_order: 1)
     title.position_capability_grants.create!(capability: "manage_minutes")
-    assignment = PositionAssignment.create!(person:, position_title: title, starts_on: Date.current + 1)
+    assignment = PositionAssignment.create!(person:, position_title: title, starts_on: Organization.current_local_date + 1)
 
     assert_not user.can?("manage_minutes")
 
-    assignment.update!(starts_on: Date.current)
+    assignment.update!(starts_on: Organization.current_local_date)
     title.update!(active: false)
     assert_not user.can?("manage_minutes")
   end
@@ -320,11 +320,11 @@ class UserTest < ActiveSupport::TestCase
       user = User.create!(person:, email_address: "private-notes-#{index}@example.com")
       title = PositionTitle.create!(organization:, name: "Role #{index}", display_order: index + 1)
       title.position_capability_grants.create!(capability:)
-      assignment = title.position_assignments.create!(person:, starts_on: Date.current - 2)
+      assignment = title.position_assignments.create!(person:, starts_on: Organization.current_local_date - 2)
 
       assert user.private_agenda_notes_access?
 
-      assignment.update!(ends_on: Date.current - 1)
+      assignment.update!(ends_on: Organization.current_local_date - 1)
       assert_not user.private_agenda_notes_access?
     end
   end
@@ -347,14 +347,14 @@ class UserTest < ActiveSupport::TestCase
       organization: organization, name: "Membership Leader", display_order: 1,
       grants_full_membership_access: true
     )
-    assignment = PositionAssignment.create!(person: person, position_title: title, starts_on: Date.current - 1)
+    assignment = PositionAssignment.create!(person: person, position_title: title, starts_on: Organization.current_local_date - 1)
 
     assert user.full_membership_access?
 
-    assignment.update!(ends_on: Date.current)
+    assignment.update!(ends_on: Organization.current_local_date)
     assert user.full_membership_access?, "the assignment remains active through its inclusive end date"
 
-    assignment.update!(ends_on: Date.current - 1)
+    assignment.update!(ends_on: Organization.current_local_date - 1)
     assert_not user.full_membership_access?
   end
 
@@ -366,11 +366,11 @@ class UserTest < ActiveSupport::TestCase
       organization: organization, name: "Future Leader", display_order: 1,
       grants_full_membership_access: true
     )
-    assignment = PositionAssignment.create!(person: person, position_title: title, starts_on: Date.current + 1)
+    assignment = PositionAssignment.create!(person: person, position_title: title, starts_on: Organization.current_local_date + 1)
 
     assert_not user.full_membership_access?
 
-    assignment.update!(starts_on: Date.current)
+    assignment.update!(starts_on: Organization.current_local_date)
     title.update!(active: false)
     assert_not user.full_membership_access?
   end

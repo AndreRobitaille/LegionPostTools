@@ -225,9 +225,9 @@ Policy/source basis: [roles](../ROLES.md), [account guide](../USER_MANAGEMENT_GU
 
 ### ADMIN-06 — Synchronize the Post email audience (P1)
 
-- **Start:** Technical administrator; completed roster, configured Loops and usable unique eligible emails.
+- **Start:** Technical administrator; completed roster, configured Loops with distinct private Post members/Minutes recipients lists; eligible members or previously managed removal candidates.
 - **Action:** Inspect audience/skips/freshness, request sync, leave and return to status.
-- **Result:** One durable queued/running sync; contacts processed with recorded success/failure/skips.
+- **Result:** One durable queued/running sync; contacts processed with recorded success/failure/skips. Only Post members membership changes; Minutes recipients, other lists, global opt-outs and stable identities are preserved. Previously managed ineligible addresses are reconciled only within the owned list.
 - **Observe:** Queued/running/completed/failed state and actual counts; missing/shared/invalid emails explained.
 - **Then:** Jobs/result pages retain outcome and source import; repeat request while active points to existing work.
 - **Failures:** Missing roster/configuration, zero eligible contacts, provider outage, partial failure or absent worker cannot be reported as successful full delivery. This operation does not send a meeting notice.
@@ -474,6 +474,20 @@ minutes controllers in [inventory](SOURCE_INVENTORY.md).
 - **Then:** Returning after worker completion finds same run; discarded run stays auditable; agenda-only manager sees history jobs without minutes evidence, admin sees Loops separately.
 - **Failures:** Retry running/succeeded run, deleted attempt, duplicate retries, absent source/worker, misleading queue health or viewing Jobs triggering paid work.
 
+### MIN-13 — Distribute attested minutes to outside offices (P0)
+
+- **Start:** Commander/Adjutant position authority or `manage_settings`; distinct private Loops groups, reviewed general targeting, enrolled office entries and configured meeting types/template. Settings default paused.
+- **Action:** Manage office entries, explicitly enroll addresses, deliberately edit delivery settings or subject/cover-note wording from saved summaries, enable future attestation mail, then use the existing human attestation workflow. Preview uses named variables and sends no email; stale forms require reload.
+- **Result:** Durable per-attestation intent, immutable revision and original destination snapshots; after-commit worker prepares the officer PDF with frozen closing authority and submits one message per eligible address. An address needs an active website office designation and effective Minutes recipients enrollment; Post members/Post officers membership or a Loops-only contact grants no delivery. No additional AI call.
+- **Observe:** Existing confirmation discloses outside mail; workspace shows preparing/held/accepted/attention states, per-address results and officer audit history. Desktop/narrow layouts retain separate offices even for one person. Styled email/preview use short meeting labels, a PDF attachment instruction and separate attested/approved status; frozen retries keep their original template and variables.
+- **Then:** Reopening does not send; changed re-attested content sends to still-eligible original addresses; unchanged approval/re-attestation sends nothing. Wording edits affect future attestations and cannot change recorded mailings or retries. Roster sync twice preserves outside recipients and their minutes list. A → B → A, partial delivery and frozen retry payloads remain correct.
+- **Failures:** Changed/paused identity, list/global opt-out, suppression, missing configuration, PDF failure, oversize, timeout, worker interruption and queue failure do not reverse attestation. Unknown submissions keep their saved key, block newer content to that address when unresolved, and require officer verification after the retry window. Global resume does not silently release held copies.
+
+Policy/source: [Minutes distribution](../MINUTES_EMAIL_DISTRIBUTION.md),
+[attestation intent](../../app/services/minutes_distribution/requests.rb),
+[dispatch](../../app/services/minutes_distribution/processor.rb).
+
+
 ## Endeavors, activities, and derived evidence
 
 Policy/source basis: [governance](../ENDEAVOR_GOVERNANCE.md),
@@ -514,10 +528,10 @@ Policy/source basis: [governance](../ENDEAVOR_GOVERNANCE.md),
 ### END-04 — Generate and manage derived meeting history (P1)
 
 - **Start:** Existing human-defined Endeavor, eligible immutable member minutes, enabled configuration/worker/budgets; manager for guidance/refresh/withdraw/resume.
-- **Action:** Automatic source-triggered processing/reconciliation, or deliberate manager operation with scope/guidance/version.
+- **Action:** Attestation commits a request for each eligible Endeavor. Automatic work checks the current revisions named by its attestation journal and retains published historical evidence; it does not search an untouched archive or re-audit old matches after catalog edits. After-commit jobs and the 15-minute job recover recorded requests and bounded transient failures, including missed enqueue and active-run overlap. Manager Search past minutes and Resume and search require explicit cost acknowledgment in web and API; guidance and withdrawal remain unpaid.
 - **Result:** Source-grounded extraction and separate checks, retained verified results/reuse, immutable replacement edition only after successful validation; failure preserves still-valid prior edition.
 - **Observe:** Member overview/dated accounts and coverage date; manager sees runs/cost/error/source/reuse and withdrawn state.
-- **Then:** New source processes incrementally; corrected source invalidates affected material; membership approval changes labels without paid regeneration; withdrawal/resume preserves audit.
+- **Then:** A new or corrected attested source processes incrementally and invalidates affected generated material. Creating an Endeavor does not search older minutes; a never-discussed Endeavor needs no historical search and no attention flag. Catalog-only changes and optional archive gaps do not flag otherwise valid saved history. Explicit full Search past minutes searches the archive; a scoped search checks only its selected meeting. The API retains operation refresh and exposes history_status/needs_attention matching the officer overview. Edition coverage lists only searched records. Daily-budget failures remain stopped across midnight. Membership approval of the same revision changes labels without paid regeneration. Withdrawal and resume preserve the audit. See [spend control](../ENDEAVOR_HISTORY_SPEND_CONTROL.md).
 - **Failures:** Unsupported fact, missed/unknown citations, budget/input limit, interruption/provider failure, stale guidance, ambiguous identity; never create/merge/complete an Endeavor or alter minutes automatically. Runtime model quality remains separate evidence.
 
 ### CAL-01 — Inspect schedule, deadlines, or public preview (P1)

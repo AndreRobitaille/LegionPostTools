@@ -1,0 +1,19 @@
+<% person = assignment.person %>
+<% email = person.directory_email_address %>
+<% phone = person.directory_phone_number %>
+<% phone_href = post_contact_phone_href(phone) %>
+<div class="post-contact-person">
+  <%= link_to person.first_last_display_name, person_path(person), class: "post-contact-name" %>
+  <div class="post-contact-details">
+    <% if email.present? %>
+      <p><%= mail_to email %></p>
+    <% end %>
+    <% if phone.present? %>
+      <p><%= phone_href.present? ? link_to(phone, phone_href) : phone %></p>
+    <% end %>
+  </div>
+  <% if email.blank? && phone_href.blank? %>
+    <p class="post-contact-note">No direct contact details listed.</p>
+    <%= render "post_email", office: assignment.position_title.name %>
+  <% end %>
+</div>

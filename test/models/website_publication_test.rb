@@ -14,7 +14,7 @@ class WebsitePublicationTest < ActiveSupport::TestCase
     @publisher.permission_grants.delete_all
     position = @organization.position_titles.create!(name: "Website editor", display_order: 1)
     position.position_capability_grants.create!(capability: "publish_public_content")
-    position.position_assignments.create!(person: @publisher.person, starts_on: Date.current)
+    position.position_assignments.create!(person: @publisher.person, starts_on: Organization.current_local_date)
     assert @publisher.can?("publish_public_content")
     assert_not @publisher.can_manage_calendar?
     assert event_publication.published?

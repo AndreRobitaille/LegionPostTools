@@ -5,6 +5,7 @@ class Admin::LoopsRosterSyncsControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     Organization.create!(name: "Robert E. Burns Post 165", unit_type: "american_legion_post", timezone: "America/Chicago")
+    Organization.first!.create_minutes_distribution_setting!(post_members_list_id: "members", minutes_recipients_list_id: "minutes")
     Installation.singleton.update!(setup_completed_at: Time.current)
     @admin = create_user("Admin", manage_settings: true)
     @member = create_user("Member", manage_settings: false)
@@ -53,7 +54,7 @@ class Admin::LoopsRosterSyncsControllerTest < ActionDispatch::IntegrationTest
 
     with_loops_api_key do
       assert_enqueued_with(job: LoopsRosterSyncJob) do
-        post admin_loops_roster_syncs_path
+        post admin_loops_roster_syncs_path, params: { roster_import_id: @roster_import.id }
       end
     end
 
@@ -68,10 +69,10 @@ class Admin::LoopsRosterSyncsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@admin)
     original = ENV.delete("LOOPS_API_KEY")
 
-    post admin_loops_roster_syncs_path
+    post admin_loops_roster_syncs_path, params: { roster_import_id: @roster_import.id }
 
     assert_redirected_to new_admin_loops_roster_sync_path
-    assert_equal "Loops is not configured for this installation.", flash[:alert]
+    assert_equal "Configure Loops and its two distinct email groups before syncing.", flash[:alert]
   ensure
     ENV["LOOPS_API_KEY"] = original if original
   end
@@ -82,7 +83,7 @@ class Admin::LoopsRosterSyncsControllerTest < ActionDispatch::IntegrationTest
 
     with_loops_api_key do
       assert_no_enqueued_jobs do
-        post admin_loops_roster_syncs_path
+        post admin_loops_roster_syncs_path, params: { roster_import_id: @roster_import.id }
       end
     end
 
@@ -104,6 +105,19 @@ class Admin::LoopsRosterSyncsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Roster sync finished with problems"
     assert_select ".item", text: /Current Member/
     assert_select "body", text: /Existing opt-outs remain unchanged/
+  end
+
+  test "a preview superseded by a newer import cannot start list reconciliation" do
+    sign_in_as(@admin)
+    with_loops_api_key do
+      get new_admin_loops_roster_sync_path
+      RosterImport.create!(status: "completed", imported_at: 1.minute.from_now, uploaded_filename: "new.csv")
+      assert_no_difference "LoopsRosterSync.count" do
+        post admin_loops_roster_syncs_path, params: { roster_import_id: @roster_import.id }
+      end
+    end
+    assert_redirected_to new_admin_loops_roster_sync_path
+    assert_match(/latest roster preview/, flash[:alert])
   end
 
   private

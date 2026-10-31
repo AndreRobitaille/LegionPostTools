@@ -340,6 +340,13 @@ unchanged prose; source labels stay live.
 
 ## Jobs, triggering, and operating cost
 
+**Current trigger (October 19, 2026).** Attestation commits a durable append-only
+request for each eligible Endeavor. After-commit enqueue and the recurring job dispatch
+that recorded work; neither creation nor a fingerprint change grants spending authority.
+Recovery preserves manual scope and delegated provenance or defers changed dependencies.
+See [trigger design](ENDEAVOR_HISTORY_TRIGGER_DESIGN.md) and
+[operating guide](ENDEAVOR_HISTORY_AI.md). These replace the original trigger plan below.
+
 Use Solid Queue with durable domain runs; expose them in the existing Jobs ledger and
 scoped HTML/API run-status endpoints. Proposed services live under `EndeavorHistory`;
 use a separate provider adapter/prompt from transcript drafting so this feature cannot

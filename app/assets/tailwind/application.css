@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "../stylesheets/website_calendar.css";
 @import "../stylesheets/member_meeting_documents.css";
+@import "../stylesheets/post_contact.css";
+@import "../stylesheets/minutes_distribution.css";
 
 @theme {
   --color-navy: #0A2240;
@@ -2194,11 +2196,14 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
   .history-update-list > li { padding-left: 2px; }
   .history-upcoming-row { align-items: flex-start; flex-direction: column; }
 }
-.history-admin-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 2rem; align-items: start; max-width: var(--w-shell); }
-.history-admin-grid .history-admin-main, .history-admin-grid aside { min-width: 0; }
 .history-admin-section { margin-top: 2rem; }
+.history-management { max-width: var(--w-form); }
+.history-search-intro p + p { margin-top: 12px; }
+.history-management .card-body > .stacked-form { max-width: none; margin-top: 18px; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.history-management-options { margin-top: 24px; }
+.history-management-options > summary { font-size: 16px; color: var(--color-navy); cursor: pointer; }
+.history-management .btn-primary, .history-management .btn-secondary { max-width: 100%; white-space: normal; }
 .history-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; font-size: 14px; }
-@media (max-width: 900px) { .history-admin-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* Focused source reading and source-backed meeting signposts. */
 .history-overview-claim { margin-bottom: 24px; }

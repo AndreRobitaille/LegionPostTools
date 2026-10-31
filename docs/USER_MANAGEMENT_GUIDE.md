@@ -1,7 +1,8 @@
 # Commander and Adjutant Guide to User Management
 
 This guide explains how to help members sign in, keep login access current with the
-National roster, record Post officers, and grant application permissions.
+National roster, record Post officers, grant application permissions, and maintain
+minutes email recipients.
 
 The account, role, and permission controls described here require **Manage app settings**
 (`manage_settings`). A Commander or Adjutant who does not see these controls should ask an
@@ -235,6 +236,49 @@ removing a manual grant does not revoke access supplied by a current office.
 
 At least one enabled person must retain **Manage app settings**. The application prevents
 an administrator from removing or disabling the last such account.
+
+## Email Audiences and Minutes Recipients
+
+The three private Loops lists have separate purposes:
+
+| List | How to maintain it |
+| --- | --- |
+| **Post members** | After reviewing a National roster import, choose **Sync email audience**. The sync handles eligible roster members and previously managed removals only in this list. Use this list for general campaigns in Loops. |
+| **Minutes recipients** | Maintain office entries under **Officer tools → Minutes distribution** and explicitly enroll their addresses. The same entries receive PEC and monthly minutes. |
+| **Post officers** | Reserved for future use. Assigning a Post role or importing/syncing a roster does not populate it. |
+
+Importing a roster does not automatically run the Loops sync. Running the sync preserves
+minutes recipients, other lists and opt-outs; it does not send email. When preparing a
+general campaign in Loops, choose **Post members**, including when duplicating an old
+campaign. Do not select All audience, which also includes outside minutes contacts.
+
+For minutes recipients, current Commander/Adjutant position authority or **Manage app
+settings** is sufficient. Open **Minutes distribution**, expand **Add an office**, save
+the person's name, office and email, then choose **Enroll address in Loops**. Confirm
+**Enrolled**. Use **Pause** to stop an office's authorization, or **Edit office entry**
+to change its details. A changed email needs explicit enrollment again and applies to
+future meetings' initial mailings; it does not redirect a recorded correction chain.
+
+Automatic minutes emails go only to designated, active website entries with an effective
+Minutes recipients enrollment. Post members or Post officers membership alone never
+triggers minutes delivery. Adding an address only in Loops does not designate it, and
+adding an office entry does not create a website account or grant access.
+
+Post 165 enabled this feature on October 19, 2026. Attestation sends a short cover note
+and the existing minutes PDF; corrected text sends a new copy, while unchanged approval
+does not. Separate offices may use separate addresses even when held by one person.
+See [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md#manage-minutes-recipients) for
+recipient replacement, delivery results and the dated live setup, and
+[roster sync](LOOPS_ROSTER_SYNC.md) for eligibility and review problems.
+
+Delivery settings are shown as saved information until you choose **Edit delivery settings**.
+Use **Edit email wording** to change the subject and cover note; variable buttons insert the
+Post name, short Post name, meeting name, full meeting title, meeting date or copy label.
+The preview shows the Post letterhead, PDF attachment instruction and separate status block,
+with attested, corrected and approved examples.
+Greeting, signature and the minutes' status stay automatic. **Cancel** discards unsaved
+changes. Saved wording applies to future attestations; already-recorded mailings keep their
+saved wording. See [the editing guide](MINUTES_EMAIL_DISTRIBUTION.md#delivery-settings-and-email-wording).
 
 ## Membership Drive Volunteers and Paper Call Sheets
 

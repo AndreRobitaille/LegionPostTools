@@ -10,6 +10,19 @@ class MeetingMinutesPdf
       new(minutes:, revision:, base_url:).render
     end
 
+    def render_distribution(issue:, base_url: nil)
+      base_url ||= "http://127.0.0.1:#{ENV.fetch('PDF_RENDER_PORT', ENV.fetch('PORT', '3000'))}"
+      token = distribution_source_token(issue: issue)
+      source_url = "#{base_url.chomp('/')}/internal/meeting-minutes-pdf-source?#{URI.encode_www_form(token: token)}"
+      BrowserPdfRenderer.render(source_url:, temp_prefix: "minutes-distribution-pdf")
+    end
+
+    def distribution_source_token(issue:)
+      verifier.generate({ "organization_id" => issue.organization_id,
+        "meeting_minutes_id" => issue.meeting_minutes_id, "distribution_id" => issue.id,
+        "revision_id" => issue.minutes_revision_id }, expires_in: TOKEN_LIFETIME)
+    end
+
     def filename(minutes:, revision: nil)
       revision ||= minutes.current_revision unless minutes.editable?
       if revision

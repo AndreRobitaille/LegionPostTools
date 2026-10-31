@@ -130,6 +130,11 @@ configuration changes. Do not apply generated minutes automatically.
 
 Production is expected to run on a Hetzner Cloud VPS that already hosts another Rails/Kamal application. Do not assume LegionPostTools is the only application on the server.
 
+For Loops templates created for the Post 165 installation, use
+`commander@mail.wipost165.org` as From, not `no-reply`. Loops' sender username is
+`commander`; it appends the account's sending domain. Preserve the configured Reply-to.
+This is an installation policy, not a hard-coded sender domain for other installations.
+
 Use unique names for Kamal service names, Docker image names, databases, volumes, and other shared infrastructure resources.
 
 The Hetzner VPS throttles repeated SSH connections heavily. Before running Kamal or other SSH-heavy production operations against that server, set up a persistent SSH connection/tunnel/control master and route the work through it. Tear the persistent connection down when the production work is finished. Do not run repeated fresh SSH/Kamal commands directly against the production box.
@@ -157,9 +162,19 @@ Deploy only when Andre explicitly asks. A merge to master is not a deploy. Produ
 
 Follow `docs/DEPLOYMENT.md` exactly. Use `bin/release check` for the preflight and `bin/release push-deploy` to deploy.
 
+Before every image build, follow the
+[shared-host build safeguards](docs/DEPLOYMENT.md#shared-host-build-safeguards):
+preserve serial gem installation, verify the builder's
+1,536 MiB memory limit and host memory headroom, coordinate one build/deploy at a
+time across hosted apps, and check all three sites. `bin/release check` verifies
+transport; it does not enforce these resource safeguards.
+
 Use one persistent control-master connection for the whole operation, including read-only checks. No direct or parallel ssh to the server, and no retry loops. If something fails, stop and report. Wait at least 5 minutes before any single further attempt.
 
-`bin/release check` closes its control master on exit, so any extra Kamal read must run inside that same session.
+`bin/release check` closes its control master by default. For authorized work spanning
+preflight, resource checks, deployment, and verification, set
+`RELEASE_KEEP_SSH_MASTER=true` on each release command, retain that one master, and
+close it only after final verification. This option does not authorize retries.
 
 Do not copy production data (real member data) anywhere without Andre's explicit yes.
 
@@ -205,6 +220,8 @@ reset development data. Simplicity guidance does not waive authorization or audi
 - `docs/PDF_DOCUMENT_DELIVERY.md` — PDF delivery, authorization, rendering, and verification.
 - `docs/MINUTES_LIFECYCLE.md` — governing structured drafting, human authority, acceptance, correction, and immutable-record design for Minutes.
 - `docs/MINUTES_APPROVAL_AND_ATTESTATION.md` — current Commander handoff, Adjutant attestation, meeting approval, corrections, and delegated provenance.
+- `docs/MINUTES_EMAIL_DISTRIBUTION.md` — live Loops lists, website-only office recipient management, attestation/corrected-copy PDFs, holds and recovery.
+- `docs/LOOPS_ROSTER_SYNC.md` — post-import sync, Post members ownership, independent list preservation, opt-outs and removal review.
 - `docs/DEPLOYMENT.md` — deployment/operator notes.
 - `docs/superpowers/specs/2026-08-22-officer-agent-operability-design.md` — private JSON + handbook so Grok Bot can operate the app for the signed-in user with that user's current grants.
 - `docs/superpowers/specs/2026-08-29-agent-agenda-api-parity-design.md` — agent parity for dated-agenda items, historical business backfill, roll calls, catalog changes, and destructive boundaries.

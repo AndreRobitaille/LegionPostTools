@@ -26,7 +26,7 @@ class WorkspaceNavigationSystemTest < ApplicationSystemTestCase
       page.current_window.resize_to(width, height)
       visit root_path
       if width > 560
-        assert_selector "nav.nav-bar a", count: 5
+        assert_selector "nav.nav-bar a", count: 6
         assert_no_selector "nav.nav-bar a", text: "Buddy Checks"
       else
         assert_no_selector "nav.nav-bar"

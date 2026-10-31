@@ -1,4 +1,4 @@
-# Loops Roster Sync Design
+# Loops roster sync
 
 ## Purpose
 
@@ -9,25 +9,32 @@ contact's email choices in Loops.
 
 ## Product Decision
 
-Use Loops' update-contact endpoint as an upsert. The request includes only:
+Use Loops' update-contact endpoint as an upsert, with roster email, parsed first and
+last name, and the stable `american-legion-member:<member_number>` identity. Resolve
+both email and stable identity before writing: reused mailboxes, conflicting identities
+and address moves that could move other subscriptions require review.
 
-- roster email;
-- first and last name; and
-- a stable, namespaced National member ID as Loops `userId`.
+The request must never include global `subscribed` or `userGroup`. It now patches exactly
+one mailing-list key: the configured private **Post members** list. It must not send a
+replacement map of all lists. The separate private **Minutes recipients** list belongs
+to [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md), and roster sync never changes
+it. Distinct valid list IDs are required; there is no All audience fallback.
 
-The request must never include `subscribed`. Loops documents that an API update
-with `subscribed: true` can re-subscribe someone who opted out, while omitting
-the property leaves an existing contact's subscription state unchanged. The
-sync also leaves `userGroup` and mailing-list membership alone so it cannot
-silently replace audience organization managed in Loops.
+The same boundary covers **Post officers** and any other independent list: roster sync
+neither adds nor removes their members. It does not turn website Post roles into mailing
+list assignments. Minutes recipient management belongs to **Officer tools → Minutes
+distribution**, not to the roster import or sync button.
 
-New contacts are subscribed by Loops' normal default. Existing unsubscribed
-contacts remain unsubscribed as long as they remain in the Loops audience.
-Loops warns that deleting an unsubscribed contact and later adding the address
-again can create a subscribed contact, so operators should retain unsubscribed
-contacts in Loops. Removed or lapsed members are not deleted or unsubscribed in
-Loops by this tool; removal automation needs a separate policy decision because
-the audience may be used for renewal outreach or historical contact management.
+Existing global and list opt-outs remain in effect. Read back effective enrollment and
+report retained opt-outs truthfully. Keep unsubscribed contacts in Loops; never delete,
+recreate or unsuppress them. New contacts use Loops' normal subscription default.
+
+The integration records provenance for its new Post members enrollments. On later runs,
+previously managed addresses that are no longer eligible are checked for removal from
+**Post members only**. Retain their contact and all other memberships. Missing or changed
+identity requires review. Pre-existing list assignments without integration provenance
+are not silently claimed or removed. An address move for a still-eligible member also
+requires review rather than automatically moving independent minutes subscriptions.
 
 ## Membership Selection
 
@@ -45,19 +52,39 @@ one member's name would be misleading.
 
 ## Workflow
 
-1. From the Roster tile or a completed roster-import result, choose
+1. Review the completed National roster import. Importing alone does not contact Loops.
+   From the Roster tile or the completed import result, choose
    **Sync email audience**.
 2. Review the source import date and four counts: ready, no email, invalid
-   email, and shared email.
+   email, and shared email. Review the count of previously managed addresses that need
+   removal checks, and the statement that only Post members is updated.
 3. Start the sync. The work runs in Solid Queue so an officer does not need to
    keep the browser request open.
 4. The result page refreshes while work is active, then reports synced and
-   failed contacts. Provider errors identify the affected member without
+   failed contacts plus additions, removals, unchanged contacts, retained opt-outs and
+   identity/removal review results. Provider errors identify the affected member without
    exposing the API key.
 
 Only `manage_settings` users may preview, start, or view a sync. Only one sync
 may be queued or running at a time. A job refuses to use its preview if a newer
 roster import has completed in the meantime.
+
+For general mail in Loops, choose **Post members** instead of All audience. The sync does
+not edit campaigns or send email. It also does not delete contacts, clear minutes
+recipients, or replace the entire audience with the roster. Review any identity or
+removal problems reported by a completed run before treating the sync as fully successful.
+
+## Post 165 activation evidence
+
+On October 19, 2026, roster import 6 contained 85 eligible addresses. Persisted sync 6
+added 76 Post members enrollments and retained nine opt-outs. After the three minutes
+office addresses were enrolled, sync 7 reported 76 unchanged and the same nine retained
+opt-outs. Both runs completed with zero failures. Provider comparisons confirmed that
+minutes recipients and all other list memberships were preserved. No emails were sent.
+
+See [the live setup](MINUTES_EMAIL_DISTRIBUTION.md#post-165-live-setup-verified-october-19-2026)
+for the private list IDs and separate minutes recipient procedure. These counts describe
+that activation, not a permanent audience size.
 
 ## Failure and Rate-Limit Behavior
 
@@ -97,8 +124,11 @@ the sync is an accountable administrative operation tied to a dated source.
 
 - Audience selection tests cover current status, removed records, blank,
   malformed, and shared emails.
-- Client tests prove the payload omits `subscribed`, `userGroup`, and
-  `mailingLists`, and cover provider errors and rate limiting.
+- Client tests cover provider errors and rate limiting. The base roster payload omits
+  subscription fields; the synchronizer adds only the owned Post members list key.
+- Offline sync-to-email tests sync twice, preserve outside minutes recipients and unrelated
+  lists, retain opt-outs, flag identity conflicts, and remove former members from only
+  Post members before exercising attestation and corrected-copy delivery.
 - Job/service tests cover success, partial failure, superseded rosters, and
   terminal failure state.
 - Controller tests cover authorization, preview copy, configuration, duplicate

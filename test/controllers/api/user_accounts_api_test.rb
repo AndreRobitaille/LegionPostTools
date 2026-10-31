@@ -63,7 +63,7 @@ class ApiUserAccountsApiTest < ActionDispatch::IntegrationTest
     user = create_user("Adjutant", "view_internal_records")
     title = PositionTitle.create!(organization: Organization.first, name: "Adjutant", display_order: 1)
     title.position_capability_grants.create!(capability: "manage_minutes")
-    title.position_assignments.create!(person: user.person, starts_on: Date.current)
+    title.position_assignments.create!(person: user.person, starts_on: Organization.current_local_date)
 
     get "/api/people/#{user.person_id}/account", as: :json
 

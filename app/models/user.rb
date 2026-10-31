@@ -72,14 +72,15 @@ class User < ApplicationRecord
     capabilities.any? { |capability| can?(capability) }
   end
 
-  def position_capability_sources(on: Organization.current_local_date)
-    PositionCapabilityGrant
+  def position_capability_sources(on: Organization.current_local_date, organization: nil)
+    grants = PositionCapabilityGrant
       .joins(position_title: :position_assignments)
       .where(position_assignments: { person_id: person_id })
       .where(position_titles: { active: true })
       .where("position_assignments.starts_on <= ?", on)
       .where("position_assignments.ends_on IS NULL OR position_assignments.ends_on >= ?", on)
-      .order("position_titles.display_order", "position_titles.name")
+    grants = grants.where(position_titles: { organization_id: organization.id }) if organization
+    grants.order("position_titles.display_order", "position_titles.name")
       .pluck(:capability, "position_titles.name")
       .each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |(capability, title_name), sources|
         sources[capability] << title_name
@@ -88,6 +89,13 @@ class User < ApplicationRecord
 
   def can_manage_calendar?(on: Organization.current_local_date)
     can?("manage_settings") || private_agenda_notes_access?(on:)
+  end
+
+  def can_manage_minutes_distribution?(organization: Organization.first)
+    return false if disabled_at || !organization
+    return true if can?("manage_settings")
+
+    position_capability_sources(organization:).keys.intersect?(PRIVATE_AGENDA_NOTES_ROLE_CAPABILITIES)
   end
 
   def private_agenda_notes_access?(on: Organization.current_local_date)

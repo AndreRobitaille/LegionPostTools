@@ -1,0 +1,76 @@
+<% content_for :title, "Contact the Post" %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+<% end %>
+
+<div class="post-contact-page">
+  <div class="page-lead">
+    <h1 class="page-title">Contact the Post</h1>
+    <p class="page-sub">Find the right person for your question.</p>
+  </div>
+
+  <div class="post-contact-general">
+    <% if @organization.public_email.present? %>
+      <p>Not sure whom to contact? Email the Post:</p>
+      <%= mail_to @organization.public_email, @organization.public_email, class: "post-contact-address" %>
+    <% else %>
+      <p>A general Post email has not been added yet.<% if @officer_assignments.any? %> Contact one of the officers below.<% end %></p>
+    <% end %>
+  </div>
+
+  <section aria-labelledby="who-can-help-heading">
+    <%= render "shared/section_header", label: "Start here", heading_tag: :h2, heading_id: "who-can-help-heading" %>
+    <div class="mrow-list post-contact-choices">
+      <% @primary_contacts.each_with_index do |contact, index| %>
+        <article class="mrow mrow--office post-contact-row post-contact-choice" aria-labelledby="contact-choice-<%= index %>">
+          <div class="post-contact-identity">
+            <h3 class="post-contact-office" id="contact-choice-<%= index %>"><%= contact.fetch(:office) %></h3>
+            <% if contact.fetch(:assignments).any? %>
+              <% contact.fetch(:assignments).each do |assignment| %>
+                <%= render "person_contact", assignment: %>
+              <% end %>
+            <% else %>
+              <p class="post-contact-note">A current <%= contact.fetch(:office) %> is not listed yet.</p>
+              <%= render "post_email", office: contact.fetch(:office) %>
+            <% end %>
+          </div>
+          <%= render "role_guidance", guidance: contact.fetch(:guidance) if contact.fetch(:guidance) %>
+        </article>
+      <% end %>
+    </div>
+  </section>
+
+  <% if @other_officer_assignments.any? %>
+    <section aria-labelledby="current-officers-heading">
+      <%= render "shared/section_header", label: "Other current officers", heading_tag: :h2, heading_id: "current-officers-heading" %>
+      <div class="mrow-list post-contact-officers">
+        <% @other_officer_assignments.each do |assignment| %>
+          <article class="mrow post-contact-row post-contact-officer" aria-labelledby="officer-<%= assignment.id %>">
+            <div class="post-contact-identity">
+              <h3 class="post-contact-office" id="officer-<%= assignment.id %>"><%= assignment.position_title.name %></h3>
+              <%= render "person_contact", assignment: %>
+            </div>
+            <% if (guidance = assignment.position_title.contact_guidance) %>
+              <%= render "role_guidance", guidance: %>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  <% elsif @officer_assignments.empty? %>
+    <p class="empty">Current officers have not been listed yet.</p>
+  <% end %>
+
+  <footer class="post-contact-footer">
+    <div class="post-contact-directory">
+      <p>Looking for another member?</p>
+      <%= link_to "View member directory", people_path %>
+    </div>
+    <% if @organization.mailing_address.present? %>
+      <div class="post-contact-mailing">
+        <h2>Mailing address</h2>
+        <address><%= safe_join(@organization.mailing_address_lines, tag.br) %></address>
+      </div>
+    <% end %>
+  </footer>
+</div>

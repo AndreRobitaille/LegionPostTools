@@ -1,6 +1,6 @@
 module EndeavorHistory
   class Processing
-    def self.request(endeavor, requester: nil, force: false, meeting_id: nil)
+    def self.request(endeavor, requester: nil, force: false, meeting_id: nil, attestation_request: nil, retry_run: nil, backfill: false)
       raise Error, "disabled" unless Config.enabled?
       raise Error, "forbidden" if requester && !requester.can?("manage_agendas")
       if meeting_id && !Sources.new(endeavor).revisions.any? { |revision| revision.meeting_minutes.meeting_id == meeting_id }
@@ -8,33 +8,85 @@ module EndeavorHistory
       end
       run = endeavor.with_lock do
         raise Error, "withdrawn" if endeavor.history_withdrawn?
-        existing = endeavor.history_runs.active.first
-        next existing if existing
         manifest = Sources.new(endeavor).manifest
+        if attestation_request
+          next unless Requests.valid?(endeavor, attestation_request, manifest)
+          next unless Requests.pending(endeavor)&.id == attestation_request.id
+        end
+        recovery = nil
+        if retry_run
+          retry_run.reload
+          next unless retry_run.endeavor_id == endeavor.id && Requests.retryable?(retry_run)
+          latest_attempt = Requests.latest_attempt(retry_run)
+          next latest_attempt unless latest_attempt.id == retry_run.id
+          if Sources.dependencies(retry_run.manifest) != Sources.dependencies(manifest)
+            Requests.defer_recovery(retry_run)
+            next retry_run
+          end
+          recovery = Requests.metadata(retry_run)
+          requester = retry_run.requested_by
+          meeting_id = recovery["meeting_id"]
+          force = true
+        end
+        existing = endeavor.history_runs.active.first
+        if existing
+          if Requests.authorized_run?(existing)
+            next existing
+          else
+            existing.update!(status: "failed", error_category: "unproven_request", finished_at: Time.current)
+          end
+        end
         raise Error, "no_sources" if manifest["revisions"].empty?
         fingerprint = Sources.digest(manifest)
-        latest = endeavor.history_runs.order(id: :desc).detect { |candidate| Sources.dependencies(candidate.manifest) == Sources.dependencies(manifest) }
+        latest = endeavor.history_runs.order(id: :desc).detect do |candidate|
+          Sources.dependencies(candidate.manifest) == Sources.dependencies(manifest) &&
+            (candidate.status == "succeeded" || Requests.authorized_run?(candidate))
+        end
         if latest && !force && (latest.status == "succeeded" || latest.manifest["configuration"] == manifest["configuration"])
+          if attestation_request && latest.terminal?
+            endeavor.history_events.create!(action: "attestation_resolved", endeavor_history_run: latest,
+              metadata: { "attestation_request_id" => attestation_request.id, "status" => latest.status })
+          end
           next latest
         end
-        recovery = if force && !requester && latest&.status == "failed"
-          endeavor.history_events.where(endeavor_history_run: latest, action: "requested").last&.metadata
-        end
-        if recovery&.fetch("refresh", false)
-          requester = latest.requested_by
-          meeting_id = recovery["meeting_id"]
+        next unless requester || attestation_request || retry_run || backfill
+        token_id = if retry_run
+          retry_run.agent_access_token_id
+        elsif requester
+          Current.agent_access_token&.id
         end
         run = endeavor.history_runs.create!(manifest: manifest, fingerprint: fingerprint, requested_by: requester,
-          agent_access_token_id: Current.agent_access_token&.id || (recovery&.fetch("refresh", false) ? latest.agent_access_token_id : nil))
-        metadata = { "meeting_id" => meeting_id, "force" => force, "refresh" => force && requester.present? }
-        metadata["refresh_id"] = recovery&.fetch("refresh_id", nil) || run.id if metadata["refresh"]
+          agent_access_token_id: token_id)
+        trigger = if requester
+          "manual"
+        elsif backfill
+          "backfill"
+        else
+          "attestation"
+        end
+        metadata = recovery&.deep_dup || { "meeting_id" => meeting_id, "force" => force, "refresh" => force && requester.present?, "trigger" => trigger }
+        metadata["retry_root_id"] = retry_run ? Requests.retry_root(retry_run) : run.id
+        metadata["retry_of_id"] = retry_run.id if retry_run
+        metadata["attestation_request_id"] = attestation_request.id if attestation_request
+        if attestation_request && !recovery
+          metadata["revision_ids"] = Requests.revision_ids(endeavor, manifest)
+        end
+        metadata["refresh_id"] ||= run.id if metadata["refresh"]
         endeavor.history_events.create!(action: "requested", actor: requester, endeavor_history_run: run,
           agent_access_token_id: run.agent_access_token_id, metadata: metadata)
         run
       end
-      if run.status == "pending"
-        job = EndeavorHistoryJob.perform_later(run.id)
-        run.update!(status: "failed", error_category: "queue_error", finished_at: Time.current) unless job&.successfully_enqueued?
+      if run&.status == "pending"
+        begin
+          job = EndeavorHistoryJob.perform_later(run.id)
+        rescue StandardError => error
+          Rails.logger.warn("Endeavor history run #{run.id} enqueue failed (#{error.class.name})")
+        end
+        unless job && job.successfully_enqueued?
+          run.with_lock do
+            run.update!(status: "failed", error_category: "queue_error", finished_at: Time.current) if run.status == "pending"
+          end
+        end
       end
       run
     end
@@ -57,7 +109,20 @@ module EndeavorHistory
       documents = Sources.new(@endeavor).documents
       @guidance = @endeavor.history_guidances.find_by(id: @run.manifest["guidance_id"])&.body.to_s
       @request = @endeavor.history_events.where(endeavor_history_run: @run, action: "requested").last&.metadata || {}
-      meetings = documents.map { |document| discover(document) }
+      automatic = @request["attestation_request_id"].present?
+      selected_ids = if automatic
+        @request["revision_ids"] || Requests.revision_ids(@endeavor, @run.manifest)
+      elsif @request["meeting_id"]
+        documents.select { |document| document["meeting_id"] == @request["meeting_id"] }.pluck("revision_id")
+      end
+      meetings = documents.filter_map do |document|
+        if selected_ids && !refresh?(document) && (retained = retained_meeting(document))
+          record_reuse("discovery", "edition_id" => previous_edition.id, "revision_id" => document["revision_id"], "retained" => true)
+          retained
+        elsif !selected_ids || selected_ids.include?(document["revision_id"])
+          discover(document)
+        end
+      end
       summary = compose(meetings)
       publish!(summary, meetings)
     rescue Error => error
@@ -69,6 +134,20 @@ module EndeavorHistory
     end
 
     private
+
+    def previous_edition
+      return @previous_edition if defined?(@previous_edition)
+      @previous_edition = @endeavor.history_editions.order(id: :desc).detect do |edition|
+        Sources.identity(edition.manifest) == Sources.identity(@run.manifest)
+      end
+    end
+
+    def retained_meeting(document)
+      return unless previous_edition
+      previous_edition.payload.fetch("evidence").find do |meeting|
+        meeting["revision_id"] == document["revision_id"] && meeting["sha256"] == document["sha256"]
+      end
+    end
 
     def discover(document)
       unless refresh?(document)
@@ -111,7 +190,7 @@ module EndeavorHistory
     end
 
     def compose(meetings)
-      previous = @endeavor.history_editions.order(id: :desc).detect { |edition| Sources.identity(edition.manifest) == Sources.identity(@run.manifest) }
+      previous = previous_edition
       evidence = previous ? previous.payload.fetch("evidence").index_by { |meeting| meeting["revision_id"] } : {}
       retained = previous ? previous.payload.fetch("meetings").select do |account|
         meeting = meetings.find { |entry| entry["revision_id"] == account["revision_id"] }
@@ -243,25 +322,29 @@ module EndeavorHistory
     end
 
     def publish!(summary, meetings)
-      @endeavor.with_lock do
-        # Serialize against official transitions as well as guidance/withdrawal changes.
+      ApplicationRecord.transaction do
+        # Match attestation's minutes-before-Endeavor order when it records requests.
         minutes_ids = MinutesRevision.where(id: @run.manifest["revisions"].map { |source| source["id"] }).pluck(:meeting_minutes_id)
         MeetingMinutes.where(id: minutes_ids).order(:id).lock.load
-        ensure_current!
-        payload = summary.merge("evidence" => meetings)
-        edition = @endeavor.history_editions.create!(endeavor_history_run: @run, payload: payload,
-          manifest: @run.manifest, sha256: Sources.digest(payload))
-        meetings.each do |meeting|
-          ids = meeting["facts"].flat_map { |fact| fact["source_ids"] }.uniq
-          meeting["items"].each do |item|
-            selected_ids = item["units"].map { |unit| unit["id"] } & ids
-            next if selected_ids.empty?
-            edition.source_links.create!(endeavor: @endeavor, minutes_revision_id: meeting["revision_id"], record_key: item["key"], source_ids: selected_ids)
+        @endeavor.with_lock do
+          ensure_current!
+          payload = summary.merge("evidence" => meetings)
+          covered_ids = meetings.pluck("revision_id")
+          covered_manifest = @run.manifest.merge("revisions" => @run.manifest["revisions"].select { |source| covered_ids.include?(source["id"]) })
+          edition = @endeavor.history_editions.create!(endeavor_history_run: @run, payload: payload,
+            manifest: covered_manifest, sha256: Sources.digest(payload))
+          meetings.each do |meeting|
+            ids = meeting["facts"].flat_map { |fact| fact["source_ids"] }.uniq
+            meeting["items"].each do |item|
+              selected_ids = item["units"].map { |unit| unit["id"] } & ids
+              next if selected_ids.empty?
+              edition.source_links.create!(endeavor: @endeavor, minutes_revision_id: meeting["revision_id"], record_key: item["key"], source_ids: selected_ids)
+            end
           end
+          @endeavor.history_events.create!(action: "published", endeavor_history_run: @run,
+            metadata: { "edition_id" => edition.id, "sha256" => edition.sha256, "actor" => "automatic" })
+          @run.update!(status: "succeeded", finished_at: Time.current)
         end
-        @endeavor.history_events.create!(action: "published", endeavor_history_run: @run,
-          metadata: { "edition_id" => edition.id, "sha256" => edition.sha256, "actor" => "automatic" })
-        @run.update!(status: "succeeded", finished_at: Time.current)
       end
     end
 

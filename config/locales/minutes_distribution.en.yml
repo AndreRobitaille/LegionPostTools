@@ -1,0 +1,6 @@
+en:
+  activerecord:
+    attributes:
+      minutes_distribution_setting:
+        email_subject_template: Subject
+        email_cover_note_template: Cover note

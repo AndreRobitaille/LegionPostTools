@@ -34,6 +34,7 @@ class MeetingMinutes < ApplicationRecord
     dependent: :restrict_with_exception,
     inverse_of: :meeting_minutes
   has_many :official_action_confirmations, dependent: :restrict_with_exception
+  has_many :email_distributions, class_name: "MinutesDistribution", dependent: :restrict_with_exception
   has_one :membership_approval,
     class_name: "MinutesMembershipApproval",
     dependent: :restrict_with_exception,
@@ -220,6 +221,8 @@ class MeetingMinutes < ApplicationRecord
           occurred_at: now,
           metadata: { "membership_approval_decision_event_id" => decision&.id }.compact
         )
+        EndeavorHistory::Requests.record_attestation(self)
+        MinutesDistribution::Requests.record_attestation(self)
       end
     end
     current_revision.attestation
@@ -432,7 +435,11 @@ class MeetingMinutes < ApplicationRecord
   end
 
   def schedule_endeavor_history
-    EndeavorHistoryReconcileJob.perform_later(organization_id) if EndeavorHistory::Config.enabled?
+    return unless EndeavorHistory::Config.enabled?
+
+    organization.endeavors.where(history_withdrawn: false).find_each do |endeavor|
+      EndeavorHistory::Requests.enqueue(endeavor)
+    end
   end
 
   def latest_successful_draft_run

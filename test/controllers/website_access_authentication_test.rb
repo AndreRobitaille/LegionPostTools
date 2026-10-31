@@ -15,7 +15,7 @@ class WebsiteAccessAuthenticationTest < ActionDispatch::IntegrationTest
     @portrait = "/public/v1/member_stories/#{@story.public_id}/portrait/#{@story.snapshot['portrait_revision']}/small.webp"
     @paths = [ "/public/v1/featured_members", "/public/v1/member_stories/#{@story.public_id}",
       "/public/v1/events?from=2026-10-01&to=2026-11-01", "/public/v1/events/#{@event.public_id}",
-      @portrait, "/public/v1/unknown" ]
+      @portrait, "/public/v1/officers", "/public/v1/unknown" ]
   end
   teardown { teardown_publisher }
 

@@ -10,6 +10,7 @@ module EndeavorHistory
       response = client.responses.create(
         model: Config.model(stage), instructions: Prompt.instructions(stage), input: serialized,
         reasoning: { effort: Config.reasoning(stage) },
+        prompt_cache_options: { mode: :explicit },
         text: { format: { type: :json_schema, name: "endeavor_#{stage}", strict: true, schema: schema }, verbosity: :low },
         tools: [], tool_choice: :none, store: false, truncation: :disabled,
         max_output_tokens: Config.max_output_tokens

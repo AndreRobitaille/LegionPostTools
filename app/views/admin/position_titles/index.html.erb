@@ -25,6 +25,9 @@
             </button>
             <div class="pos-main">
               <span class="pn"><%= title.name %></span>
+              <% if title.website_officer_listing? %>
+                <span class="position-public-note">Public officer listing</span>
+              <% end %>
               <% if title.grants_full_membership_access? %>
                 <span class="pos-access"><span aria-hidden="true">&#9670;</span> Full membership access</span>
               <% end %>
@@ -33,6 +36,7 @@
               <% end %>
             </div>
             <div class="pos-actions">
+              <%= link_to "Edit contact guidance", edit_admin_position_title_path(title), class: "toggle" %>
               <span class="state <%= title.active? ? "on" : "off" %>"><%= title.active? ? "Active" : "Inactive" %></span>
               <%= button_to title.active? ? "Deactivate" : "Activate", admin_position_title_path(title), method: :patch,
                     params: { position_title: { active: !title.active? } }, class: "toggle", form: { class: "posform" } %>

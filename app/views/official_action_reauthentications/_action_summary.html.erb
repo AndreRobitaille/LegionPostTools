@@ -3,6 +3,10 @@
   <h2 id="official-action-heading"><%= confirmation_action_label(confirmation) %></h2>
   <p><strong><%= confirmation.meeting_minutes.title %></strong></p>
   <p><%= confirmation_action_description(confirmation) %></p>
+  <% if confirmation.action == "attest" && confirmation.meeting_minutes.organization.minutes_distribution_setting&.includes_minutes?(confirmation.meeting_minutes) %>
+    <p><strong>Minutes email:</strong> <%= minutes_email_status(confirmation.meeting_minutes) %>. This attested PDF will also be shared with the designated outside offices, subject to their current email choices.</p>
+    <% if current_user.can_manage_minutes_distribution? %><%= link_to "Review recipients", minutes_distribution_path, class: "lnk" %><% end %>
+  <% end %>
   <% if confirmation.action == "record_membership_approval" %>
     <% payload = confirmation.action_payload %>
     <% approving_meeting = confirmation.meeting_minutes.eligible_membership_approval_meetings.find(payload.fetch("approving_meeting_id")) %>

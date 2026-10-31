@@ -1,32 +1,18 @@
 require "test_helper"
+require_relative "../../support/minutes_distribution_provider"
 
 class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
-  class FakeClient
-    attr_reader :payloads, :open_count
-
+  class FakeClient < MinutesDistributionProvider
     def initialize(rejected_email: nil, terminal_error: nil)
-      @rejected_email = rejected_email
-      @terminal_error = terminal_error
-      @payloads = []
-      @open_count = 0
-    end
-
-    def open
-      @open_count += 1
-      raise @terminal_error if @terminal_error
-
-      yield self
-    end
-
-    def update_contact(payload)
-      @payloads << payload
-      return unless payload[:email] == @rejected_email
-
-      raise Loops::Client::RequestError.new("Provider rejected contact", status: 400)
+      super()
+      self.rejected_email = rejected_email
+      self.terminal_error = terminal_error
     end
   end
 
   setup do
+    organization = Organization.create!(name: "Synthetic roster Post", unit_type: "american_legion_post", timezone: "America/Chicago")
+    organization.create_minutes_distribution_setting!(post_members_list_id: "members", minutes_recipients_list_id: "minutes")
     @person = Person.create!(
       first_name: "Ready", last_name: "Member", member_number: "M100",
       roster_member_status: "active", roster_email_address: "ready@example.com"
@@ -74,8 +60,8 @@ class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
       Loops::RosterSynchronizer.new(roster_sync, client: client, sleeper: ->(interval) { intervals << interval }).call
 
       assert_equal [
-        { email: "ready@example.com", userId: "american-legion-member:M100", firstName: "Ready", lastName: "Member" },
-        { email: "later@example.test", userId: "american-legion-member:M200", firstName: "Later", lastName: "Zzz" }
+        { email: "ready@example.com", userId: "american-legion-member:M100", firstName: "Ready", lastName: "Member", mailingLists: { "members" => true } },
+        { email: "later@example.test", userId: "american-legion-member:M200", firstName: "Later", lastName: "Zzz", mailingLists: { "members" => true } }
       ], client.payloads
       assert_equal 1, client.open_count
       assert_equal original_source, roster_source_state
