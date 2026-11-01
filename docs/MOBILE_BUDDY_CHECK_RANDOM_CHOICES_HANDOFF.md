@@ -1,5 +1,12 @@
 # Random Buddy Check choices and production clock investigation
 
+> Release procedure update (November 1, 2026): commands below describe the dated
+> handoff/release. For any new release use the [current deployment playbook](DEPLOYMENT.md):
+> successful isolated image build, explicitly authorized publication, and a verified
+> digest inside one owned `bin/release session`. The old push-deploy/keep-master
+> commands are superseded. Activation still requires its own explicit authority.
+
+
 October 12, 2026. Implementation based on
 `0e8fbd294cae75b62f5c503106efe5b55ecee9b7`. Andre approved the scoped backend
 release, then separately requested NTP repair after deployment. This document

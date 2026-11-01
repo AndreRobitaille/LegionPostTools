@@ -1,73 +1,57 @@
-name: Profile production image
+name: Build production image
 
 on:
   pull_request:
     paths:
+      - 'app/**'
+      - 'bin/**'
+      - 'config/**'
+      - 'db/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'script/**'
+      - 'vendor/**'
+      - 'test/scripts/**'
+      - '.kamal/hooks/**'
       - Dockerfile
       - .dockerignore
+      - .ruby-version
       - Gemfile
       - Gemfile.lock
       - .github/workflows/production_image.yml
-      - bin/release
-      - bin/docker-entrypoint
-      - config/database.yml
-      - config/puma.rb
-      - config/queue.yml
-      - script/profile_production_image
-      - script/production_image_smoke.rb
-      - script/smoke_production_startup
-      - test/scripts/release_test.rb
+  push:
+    branches: [master]
   workflow_dispatch:
-    inputs:
-      baseline:
-        description: Baseline commit to compare with this revision
-        required: false
-      export_image:
-        description: Export the verified image for off-server publication
-        type: boolean
-        default: false
 
+# Checkout and artifacts only. No registry write, production secrets or SSH.
 permissions:
   contents: read
 
 concurrency:
-  group: production-image-profile
+  group: production-image-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  profile:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
           persist-credentials: false
-      - name: Measure cold baseline
-        if: inputs.baseline != ''
-        env:
-          BASELINE: ${{ inputs.baseline }}
-        run: bash script/profile_production_image "$BASELINE" baseline "$RUNNER_TEMP/profile/baseline"
-      - name: Measure cold production bundle and check runtime
-        run: bash script/profile_production_image "$GITHUB_SHA" candidate "$RUNNER_TEMP/profile/candidate"
-      - name: Verify production startup with synthetic databases
-        run: bash script/smoke_production_startup "$RUNNER_TEMP/profile/candidate"
+      - name: Build and smoke-test the actual production image
+        run: bash script/build_production_image "$GITHUB_SHA" "$RUNNER_TEMP/production-image"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: production-image-profile
-          path: ${{ runner.temp }}/profile
-      - name: Export verified image
-        if: inputs.export_image
-        run: |
-          mkdir -p "$RUNNER_TEMP/release-image"
-          docker save legion-profile:candidate | gzip -1 > "$RUNNER_TEMP/release-image/image.tar.gz"
-          cd "$RUNNER_TEMP/release-image"
-          sha256sum image.tar.gz > SHA256SUMS
+          name: production-image-checks-${{ github.sha }}
+          path: ${{ runner.temp }}/production-image/checks
+          retention-days: 7
       - uses: actions/upload-artifact@v7
-        if: inputs.export_image
+        if: success() && github.event_name != 'pull_request'
         with:
           name: production-image-${{ github.sha }}
-          path: ${{ runner.temp }}/release-image
+          path: ${{ runner.temp }}/production-image/image
+          if-no-files-found: error
           retention-days: 3
           compression-level: 0
