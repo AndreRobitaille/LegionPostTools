@@ -141,40 +141,46 @@ The Hetzner VPS throttles repeated SSH connections heavily. Before running Kamal
 
 Codex's restricted command sandbox can expose root-owned host files under `/etc` and `/usr` as `nobody:nobody`. OpenSSH 10.5 rejects that synthetic ownership with `Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf`. For Codex sessions, run SSH, Kamal, and `bin/sync_prod_db` with host access outside the restricted sandbox. Confirm ownership outside the sandbox before diagnosing a host permissions problem, and never `chown` system SSH files based only on their sandbox-visible ownership.
 
-For Post 165 releases, do not assemble the SSH/Kamal workaround ad hoc and do not run
-`bin/kamal deploy` directly from an agent session. Use the repository release entry point:
+For Post 165 releases, follow the [shared-host agreement](docs/SHARED_HOST_DEPLOYMENT.md)
+and [app deployment guide](docs/DEPLOYMENT.md). Use the owned session's
+`release_kamal` for additional authorized Kamal commands; do not run `bin/kamal`
+directly against production or assemble a replacement SSH transport ad hoc.
 
-- `bin/release check` verifies the host SSH control master, Kamal proxy transport, and
-  remote Docker builder without changing production.
-- `bin/release push` pushes the current branch and verifies GitHub's exact SHA.
-- `bin/release deploy` requires a clean worktree and an exact pushed HEAD, then deploys,
-  verifies the running revision and public health, and closes the control master.
-- `bin/release push-deploy` performs the last two operations together.
-
-When Andre explicitly asks to push and deploy, stage only the intended files, commit
-them, and run `bin/release push-deploy`. Do not ask again merely because Git, SSH,
-Docker, or Kamal needs host access. Destructive production data work still requires
-Andre's explicit authorization.
+- `bin/release check` performs local syntax/configuration checks; it opens no SSH.
+- `bin/release push` pushes a clean reviewed branch and verifies GitHub's exact SHA.
+- GitHub Actions builds and smoke-tests linux/amd64 images without production
+  credentials or data. Preserve serial gem/Bootsnap compilation and the isolated
+  builder's 1,536 MiB memory and memory-plus-swap limits.
+- Only when publication is explicitly authorized, run `bin/publish-image RUN_ID`
+  for the successful image workflow at the exact reviewed revision. CI never
+  publishes or deploys. Andre's instructions must cover publication and deployment;
+  a successful CI run alone authorizes neither.
+- Only when deployment is explicitly authorized, open `bin/release session`. Set
+  its verified `RELEASE_IMAGE_DIGEST` and use `release_deploy`. It requires a clean,
+  exactly pushed HEAD, validates digest/revision/service/linux-amd64 before and
+  after Kamal's final pull, then deploys with `--skip-push`. Missing or mismatched
+  evidence stops the release. There is no on-server-build fallback.
+- Standalone deploy/push-deploy/setup commands are disabled. When authorized to
+  push and deploy, stage/commit only intended files, push, obtain successful CI,
+  and complete publication only if also authorized. Host access itself is not a
+  new permission gate. Destructive production data work still requires explicit
+  authorization.
 
 ## Production and deploys
 
-Deploy only when Andre explicitly asks. A merge to master is not a deploy. Production updates only when Kamal runs.
+Deploy only when Andre explicitly asks. A merge to master is not a deploy.
+Retain the one owned session from first production inspection through final
+verification, including after failed commands. All SSH and Kamal traffic must use
+its existing master; no direct/parallel SSH or automatic reconnect. If it fails,
+stop and wait at least five minutes before one explicitly chosen replacement
+attempt. Exit only after the whole authorized operation is finished.
 
-Follow `docs/DEPLOYMENT.md` exactly. Use `bin/release check` for the preflight and `bin/release push-deploy` to deploy.
-
-Before every image build, follow the
-[shared-host build safeguards](docs/DEPLOYMENT.md#shared-host-build-safeguards):
-preserve serial gem installation, verify the builder's
-1,536 MiB memory limit and host memory headroom, coordinate one build/deploy at a
-time across hosted apps, and check all three sites. `bin/release check` verifies
-transport; it does not enforce these resource safeguards.
-
-Use one persistent control-master connection for the whole operation, including read-only checks. No direct or parallel ssh to the server, and no retry loops. If something fails, stop and report. Wait at least 5 minutes before any single further attempt.
-
-`bin/release check` closes its control master by default. For authorized work spanning
-preflight, resource checks, deployment, and verification, set
-`RELEASE_KEEP_SSH_MASTER=true` on each release command, retain that one master, and
-close it only after final verification. This option does not authorize retries.
+Before replacement inspect host memory/pressure and container stats through that
+session, allow headroom for extraction/migrations/container overlap, coordinate
+one deployment at a time across hosted apps, and check all three sites. Verify
+protected cohost/database containers, running revision and worker health. The
+old remote builder and `RELEASE_KEEP_SSH_MASTER` flow are superseded; do not use
+or raise production builder limits to bypass a failed isolated build.
 
 Do not copy production data (real member data) anywhere without Andre's explicit yes.
 

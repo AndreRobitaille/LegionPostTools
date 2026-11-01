@@ -40,7 +40,7 @@ RUN apt-get update -qq && \
 COPY vendor/* ./vendor/
 COPY Gemfile Gemfile.lock ./
 
-# Native gem builds share RAM with the running applications on the remote builder.
+# Keep native compilation within the isolated image builder's 1,536 MiB limit.
 RUN bundle install --jobs 1 && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
