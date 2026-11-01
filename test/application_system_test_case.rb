@@ -39,6 +39,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   driven_by :headless_chromium
 
+  require_relative "support/chrome_detached_document"
+
   # Optional images for manual visual review. Rails still captures failures
   # automatically, independently of this setting.
   def capture_system_screenshot(name)

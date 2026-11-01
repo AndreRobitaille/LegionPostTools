@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Isolated synthetic databases; no external network or production credentials.
+set -Eeuo pipefail
+output="${1:?usage: script/smoke_production_startup OUTPUT_DIR}"
+mkdir -p "$output"
+network="legion-startup-smoke"
+database="legion-startup-db"
+application="legion-startup-app"
+cleanup() {
+  docker logs "$application" > "$output/startup.log" 2>&1 || true
+  docker inspect --format '{{json .State}}' "$application" > "$output/startup-state.json" 2>/dev/null || true
+  docker rm -f "$application" "$database" >/dev/null 2>&1 || true
+  docker network rm "$network" >/dev/null
+}
+trap cleanup EXIT
+docker network create --internal "$network"
+docker run -d --name "$database" --network "$network" \
+  -e POSTGRES_USER=legion_post_tools -e POSTGRES_PASSWORD=synthetic postgres:17
+for ((attempt = 1; attempt <= 30; attempt++)); do
+  if docker exec "$database" pg_isready -U legion_post_tools; then break; fi
+  sleep 1
+done
+docker exec "$database" pg_isready -U legion_post_tools
+docker run -d --name "$application" --network "$network" --memory 512m --memory-swap 512m \
+  -e SECRET_KEY_BASE_DUMMY=1 -e APP_HOST=example.invalid -e DB_HOST="$database" \
+  -e POSTGRES_DB=synthetic -e POSTGRES_CACHE_DB=synthetic_cache -e POSTGRES_QUEUE_DB=synthetic_queue \
+  -e LEGION_POST_TOOLS_DATABASE_PASSWORD=synthetic -e WEB_CONCURRENCY=2 -e SOLID_QUEUE_IN_PUMA=true \
+  -e WEBAUTHN_ORIGIN=https://example.invalid -e WEBAUTHN_RP_ID=example.invalid \
+  -e WEBAUTHN_RP_NAME=BuildVerification -e MAIL_PROVIDER=action_mailer legion-profile:candidate
+
+ready=false
+for ((attempt = 1; attempt <= 90; attempt++)); do
+  if docker exec "$application" curl --fail --silent --output /dev/null http://127.0.0.1/up; then
+    ready=true
+    break
+  fi
+  sleep 1
+done
+[[ "$ready" == true ]]
+docker exec "$application" curl --fail --silent --output /dev/null http://127.0.0.1/session/new
+workers=0
+for ((attempt = 1; attempt <= 30; attempt++)); do
+  workers="$(docker exec "$database" psql -U legion_post_tools -d synthetic_queue -Atc \
+    "SELECT count(*) FROM solid_queue_processes WHERE kind = 'Worker' AND last_heartbeat_at > CURRENT_TIMESTAMP - INTERVAL '1 minute'")"
+  [[ "$workers" -gt 0 ]] && break
+  sleep 1
+done
+[[ "$workers" -gt 0 ]]
+docker top "$application" -eo pid,args | awk '/puma: cluster worker/ {count++} END {exit count != 2}'
+pid="$(docker inspect --format '{{.State.Pid}}' "$application")"
+cgroup="/sys/fs/cgroup$(awk -F: '$1 == "0" {print $3}' "/proc/$pid/cgroup")"
+cat "$cgroup/memory.peak" > "$output/startup-memory.peak"
+cat "$cgroup/memory.events" > "$output/startup-memory.events"
+docker stats --no-stream "$application" > "$output/startup-stats.txt"
+echo 'Production startup, two Puma workers, HTTP health/sign-in, and Solid Queue heartbeat passed within 512 MiB.'

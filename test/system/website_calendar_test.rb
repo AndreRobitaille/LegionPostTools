@@ -24,28 +24,33 @@ class WebsiteCalendarSystemTest < ApplicationSystemTestCase
     fill_in "Public description (optional)", with: "Community supper at the hall."
     click_button "Add event"
     assert_text "Event added to the calendar."
-    assert_nil CalendarEvent.find_by!(title: "Synthetic community supper").endeavor_id
+    event = CalendarEvent.find_by!(title: "Synthetic community supper")
+    assert_current_path calendar_event_path(event)
+    assert_nil event.endeavor_id
     visit admin_website_calendar_path
     click_button "Review defaults"
     assert_current_path preview_admin_website_calendar_path
-    assert_text "Synthetic community supper"
+    assert_selector "section.website-calendar-preview", text: "Synthetic community supper"
     assert_text "1 shown; 0 hidden"
     assert_no_horizontal_overflow
     capture_system_screenshot("website-calendar-desktop")
     page.driver.browser.manage.window.resize_to(390, 844)
     assert_no_horizontal_overflow
-    page.execute_script("document.querySelector('.website-calendar-preview').scrollIntoView({block: 'start'})")
+    find(".website-calendar-preview").scroll_to(:top)
     capture_system_screenshot("website-calendar-mobile")
     click_button "Activate calendar listings"
+    assert_current_path admin_website_calendar_path
     assert_text "Website calendar defaults saved."
-    visit edit_calendar_event_path(CalendarEvent.find_by!(title: "Synthetic community supper"))
+    visit edit_calendar_event_path(event)
+    assert_selector ".website-calendar-fields"
     assert_no_horizontal_overflow
-    page.execute_script("document.querySelector('.website-calendar-fields').scrollIntoView({block: 'start'})")
+    find(".website-calendar-fields").scroll_to(:top)
     capture_system_screenshot("website-calendar-event-mobile")
     select "Hide", from: "Public website"
     click_button "Save event"
+    assert_current_path calendar_event_path(event)
     assert_text "Calendar event saved."
-    assert_not CalendarEvent.find_by!(title: "Synthetic community supper").website_listed?
+    assert_not event.reload.website_listed?
 
     @organization.meeting_bodies.create!(name: "Membership", slug: "membership", default_location_name: "Post hall")
     visit new_admin_meeting_path
@@ -55,9 +60,11 @@ class WebsiteCalendarSystemTest < ApplicationSystemTestCase
     capture_system_screenshot("website-calendar-meeting-mobile")
     click_button "Create meeting"
     assert_text "Meeting created."
+    meeting = Meeting.order(:id).last
+    assert_current_path admin_meeting_path(meeting)
     assert_text "Shown"
-    assert_equal "members", Meeting.last.attendance
-    assert_nil Meeting.last.dated_agenda
+    assert_equal "members", meeting.attendance
+    assert_nil meeting.dated_agenda
   end
 
   private

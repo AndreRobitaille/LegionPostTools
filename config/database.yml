@@ -97,9 +97,11 @@ production:
     host: <%= required_production_env.call("DB_HOST", "localhost") %>
   cache:
     <<: *primary_production
+    schema_format: ruby
     database: <%= required_production_env.call("POSTGRES_CACHE_DB", "legion_post_tools_production_cache") %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
+    schema_format: ruby
     database: <%= required_production_env.call("POSTGRES_QUEUE_DB", "legion_post_tools_production_queue") %>
     migrations_paths: db/queue_migrate
