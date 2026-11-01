@@ -34,15 +34,17 @@ class CalendarRefinementsTest < ApplicationSystemTestCase
     assert_no_selector ".calendar-grid-event", text: "Membership Meeting"
     assert_selector ".calendar-grid-event", text: "Honor Guard practice"
     find("a[aria-label='Next month']").click
+    assert_selector "h2 time", text: "October 2026"
     assert_unchecked_field "Member Meeting"
     assert_checked_field "Honor Guard"
     find("a[aria-label='Previous month']").click
+    assert_selector "h2 time", text: "September 2026"
     page.current_window.resize_to(390, 844)
     assert_no_selector ".calendar-grid"
     assert_selector ".calendar-row", text: "Honor Guard practice"
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
     capture_system_screenshot("calendar-refinements-mobile")
-    page.execute_script("document.querySelector('.calendar-schedule').scrollIntoView()")
+    find(".calendar-schedule").scroll_to(:top)
     capture_system_screenshot("calendar-refinements-mobile-schedule")
     click_link "+ Add event"
     fill_in "Event name", with: "Morning volunteer setup"

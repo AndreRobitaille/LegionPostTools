@@ -229,11 +229,11 @@ class CalendarPrintTest < ApplicationSystemTestCase
     uri = URI(current_url)
     month = CalendarMonth.new(organization: @organization, date: Date.new(2026, 10, 1))
     pdf = CalendarPdf.render(organization: @organization, month: month, base_url: "#{uri.scheme}://#{uri.host}:#{uri.port}")
+    save_pdf("calendar-five-week-one-page", pdf)
     assert_equal [ [ 792, 612 ], [ 612, 792 ] ], pdf_page_sizes(pdf)
     text = assert_pdf_printable_margins(pdf, minimum_pages: 2)
     assert_match(/Veterans flight welcome home/, text.lines.first)
     assert_match(/\b31\b/, text.lines.first)
-    save_pdf("calendar-five-week-one-page", pdf)
 
     page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
     header = find(".calendar-month .calendar-print-heading")
