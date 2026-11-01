@@ -31,7 +31,10 @@ The actual final image runs synthetic checks without production keys:
 - Fresh primary, cache and queue schemas with no pending migrations, health and
   sign-in pages, actual compiled stylesheet delivery, fresh worker heartbeat,
   Solid Cache write/read, and a synthetic Active Storage purge completed by the
-  asynchronous worker. Containers and their disposable volumes are removed.
+  asynchronous worker. A separate 512 MiB verification container shares the app's
+  internal network, synthetic databases and disposable storage volume; its extra
+  Rails process does not consume the app's unchanged 512 MiB budget. Container
+  state/limits are retained on failure. Containers and disposable volumes are removed.
 
 No email or AI generation is requested. No production keys, databases, storage
 volumes or member rows enter this process. An internal network also prevents

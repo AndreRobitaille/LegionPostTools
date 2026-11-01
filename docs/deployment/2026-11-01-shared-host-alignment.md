@@ -82,6 +82,34 @@ this alignment needs no image publication or production replacement. No producti
 window will be opened for this task. Exact pushed commit, PR and CI outcomes are
 reported separately after execution rather than inferred from local checks.
 
+### Actual-image CI blocker and correction
+
+At initial pushed revision `85e88fb`, both
+[PR image validation](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/41352090780)
+and the [exact-branch image run](https://github.com/AndreRobitaille/LegionPostTools/actions/runs/41352099531)
+failed. Build and PDF/libvips/runtime checks succeeded under the unchanged builder
+cap. The startup artifact records `OOMKilled: true`, exit 137, after successful
+database creation, two Puma workers, queue processes, health/sign-in and CSS
+responses. The extra Rails checker ran in that same app cgroup; its output was
+empty. This is app OOM evidence, distinct from the zero-OOM builder event file.
+
+The synthetic checker now runs in its own 512 MiB container sharing the app's
+internal network, synthetic database configuration and disposable storage volume.
+The app keeps its 512 MiB limit, two workers, real entrypoint and asynchronous
+purge requirement; BuildKit stays at 1,536 MiB. Both container states and limits
+are saved before cleanup, including on failure, and the owned storage volume is
+removed. No production runtime configuration changed.
+
+Focused normal-runner startup checks passed: **4 tests, 36 assertions, no
+failures/errors/skips**. The workflow simulation checks helper isolation, shared
+storage/network/database configuration, retained OOM evidence and failure cleanup.
+The component simulations retain later worker-commit, stuck-job and non-synthetic
+database refusal checks. ShellCheck, shell syntax, focused RuboCop and whitespace
+checks passed. Actual-image acceptance remains a separate subsequent CI result.
+The new workflow test also failed against a disposable copy of the original
+`85e88fb` script: **one test, two assertions, one expected failure**, because no
+separate verification container existed. The working script was not mutated.
+
 ## Deferred work and operator checks
 
 - Publication verifies archive configuration/image ID, then registry labels and

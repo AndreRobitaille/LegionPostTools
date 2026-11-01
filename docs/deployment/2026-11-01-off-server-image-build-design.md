@@ -58,3 +58,14 @@ after master loss through the normal offline test file. Inject a representative
 fault only into a disposable test fixture. Publication config-digest binding,
 running-image verification, database-sync transport, shared locking and guarded
 rollback remain separate follow-up work; this alignment does not redesign them.
+
+## Startup verification budget
+
+The first actual-image runs exposed an OOM when the extra Rails checker shared
+the app's 512 MiB cgroup after two Puma workers and Solid Queue had started.
+Keep that app limit, worker count, real entrypoint and 1,536 MiB builder limit.
+Run the synthetic database/cache/storage checker in a separate 512 MiB container
+using the same image, internal network, synthetic environment and disposable
+storage volume. The app's existing queue worker must complete its purge job.
+Capture both containers' state and configured limits before cleanup on success
+or failure, then remove the owned containers, storage volume and network.
