@@ -27,7 +27,7 @@ class CalendarMobileScheduleTest < ApplicationSystemTestCase
       assert_selector ".calendar-schedule-kind", text: "Planning meetings"
       assert_selector ".calendar-event-place", text: "Community center, second-floor meeting room near the main entrance"
       assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-      page.execute_script("document.querySelector('.calendar-month-heading').scrollIntoView()")
+      find(".calendar-month-heading").scroll_to(:top)
       capture_system_screenshot("calendar-schedule-#{width}")
       first(".calendar-schedule-event").send_keys(:tab)
       assert_selector ".calendar-schedule-event:focus-visible"

@@ -32,9 +32,6 @@ gem "solid_queue"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-# Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
-gem "kamal", require: false
-
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 
@@ -43,7 +40,7 @@ gem "image_processing", "~> 2.2"
 gem "ruby-vips", require: false
 
 # Modern Action Text rich-text editor (replaces the default Trix editor)
-gem "lexxy", "~> 1.0.1"
+gem "lexxy", "~> 1.0.2"
 gem "csv"
 gem "webauthn"
 # Human native-app authorization code + PKCE; separate from agent credentials.
@@ -67,6 +64,9 @@ group :development, :test do
 end
 
 group :development do
+  # Deployment runs on the maintainer workstation, outside the application image.
+  gem "kamal", require: false
+
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 

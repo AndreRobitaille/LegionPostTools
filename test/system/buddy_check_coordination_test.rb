@@ -75,6 +75,7 @@ class BuddyCheckCoordinationSystemTest < ApplicationSystemTestCase
     select "Officer Helper", from: "Follow-up owner"
     capture_system_screenshot("buddy-care-form-phone")
     click_button "Save care follow-up"
+    assert_current_path buddy_checks_member_history_path(@member)
     assert_text "Care follow-up recorded."
     first_review = BuddyCareUpdate.sole
     assert_equal @officer.id, first_review.assigned_to_id
@@ -99,11 +100,32 @@ class BuddyCheckCoordinationSystemTest < ApplicationSystemTestCase
     select "Care review complete", from: "Care review"
     fill_in "Reason and practical next step", with: "Care review discussed and settled; contact preference remains paused"
     click_button "Save care follow-up"
-    assert_text "Care review complete"
+    assert_current_path buddy_checks_member_history_path(@member)
+    assert_text "Care follow-up recorded. Earlier reviews are preserved."
+    assert_selector ".buddy-care-section strong", exact_text: "Care review complete"
+    assert_text "Care review discussed and settled; contact preference remains paused"
     assert_equal 2, BuddyCareUpdate.count
+    completed_review = BuddyCareUpdate.order(:revision).last
+    assert_equal [ @member.id, @officer.id, 2, "cleared" ],
+      [ completed_review.person_id, completed_review.recorded_by_id, completed_review.revision, completed_review.status ]
     assert_equal "Arrange a supportive visit with a trusted Post contact", first_review.reload.notes
+
+    visit buddy_checks_member_history_path(@member)
+    assert_selector ".buddy-care-section strong", exact_text: "Care review complete"
+    assert_text completed_review.notes
+    within "section[aria-label='Buddy Check contact preference']" do
+      assert_text "No Buddy Check contact requested."
+    end
     find("summary", text: "Earlier care reviews").click
     assert_text first_review.notes
+    capture_system_screenshot("buddy-care-completed-phone")
+    visit buddy_checks_coverage_path(filter: "extra_care")
+    assert_no_selector ".buddy-coverage-row", text: "Alex Member"
+    visit buddy_checks_report_path(month: "2026-11")
+    assert_selector ".buddy-county-number strong", exact_text: "0"
+    assert_no_text completed_review.notes
+    assert_no_text first_review.notes
+    assert_equal 2, BuddyCareUpdate.count
     @office.update!(ends_on: Organization.current_local_date - 1)
     visit buddy_checks_member_history_path(@member)
     assert_no_text first_review.notes
