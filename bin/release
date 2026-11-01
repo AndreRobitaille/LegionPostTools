@@ -6,13 +6,16 @@ APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly APP_ROOT
 readonly PROD_HOST="178.156.250.235"
 readonly PROD_SERVICE="legion_post_165_wi_tools"
+readonly PROD_IMAGE="ghcr.io/andrerobitaille/legion-post-165-wi-tools"
 readonly PROD_URL="https://members.wipost165.org"
 readonly COHOSTED_URL="https://tworiversmatters.com"
-readonly SSH_CONFIG="/home/andre/.ssh/config"
+readonly PUBLIC_POST_URL="https://wipost165.org"
+readonly SSH_CONFIG="${RELEASE_SSH_CONFIG:-/home/andre/.ssh/config}"
 
 release_temp_config=""
 release_activation_email="${BUDDY_CHECK_ACTIVATE_EMAIL:-}"
 release_keep_ssh_master="${RELEASE_KEEP_SSH_MASTER:-false}"
+release_image_digest="${RELEASE_IMAGE_DIGEST:-}"
 
 cd "$APP_ROOT"
 
@@ -78,6 +81,10 @@ effective_ssh_value() {
   ssh -F "$SSH_CONFIG" -G "$PROD_HOST" 2>/dev/null | awk -v key="$key" '$1 == key { $1 = ""; sub(/^ /, ""); print; exit }'
 }
 
+production_ssh() {
+  ssh -F "$SSH_CONFIG" -o ControlMaster=no -o ProxyCommand=false -o BatchMode=yes "$PROD_HOST" "$@"
+}
+
 prepare_kamal_config() {
   local output="$1" control_path="$2" identity_file="$3"
 
@@ -89,13 +96,29 @@ prepare_kamal_config() {
       "keys" => [identity_file],
       "keys_only" => true,
       "config" => false,
-      "proxy_command" => "ssh -F #{ssh_config} -S #{control_path} -o BatchMode=yes -W 127.0.0.1:22 #{host}"
+      "proxy_command" => "ssh -F #{ssh_config} -S #{control_path} -o ControlMaster=no -o ProxyCommand=false -o BatchMode=yes -W 127.0.0.1:22 #{host}"
     }
     builder = config["builder"] ||= {}
     builder["remote"] = "ssh://root@#{host}"
     builder["local"] = false
     File.write(output, YAML.dump(config))
   ' config/deploy.yml "$output" "$PROD_HOST" "$control_path" "$identity_file" "$SSH_CONFIG"
+}
+
+verify_prebuilt_image() {
+  local head="$1"
+  bin/kamal build pull -c "$release_temp_config"
+  production_ssh "docker image inspect --format '{{json .}}' $PROD_IMAGE:$head" | \
+    ruby -rjson -e '
+      head, digest, repository, service = ARGV
+      image = JSON.parse(STDIN.read)
+      labels = image.fetch("Config").fetch("Labels", {})
+      abort "Prebuilt image digest mismatch" unless image.fetch("RepoDigests").include?("#{repository}@#{digest}")
+      abort "Prebuilt image revision mismatch" unless labels["org.opencontainers.image.revision"] == head
+      abort "Prebuilt image service mismatch" unless labels["service"] == service
+      abort "Prebuilt image must be linux/amd64" unless image["Os"] == "linux" && image["Architecture"] == "amd64"
+      puts "Verified prebuilt image #{repository}@#{digest} for #{head}."
+    ' "$head" "$release_image_digest" "$PROD_IMAGE" "$PROD_SERVICE"
 }
 
 assert_http_status() {
@@ -116,10 +139,10 @@ assert_http_status() {
 probe_mobile_readiness() {
   [[ -n "$release_activation_email" ]] || return 0
   local require_ready="${1:-false}" container
-  container="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
+  container="$(production_ssh \
     "docker ps --filter label=service=$PROD_SERVICE --filter label=role=web --format '{{.Names}}'")"
   [[ "$container" =~ ^legion_post_165_wi_tools-web-[a-f0-9]+$ ]] || fail "expected one running Post 165 web container for readiness probe"
-  ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
+  production_ssh \
     "docker exec -i -e BUDDY_CHECK_ACTIVATE_EMAIL=$release_activation_email -e BUDDY_CHECK_REQUIRE_READY=$require_ready $container bin/rails runner -" \
     < script/mobile_buddy_check_readiness.rb
 }
@@ -150,8 +173,7 @@ with_production_connection() {
   fi
 
   ssh -F "$SSH_CONFIG" -O check "$PROD_HOST"
-  ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" 'hostname; docker --version'
-  ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" 'hostname; docker --version'
+  production_ssh 'hostname; docker --version'
 
   prepare_kamal_config "$release_temp_config" "$control_path" "$identity_file"
   bin/kamal config -c "$release_temp_config" >/dev/null
@@ -166,14 +188,19 @@ with_production_connection() {
   local head container_names
   head="$(git rev-parse HEAD)"
   echo "Deploying $head to Post 165 production..."
-  bin/kamal deploy -c "$release_temp_config"
+  if [[ -n "$release_image_digest" ]]; then
+    verify_prebuilt_image "$head"
+    bin/kamal deploy --skip-push -c "$release_temp_config"
+  else
+    bin/kamal deploy -c "$release_temp_config"
+  fi
 
   if [[ -n "$release_activation_email" ]]; then
     bin/kamal app exec --reuse "bin/rails 'buddy_checks:activate[$release_activation_email]'" -c "$release_temp_config"
     probe_mobile_readiness true
   fi
 
-  container_names="$(ssh -F "$SSH_CONFIG" -o BatchMode=yes "$PROD_HOST" \
+  container_names="$(production_ssh \
     "docker ps --filter label=service=$PROD_SERVICE --filter label=role=web --format '{{.Names}}'")"
   grep -Fxq "$PROD_SERVICE-web-$head" <<< "$container_names" || \
     fail "the running $PROD_SERVICE web container does not match $head"
@@ -181,12 +208,14 @@ with_production_connection() {
   assert_http_status "$PROD_URL/up" 200
   assert_http_status "$PROD_URL/session/new" 200
   assert_http_status "$COHOSTED_URL/" 200
+  assert_http_status "$PUBLIC_POST_URL/" 200
   echo "Production verified at $head."
 }
 
 command="${1:-}"
 [[ $# -eq 1 ]] || usage
 [[ "$release_keep_ssh_master" == "true" || "$release_keep_ssh_master" == "false" ]] || fail "RELEASE_KEEP_SSH_MASTER must be true or false"
+[[ -z "$release_image_digest" || "$release_image_digest" =~ ^sha256:[a-f0-9]{64}$ ]] || fail "RELEASE_IMAGE_DIGEST must be a sha256 digest"
 if [[ -n "$release_activation_email" ]]; then
   [[ "$release_activation_email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || fail "invalid activation email"
 fi

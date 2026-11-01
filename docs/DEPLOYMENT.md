@@ -22,6 +22,13 @@ closes the SSH master. Use `bin/release check` for a non-mutating transport pref
 Use `bin/kamal setup` for the First install only, when provisioning a new deployment
 target. Do not use a server-side git clone or web UI as the primary flow.
 
+When the VPS lacks build headroom, a verified image can be built and smoke-tested on
+an isolated runner, then deployed by the same wrapper without an on-server build.
+Set `RELEASE_IMAGE_DIGEST` to its verified registry manifest digest; the wrapper
+checks the exact HEAD, digest, service, and architecture before using Kamal's
+`--skip-push`. See [production image measurement and publication](PRODUCTION_IMAGE_BUILD.md).
+Without this option the remote-build safeguards below remain required.
+
 ## Shared-host build safeguards
 
 The remote builder shares the VPS with live applications. The Dockerfile installs

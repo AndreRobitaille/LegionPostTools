@@ -45,11 +45,18 @@
 
 # Ignore development files
 /.devcontainer
+/.cursor
+/vendor/bundle
+/test
+/design
+/docs
+/AGENTS.md
+/CLAUDE.md
+/README.md
+/Procfile.dev
 
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
 
-# Never bake reference material / member roster data into the image.
-/docs/reference/*.pdf
-/docs/reference/*.csv
+# Documentation, including reference material / member rosters, is excluded above.
