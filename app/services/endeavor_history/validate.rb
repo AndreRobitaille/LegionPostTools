@@ -2,6 +2,18 @@ module EndeavorHistory
   module Validate
     module_function
 
+    def shared_discovery!(data, input)
+      targets = input.fetch("endeavors")
+      entries = data.fetch("endeavors")
+      raise Error, "coverage" unless entries.is_a?(Array) && entries.pluck("endeavor_id") == targets.pluck("id")
+      entries.each do |entry|
+        discovery!(entry, input.fetch("source").merge("target_endeavor_id" => entry.fetch("endeavor_id")))
+      end
+      data
+    rescue KeyError, TypeError, NoMethodError
+      raise Error, "invalid_output"
+    end
+
     def discovery!(data, source)
       entries = data.fetch("items")
       raise Error, "coverage" unless entries.is_a?(Array) && entries.map { |item| item["key"] } == source.fetch("items").map { |item| item["key"] }

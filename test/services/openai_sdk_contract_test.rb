@@ -75,6 +75,23 @@ class OpenaiSdkContractTest < ActiveSupport::TestCase
     assert_kind_of String, body["input"]
   end
 
+  test "shared discovery serializes complete target schema and independent verification through the SDK" do
+    %w[shared_discovery verify_shared_discovery].each do |stage|
+      transport = OfflineTransport.new(response(text: '{"valid":true,"issues":[]}'))
+      schema = stage == "shared_discovery" ? EndeavorHistory::Schemas.shared_discovery : EndeavorHistory::Schemas.verification
+      EndeavorHistory::Provider.new(client: client(transport)).call(stage: stage,
+        input: { endeavors: [ { id: 1, title: "Synthetic project" } ], source: { items: [] } }, schema: schema)
+      body = JSON.parse(transport.requests.first.body)
+      assert_equal "gpt-6-astra", body["model"]
+      assert_equal "high", body.dig("reasoning", "effort")
+      assert_equal({ "mode" => "explicit" }, body["prompt_cache_options"])
+      assert_equal true, body.dig("text", "format", "strict")
+      assert_equal JSON.parse(schema.to_json), body.dig("text", "format", "schema")
+      assert_includes body["instructions"], "EVERY"
+      assert_equal [ 1 ], JSON.parse(body["input"])["endeavors"].pluck("id")
+    end
+  end
+
   private
 
   def client(transport)

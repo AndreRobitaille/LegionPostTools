@@ -7,7 +7,10 @@ below remain historical evidence.
 
 Status: incremental processing implemented and verified locally, October 2, 2026;
 releases use the repository's guarded deployment workflow. Shared multi-Endeavor generation remains an unqualified
-optimization. This document records the requested
+optimization. The [November 5 shared discovery implementation](ENDEAVOR_HISTORY_SHARED_DISCOVERY.md)
+adds an opt-in extraction/check pair for the triggering attestation, with separate
+per-Endeavor writing; it remains off pending model-quality qualification. The four-call
+batched-writing target below is still a future optimization. This document records the requested
 architecture reassessment. It does not describe shipped changes or authorize paid
 evaluation, production data changes, or deployment. Current behavior remains documented
 in [Endeavor AI history](ENDEAVOR_HISTORY_AI.md).

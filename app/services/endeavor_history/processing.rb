@@ -70,6 +70,8 @@ module EndeavorHistory
         metadata["attestation_request_id"] = attestation_request.id if attestation_request
         if attestation_request && !recovery
           metadata["revision_ids"] = Requests.revision_ids(endeavor, manifest)
+          metadata["shared_discovery"] = attestation_request.metadata["shared_discovery"]
+          metadata["shared_revision_id"] = attestation_request.metadata["revision_id"] if metadata["shared_discovery"]
         end
         metadata["refresh_id"] ||= run.id if metadata["refresh"]
         endeavor.history_events.create!(action: "requested", actor: requester, endeavor_history_run: run,
@@ -105,10 +107,11 @@ module EndeavorHistory
         true
       end
       return unless claimed
+      @request = Requests.metadata(@run)
+      @shared_group = @request["shared_discovery"]
       ensure_current!
       documents = Sources.new(@endeavor).documents
       @guidance = @endeavor.history_guidances.find_by(id: @run.manifest["guidance_id"])&.body.to_s
-      @request = @endeavor.history_events.where(endeavor_history_run: @run, action: "requested").last&.metadata || {}
       automatic = @request["attestation_request_id"].present?
       selected_ids = if automatic
         @request["revision_ids"] || Requests.revision_ids(@endeavor, @run.manifest)
@@ -125,6 +128,11 @@ module EndeavorHistory
       end
       summary = compose(meetings)
       publish!(summary, meetings)
+    rescue SharedDiscovery::Waiting
+      @run.with_lock do
+        @run.update!(status: "pending", heartbeat_at: Time.current) unless @run.terminal?
+      end
+      EndeavorHistoryJob.set(wait: 1.minute).perform_later(@run.id) unless @run.terminal?
     rescue Error => error
       finish_failure(error.category)
     rescue StandardError => error
@@ -172,10 +180,14 @@ module EndeavorHistory
       end
       batches.each do |batch|
         source = document.merge("items" => batch, "target_endeavor_id" => @endeavor.id)
-        input = { "endeavor" => @run.manifest["endeavor"], "catalog" => @run.manifest["catalog"], "guidance" => @guidance, "source" => source }
-        input["identity_version"] = @run.manifest.slice("guidance_id", "generation")
-        input["refresh_id"] = refresh_id if refresh?(document)
-        output = generate_verified("discovery", input, Schemas.discovery) { |data| Validate.discovery!(data, source) }
+        output = if @shared_group && document["revision_id"] == @request["shared_revision_id"]
+          shared_discover(source)
+        else
+          input = { "endeavor" => @run.manifest["endeavor"], "catalog" => @run.manifest["catalog"], "guidance" => @guidance, "source" => source }
+          input["identity_version"] = @run.manifest.slice("guidance_id", "generation")
+          input["refresh_id"] = refresh_id if refresh?(document)
+          generate_verified("discovery", input, Schemas.discovery) { |data| Validate.discovery!(data, source) }
+        end
         results.concat(output.fetch("items"))
       end
       facts = results.flat_map do |entry|
@@ -187,6 +199,23 @@ module EndeavorHistory
       # Preserve the whole associated item as context, but only selected units are featured.
       selected = document["items"].select { |item| item["units"].any? { |unit| source_ids.include?(unit["id"]) } }
       document.merge("items" => selected, "facts" => facts, "coverage" => results, "normalization_version" => SourceDocument::VERSION)
+    end
+
+    def shared_discover(source)
+      input = { "attestation_group_id" => @shared_group.fetch("id"), "endeavors" => @shared_group.fetch("targets"),
+        "catalog" => @run.manifest.fetch("catalog"), "source" => source.except("target_endeavor_id") }
+      result = SharedDiscovery.new(@run, input).fetch do
+        generate_verified("shared_discovery", input, Schemas.shared_discovery) { |data| Validate.shared_discovery!(data, input) }
+        @reuse.verified("shared_discovery", input)
+      end
+      ensure_current!
+      Validate.shared_discovery!(result.candidate, input)
+      Validate.verification!(result.verification, source_ids(input))
+      unless result.endeavor_history_run_id == @run.id
+        record_reuse("discovery", "shared_result_id" => result.id, "producer_run_id" => result.endeavor_history_run_id,
+          "revision_id" => source.fetch("revision_id"))
+      end
+      result.candidate.fetch("endeavors").find { |entry| entry["endeavor_id"] == @endeavor.id }
     end
 
     def compose(meetings)
@@ -257,7 +286,8 @@ module EndeavorHistory
           @reuse.save(stage, input, candidate, report)
           return candidate
         rescue Error => error
-          raise if attempt == 1
+          # Transport, budget, and stale-authority failures are not content repairs.
+          raise if attempt == 1 || !%w[coverage ambiguous invalid_output invalid_citation verification_failed].include?(error.category)
           repair = { "category" => error.category, "candidate" => candidate, "verification" => report, "structural_findings" => error.details }
         end
       end
@@ -307,6 +337,10 @@ module EndeavorHistory
 
     def ensure_current!
       raise Error, "disabled" unless Config.enabled?
+      if @shared_group
+        raise Error, "disabled" unless Config.shared_discovery?
+        raise Error, "source_changed" unless @shared_group.fetch("targets") == SharedDiscovery.targets(@endeavor.organization)
+      end
       @run.reload
       raise Error, "superseded" unless @run.status == "running"
       @endeavor.reload

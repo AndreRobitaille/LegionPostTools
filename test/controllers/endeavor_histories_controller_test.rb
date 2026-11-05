@@ -1,5 +1,6 @@
 require "test_helper"
 require_relative "../support/endeavor_history_provider"
+require_relative "../support/shared_endeavor_history_provider"
 
 class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
@@ -353,6 +354,47 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_includes response.body, "Volunteers requested"
     end
+  end
+
+  test "attestation jobs share discovery and later member web API and source reads remain unpaid" do
+    previous = ENV["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"]
+    ENV["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"] = "1"
+    with_enabled_history do
+      picnic = @organization.endeavors.create!(title: "Picnic", status: "completed", completed_at: 1.day.ago,
+        completed_by: @manager, created_by: @manager)
+      _minutes, revision, source, = source_fixture
+      original = revision.reload.attributes
+      provider = SharedEndeavorHistoryTestProvider.new
+      with_stubbed_class_method(EndeavorHistory::Provider, :new, -> { provider }) do
+        perform_enqueued_jobs(only: EndeavorHistoryRefreshJob)
+        perform_enqueued_jobs(only: EndeavorHistoryJob)
+        assert_equal "succeeded", @endeavor.history_runs.recent.first.status
+        assert_equal "succeeded", picnic.history_runs.recent.first.status
+        assert_equal %w[shared_discovery verify_shared_discovery summary verify_summary], provider.calls.map(&:first)
+        sign_in_as(@member)
+        2.times do
+          get endeavor_path(@endeavor)
+          assert_response :success
+          assert_includes response.body, "Volunteers requested"
+          assert_not_includes response.body, "Unrelated account"
+          get api_endeavor_path(@endeavor), as: :json
+          assert_response :success
+          assert_includes response.body, "Volunteers requested"
+          assert_not_includes response.body, "attestation_group_id"
+          link = @endeavor.history_editions.last.source_links.first
+          get source_endeavor_path(@endeavor), params: { revision_id: revision.id, record_key: source["key"], unit_ids: link.source_ids }
+          assert_response :success
+          assert_includes response.body, "Volunteers requested"
+          assert_not_includes response.body, "Unrelated account"
+        end
+        get api_endeavor_history_path(@endeavor), as: :json
+        assert_response :forbidden
+        assert_equal 4, provider.calls.size
+        assert_equal original, revision.reload.attributes
+      end
+    end
+  ensure
+    ENV["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"] = previous
   end
 
   private

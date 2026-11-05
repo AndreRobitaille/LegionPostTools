@@ -24,6 +24,10 @@ module EndeavorHistory
         decision_titles: array(object(source_id: string, text: string)), claims: array(claim))))
     end
 
+    def shared_discovery
+      object(endeavors: array(object(endeavor_id: { type: "integer" }, items: discovery.fetch(:properties).fetch(:items))))
+    end
+
     def verification
       object(valid: { type: "boolean" }, issues: array(object(message: string, source_ids: ids)))
     end

@@ -82,9 +82,29 @@ module EndeavorHistory
       with source_ids and valid false. Return valid true only with an empty issues array. Do not rewrite output.
     TEXT
 
+    SHARED_DISCOVERY = <<~TEXT.freeze
+      Analyze EVERY supplied target Endeavor against the COMPLETE supplied source. Return exactly one
+      endeavors entry per target, in supplied order, with its exact endeavor_id and complete items array.
+      Apply the following discovery rules separately to EACH target and its own guidance. Multiple
+      Endeavors may share a passage or outcome; do not assign a passage exclusively to its first match.
+      Completed Endeavors remain eligible. Check incidental, untagged, and multi-Endeavor reports.
+      Keep similar annual identities separate. No target may borrow another target's guidance or facts.
+    TEXT
+    SHARED_DISCOVERY_RULES = DISCOVERY.sub("only the target is being analyzed", "each target is analyzed separately").freeze
+    VERIFY_SHARED_DISCOVERY = <<~TEXT.freeze
+      Audit EVERY target in the shared candidate independently against the COMPLETE supplied source
+      and that target's identity and guidance. Require exactly one endeavors entry per supplied target
+      in order. Every entry must account for every source item and outcome, including negative matches.
+      Do not assume a passage can concern only one Endeavor. Look for omissions across targets and
+      mistaken assignments between similar annual identities. Any material failure in any target fails
+      this shared candidate. Return one verification report covering the entire candidate.
+    TEXT
+
     module_function
 
     def instructions(stage)
+      return COMMON + SHARED_DISCOVERY + SHARED_DISCOVERY_RULES if stage == "shared_discovery"
+      return COMMON + VERIFY_SHARED_DISCOVERY + VERIFY_DISCOVERY if stage == "verify_shared_discovery"
       COMMON + const_get(stage.upcase)
     end
 

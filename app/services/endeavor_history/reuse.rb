@@ -99,7 +99,7 @@ module EndeavorHistory
     def legacy_digest(value) = Digest::SHA256.hexdigest(JSON.generate(value))
 
     def compatible_verifier?(result, stage)
-      verifier = "verify_#{stage}"
+      verifier = Config.model_stage("verify_#{stage}")
       model = result.configuration.dig("models", verifier) || result.configuration["model"]
       effort = result.configuration.dig("reasoning", verifier)
       (model == Config.model(verifier) && effort == Config.reasoning(verifier)) || (model == "gpt-6-astra" && effort == "high")
