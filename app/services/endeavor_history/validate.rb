@@ -2,6 +2,18 @@ module EndeavorHistory
   module Validate
     module_function
 
+    def shared_discovery!(data, input)
+      targets = input.fetch("endeavors")
+      entries = data.fetch("endeavors")
+      raise Error, "coverage" unless entries.is_a?(Array) && entries.pluck("endeavor_id") == targets.pluck("id")
+      entries.each do |entry|
+        discovery!(entry, input.fetch("source").merge("target_endeavor_id" => entry.fetch("endeavor_id")))
+      end
+      data
+    rescue KeyError, TypeError, NoMethodError
+      raise Error, "invalid_output"
+    end
+
     def discovery!(data, source)
       entries = data.fetch("items")
       raise Error, "coverage" unless entries.is_a?(Array) && entries.map { |item| item["key"] } == source.fetch("items").map { |item| item["key"] }
@@ -20,7 +32,8 @@ module EndeavorHistory
           raise Error, "invalid_output" unless %w[report proposal decision commitment uncertainty discrepancy].include?(fact["kind"])
         end
         title = item["units"].find { |unit| unit["kind"] == "title" }
-        if entry["relevance"] == "related" && title && dated_title?(title["text"]) && facts.none? { |fact| fact["source_ids"].include?(title["id"]) }
+        other_primary = source["target_endeavor_id"] && item["primary_endeavor_id"] && item["primary_endeavor_id"] != source["target_endeavor_id"]
+        if entry["relevance"] == "related" && !other_primary && title && dated_title?(title["text"]) && facts.none? { |fact| fact["source_ids"].include?(title["id"]) }
           raise Error.new("coverage", details: { "message" => "Extract the event date in this related heading with a title-unit citation.", "source_ids" => [ title["id"] ] })
         end
         outcomes = item.fetch("units").select { |unit| unit["kind"] == "outcome" }.map { |unit| unit["id"] }

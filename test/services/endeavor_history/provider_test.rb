@@ -43,6 +43,10 @@ class EndeavorHistoryProviderTest < ActiveSupport::TestCase
     ENV.delete("OPENAI_ENDEAVOR_MODEL")
     assert_equal "gpt-6-astra", EndeavorHistory::Config.model("discovery")
     assert_equal "gpt-6-astra", EndeavorHistory::Config.model("verify_discovery")
+    assert_equal "gpt-6-astra", EndeavorHistory::Config.model("shared_discovery")
+    assert_equal "gpt-6-astra", EndeavorHistory::Config.model("verify_shared_discovery")
+    assert_equal "high", EndeavorHistory::Config.reasoning("shared_discovery")
+    assert_equal "high", EndeavorHistory::Config.reasoning("verify_shared_discovery")
     assert_equal "gpt-6.1-sol", EndeavorHistory::Config.model("summary")
     assert_equal "gpt-6.1-sol", EndeavorHistory::Config.model("verify_summary")
     assert_equal "high", EndeavorHistory::Config.reasoning("summary")
@@ -54,5 +58,20 @@ class EndeavorHistoryProviderTest < ActiveSupport::TestCase
     assert_equal "medium", EndeavorHistory::Config.reasoning("summary")
   ensure
     ENV["OPENAI_ENDEAVOR_MODEL"] = previous
+  end
+
+  test "shared discovery inherits stage overrides without changing summary settings" do
+    keys = %w[OPENAI_ENDEAVOR_DISCOVERY_MODEL OPENAI_ENDEAVOR_VERIFY_DISCOVERY_MODEL OPENAI_ENDEAVOR_DISCOVERY_REASONING OPENAI_ENDEAVOR_VERIFY_DISCOVERY_REASONING]
+    previous = ENV.to_h.slice(*keys)
+    ENV["OPENAI_ENDEAVOR_DISCOVERY_MODEL"] = "synthetic-extractor"
+    ENV["OPENAI_ENDEAVOR_VERIFY_DISCOVERY_MODEL"] = "synthetic-verifier"
+    ENV["OPENAI_ENDEAVOR_DISCOVERY_REASONING"] = "medium"
+    ENV["OPENAI_ENDEAVOR_VERIFY_DISCOVERY_REASONING"] = "high"
+    assert_equal "synthetic-extractor", EndeavorHistory::Config.model("shared_discovery")
+    assert_equal "synthetic-verifier", EndeavorHistory::Config.model("verify_shared_discovery")
+    assert_equal "medium", EndeavorHistory::Config.reasoning("shared_discovery")
+    assert_equal "high", EndeavorHistory::Config.reasoning("verify_shared_discovery")
+  ensure
+    keys.each { |key| ENV[key] = previous[key] }
   end
 end

@@ -3,7 +3,10 @@ module EndeavorHistory
     module_function
 
     def enabled? = ENV["ENDEAVOR_HISTORY_ENABLED"] == "1"
+    def shared_discovery? = ENV["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"] == "1"
+    def model_stage(stage) = stage&.sub("shared_discovery", "discovery")
     def model(stage = nil)
+      stage = model_stage(stage)
       default = %w[summary verify_summary].include?(stage) ? "gpt-6.1-sol" : "gpt-6-astra"
       configured = ENV.fetch("OPENAI_ENDEAVOR_MODEL", default)
       stage ? ENV.fetch("OPENAI_ENDEAVOR_#{stage.upcase}_MODEL", configured) : configured
@@ -13,6 +16,7 @@ module EndeavorHistory
     def max_calls = Integer(ENV.fetch("ENDEAVOR_HISTORY_MAX_CALLS", "40"))
     def daily_token_budget = Integer(ENV.fetch("ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET", "500000"))
     def reasoning(stage)
+      stage = model_stage(stage)
       default = stage == "summary" && model(stage) == "gpt-6-astra" ? "medium" : "high"
       value = ENV.fetch("OPENAI_ENDEAVOR_#{stage.upcase}_REASONING", default)
       raise Error, "configuration" unless %w[low medium high xhigh max].include?(value)

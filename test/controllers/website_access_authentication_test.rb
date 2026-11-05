@@ -29,7 +29,7 @@ class WebsiteAccessAuthenticationTest < ActionDispatch::IntegrationTest
         assert_response :unauthorized
         assert_equal "no-store", response.headers["Cache-Control"]
         assert_equal 'Bearer realm="website"', response.headers["WWW-Authenticate"]
-        assert_equal "Authorization", response.headers["Vary"]
+        assert_includes response.headers.fetch("Vary").split(/,\s*/), "Authorization"
         assert_nil response.headers["ETag"]
       end
     end

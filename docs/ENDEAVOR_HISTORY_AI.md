@@ -6,8 +6,10 @@ searches, disable implicit prompt cache writes, and stop midnight budget retries
 
 The [October 2 cost redesign](ENDEAVOR_HISTORY_COST_REDESIGN.md) implements incremental
 reuse, retained verified evidence, scoped refreshes and resumable work locally. It keeps
-target-specific extraction and independent verification; shared multi-Endeavor generation
-remains an unqualified optimization. The [model and reasoning evaluation](ENDEAVOR_MODEL_AND_COST_EVALUATION.md)
+target-specific extraction and independent verification by default. The optional
+[November 5 shared discovery path](ENDEAVOR_HISTORY_SHARED_DISCOVERY.md) shares extraction
+and its check for a new attestation, preserving separate history writing. It remains
+disabled pending model-quality qualification. The [model and reasoning evaluation](ENDEAVOR_MODEL_AND_COST_EVALUATION.md)
 records the limited live comparison and the selected profile.
 
 Implemented locally September 6, 2026. A [live Astra evaluation](ENDEAVOR_HISTORY_AI_LIVE_EVALUATION.md)
@@ -76,7 +78,8 @@ Runs store source/configuration fingerprints, responses, automated findings, usa
 reserved tokens. Editions, source links, guidance, and events are append-only. Reruns
 publish a replacement edition atomically; failures retain the prior valid edition.
 
-Each Endeavor still has its own run and complete-source checks. Append-only verified results
+Each Endeavor still has its own run. Complete-source discovery/checking can be shared
+for the triggering revision when opted in at attestation. Append-only verified results
 are reusable independently of publication, including complete negative coverage. New meetings
 do not re-extract the archive. Old dated accounts remain unchanged; composition writes only
 affected accounts and checks an overview using all retained facts and original passages.
@@ -84,8 +87,11 @@ An unmatched new meeting does not need new prose. Catalog changes do not automat
 re-audit published historical evidence; its original verification provenance is retained
 in reuse events. Full manual refresh audits all eligible revisions against current
 identities. A new identity searches older minutes only on explicit **Search past minutes**.
-Ordinary new work uses two extraction/check calls per target/revision
-and two writing/check calls per changed history, before any repair.
+Default new work uses two extraction/check calls per target/revision
+and two writing/check calls per changed history, before any repair. Shared discovery
+uses one extraction/check pair per whole-item source batch across the frozen target
+group. Consumers record the producer result's provenance without duplicate token charges.
+Manual searches and older pending revisions retain the target-specific path.
 
 A meeting-specific manual refresh revisits that revision and the overview, retaining other
 unchanged published accounts without searching any other unprocessed minutes. Edition
@@ -148,6 +154,7 @@ by this feature.
 | Variable | Default / purpose |
 | --- | --- |
 | `ENDEAVOR_HISTORY_ENABLED` | Disabled unless `1`; allows generation, attestation-triggered refresh, and stalled-run recovery. |
+| `ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED` | Disabled unless `1`; opts new attestations into shared discovery. Enable only after bounded model-quality qualification. Disabling stops already queued shared work without a paid fallback. |
 | `OPENAI_ENDEAVOR_MODEL` | Optional override for every stage; otherwise the defaults below. |
 | `OPENAI_ENDEAVOR_DISCOVERY_MODEL` | `gpt-6-astra` |
 | `OPENAI_ENDEAVOR_VERIFY_DISCOVERY_MODEL` | `gpt-6-astra` |
@@ -163,7 +170,13 @@ by this feature.
 | `ENDEAVOR_HISTORY_DAILY_TOKEN_BUDGET` | `500000` per organization/day, enforced with reservations. |
 
 Explicit stage reasoning overrides take precedence. Model and effort are recorded per
-attempt; completed-call recovery requires the exact stage configuration. Verified result
+attempt. Shared stages inherit the discovery and discovery-verification model/effort
+settings; history writing keeps its existing separate settings. Transport, budget, and
+stale-source failures do not trigger a content repair. The producer alone owns bounded
+transport recovery for a shared batch; consumers wait without paying for another attempt.
+Permanent shared failure stops consumers while preserving existing valid history.
+
+For both paths, completed-call recovery requires the exact stage configuration. Verified result
 reuse requires the current verifier profile or the established Astra/high profile, so an
 effort increase cannot silently accept a result checked at a lower effort.
 

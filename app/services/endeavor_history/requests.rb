@@ -5,10 +5,15 @@ module EndeavorHistory
     def record_attestation(minutes)
       return unless Config.enabled?
 
-      minutes.organization.endeavors.where(history_withdrawn: false).find_each do |endeavor|
+      endeavors = minutes.organization.endeavors.where(history_withdrawn: false).order(:id).to_a
+      shared = if Config.shared_discovery?
+        { "id" => SecureRandom.uuid, "targets" => SharedDiscovery.targets(minutes.organization) }
+      end
+      endeavors.each do |endeavor|
         endeavor.history_events.create!(action: "attestation_requested", metadata: {
-          "revision_id" => minutes.current_revision_id, "manifest" => Sources.new(endeavor).request_inputs
-        })
+          "revision_id" => minutes.current_revision_id, "manifest" => Sources.new(endeavor).request_inputs,
+          "shared_discovery" => shared
+        }.compact)
       end
     end
 
@@ -93,9 +98,13 @@ module EndeavorHistory
     end
 
     def retryable?(run)
+      recoverable?(run) && run.finished_at < 15.minutes.ago
+    end
+
+    def recoverable?(run)
       return false unless run.status == "failed" && authorized_run?(run) && run.finished_at
       %w[queue_error worker_stalled timeout rate_limit provider_error].include?(run.error_category) &&
-        run.finished_at < 15.minutes.ago && attempts(run) < 3
+        attempts(run) < 3
     end
 
     def defer_recovery(run)

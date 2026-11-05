@@ -24,7 +24,8 @@ module EndeavorHistory
       statement; several facts per item are expected when the item records several matters. Each fact must cite
       the exact title units, body units or outcomes supporting it. Titles can contain substantive dates,
       identities and qualifications even when the body is empty. Exclude unrelated passages within mixed reports.
-      For a related item with an event date in its title, extract that date with a title-unit citation.
+      For a related item with an event date in its title, extract that date with a title-unit citation,
+      except when it is explicitly linked to another Endeavor and the target is only cross-referenced.
       Preserve conflicts between the heading and body instead of silently choosing a date.
       A relevant financial motion also makes its supporting financial context relevant: retain the stated
       balance, interest, maturity date, automatic rollover date and chosen term for that decision, even when
@@ -82,9 +83,40 @@ module EndeavorHistory
       with source_ids and valid false. Return valid true only with an empty issues array. Do not rewrite output.
     TEXT
 
+    SHARED_DISCOVERY = <<~TEXT.freeze
+      Analyze EVERY supplied target Endeavor against the COMPLETE supplied source. Return exactly one
+      endeavors entry per target, in supplied order, with its exact endeavor_id and complete items array.
+      Apply the following discovery rules separately to EACH target and its own guidance. Multiple
+      Endeavors may share a passage or outcome; do not assign a passage exclusively to its first match.
+      Completed Endeavors remain eligible. Check incidental, untagged, and multi-Endeavor reports.
+      Keep similar annual identities separate. No target may borrow another target's guidance or facts.
+    TEXT
+    SHARED_DISCOVERY_RULES = DISCOVERY.sub("only the target is being analyzed", "each target is analyzed separately").freeze
+    SHARED_ASSOCIATION = <<~TEXT.freeze
+      Shared source context does not make all facts relevant to all targets. For each fact, require a
+      specific connection to this target's own work or decision. A proposal to fund a project from a
+      separate reserve is relevant to both identities, but does not make the reserve's independent
+      certificate renewal, interest, maturity or rollover schedule part of the funded project's history.
+      Retain those financial details for the reserve decision they actually support. Apply the same
+      separation to other mixed reports. Audit false matches within related items, not just no_match items.
+      A cross-reference distinguishing annual events may establish their separate identities, but must
+      not copy the other event's dates, plans or accomplishments into this target's facts. A dated heading
+      explicitly linked to another target does not require a date fact or heading citation for this target.
+    TEXT
+    VERIFY_SHARED_DISCOVERY = <<~TEXT.freeze
+      Audit EVERY target in the shared candidate independently against the COMPLETE supplied source
+      and that target's identity and guidance. Require exactly one endeavors entry per supplied target
+      in order. Every entry must account for every source item and outcome, including negative matches.
+      Do not assume a passage can concern only one Endeavor. Look for omissions across targets and
+      mistaken assignments between similar annual identities. Any material failure in any target fails
+      this shared candidate. Return one verification report covering the entire candidate.
+    TEXT
+
     module_function
 
     def instructions(stage)
+      return COMMON + SHARED_DISCOVERY + SHARED_DISCOVERY_RULES + SHARED_ASSOCIATION if stage == "shared_discovery"
+      return COMMON + VERIFY_SHARED_DISCOVERY + VERIFY_DISCOVERY + SHARED_ASSOCIATION if stage == "verify_shared_discovery"
       COMMON + const_get(stage.upcase)
     end
 

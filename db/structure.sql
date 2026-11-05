@@ -143,6 +143,25 @@ $$;
 
 
 --
+-- Name: protect_endeavor_history_discovery(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.protect_endeavor_history_discovery() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' OR OLD.result_id IS NOT NULL OR
+    NEW.organization_id IS DISTINCT FROM OLD.organization_id OR
+    NEW.fingerprint IS DISTINCT FROM OLD.fingerprint OR
+    NEW.input IS DISTINCT FROM OLD.input THEN
+    RAISE EXCEPTION 'shared discovery inputs and accepted results are immutable';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: protect_endeavor_history_result(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -860,6 +879,42 @@ CREATE SEQUENCE public.dated_agendas_id_seq
 --
 
 ALTER SEQUENCE public.dated_agendas_id_seq OWNED BY public.dated_agendas.id;
+
+
+--
+-- Name: endeavor_history_discoveries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.endeavor_history_discoveries (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    fingerprint character varying NOT NULL,
+    input jsonb NOT NULL,
+    owner_run_id bigint,
+    result_id bigint,
+    error_category character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: endeavor_history_discoveries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.endeavor_history_discoveries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: endeavor_history_discoveries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.endeavor_history_discoveries_id_seq OWNED BY public.endeavor_history_discoveries.id;
 
 
 --
@@ -3450,6 +3505,13 @@ ALTER TABLE ONLY public.dated_agendas ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: endeavor_history_discoveries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.endeavor_history_discoveries ALTER COLUMN id SET DEFAULT nextval('public.endeavor_history_discoveries_id_seq'::regclass);
+
+
+--
 -- Name: endeavor_history_editions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -4033,6 +4095,14 @@ ALTER TABLE ONLY public.dated_agenda_sections
 
 ALTER TABLE ONLY public.dated_agendas
     ADD CONSTRAINT dated_agendas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: endeavor_history_discoveries endeavor_history_discoveries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.endeavor_history_discoveries
+    ADD CONSTRAINT endeavor_history_discoveries_pkey PRIMARY KEY (id);
 
 
 --
@@ -5139,6 +5209,27 @@ CREATE INDEX index_dated_agendas_on_published_by_id ON public.dated_agendas USIN
 --
 
 CREATE INDEX index_dated_agendas_on_reopened_by_id ON public.dated_agendas USING btree (reopened_by_id);
+
+
+--
+-- Name: index_endeavor_history_discoveries_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_endeavor_history_discoveries_on_organization_id ON public.endeavor_history_discoveries USING btree (organization_id);
+
+
+--
+-- Name: index_endeavor_history_discoveries_on_owner_run_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_endeavor_history_discoveries_on_owner_run_id ON public.endeavor_history_discoveries USING btree (owner_run_id);
+
+
+--
+-- Name: index_endeavor_history_discoveries_on_result_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_endeavor_history_discoveries_on_result_id ON public.endeavor_history_discoveries USING btree (result_id);
 
 
 --
@@ -6626,6 +6717,13 @@ CREATE UNIQUE INDEX unique_endeavor_edition_source ON public.endeavor_source_lin
 
 
 --
+-- Name: unique_endeavor_history_discovery; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX unique_endeavor_history_discovery ON public.endeavor_history_discoveries USING btree (organization_id, fingerprint);
+
+
+--
 -- Name: unique_mobile_exchange_id_per_session; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6644,6 +6742,13 @@ CREATE UNIQUE INDEX website_featured_positions ON public.website_publications US
 --
 
 CREATE TRIGGER advance_buddy_address_source BEFORE UPDATE ON public.people FOR EACH ROW EXECUTE FUNCTION public.advance_buddy_address_source();
+
+
+--
+-- Name: endeavor_history_discoveries endeavor_history_discoveries_immutable; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER endeavor_history_discoveries_immutable BEFORE DELETE OR UPDATE ON public.endeavor_history_discoveries FOR EACH ROW EXECUTE FUNCTION public.protect_endeavor_history_discovery();
 
 
 --
@@ -7725,6 +7830,14 @@ ALTER TABLE ONLY public.minutes_attestations
 
 
 --
+-- Name: endeavor_history_discoveries fk_rails_9a4716397a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.endeavor_history_discoveries
+    ADD CONSTRAINT fk_rails_9a4716397a FOREIGN KEY (owner_run_id) REFERENCES public.endeavor_history_runs(id);
+
+
+--
 -- Name: meeting_transcripts fk_rails_9bf2568960; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7893,6 +8006,14 @@ ALTER TABLE ONLY public.membership_dues_records
 
 
 --
+-- Name: endeavor_history_discoveries fk_rails_abeaabfccb; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.endeavor_history_discoveries
+    ADD CONSTRAINT fk_rails_abeaabfccb FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: meeting_minutes fk_rails_ac0729233e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8058,6 +8179,14 @@ ALTER TABLE ONLY public.meetings
 
 ALTER TABLE ONLY public.endeavors
     ADD CONSTRAINT fk_rails_cf32cd46bc FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: endeavor_history_discoveries fk_rails_cf40a9fbe5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.endeavor_history_discoveries
+    ADD CONSTRAINT fk_rails_cf40a9fbe5 FOREIGN KEY (result_id) REFERENCES public.endeavor_history_results(id);
 
 
 --
@@ -8339,6 +8468,7 @@ ALTER TABLE ONLY public.agent_access_tokens
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261105010000'),
 ('20261019030000'),
 ('20261019020000'),
 ('20261018010100'),
