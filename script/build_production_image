@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Build, test and export locally on the isolated runner. Never publish or deploy.
+set -Eeuo pipefail
+cd "$(dirname "$0")/.."
+source lib/production_image.sh
+require_isolated_image_runner
+revision="$(git rev-parse "${1:?usage: script/build_production_image REVISION OUTPUT_DIR}^{commit}")"
+[[ "$revision" =~ ^[a-f0-9]{40}$ ]] || exit 64
+output="${2:?missing output directory}"
+mkdir -p "$output/checks" "$output/image"
+output="$(cd "$output" && pwd)"
+# A failed rerun must not leave a previously successful export behind.
+rm -f "$output/image/image.tar.gz" "$output/image/SHA256SUMS" "$output/checks/evidence.json"
+bash script/profile_production_image "$revision" candidate "$output/checks"
+image="$(cat "$output/checks/image-ref.txt")"
+bash script/smoke_production_startup "$image" "$output/checks" | tee "$output/checks/startup-smoke.txt"
+docker image inspect "$image" > "$output/checks/image.json"
+ruby -rjson -e '
+  image = JSON.parse(File.read(ARGV[0])).fetch(0)
+  File.write(ARGV[2], JSON.pretty_generate({
+    revision: ARGV[1], service: "legion_post_165_wi_tools", platform: "linux/amd64",
+    image_id: image.fetch("Id"), runtime_smoke: "passed", startup_smoke: "passed"
+  }) + "\n")
+' "$output/checks/image.json" "$revision" "$output/checks/evidence.json"
+docker save "$image" | gzip -1 > "$output/image/image.tar.gz"
+cp "$output/checks/revision.txt" "$output/checks/evidence.json" "$output/image/"
+# Check the exported configuration too, before offering a release artifact.
+gzip -dc "$output/image/image.tar.gz" > "$output/image/image.tar"
+ruby script/verify_production_image.rb archive "$revision" "$output/image/image.tar" "$output/image/evidence.json"
+rm "$output/image/image.tar"
+(cd "$output/image" && sha256sum image.tar.gz revision.txt evidence.json > SHA256SUMS)

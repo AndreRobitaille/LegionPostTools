@@ -1,5 +1,12 @@
 # Mobile Buddy Check API handoff
 
+> Release procedure update (November 1, 2026): commands below describe the dated
+> handoff/release. For any new release use the [current deployment playbook](DEPLOYMENT.md):
+> successful isolated image build, explicitly authorized publication, and a verified
+> digest inside one owned `bin/release session`. The old push-deploy/keep-master
+> commands are superseded. Activation still requires its own explicit authority.
+
+
 Prepared October 11, 2026; production preparation updated October 12.
 The original local evidence below predates production activation. The current
 release and iPhone connection handoff is

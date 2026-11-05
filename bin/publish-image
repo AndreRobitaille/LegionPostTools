@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Explicit maintainer publication of a tested Actions artifact; no Docker daemon.
+set -Eeuo pipefail
+umask 077
+cd "$(dirname "$0")/.."
+[[ "${CI:-false}" != true && "${GITHUB_ACTIONS:-false}" != true ]] || { echo 'Image publication is a manual maintainer action' >&2; exit 1; }
+[[ $# == 1 && "$1" =~ ^[0-9]+$ ]] || { echo 'Usage: bin/publish-image ACTIONS_RUN_ID' >&2; exit 64; }
+git diff --quiet || { echo 'Publication requires a clean reviewed checkout' >&2; exit 1; }
+git diff --cached --quiet || { echo 'Publication requires a clean reviewed checkout' >&2; exit 1; }
+[[ -z "$(git ls-files --others --exclude-standard)" ]] || { echo 'Publication requires a clean reviewed checkout' >&2; exit 1; }
+run_id="$1"
+head="$(git rev-parse HEAD)"
+[[ "$head" =~ ^[a-f0-9]{40}$ ]] || exit 1
+repository="AndreRobitaille/LegionPostTools"
+image="ghcr.io/andrerobitaille/legion-post-165-wi-tools"
+crane="${CRANE:-crane}"
+command -v "$crane" >/dev/null || { echo 'Install crane or set CRANE to its executable path' >&2; exit 1; }
+gh api "repos/$repository/actions/runs/$run_id" | ruby -rjson -e '
+  run = JSON.parse(STDIN.read)
+  abort "Image workflow did not pass" unless run["status"] == "completed" && run["conclusion"] == "success"
+  abort "Image workflow revision mismatch" unless run["head_sha"] == ARGV[0]
+  abort "Wrong image workflow" unless run["path"] == ".github/workflows/production_image.yml"
+  abort "Pull-request images cannot be released" unless %w[push workflow_dispatch].include?(run["event"])
+' "$head"
+staging="$(mktemp -d /tmp/legion-tools-image.XXXXXX)"
+trap 'rm -rf -- "$staging"' EXIT
+gh run download "$run_id" --repo "$repository" --name "production-image-$head" --dir "$staging"
+# Require exactly the expected evidence files; never trust arbitrary checksum paths.
+ruby -rdigest -e '
+  root = ARGV.fetch(0)
+  lines = File.readlines("#{root}/SHA256SUMS", chomp: true)
+  expected = %w[image.tar.gz revision.txt evidence.json]
+  abort "Incomplete checksum evidence" unless lines.size == expected.size
+  lines.zip(expected).each do |line, name|
+    match = line.match(/\A([a-f0-9]{64})  #{Regexp.escape(name)}\z/)
+    abort "Checksum mismatch or invalid evidence for #{name}" unless match && Digest::SHA256.file("#{root}/#{name}").hexdigest == match[1]
+  end
+' "$staging"
+[[ "$(cat "$staging/revision.txt")" == "$head" ]] || { echo 'Archive revision mismatch' >&2; exit 1; }
+gzip -dc "$staging/image.tar.gz" > "$staging/image.tar"
+ruby script/verify_production_image.rb archive "$head" "$staging/image.tar" "$staging/evidence.json"
+export DOCKER_CONFIG="$staging/auth"
+mkdir "$DOCKER_CONFIG"
+gh auth token | "$crane" auth login ghcr.io --username "$(gh api user --jq .login)" --password-stdin
+"$crane" push "$staging/image.tar" "$image:$head"
+digest="$("$crane" digest "$image:$head")"
+[[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo 'Invalid registry manifest digest' >&2; exit 1; }
+"$crane" config "$image@$digest" | ruby script/verify_production_image.rb registry "$head"
+printf 'RELEASE_IMAGE_DIGEST=%s\n' "$digest"

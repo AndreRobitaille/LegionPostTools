@@ -2,6 +2,12 @@
 
 Operator guide for Post 165 and repeat maintainer-hosted installs.
 
+Follow the [shared Hetzner deployment agreement](SHARED_HOST_DEPLOYMENT.md) for the
+common operator sequence, authorization, transport and failure rules. This guide
+owns LegionPostTools' installation details, secrets, worker/mobile checks and backups.
+The [local alignment record](deployment/2026-11-01-shared-host-alignment.md) distinguishes
+the current uncommitted tooling from committed and production evidence.
+
 ## Production model
 
 LegionPostTools is deployed one app/database set per post or unit. Do not combine multiple posts into one Rails database.
@@ -15,74 +21,81 @@ The app is not a SaaS or multi-tenant platform. Each installation gets its own K
 - Co-hosted apps: `TwoRiversReporter` and the public `wipost165` site
 - First production setup: completed for Robert E. Burns Post 165 on July 12, 2026.
 
-Primary repeat-deployment flow from the maintainer workstation is `bin/release
-push-deploy`. It verifies the pushed SHA, uses the required persistent SSH route and
-remote Docker builder, runs Kamal, verifies the live revision and public endpoints, and
-closes the SSH master. Use `bin/release check` for a non-mutating transport preflight.
-Use `bin/kamal setup` for the First install only, when provisioning a new deployment
-target. Do not use a server-side git clone or web UI as the primary flow.
+Production images are built and tested on isolated GitHub-hosted Linux amd64
+runners. Publication and deployment are separate, explicitly authorized maintainer
+actions. CI has no registry write permission, production credentials, member data
+or SSH access. There is no on-server build fallback.
 
-When the VPS lacks build headroom, a verified image can be built and smoke-tested on
-an isolated runner, then deployed by the same wrapper without an on-server build.
-Set `RELEASE_IMAGE_DIGEST` to its verified registry manifest digest; the wrapper
-checks the exact HEAD, digest, service, and architecture before using Kamal's
-`--skip-push`. See [production image measurement and publication](PRODUCTION_IMAGE_BUILD.md).
-Without this option the remote-build safeguards below remain required.
+## Build, publish, deploy
 
-## Shared-host build safeguards
+1. Review and commit the intended source changes, complete application CI, and push
+   only when authorized. `bin/release push` verifies the exact remote SHA. Pushing
+   does not publish or deploy. `bin/release check` is local-only.
+2. **Build production image** runs for master pushes, relevant PRs and manual
+   dispatches. Select a successful push/manual run for the exact reviewed HEAD.
+   It tests the actual image with synthetic inputs and disposable PostgreSQL 17,
+   then exports `production-image-<full SHA>`. PR uploads contain checks only.
+3. On a clean checkout of that revision, explicitly publish with
+   `bin/publish-image ACTIONS_RUN_ID`. This needs authenticated `gh` and `crane`
+   (or `CRANE=/path/to/crane`), not a Docker daemon. It checks the workflow run,
+   checksums, archive configuration, revision, service, platform and successful
+   smoke evidence before authenticating. It decompresses the Docker archive and
+   pushes only the full-SHA tag to the existing GHCR repository. Temporary registry
+   credentials are removed on success or failure. Record its
+   `RELEASE_IMAGE_DIGEST=sha256:...` output.
+4. Only after deployment is explicitly authorized, open `bin/release session` with
+   host access. It owns one persistent SSH master from preflight through final
+   verification. Inspect its resource snapshot and coordinate with the other apps.
+   Keep headroom for image extraction and overlapping old/new app containers.
+5. In that same shell, set the verified digest and deploy:
 
-The remote builder shares the VPS with live applications. The Dockerfile installs
-gems with `bundle install --jobs 1` so native extensions compile one gem at a time;
-Bundler otherwise defaults to the available processor count. Preserve this limit
-when changing the image build. It reduces concurrent build memory use, but does not
-reserve RAM for the applications or impose a total build memory limit. If a build
-stalls or all hosted sites fail together, stop the build and inspect host memory,
-pressure, and remaining compiler processes before retrying through the same SSH
-master. If that connection fails, stop and wait at least five minutes before a
-single chosen replacement attempt; do not use direct or parallel SSH as a fallback.
+   ```bash
+   export RELEASE_IMAGE_DIGEST=sha256:<verified-registry-manifest-digest>
+   release_deploy
+   ```
 
-The existing Post 165 BuildKit container
-(`buildx_buildkit_kamal-remote-ssh---root-178-156-250-2350`) also has a 1,536 MiB
-Docker memory limit, set during the October 29, 2026 recovery. Its memory-plus-swap
-limit is the same, and the host has no swap. This protects the other applications
-by allowing an oversized build to fail within the builder's limit. The limit is
-host configuration, not declared in Kamal: verify it with `docker inspect` through
-the existing SSH master before every build, especially after recreating the
-builder. Reapply with `docker update --memory 1536m --memory-swap 1536m` to that
-builder container if needed; never apply it to the application or database containers.
+   The wrapper requires a clean, exactly pushed HEAD, pulls and validates the image,
+   and uses `--skip-push --version <HEAD>`. The executable pre-deploy hook checks
+   digest, revision, service and linux/amd64 again **after Kamal's final pull,
+   before container replacement**. Missing evidence, a stale revision, failed
+   pull, changed tag or lost tunnel stops the operation. The pre-build hook also
+   refuses implicit builds. Never bypass these hooks.
+6. `release_verify` checks the expected revision in the running container name,
+   unchanged cohost web/Legion database container IDs and all three sites. Inspect
+   the actual running image identity separately. Also inspect authorized Jobs
+   worker heartbeat, queue depth, migration results and affected user workflows.
+   HTTP success alone does not establish job health or member satisfaction. Use `release_ssh '...'`
+   for authorized host checks and `release_kamal app details` for additional Kamal
+   diagnostics in the same shell. The helper checks the existing master, injects
+   its generated config and refuses caller-supplied `-c`/`--config-file` options.
+   It does not open a replacement connection or authorize a mutation. Exit only
+   after final verification; exit closes the owned master.
 
-Before each release, through the same retained SSH master:
+Standalone `deploy`, `push-deploy` and `setup` are disabled. Publication needs its
+own authorization; a merge or push does not authorize publication or deployment.
+The manifest digest is neither a Git SHA nor an archive checksum. See
+[image build and evidence details](PRODUCTION_IMAGE_BUILD.md) and the
+[implementation design](deployment/2026-11-01-off-server-image-build-design.md).
 
-1. Run `bin/release check` with `RELEASE_KEEP_SSH_MASTER=true`. This checks transport,
-   **not** available host memory or the builder's memory limit. Keep that option on
-   subsequent release commands and close the master after final verification.
-2. Check `free -m`, `/proc/pressure/memory`, and `docker stats --no-stream`. Use
-   **available** RAM, not just free RAM. Leave headroom for the running applications
-   beyond the builder's possible 1,536 MiB usage; postpone if memory pressure is
-   sustained or that headroom is absent. The healthy October 29 pre-build snapshot
-   had about 2.1 GB available; the failed-build snapshot had only 28 MB.
-3. Verify the builder's `HostConfig.Memory` and `HostConfig.MemorySwap` both equal
-   `1610612736` bytes. A zero value is not this safeguard. Restore a missing limit
-   before building; do not raise it to get a failing build through. Preserve
-   `bundle install --jobs 1`. These checks are manual, not enforced by `bin/release`.
-4. Coordinate with the other hosted applications: run only one image build or
-   deployment at a time on this VPS. Check all three sites before, during, and after
-   the build: `members.wipost165.org/up`, `tworiversmatters.com`, and `wipost165.org`.
-   The wrapper checks members and Two Rivers; check the public Post site separately.
+## Shared-host safeguards
 
-If a build stalls or sites begin returning 504s, stop the build before trying another
-deployment. Canceling the local client does not prove remote compiler processes have
-stopped. Identify remaining build processes by parentage and cgroup, and verify host
-memory and site health recover before retrying. Do not kill application/database
-processes or use a blanket compiler kill. If the SSH connection fails, use the
-five-minute cooldown above rather than opening fallback connections.
+No compilation runs on the production VPS. Preserve serial Bundler (`--jobs 1`)
+and Bootsnap (`-j 1`) compilation within the isolated runner's verified 1,536 MiB
+BuildKit memory and memory-plus-swap ceiling. Each build uses a fresh builder and
+records cgroup peak/events. An OOM fails the build; it does not authorize raising caps.
 
-Check host resource pressure before attributing simultaneous site failures to Hetzner.
-The October 29 outage recovered after an authorized reboot; the limited build then
-completed while sites stayed healthy. An older October 21 kernel OOM killed BuildKit,
-but no matching OOM-kill entry was found for October 29. These observations support
-build-time resource exhaustion as a lead; they do not establish an application leak
-or a provider-wide outage. Rebooting is recovery, not a substitute for the safeguards.
+Production still needs memory for extraction, migrations and container overlap.
+Preflight prints `free -m`, memory pressure and container stats through the retained
+tunnel. Use available RAM, not just free RAM; postpone if headroom is absent or
+pressure sustained. Coordinate **one deployment at a time** across the three apps.
+Check `members.wipost165.org/up`, `tworiversmatters.com` and `wipost165.org` before
+and after replacement. Keep service, database, volume, image and proxy identities.
+
+The October 29 server-build outage and cap on the old remote BuildKit container
+are historical observations. They do not authorize using that builder again,
+raising application capacity or rebooting. Synthetic image smokes do not establish
+upgrade safety for every historical database; review migrations and backups before
+an authorized release.
 
 ## Naming convention
 
@@ -192,60 +205,28 @@ data migration; it is not a routine configuration toggle.
 
 ## Persistent SSH control master
 
-Production SSH credentials are not stored in Kamal secrets. Do not put SSH private keys, SSH certificates, or 1Password SSH references in `.kamal/secrets`.
+SSH credentials stay in the maintainer's OpenSSH configuration and a normal private
+key file, never Kamal secrets or CI. The Post 165 host token remains `178.156.250.235`,
+with `User root`, a readable `IdentityFile`, `IdentityAgent none` and `IdentitiesOnly
+yes`. Optional `RELEASE_SSH_CONFIG` selects a different local config. Do not invent
+certificate authentication or alter system-file ownership based on a sandbox view.
 
-Use a normal private key file from `~/.ssh/...`. Do not invent certificate-based auth unless `~/.ssh/config` intentionally includes `CertificateFile`.
+`bin/release session` creates a private temporary directory and owns a unique
+ControlPath. It uses `ControlMaster=yes` without `-M` (combining both can select
+confirmation mode). Kamal's temporary `proxy_command` forwards Net::SSH through
+this same outer master. Commands check the master first; `ControlMaster=no` and
+`ProxyCommand=false` prevent a silent direct connection if it disappears. The
+release wrapper never configures a production builder.
 
-Kamal must use the same host token as `~/.ssh/config`; for Post 165 that means `Host 178.156.250.235`.
+Both internal Kamal commands and additional authorized `release_kamal ...` commands
+use the generated session config. Use `release_deploy` for normal deployment so
+the reviewed version, digest checks and `--skip-push` path stay together.
 
-Required SSH stanza, in substance:
-
-```ssh-config
-Host 178.156.250.235
-  HostName 178.156.250.235
-  User root
-  IdentityFile ~/.ssh/PRIVATE_KEY_NAME
-  IdentityAgent none
-  IdentitiesOnly yes
-  ControlMaster auto
-  ControlPersist 30m
-  ControlPath ~/.ssh/controlmasters/legion-post-tools-prod-post-165
-```
-
-Create the shared controlmasters directory before use:
-
-```bash
-mkdir -p ~/.ssh/controlmasters
-chmod 700 ~/.ssh/controlmasters
-```
-
-`IdentityAgent none` intentionally disables the 1Password SSH agent for this host.
-
-Practical control-connection commands:
-
-```bash
-ssh -MNf 178.156.250.235
-ssh -O check 178.156.250.235
-ssh -O exit 178.156.250.235
-```
-
-Use the shown `ControlPath` only for Post 165; repeat installs must use a unique ControlPath per host/install.
-
-Before any Kamal or SSH-heavy operation, establish a persistent SSH control master. Route the deployment work through that connection and tear it down afterward.
-
-Do not run repeated fresh SSH or Kamal commands directly against the Hetzner host without connection sharing.
-
-`bin/release deploy` automates this sequence for Post 165, including the temporary Kamal
-`proxy_command` configuration needed because Kamal's Net::SSH transport does not reuse
-the OpenSSH master by itself. Agent sessions should use that command instead of manually
-repeating the steps below.
-
-For explicitly authorized work spanning multiple release or host-maintenance steps,
-set `RELEASE_KEEP_SSH_MASTER=true` on each `bin/release` invocation. The wrapper
-then retains the same control master on exit, including after a failure; this does
-not authorize an automatic retry. Route subsequent host commands through that
-master, verify it remains active, and close it with `ssh -O exit` only after all
-production work is finished. Without this option, the wrapper closes it on exit.
+The shell stays open after failed commands for diagnosis; this does not authorize
+retrying. If SSH fails, stop. Wait at least five minutes before **one explicitly
+chosen replacement attempt**. Never use direct/parallel SSH, reconnect loops or a
+second session as a fallback. Exit only when the whole operation is finished.
+The old `RELEASE_KEEP_SSH_MASTER` switch is superseded by session ownership.
 
 ## Postgres accessory
 
@@ -320,7 +301,8 @@ authority is still required for evidence maintenance. Existing role-grant contro
 can deliberately assign the pilot capability later.
 
 For explicitly authorized initial activation, run
-`BUDDY_CHECK_ACTIVATE_EMAIL=commander@wipost165.org bin/release push-deploy`.
+`BUDDY_CHECK_ACTIVATE_EMAIL=commander@wipost165.org bin/release session`, then
+set the verified `RELEASE_IMAGE_DIGEST` and run `release_deploy` in that shell.
 The wrapper's preflight, deployment, client registration, narrow user grant and
 before/after read-only readiness probes share its persistent SSH master. Probes
 print public configuration and server-computed table fingerprints, never member
@@ -333,21 +315,14 @@ adds explicit 180-day opt-in while retaining short access tokens. Its
 [release handoff](MOBILE_REMEMBERED_SIGN_IN_HANDOFF.md) records migration, validation
 and approval status. See also the [initial activation handoff](MOBILE_BUDDY_CHECK_PRODUCTION_READINESS.md).
 
-## First deploy checklist: Post 165
+## Provisioning
 
-1. Confirm DNS for `members.wipost165.org` points at `178.156.250.235`.
-2. Verify `~/.ssh/config` contains the exact Post 165 host token and control-master stanza.
-3. Create `~/.ssh/controlmasters` with `mkdir -p ~/.ssh/controlmasters` and `chmod 700 ~/.ssh/controlmasters`.
-4. Start the persistent SSH control master with `ssh -MNf 178.156.250.235`.
-5. Set all required Kamal secrets.
-6. Set clear env values, especially `APP_HOST`, `APP_TIME_ZONE`, `WEBAUTHN_ORIGIN`, `WEBAUTHN_RP_ID`, `DB_HOST`, and the canonical DB names. Set `APP_TIME_ZONE` before creating meeting records.
-7. Confirm the Kamal service name, image name, and storage names match the Post 165 convention.
-8. Run `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` once as a preflight check.
-9. Run the same `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` command a second time; it should reuse the shared control connection.
-10. Run `bin/kamal setup` from the local repo for the First install only.
-11. For later releases, use `bin/release push-deploy` and the shared-host safeguards above.
-12. Verify the app, sign-in email, passkeys, and persistence.
-13. Tear down the SSH control master.
+Post 165 was already provisioned on July 12, 2026; ordinary releases must not run
+setup or recreate its accessory, databases, storage or proxy. A new installation
+requires a separately reviewed install profile, unique identities and explicit
+provisioning authority. Adapt image labels, publisher and release constants to that
+profile, retain off-server builds and digest checks, and plan initial accessory/setup
+steps before connecting. Do not use raw build-and-deploy commands as a shortcut.
 
 ## Post 165 production acceptance record
 
@@ -390,7 +365,8 @@ Still pending for production-hardening, before broader member invitation:
 2. Follow the naming convention above.
 3. Keep the one-app-one-database-set rule.
 4. Set host, email, WebAuthn, and database env values for the new install.
-5. Use the same local `bin/kamal setup` and `bin/kamal deploy` flow, with `setup` reserved for First install only.
+5. Review the install-specific provisioning plan; subsequent releases use the
+   tested-image publication and owned release session above.
 6. Keep storage and database backups scoped to that install only.
 
 ## Backups and restore expectations
@@ -403,9 +379,17 @@ Still pending for production-hardening, before broader member invitation:
 
 ## Refreshing development data from production
 
-Use `bin/sync_prod_db` to replace the local development database with a fresh dump of the Post 165 production primary database.
+Only with explicit authority to copy real member data, use `bin/sync_prod_db` to replace the local development database with a fresh dump of the Post 165 production primary database.
 
-Before running it, stop local Rails processes and establish the documented persistent SSH control master for `178.156.250.235`. The script reads from production with `pg_dump`, recreates `legion_post_tools_development`, restores the dump, and deletes copied sessions, magic links, and passkey credentials.
+The script reads from production with `pg_dump`, recreates
+`legion_post_tools_development`, restores the dump, and deletes copied sessions,
+magic links, and passkey credentials. Local Rails processes must be stopped
+before any authorized replacement of development data.
+
+The current script still uses bare SSH and does not select the owned release
+session's private socket. Its transport needs alignment before use under the
+shared agreement; do not run it through a separate connection during a release.
+This is deferred tooling work, not authorization to copy member data.
 
 It does not copy Active Storage files or the production cache/queue databases.
 
@@ -428,12 +412,13 @@ For deployment-specific checks, also confirm:
 - `IdentityAgent none`
 - `IdentitiesOnly yes`
 - `ControlMaster` / `ControlPersist` / `ControlPath`
-- two successful `ssh -o BatchMode=yes 178.156.250.235 'hostname && docker --version'` runs before Kamal
-- only run `bin/kamal setup` for first provisioning
-- use `bin/release check` and `bin/release push-deploy` for repeat releases
-- complete the shared-host memory, builder-limit, and all-site checks above; transport preflight alone is insufficient
+- passing local release checks and offline script tests
+- successful application CI and image workflow for the exact reviewed SHA
+- explicit manual publication, checked artifact and recorded manifest digest
+- one owned release session from preflight through final verification
+- host headroom, protected container identities, worker health and all three sites
 - if SSH fails, fix `~/.ssh/config` before touching Kamal secrets
-- if Kamal opens fresh sessions, inspect `ControlMaster` / `ControlPersist` / `ControlPath`
+- if the master fails, stop and apply the five-minute cooldown; do not reconnect automatically
 - if auth tries 1Password identities, verify `IdentityAgent none`
 - if auth offers too many keys, verify `IdentitiesOnly yes`
 - if runtime secrets fail, inspect `.kamal/secrets`

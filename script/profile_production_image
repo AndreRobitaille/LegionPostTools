@@ -1,20 +1,26 @@
 #!/usr/bin/env bash
-# Run only on an isolated Docker host, never on the shared production VPS.
+# Cold measurement on an isolated GitHub runner, never on the production VPS.
 set -Eeuo pipefail
+cd "$(dirname "$0")/.."
+source lib/production_image.sh
+require_isolated_image_runner
 
 revision="${1:?usage: script/profile_production_image REVISION LABEL OUTPUT_DIR}"
+revision="$(git rev-parse "$revision^{commit}")"
+[[ "$revision" =~ ^[a-f0-9]{40}$ ]] || exit 64
 label="${2:?missing label}"
 output="${3:?missing output directory}"
 [[ "$label" =~ ^[a-z0-9-]+$ ]] || exit 64
 mkdir -p "$output"
 output="$(cd "$output" && pwd)"
 context="$(mktemp -d)"
-builder="legion-profile-$label"
-image="legion-profile:$label"
+builder="legion-profile-$label-$(basename "$context" | tr '[:upper:].' '[:lower:]-')"
+image="legion-profile:$builder"
+printf '%s\n' "$image" > "$output/image-ref.txt"
 monitor_pid=""
 cleanup() {
   [[ -z "$monitor_pid" ]] || { kill "$monitor_pid" 2>/dev/null || true; wait "$monitor_pid" 2>/dev/null || true; }
-  docker buildx rm "$builder" >/dev/null
+  docker buildx rm "$builder" >/dev/null 2>&1 || true
   rm -rf "$context"
 }
 trap cleanup EXIT
@@ -27,6 +33,7 @@ docker buildx create --name "$builder" --driver docker-container \
 docker buildx inspect "$builder" --bootstrap
 container="buildx_buildkit_${builder}0"
 docker inspect --format '{{json .HostConfig}}' "$container" > "$output/builder-config.json"
+ruby -rjson -e 'c = JSON.parse(File.read(ARGV[0])); abort "Missing 1536 MiB builder limits" unless c.values_at("Memory", "MemorySwap") == [1610612736, 1610612736]' "$output/builder-config.json"
 builder_pid="$(docker inspect --format '{{.State.Pid}}' "$container")"
 cgroup="/sys/fs/cgroup$(awk -F: '$1 == "0" {print $3}' "/proc/$builder_pid/cgroup")"
 test -r "$cgroup/memory.peak"
@@ -48,7 +55,7 @@ monitor_pid="$!"
 build_status=0
 docker buildx build --builder "$builder" --platform linux/amd64 --progress plain \
   --label service=legion_post_165_wi_tools \
-  --label "org.opencontainers.image.revision=$(git rev-parse "$revision")" \
+  --label "org.opencontainers.image.revision=$revision" \
   --label org.opencontainers.image.source=https://github.com/AndreRobitaille/LegionPostTools \
   --provenance=false --load --tag "$image" "$context" 2>&1 | tee "$output/build.log" || build_status="$?"
 cat "$cgroup/memory.peak" > "$output/memory.peak"
@@ -56,12 +63,13 @@ cat "$cgroup/memory.events" > "$output/memory.events"
 cat "$cgroup/memory.stat" > "$output/memory.stat"
 echo "$build_status" > "$output/build-status.txt"
 [[ "$build_status" == 0 ]] || exit "$build_status"
+awk '$1 ~ /^oom/ && $2 != 0 {exit 1}' "$output/memory.events"
 
 docker image inspect "$image" --format '{{.Size}}' > "$output/image-size.txt"
-docker run --rm --entrypoint ruby "$image" -e \
+docker run --rm --network none --entrypoint ruby "$image" -e \
   'require "json"; specs = Dir["#{ENV.fetch("BUNDLE_PATH")}/ruby/*/specifications/*.gemspec"].map { |file| Gem::Specification.load(file) }; puts JSON.pretty_generate(specs.map { |spec| [spec.name, spec.version.to_s] }.sort)' \
   > "$output/gems.json"
-docker run --rm --entrypoint pg_dump "$image" --version | tee "$output/postgres-client.txt"
+docker run --rm --network none --entrypoint pg_dump "$image" --version | tee "$output/postgres-client.txt"
 if [[ "$label" != baseline ]]; then
   docker run --rm --network none --memory 512m --memory-swap 512m \
     --env SECRET_KEY_BASE_DUMMY=1 --env WEBAUTHN_ORIGIN=https://example.invalid \
