@@ -91,6 +91,14 @@ module EndeavorHistory
       Keep similar annual identities separate. No target may borrow another target's guidance or facts.
     TEXT
     SHARED_DISCOVERY_RULES = DISCOVERY.sub("only the target is being analyzed", "each target is analyzed separately").freeze
+    SHARED_ASSOCIATION = <<~TEXT.freeze
+      Shared source context does not make all facts relevant to all targets. For each fact, require a
+      specific connection to this target's own work or decision. A proposal to fund a project from a
+      separate reserve is relevant to both identities, but does not make the reserve's independent
+      certificate renewal, interest, maturity or rollover schedule part of the funded project's history.
+      Retain those financial details for the reserve decision they actually support. Apply the same
+      separation to other mixed reports. Audit false matches within related items, not just no_match items.
+    TEXT
     VERIFY_SHARED_DISCOVERY = <<~TEXT.freeze
       Audit EVERY target in the shared candidate independently against the COMPLETE supplied source
       and that target's identity and guidance. Require exactly one endeavors entry per supplied target
@@ -103,8 +111,8 @@ module EndeavorHistory
     module_function
 
     def instructions(stage)
-      return COMMON + SHARED_DISCOVERY + SHARED_DISCOVERY_RULES if stage == "shared_discovery"
-      return COMMON + VERIFY_SHARED_DISCOVERY + VERIFY_DISCOVERY if stage == "verify_shared_discovery"
+      return COMMON + SHARED_DISCOVERY + SHARED_DISCOVERY_RULES + SHARED_ASSOCIATION if stage == "shared_discovery"
+      return COMMON + VERIFY_SHARED_DISCOVERY + VERIFY_DISCOVERY + SHARED_ASSOCIATION if stage == "verify_shared_discovery"
       COMMON + const_get(stage.upcase)
     end
 

@@ -168,11 +168,18 @@ module EndeavorHistory
       end
       items = document.fetch("items")
       results = []
+      shared = @shared_group && document["revision_id"] == @request["shared_revision_id"]
+      # Negative coverage also costs output tokens for every target/item pair.
+      # Leave roughly 200 tokens per entry under the configured output ceiling.
+      coverage_limit = Config.max_output_tokens / 200
+      target_count = shared ? @shared_group.fetch("targets").size : 1
+      raise Error, "input_limit" if shared && (target_count.zero? || target_count > coverage_limit)
+      item_limit = shared ? coverage_limit / target_count : nil
       # Keep source items whole. Oversized single items stop explicitly rather than losing text.
       batches = []
       items.each do |item|
         candidate = (batches.last || []) + [ item ]
-        if batches.empty? || JSON.generate(candidate).bytesize > Config.max_input_bytes / 3
+        if batches.empty? || JSON.generate(candidate).bytesize > Config.max_input_bytes / 3 || (item_limit && candidate.size > item_limit)
           batches << [ item ]
         else
           batches[-1] = candidate
@@ -180,7 +187,7 @@ module EndeavorHistory
       end
       batches.each do |batch|
         source = document.merge("items" => batch, "target_endeavor_id" => @endeavor.id)
-        output = if @shared_group && document["revision_id"] == @request["shared_revision_id"]
+        output = if shared
           shared_discover(source)
         else
           input = { "endeavor" => @run.manifest["endeavor"], "catalog" => @run.manifest["catalog"], "guidance" => @guidance, "source" => source }

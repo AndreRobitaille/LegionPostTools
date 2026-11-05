@@ -50,6 +50,27 @@ class EndeavorHistoryComparisonTest < ActiveSupport::TestCase
     end
   end
 
+  test "a larger target and item matrix splits whole items and shares every batch" do
+    snapshot = JSON.parse(file_fixture("endeavor_history_comparison.json").read)
+    snapshot["targets"][0]["title"] = "Car Show"
+    items = 35.times.map do |index|
+      { "key" => "item-#{index}", "title" => "Unrelated report", "units" => [ { "id" => "unit-#{index}", "kind" => "body", "text" => "Procedural business." } ] }
+    end
+    snapshot["documents"][0]["items"] = items
+    provider = SharedEndeavorHistoryTestProvider.new
+    shared = {}
+    snapshot["targets"].each do |target|
+      result = EndeavorHistoryComparison::Pipeline.new(snapshot: snapshot, target: target, provider: provider, shared: shared).call
+      assert_empty result["meetings"]
+      assert_equal items.pluck("key"), result["evidence"].first["coverage"].pluck("key")
+    end
+    extractions = provider.calls.select { |stage, _input| stage == "shared_discovery" }
+    assert_equal 4, extractions.size
+    assert_equal 8, provider.calls.size
+    assert_equal items, extractions.flat_map { |_stage, input| input["source"]["items"] }
+    assert extractions.all? { |_stage, input| input["endeavors"].size * input["source"]["items"].size <= 120 }
+  end
+
   test "incomplete provider responses still record their measured usage and standard service tier" do
     Dir.mktmpdir do |directory|
       ledger = EndeavorHistoryComparison::Ledger.new(path: File.join(directory, "ledger.json"), ceiling: "2")
@@ -67,5 +88,19 @@ class EndeavorHistoryComparisonTest < ActiveSupport::TestCase
     ensure
       ledger&.close
     end
+  end
+
+  test "an output cap too small for one shared item refuses before spending" do
+    previous = ENV["ENDEAVOR_HISTORY_MAX_OUTPUT_TOKENS"]
+    ENV["ENDEAVOR_HISTORY_MAX_OUTPUT_TOKENS"] = "2000"
+    snapshot = JSON.parse(file_fixture("endeavor_history_comparison.json").read)
+    provider = SharedEndeavorHistoryTestProvider.new
+    error = assert_raises(EndeavorHistory::Error) do
+      EndeavorHistoryComparison::Pipeline.new(snapshot: snapshot, target: snapshot["targets"].first, provider: provider, shared: {}).call
+    end
+    assert_equal "input_limit", error.category
+    assert_empty provider.calls
+  ensure
+    ENV["ENDEAVOR_HISTORY_MAX_OUTPUT_TOKENS"] = previous
   end
 end

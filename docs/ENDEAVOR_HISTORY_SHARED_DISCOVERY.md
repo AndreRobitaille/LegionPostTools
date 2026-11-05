@@ -15,6 +15,10 @@ rewritten. Members keep the existing source-backed history and source reader.
 For one small source batch, ordinary discovery is two calls for the meeting, rather
 than two per Endeavor. Larger sources retain whole-item batching and explicit input
 limits. This is a call-count contract, not a measured dollar or accuracy claim.
+Shared batching also limits the target-by-item coverage matrix to one entry per
+200 configured output tokens (120 entries at the default cap). For example, 13
+targets and 35 items require four source batches. This reserves output room for
+negative coverage; unusually verbose facts can still hit the explicit provider cap.
 
 ## Scope and durable authority
 
