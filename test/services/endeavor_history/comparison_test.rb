@@ -103,4 +103,18 @@ class EndeavorHistoryComparisonTest < ActiveSupport::TestCase
   ensure
     ENV["ENDEAVOR_HISTORY_MAX_OUTPUT_TOKENS"] = previous
   end
+
+  test "another annual event's dated heading does not force its date into a cross-reference" do
+    item = { "key" => "annual", "primary_endeavor_id" => 2, "units" => [
+      { "id" => "title", "kind" => "title", "text" => "2027 Car Show: August 14, 2027" },
+      { "id" => "body", "kind" => "body", "text" => "The completed 2026 show is a separate annual event." }
+    ] }
+    data = { "items" => [ { "key" => "annual", "relevance" => "related", "reason" => "Explicit distinction.",
+      "facts" => [ { "text" => "The completed 2026 show is a separate annual event.", "kind" => "report", "source_ids" => [ "body" ] } ], "outcomes" => [] } ] }
+    source = { "items" => [ item ], "target_endeavor_id" => 1 }
+    assert_equal data, EndeavorHistory::Validate.discovery!(data, source)
+    assert_raises(EndeavorHistory::Error) { EndeavorHistory::Validate.discovery!(data, source.merge("target_endeavor_id" => 2)) }
+    item["primary_endeavor_id"] = nil
+    assert_raises(EndeavorHistory::Error) { EndeavorHistory::Validate.discovery!(data, source) }
+  end
 end

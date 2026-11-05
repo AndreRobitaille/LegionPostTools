@@ -24,7 +24,8 @@ module EndeavorHistory
       statement; several facts per item are expected when the item records several matters. Each fact must cite
       the exact title units, body units or outcomes supporting it. Titles can contain substantive dates,
       identities and qualifications even when the body is empty. Exclude unrelated passages within mixed reports.
-      For a related item with an event date in its title, extract that date with a title-unit citation.
+      For a related item with an event date in its title, extract that date with a title-unit citation,
+      except when it is explicitly linked to another Endeavor and the target is only cross-referenced.
       Preserve conflicts between the heading and body instead of silently choosing a date.
       A relevant financial motion also makes its supporting financial context relevant: retain the stated
       balance, interest, maturity date, automatic rollover date and chosen term for that decision, even when
@@ -98,6 +99,9 @@ module EndeavorHistory
       certificate renewal, interest, maturity or rollover schedule part of the funded project's history.
       Retain those financial details for the reserve decision they actually support. Apply the same
       separation to other mixed reports. Audit false matches within related items, not just no_match items.
+      A cross-reference distinguishing annual events may establish their separate identities, but must
+      not copy the other event's dates, plans or accomplishments into this target's facts. A dated heading
+      explicitly linked to another target does not require a date fact or heading citation for this target.
     TEXT
     VERIFY_SHARED_DISCOVERY = <<~TEXT.freeze
       Audit EVERY target in the shared candidate independently against the COMPLETE supplied source

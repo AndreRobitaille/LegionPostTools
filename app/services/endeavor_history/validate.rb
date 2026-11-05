@@ -32,7 +32,8 @@ module EndeavorHistory
           raise Error, "invalid_output" unless %w[report proposal decision commitment uncertainty discrepancy].include?(fact["kind"])
         end
         title = item["units"].find { |unit| unit["kind"] == "title" }
-        if entry["relevance"] == "related" && title && dated_title?(title["text"]) && facts.none? { |fact| fact["source_ids"].include?(title["id"]) }
+        other_primary = source["target_endeavor_id"] && item["primary_endeavor_id"] && item["primary_endeavor_id"] != source["target_endeavor_id"]
+        if entry["relevance"] == "related" && !other_primary && title && dated_title?(title["text"]) && facts.none? { |fact| fact["source_ids"].include?(title["id"]) }
           raise Error.new("coverage", details: { "message" => "Extract the event date in this related heading with a title-unit citation.", "source_ids" => [ title["id"] ] })
         end
         outcomes = item.fetch("units").select { |unit| unit["kind"] == "outcome" }.map { |unit| unit["id"] }
