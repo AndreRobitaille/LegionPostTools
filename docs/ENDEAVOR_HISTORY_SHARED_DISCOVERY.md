@@ -68,6 +68,12 @@ the default remains off until a separately authorized, bounded model-quality eva
 Turning it off stops queued shared work rather than silently multiplying calls through
 the old path. The current model/effort settings apply to the corresponding shared stages.
 
+The authorized `GET /api/endeavors/:endeavor_id/history` response reports the configured
+`enabled` and `shared_discovery_enabled` switches separately. Both must be true for new
+attestations to use sharing; the shared switch alone does not enable processing. Reads
+do not start work. Inspect run manifests and reuse provenance to distinguish shared
+attestations from older or explicitly refreshed work.
+
 Offline fixtures must prove one shared pair across multiple histories, completed and
 untagged matches, no-match verification, source-reader provenance, unchanged official
 records, correction replacement, stale authority, concurrent producers, recovery after

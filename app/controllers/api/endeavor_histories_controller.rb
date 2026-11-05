@@ -9,7 +9,8 @@ module Api
       history_status = EndeavorHistory::Overview.new(organization).rows.find { |row| row[:endeavor].id == @endeavor.id }.fetch(:status)
       render json: {
         history_status: history_status, needs_attention: EndeavorHistory::Overview::ATTENTION.include?(history_status),
-        enabled: EndeavorHistory::Config.enabled?, withdrawn: @endeavor.history_withdrawn?, lock_version: @endeavor.lock_version,
+        enabled: EndeavorHistory::Config.enabled?, shared_discovery_enabled: EndeavorHistory::Config.shared_discovery?,
+        withdrawn: @endeavor.history_withdrawn?, lock_version: @endeavor.lock_version,
         guidance: @endeavor.history_guidances.order(id: :desc).first&.slice(:id, :body, :created_at),
         runs: runs.map do |run|
           run.slice(:id, :status, :error_category, :manifest, :steps, :created_at, :finished_at).merge(

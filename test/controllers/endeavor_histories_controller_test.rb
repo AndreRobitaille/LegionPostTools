@@ -92,6 +92,24 @@ class EndeavorHistoriesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Reused 1 previously completed step"
   end
 
+  test "history inspection reports both configured switches without starting work" do
+    previous = ENV.to_h.slice("ENDEAVOR_HISTORY_ENABLED", "ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED")
+    sign_in_as(@manager)
+    assert_no_difference "EndeavorHistoryRun.count" do
+      [ nil, "1" ].product([ nil, "1" ]).each do |history, shared|
+        ENV["ENDEAVOR_HISTORY_ENABLED"] = history
+        ENV["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"] = shared
+        get api_endeavor_history_path(@endeavor), as: :json
+        assert_response :success
+        assert_equal history == "1", response.parsed_body.fetch("enabled")
+        assert_equal shared == "1", response.parsed_body.fetch("shared_discovery_enabled")
+      end
+    end
+  ensure
+    ENV["ENDEAVOR_HISTORY_ENABLED"] = previous["ENDEAVOR_HISTORY_ENABLED"]
+    ENV["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"] = previous["ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED"]
+  end
+
   test "unpublished agenda metadata does not appear in member history or API" do
     body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership")
     type = @organization.meeting_types.create!(name: "Meeting", position: 1, active: true)
