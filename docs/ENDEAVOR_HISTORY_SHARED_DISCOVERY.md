@@ -64,7 +64,8 @@ current source snapshot and authority; a reusable result never grants spending a
 ## Qualification and rollout
 
 `ENDEAVOR_HISTORY_SHARED_DISCOVERY_ENABLED=1` opts new attestations into this path;
-the default remains off until a separately authorized, bounded model-quality evaluation.
+the application default remains off. The Post 165 deployment profile enables sharing
+after the bounded evaluation and authorized rollout; other installations must opt in.
 Turning it off stops queued shared work rather than silently multiplying calls through
 the old path. The current model/effort settings apply to the corresponding shared stages.
 
