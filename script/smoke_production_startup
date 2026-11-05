@@ -1,16 +1,31 @@
 #!/usr/bin/env bash
 # Isolated synthetic databases; no external network or production credentials.
 set -Eeuo pipefail
-output="${1:?usage: script/smoke_production_startup OUTPUT_DIR}"
+cd "$(dirname "$0")/.."
+source lib/production_image.sh
+require_isolated_image_runner
+image="${1:?usage: script/smoke_production_startup IMAGE OUTPUT_DIR}"
+output="${2:?missing output directory}"
 mkdir -p "$output"
-network="legion-startup-smoke"
-database="legion-startup-db"
-application="legion-startup-app"
+output="$(cd "$output" && pwd)"
+temporary="$(mktemp -d)"
+prefix="legion-smoke-$(basename "$temporary" | tr '[:upper:].' '[:lower:]-')"
+network="$prefix-network"
+database="$prefix-db"
+application="$prefix-app"
+verification="$prefix-verification"
+storage="$prefix-storage"
 cleanup() {
   docker logs "$application" > "$output/startup.log" 2>&1 || true
   docker inspect --format '{{json .State}}' "$application" > "$output/startup-state.json" 2>/dev/null || true
-  docker rm -f "$application" "$database" >/dev/null 2>&1 || true
-  docker network rm "$network" >/dev/null
+  docker inspect --format '{{json .HostConfig}}' "$application" > "$output/startup-config.json" 2>/dev/null || true
+  docker logs "$verification" > "$output/verification.log" 2>&1 || true
+  docker inspect --format '{{json .State}}' "$verification" > "$output/verification-state.json" 2>/dev/null || true
+  docker inspect --format '{{json .HostConfig}}' "$verification" > "$output/verification-config.json" 2>/dev/null || true
+  docker rm -fv "$verification" "$application" "$database" >/dev/null 2>&1 || true
+  docker volume rm "$storage" >/dev/null 2>&1 || true
+  docker network rm "$network" >/dev/null 2>&1 || true
+  rm -rf "$temporary"
 }
 trap cleanup EXIT
 docker network create --internal "$network"
@@ -21,12 +36,15 @@ for ((attempt = 1; attempt <= 30; attempt++)); do
   sleep 1
 done
 docker exec "$database" pg_isready -U legion_post_tools
+smoke_environment=(
+  -e SECRET_KEY_BASE_DUMMY=1 -e APP_HOST=example.invalid -e DB_HOST="$database"
+  -e POSTGRES_DB=synthetic -e POSTGRES_CACHE_DB=synthetic_cache -e POSTGRES_QUEUE_DB=synthetic_queue
+  -e LEGION_POST_TOOLS_DATABASE_PASSWORD=synthetic -e WEB_CONCURRENCY=2 -e SOLID_QUEUE_IN_PUMA=true
+  -e WEBAUTHN_ORIGIN=https://example.invalid -e WEBAUTHN_RP_ID=example.invalid
+  -e WEBAUTHN_RP_NAME=BuildVerification -e MAIL_PROVIDER=action_mailer
+)
 docker run -d --name "$application" --network "$network" --memory 512m --memory-swap 512m \
-  -e SECRET_KEY_BASE_DUMMY=1 -e APP_HOST=example.invalid -e DB_HOST="$database" \
-  -e POSTGRES_DB=synthetic -e POSTGRES_CACHE_DB=synthetic_cache -e POSTGRES_QUEUE_DB=synthetic_queue \
-  -e LEGION_POST_TOOLS_DATABASE_PASSWORD=synthetic -e WEB_CONCURRENCY=2 -e SOLID_QUEUE_IN_PUMA=true \
-  -e WEBAUTHN_ORIGIN=https://example.invalid -e WEBAUTHN_RP_ID=example.invalid \
-  -e WEBAUTHN_RP_NAME=BuildVerification -e MAIL_PROVIDER=action_mailer legion-profile:candidate
+  --volume "$storage:/rails/storage" "${smoke_environment[@]}" "$image"
 
 ready=false
 for ((attempt = 1; attempt <= 90; attempt++)); do
@@ -36,8 +54,14 @@ for ((attempt = 1; attempt <= 90; attempt++)); do
   fi
   sleep 1
 done
-[[ "$ready" == true ]]
-docker exec "$application" curl --fail --silent --output /dev/null http://127.0.0.1/session/new
+[[ "$ready" == true ]] || { echo 'Production entrypoint did not become healthy' >&2; exit 1; }
+docker exec "$application" curl --fail --silent --header 'X-Forwarded-Proto: https' \
+  http://127.0.0.1/session/new > "$output/sign-in.html"
+asset="$(sed -n 's/.*href="\(\/assets\/[^"?]*\.css\)[^"]*".*/\1/p' "$output/sign-in.html" | head -n 1)"
+[[ -n "$asset" ]] || { echo 'Sign-in page has no compiled stylesheet' >&2; exit 1; }
+docker exec "$application" curl --fail --silent --header 'X-Forwarded-Proto: https' \
+  "http://127.0.0.1$asset" > "$output/stylesheet.css"
+[[ -s "$output/stylesheet.css" ]]
 workers=0
 for ((attempt = 1; attempt <= 30; attempt++)); do
   workers="$(docker exec "$database" psql -U legion_post_tools -d synthetic_queue -Atc \
@@ -46,10 +70,16 @@ for ((attempt = 1; attempt <= 30; attempt++)); do
   sleep 1
 done
 [[ "$workers" -gt 0 ]]
+# Keep the verification process outside the application's measured memory budget.
+# Shared storage lets the real app worker complete the helper's synthetic purge.
+docker run --name "$verification" --network "$network" --memory 512m --memory-swap 512m \
+  --volumes-from "$application" "${smoke_environment[@]}" --entrypoint ./bin/rails \
+  "$image" runner script/production_startup_smoke.rb | tee "$output/database-job-smoke.txt"
 docker top "$application" -eo pid,args | awk '/puma: cluster worker/ {count++} END {exit count != 2}'
 pid="$(docker inspect --format '{{.State.Pid}}' "$application")"
 cgroup="/sys/fs/cgroup$(awk -F: '$1 == "0" {print $3}' "/proc/$pid/cgroup")"
 cat "$cgroup/memory.peak" > "$output/startup-memory.peak"
 cat "$cgroup/memory.events" > "$output/startup-memory.events"
+awk '$1 ~ /^oom/ && $2 != 0 {exit 1}' "$output/startup-memory.events"
 docker stats --no-stream "$application" > "$output/startup-stats.txt"
-echo 'Production startup, two Puma workers, HTTP health/sign-in, and Solid Queue heartbeat passed within 512 MiB.'
+echo 'Production startup, migrations, assets, two Puma workers, cache, Solid Queue heartbeat and synthetic purge passed with a 512 MiB app and separate 512 MiB verification helper.'

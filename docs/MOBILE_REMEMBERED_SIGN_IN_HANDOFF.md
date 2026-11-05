@@ -1,5 +1,12 @@
 # Remembered Buddy Checks sign-in: synthetic handoff
 
+> Release procedure update (November 1, 2026): commands below describe the dated
+> handoff/release. For any new release use the [current deployment playbook](DEPLOYMENT.md):
+> successful isolated image build, explicitly authorized publication, and a verified
+> digest inside one owned `bin/release session`. The old push-deploy/keep-master
+> commands are superseded. Activation still requires its own explicit authority.
+
+
 Prepared October 12, 2026. Backend implementation and isolated synthetic service
 are available. This authentication change has not been committed, pushed, or
 deployed. Production remains `66bb8150bb465c4a4926b5c303effc652d177730`, containing

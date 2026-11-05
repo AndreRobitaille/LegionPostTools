@@ -1,5 +1,12 @@
 # Buddy Checks production connection handoff
 
+> Release procedure update (November 1, 2026): commands below describe the dated
+> handoff/release. For any new release use the [current deployment playbook](DEPLOYMENT.md):
+> successful isolated image build, explicitly authorized publication, and a verified
+> digest inside one owned `bin/release session`. The old push-deploy/keep-master
+> commands are superseded. Activation still requires its own explicit authority.
+
+
 Deployed and activated October 12, 2026. **The backend is ready for the mobile agent
 to configure the iPhone and sign in as `commander@wipost165.org`.** Real email/code
 sign-in returned to the production consent screen. Andre must approve that consent
