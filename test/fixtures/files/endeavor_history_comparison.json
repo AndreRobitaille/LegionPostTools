@@ -1,0 +1,464 @@
+{
+  "targets": [
+    {
+      "id": 1,
+      "title": "Building renovation",
+      "summary": "Continuing renovation, not the separate building reserve fund.",
+      "guidance": "Continuing renovation, not the separate building reserve fund.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 2,
+      "title": "2026 Car Show",
+      "summary": "Completed annual event on August 8, 2026; includes later reconciliation.",
+      "guidance": "Completed annual event on August 8, 2026; includes later reconciliation.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 3,
+      "title": "2027 Car Show",
+      "summary": "Distinct annual event proposed for August 14, 2027.",
+      "guidance": "Distinct annual event proposed for August 14, 2027.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 4,
+      "title": "2026 Post Picnic",
+      "summary": "Completed September 12, 2026 event, including later accounts.",
+      "guidance": "Completed September 12, 2026 event, including later accounts.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 5,
+      "title": "Scholarship Program",
+      "summary": "Student scholarship awards and funding.",
+      "guidance": "Student scholarship awards and funding.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 6,
+      "title": "Building Reserve Fund",
+      "summary": "Dedicated certificate of deposit and reserve planning.",
+      "guidance": "Dedicated certificate of deposit and reserve planning.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 7,
+      "title": "Newsletter",
+      "summary": "Monthly member newsletter.",
+      "guidance": "Monthly member newsletter.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 8,
+      "title": "Buddy Checks",
+      "summary": "Veteran outreach and buddy check visits.",
+      "guidance": "Veteran outreach and buddy check visits.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 9,
+      "title": "Poppy Drive",
+      "summary": "Annual poppy distribution.",
+      "guidance": "Annual poppy distribution.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 10,
+      "title": "Flag Replacement",
+      "summary": "Replacement of outdoor flags.",
+      "guidance": "Replacement of outdoor flags.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 11,
+      "title": "Honor Guard",
+      "summary": "Ceremonial honor guard activity.",
+      "guidance": "Ceremonial honor guard activity.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 12,
+      "title": "Membership Drive",
+      "summary": "Member recruitment.",
+      "guidance": "Member recruitment.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 13,
+      "title": "Boys State",
+      "summary": "Boys State delegate sponsorship.",
+      "guidance": "Boys State delegate sponsorship.",
+      "guidance_id": null,
+      "generation": 0
+    }
+  ],
+  "catalog": [
+    {
+      "id": 1,
+      "title": "Building renovation",
+      "summary": "Continuing renovation, not the separate building reserve fund.",
+      "guidance": "Continuing renovation, not the separate building reserve fund.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 2,
+      "title": "2026 Car Show",
+      "summary": "Completed annual event on August 8, 2026; includes later reconciliation.",
+      "guidance": "Completed annual event on August 8, 2026; includes later reconciliation.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 3,
+      "title": "2027 Car Show",
+      "summary": "Distinct annual event proposed for August 14, 2027.",
+      "guidance": "Distinct annual event proposed for August 14, 2027.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 4,
+      "title": "2026 Post Picnic",
+      "summary": "Completed September 12, 2026 event, including later accounts.",
+      "guidance": "Completed September 12, 2026 event, including later accounts.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 5,
+      "title": "Scholarship Program",
+      "summary": "Student scholarship awards and funding.",
+      "guidance": "Student scholarship awards and funding.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 6,
+      "title": "Building Reserve Fund",
+      "summary": "Dedicated certificate of deposit and reserve planning.",
+      "guidance": "Dedicated certificate of deposit and reserve planning.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 7,
+      "title": "Newsletter",
+      "summary": "Monthly member newsletter.",
+      "guidance": "Monthly member newsletter.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 8,
+      "title": "Buddy Checks",
+      "summary": "Veteran outreach and buddy check visits.",
+      "guidance": "Veteran outreach and buddy check visits.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 9,
+      "title": "Poppy Drive",
+      "summary": "Annual poppy distribution.",
+      "guidance": "Annual poppy distribution.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 10,
+      "title": "Flag Replacement",
+      "summary": "Replacement of outdoor flags.",
+      "guidance": "Replacement of outdoor flags.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 11,
+      "title": "Honor Guard",
+      "summary": "Ceremonial honor guard activity.",
+      "guidance": "Ceremonial honor guard activity.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 12,
+      "title": "Membership Drive",
+      "summary": "Member recruitment.",
+      "guidance": "Member recruitment.",
+      "guidance_id": null,
+      "generation": 0
+    },
+    {
+      "id": 13,
+      "title": "Boys State",
+      "summary": "Boys State delegate sponsorship.",
+      "guidance": "Boys State delegate sponsorship.",
+      "guidance_id": null,
+      "generation": 0
+    }
+  ],
+  "documents": [
+    {
+      "revision_id": 9001,
+      "sha256": "aa12425192302307c70a5fac4316632931e5547888393177a6740132773338e2",
+      "meeting_id": 900,
+      "date": "2026-11-03T19:00:00-06:00",
+      "meeting_body": "Synthetic membership meeting",
+      "items": [
+        {
+          "key": "opening",
+          "title": "Opening and correspondence",
+          "section": "Post business",
+          "primary_endeavor_id": null,
+          "units": [
+            {
+              "id": "r9001:opening:body:0",
+              "kind": "body",
+              "text": "The meeting opened at 7 p.m. A thank-you letter from the food pantry was received. No action was requested."
+            },
+            {
+              "id": "r9001:opening:title",
+              "kind": "title",
+              "text": "Opening and correspondence"
+            }
+          ]
+        },
+        {
+          "key": "finance",
+          "title": "Finance report",
+          "section": "Post business",
+          "primary_endeavor_id": null,
+          "units": [
+            {
+              "id": "r9001:finance:body:0",
+              "kind": "body",
+              "text": "The building reserve certificate holds $18,400 plus $211 in accrued interest. It matures November 18, 2026 and automatically rolls over November 25 unless instructed otherwise. The proposed replacement term is nine months. The unrelated general checking balance is $3,120."
+            },
+            {
+              "id": "r9001:finance:body:1",
+              "kind": "body",
+              "text": "Final receipts from the completed 2026 Car Show were corrected from $6,200 to $6,020 after removing a duplicated $180 entry. Net proceeds are $4,420. The 2027 event has no receipts yet."
+            },
+            {
+              "id": "r9001:finance:title",
+              "kind": "title",
+              "text": "Finance report"
+            },
+            {
+              "id": "r9001:finance:outcome:0",
+              "kind": "outcome",
+              "text": "The motion to renew the building reserve certificate for nine months was adopted, subject to obtaining a rate of at least 4 percent.",
+              "outcome": {
+                "text": "The motion to renew the building reserve certificate for nine months was adopted, subject to obtaining a rate of at least 4 percent.",
+                "disposition": "adopted"
+              }
+            },
+            {
+              "id": "r9001:finance:outcome:1",
+              "kind": "outcome",
+              "text": "The motion to spend $2,000 of the building reserve on renovation paint was defeated. No paint purchase was authorized.",
+              "outcome": {
+                "text": "The motion to spend $2,000 of the building reserve on renovation paint was defeated. No paint purchase was authorized.",
+                "disposition": "defeated"
+              }
+            }
+          ]
+        },
+        {
+          "key": "joint",
+          "title": "Picnic and scholarship reconciliation",
+          "section": "Post business",
+          "primary_endeavor_id": null,
+          "units": [
+            {
+              "id": "r9001:joint:body:0",
+              "kind": "body",
+              "text": "The completed 2026 Post Picnic generated $900 in net proceeds. The treasurer reported that the transfer to the Scholarship Program was completed October 20, 2026. This was a report of the earlier transfer, not a new vote."
+            },
+            {
+              "id": "r9001:joint:title",
+              "kind": "title",
+              "text": "Picnic and scholarship reconciliation"
+            }
+          ]
+        },
+        {
+          "key": "annual",
+          "title": "2027 Car Show: August 14, 2027",
+          "section": "Post business",
+          "primary_endeavor_id": 3,
+          "units": [
+            {
+              "id": "r9001:annual:body:0",
+              "kind": "body",
+              "text": "The proposed 2027 Car Show date is August 14, 2027, subject to city approval. The chair will request a permit by December 1, 2026. No permit has been granted. The completed 2026 show is a separate annual event."
+            },
+            {
+              "id": "r9001:annual:title",
+              "kind": "title",
+              "text": "2027 Car Show: August 14, 2027"
+            },
+            {
+              "id": "r9001:annual:outcome:0",
+              "kind": "outcome",
+              "text": "A motion to reserve the park for the 2027 Car Show was deferred until the city responds.",
+              "outcome": {
+                "text": "A motion to reserve the park for the 2027 Car Show was deferred until the city responds.",
+                "disposition": "deferred"
+              }
+            }
+          ]
+        },
+        {
+          "key": "renovation",
+          "title": "Building renovation",
+          "section": "Post business",
+          "primary_endeavor_id": 1,
+          "units": [
+            {
+              "id": "r9001:renovation:body:0",
+              "kind": "body",
+              "text": "Only the west-wing electrical work is nearly finished. The roof estimate has not arrived. The committee recommended a $7,500 roof allowance; the membership took no vote."
+            },
+            {
+              "id": "r9001:renovation:title",
+              "kind": "title",
+              "text": "Building renovation"
+            }
+          ]
+        },
+        {
+          "key": "correction",
+          "title": "Correction to the September picnic report",
+          "section": "Post business",
+          "primary_endeavor_id": null,
+          "units": [
+            {
+              "id": "r9001:correction:body:0",
+              "kind": "body",
+              "text": "The September report gave the 2026 Post Picnic date as September 19. The secretary reported that the event actually occurred September 12, 2026. The original record remains unchanged pending the formal correction process."
+            },
+            {
+              "id": "r9001:correction:title",
+              "kind": "title",
+              "text": "Correction to the September picnic report"
+            }
+          ]
+        },
+        {
+          "key": "news",
+          "title": "Newsletter",
+          "section": "Post business",
+          "primary_endeavor_id": 7,
+          "units": [
+            {
+              "id": "r9001:news:body:0",
+              "kind": "body",
+              "text": "November newsletter printing was postponed pending receipt of committee reports. No mailing date was selected."
+            },
+            {
+              "id": "r9001:news:title",
+              "kind": "title",
+              "text": "Newsletter"
+            },
+            {
+              "id": "r9001:news:outcome:0",
+              "kind": "outcome",
+              "text": "A proposal to replace postal delivery with email-only distribution was withdrawn without a vote.",
+              "outcome": {
+                "text": "A proposal to replace postal delivery with email-only distribution was withdrawn without a vote.",
+                "disposition": "withdrawn"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "1": {
+      "finance": [
+        "Defeated $2,000 paint motion; no authorization"
+      ],
+      "renovation": [
+        "Only west-wing electrical work nearly finished",
+        "Roof estimate not received",
+        "$7,500 roof allowance recommendation without a vote"
+      ]
+    },
+    "2": {
+      "finance": [
+        "2026 completed show gross corrected $6,200 to $6,020",
+        "Duplicate $180 removed",
+        "Net $4,420"
+      ]
+    },
+    "3": {
+      "finance": [
+        "2027 event has no receipts yet"
+      ],
+      "annual": [
+        "August 14, 2027 subject to city approval",
+        "Chair requests permit by December 1, 2026",
+        "No permit granted",
+        "Park reservation deferred until city response"
+      ]
+    },
+    "4": {
+      "joint": [
+        "$900 net proceeds",
+        "Transfer to scholarships completed October 20, 2026",
+        "Report of earlier transfer, not new vote"
+      ],
+      "correction": [
+        "September 19 was erroneous",
+        "Actual September 12, 2026",
+        "Original unchanged; formal correction pending"
+      ]
+    },
+    "5": {
+      "joint": [
+        "$900 net proceeds from picnic",
+        "Transfer received October 20, 2026",
+        "Earlier transfer report, no new vote"
+      ]
+    },
+    "6": {
+      "finance": [
+        "$18,400 certificate plus $211 interest",
+        "Matures November 18, 2026",
+        "Automatic rollover November 25",
+        "Nine-month renewal adopted subject to rate at least 4 percent",
+        "Defeated $2,000 paint proposal; no authorization"
+      ]
+    },
+    "7": {
+      "news": [
+        "November printing postponed pending reports",
+        "No mailing date selected",
+        "Email-only proposal withdrawn without vote"
+      ]
+    },
+    "8": {},
+    "9": {},
+    "10": {},
+    "11": {},
+    "12": {},
+    "13": {}
+  },
+  "review_policy": "Expect listed facts and associations. Explicit contrasts may produce narrowly supported additional context, never another annual event's accomplishments. No unrelated checking balance; no automatic correction or official approval. Review semantic entailment and dispositions manually, not by string matching alone."
+}

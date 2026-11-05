@@ -2,6 +2,7 @@ require "application_system_test_case"
 
 class TranscriptSourcePrivacyTest < ApplicationSystemTestCase
   setup do
+    travel_to Time.utc(2026, 11, 1, 18)
     organization = Organization.create!(name: "Synthetic American Legion Post", unit_type: "american_legion_post", timezone: "America/Chicago")
     Installation.singleton.update!(setup_completed_at: Time.current)
     @manager = User.create!(person: Person.create!(first_name: "Synthetic", last_name: "Adjutant"), email_address: "source-review@example.test")
@@ -128,7 +129,6 @@ class TranscriptSourcePrivacyTest < ApplicationSystemTestCase
   end
 
   test "final corrected attestation schedules removal and failed upload deletion recovers without changing member minutes" do
-    travel_to Time.utc(2026, 11, 1, 18)
     %w[attest_minutes record_minutes_approval].each { |capability| @manager.permission_grants.create!(capability:) }
     organization = @meeting.organization
     position = organization.position_titles.create!(name: "Adjutant", active: true, display_order: 1)

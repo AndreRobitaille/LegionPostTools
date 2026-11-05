@@ -72,3 +72,46 @@ remain useful for manual searches and publication. Synthetic provider fixtures e
 mechanics, not actual model recall. Paid qualification must independently inspect source
 facts, annual-identity ambiguity, mixed reports, corrections, negative coverage, and
 repair cost before enabling the switch in production.
+
+## Bounded comparison
+
+The explicit evaluation runner consumes a frozen JSON snapshot and writes private
+files only. It uses production extraction, composition, schemas, validation and
+repair rules, replacing persistence and shared coordination with an in-memory store.
+Run shared, target-specific, and repeated shared passes against identical sources.
+Expected associations and material facts must be written before inspecting output;
+model verification alone is not a quality score. Review facts and final prose against
+that checklist, including rejected motions, completed work, untagged finance,
+overlapping identities, annual-event distinctions, corrections and negative matches.
+
+Before each provider request, persist a conservative dollar reservation covering
+input bytes plus overhead and the full output cap. Count incomplete responses when
+usage is available, retain the reservation after unknown failures, and stop the whole
+comparison on a budget or transport failure. No automatic retries outside production's
+one semantic repair are allowed. Existing output files cannot be overwritten; all
+passes in one invocation share one ceiling. Prices and model names must be explicit
+and current; figures are list-price estimates, not invoice reconciliation.
+
+Synthetic qualification precedes an authorized read-only replay of one representative
+attested meeting. A replay never writes history editions or official minutes. Keep
+private source and response files outside Git. Production observation follows only
+after a separately authorized rollout: compare cost per attestation and source batch,
+shared producer reuse, retries, failed/waiting consumers, and source-grounded quality.
+
+Run only after explicit paid-evaluation authorization, with credentials supplied
+securely. The ledger path must be outside the repository. Reuse the same path and
+ceiling for every pass in the approved pilot; use a new label, never erase a failed
+attempt or raise the ceiling to make a run fit.
+
+```sh
+RAILS_ENV=test ENDEAVOR_EVALUATION_AUTHORIZED=1 bin/rails runner \
+  script/compare_endeavor_history.rb SNAPSHOT PRIVATE_LEDGER 10 synthetic-shared-1 shared
+```
+
+Repeat with labels `synthetic-baseline` / mode `baseline` and
+`synthetic-shared-2` / mode `shared`. The synthetic source and prewritten expectations
+are in `test/fixtures/files/endeavor_history_comparison.json`. Inspect the ledger's
+source, requests, responses, accepted histories, model signatures and reserved costs.
+It fixes service tier to standard, uses the production output cap, and refuses unknown
+model prices or long-context inputs. An interrupted ledger is retained for inspection;
+there is no automatic resume or paid replay. Snapshot expectations never reach the model.
