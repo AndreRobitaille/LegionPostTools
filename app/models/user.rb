@@ -162,12 +162,17 @@ class User < ApplicationRecord
   end
 
   def update_login_email_to_roster_email!
-    update!(
-      email_address: person.roster_email_address,
-      roster_email_reviewed_address: person.roster_email_address,
-      roster_email_review_decision: "updated_login",
-      roster_email_reviewed_at: Time.current
-    )
+    with_lock do
+      address_changed = email_address != person.roster_email_address
+      update!(
+        email_address: person.roster_email_address,
+        email_verified_at: address_changed ? nil : email_verified_at,
+        roster_email_reviewed_address: person.roster_email_address,
+        roster_email_review_decision: "updated_login",
+        roster_email_reviewed_at: Time.current
+      )
+      magic_links.where(used_at: nil).destroy_all if address_changed
+    end
   end
 
   def self.another_enabled_manage_settings_user_exists?(user)

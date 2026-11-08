@@ -162,6 +162,32 @@ class PeopleControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.clear[href=?]", people_path(q: "Vincent", sort: "member_id")
   end
 
+  test "removed people retain historical status but are labeled and filtered as removed without needing an account" do
+    prepare_setup_complete_state
+    sign_in_officer
+    removed = Person.create!(first_name: "Former", last_name: "Member", member_number: "REMOVED1",
+      roster_member_status: "Active", roster_paid_through_year: 2026, roster_removed_at: Time.current)
+    current = Person.create!(first_name: "Current", last_name: "Member", member_number: "CURRENT1", roster_member_status: "Active")
+
+    get people_path
+    assert_select "a.mrow[href=?] .st--other", person_path(removed), text: "Removed from roster"
+    assert_select "a.mrow[href=?] .st--active", person_path(removed), count: 0
+    get person_path(removed)
+    assert_select ".idmeta .st--other", text: "Removed from roster"
+    assert_select ".kv", text: /Last imported status.*Active/
+    assert_select "body", text: /Removed from the National roster/
+    assert_select ".acct-mode--off", text: /This person is no longer on the latest National roster/
+    assert_equal "Active", removed.reload.roster_member_status
+
+    get people_path, params: { roster_member_status: "Active" }
+    assert_select "a.mrow[href=?]", person_path(removed), count: 0
+    assert_select "a.mrow[href=?]", person_path(current), count: 1
+    get people_path, params: { roster_member_status: "Removed from roster", sort: "status" }
+    assert_select "a.mrow[href=?]", person_path(removed), count: 1
+    assert_select "a.mrow[href=?]", person_path(current), count: 0
+    assert_select "select[name=roster_member_status] option[selected]", text: "Removed from roster"
+  end
+
   test "membership leader sees roster details but not login-account status" do
     prepare_setup_complete_state
     sign_in_membership_leader

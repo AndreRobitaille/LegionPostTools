@@ -38,7 +38,7 @@ class PeopleController < ApplicationController
     "name" => [ :last_name, :first_name ],
     "member_id" => [ :member_number ],
     "paid_through" => [ Arel.sql("roster_paid_through_year DESC NULLS LAST"), :last_name ],
-    "status" => [ :roster_member_status, :last_name ],
+    "status" => [ Arel.sql("CASE WHEN roster_removed_at IS NOT NULL THEN 'Removed from roster' ELSE roster_member_status END"), :last_name ],
     "branch" => [ :roster_branch, :last_name ]
   }.freeze
 
@@ -58,7 +58,11 @@ class PeopleController < ApplicationController
   end
 
   def apply_membership_filters(scope)
-    scope = scope.where(roster_member_status: params[:roster_member_status]) if params[:roster_member_status].present?
+    if params[:roster_member_status] == Person::REMOVED_ROSTER_STATUS
+      scope = scope.where.not(roster_removed_at: nil)
+    elsif params[:roster_member_status].present?
+      scope = scope.where(roster_removed_at: nil, roster_member_status: params[:roster_member_status])
+    end
     scope = scope.where(roster_paid_through_year: params[:roster_paid_through_year]) if params[:roster_paid_through_year].present?
     return scope unless @can_manage
 
@@ -71,8 +75,11 @@ class PeopleController < ApplicationController
   end
 
   def build_filter_options
+    statuses = Person.where(roster_removed_at: nil).where.not(roster_member_status: [ nil, "" ])
+      .distinct.order(:roster_member_status).pluck(:roster_member_status)
+    statuses << Person::REMOVED_ROSTER_STATUS if Person.where.not(roster_removed_at: nil).exists?
     {
-      statuses: Person.where.not(roster_member_status: [ nil, "" ]).distinct.order(:roster_member_status).pluck(:roster_member_status),
+      statuses: statuses,
       years: Person.where.not(roster_paid_through_year: nil).distinct.order(roster_paid_through_year: :desc).pluck(:roster_paid_through_year)
     }
   end

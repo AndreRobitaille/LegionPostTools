@@ -72,7 +72,7 @@ module RosterImports
       status_changes = []
       field_changes = {}
       access_effects = Hash.new(0)
-      email_counts = eligible_email_counts(rows)
+      email_counts = rows.filter_map { |row| row.email_address.to_s.strip.downcase.presence }.tally
       roster_import = nil
 
       ActiveRecord::Base.transaction do
@@ -104,6 +104,8 @@ module RosterImports
             unchanged += 1
           end
 
+          email_effect = person.user ? reconcile_login_email(person, email_counts, problems) : nil
+          access_effects[email_effect.to_s] += 1 if email_effect
           effect = reconcile_login_access(person, email_counts, problems)
           if effect
             access_effects[effect.to_s] += 1
@@ -281,32 +283,40 @@ module RosterImports
       :account_created
     end
 
-    def login_email_problem(person, email, email_counts)
-      kind, explanation = if email.blank?
-        [ "account_not_created_missing_email", "has no roster email" ]
-      elsif !URI::MailTo::EMAIL_REGEXP.match?(email)
-        [ "account_not_created_invalid_email", "has an invalid roster email" ]
-      elsif email_counts.fetch(email, 0) > 1
-        [ "account_not_created_shared_email", "shares a roster email with another current member" ]
-      elsif User.exists?(email_address: email)
-        [ "account_not_created_email_in_use", "has a roster email already used by another login account" ]
+    def reconcile_login_email(person, email_counts, problems)
+      email = person.roster_email_address.to_s.strip.downcase
+      return if person.user.email_address == email
+
+      if (problem = login_email_problem(person, email, email_counts))
+        problems << problem
+        return problem.fetch(:kind).to_sym
       end
 
-      return unless kind
+      person.user.update_login_email_to_roster_email!
+      :login_email_updated
+    end
+
+    def login_email_problem(person, email, email_counts)
+      reason, explanation = if email.blank?
+        [ "missing_email", "has no roster email" ]
+      elsif !URI::MailTo::EMAIL_REGEXP.match?(email)
+        [ "invalid_email", "has an invalid roster email" ]
+      elsif email_counts.fetch(email, 0) > 1
+        [ "shared_email", "shares a roster email with another member" ]
+      elsif User.where.not(id: person.user&.id).exists?(email_address: email)
+        [ "email_in_use", "has a roster email already used by another login account" ]
+      end
+
+      return unless reason
+
+      prefix = person.user ? "login_email_not_updated" : "account_not_created"
+      outcome = person.user ? "the existing login email was kept" : "no sign-in account was created"
 
       {
         row: nil,
-        kind: kind,
-        message: "#{person.roster_display_name} is a current member but #{explanation}; no sign-in account was created."
+        kind: "#{prefix}_#{reason}",
+        message: "#{person.roster_display_name} #{explanation}; #{outcome}."
       }
-    end
-
-    def eligible_email_counts(rows)
-      rows.filter_map do |row|
-        next unless User::ROSTER_LOGIN_ENABLED_STATUSES.include?(row.member_status.to_s.strip.downcase)
-
-        row.email_address.to_s.strip.downcase.presence
-      end.tally
     end
 
     def assign_roster_fields(person, row)

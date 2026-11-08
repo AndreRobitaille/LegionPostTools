@@ -88,7 +88,9 @@
     <span class="acct-mode-dot" aria-hidden="true">&#9679;</span>
     <span>
       <b>No login account was created.</b>
-      <% if @person.roster_backed? %>
+      <% if @person.roster_removed_at.present? %>
+        This person is no longer on the latest National roster. Creating an account will keep sign-in off until a later roster shows them as Active or Grace.
+      <% elsif @person.roster_backed? %>
         Check for a missing, invalid, shared, or already-used roster email.
       <% else %>
         This person is not controlled by a National roster record.

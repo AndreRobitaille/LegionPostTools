@@ -7,7 +7,7 @@
     <% if (office = @person.active_role_labels.first) %>
       <span class="office"><%= office %></span>
     <% end %>
-    <%= membership_status_tag(@person.roster_member_status) %>
+    <%= membership_status_tag(@person.effective_roster_status) %>
   </div>
 </div>
 
@@ -16,11 +16,14 @@
       "National roster · imported #{legion_date(@person.roster_imported_at)}" :
       "National roster · import date unavailable" %>
   <%= render "shared/section_panel", label: "Roster Record", provenance: provenance do %>
+    <% if @person.roster_removed_at.present? %>
+      <p class="panel-lead">Removed from the National roster on <%= legion_date(@person.roster_removed_at) %>. The details below are from their last imported record.</p>
+    <% end %>
     <div class="grid">
       <div class="kv"><span class="k">Member ID</span><span class="v"><%= @person.member_number.presence || "—" %></span></div>
       <div class="kv"><span class="k">Post/Squadron</span><span class="v"><%= @person.roster_post.presence || "—" %></span></div>
       <div class="kv"><span class="k">Membership type</span><span class="v"><%= @person.roster_membership_type.presence || "—" %></span></div>
-      <div class="kv"><span class="k">Status</span><span class="v"><%= @person.roster_member_status.presence || "—" %></span></div>
+      <div class="kv"><span class="k"><%= @person.roster_removed_at.present? ? "Last imported status" : "Status" %></span><span class="v"><%= @person.roster_member_status.presence || "—" %></span></div>
       <div class="kv">
         <span class="k">Paid through</span>
         <span class="v<%= " pufl" if @person.paid_up_for_life? %>">

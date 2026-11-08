@@ -22,10 +22,15 @@ class LoopsRosterSyncsSystemTest < ApplicationSystemTestCase
       roster_member_status: "Active", roster_email_address: "rejected@example.test")
     Person.create!(first_name: "Accepted", last_name: "Later", member_number: "M109-B",
       roster_member_status: "Active", roster_email_address: "accepted@example.test")
+    Person.create!(first_name: "Deceased", last_name: "Member", member_number: "M109-C",
+      roster_member_status: "Deceased", roster_email_address: "deceased@example.test")
     source = RosterImport.create!(status: "completed", imported_at: Time.current, uploaded_filename: "synthetic-audience.csv")
     sync = LoopsRosterSync.create!(roster_import: source, requested_by: admin, eligible_count: 2)
-    Loops::RosterSynchronizer.new(sync, client: PartialClient.new, sleeper: ->(_) { }).call
+    client = PartialClient.new
+    client.add("deceased@example.test", mailingLists: { "members" => true, "minutes" => true })
+    Loops::RosterSynchronizer.new(sync, client: client, sleeper: ->(_) { }).call
     assert_equal [ "completed", 1, 1 ], [ sync.reload.status, sync.synced_count, sync.failed_count ]
+    assert_equal 1, sync.list_results.fetch("globally_unsubscribed")
 
     system_sign_in(admin)
     original_source = [ Person.order(:id).map(&:attributes), User.order(:id).map(&:attributes), source.attributes, sync.attributes ]
@@ -41,6 +46,7 @@ class LoopsRosterSyncsSystemTest < ApplicationSystemTestCase
       assert_text "Synthetic contact rejected"
       assert_text "synthetic-audience.csv"
       assert_text "Existing opt-outs remain unchanged"
+      assert_text "Globally unsubscribed"
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
       capture_system_screenshot("offline-sync-partial-#{width}")
       page.execute_script("arguments[0].scrollIntoView({block: 'center'})", find(".card--alert"))
@@ -49,6 +55,12 @@ class LoopsRosterSyncsSystemTest < ApplicationSystemTestCase
       assert_selector "h1", text: "Sync roster to Loops"
       assert_selector ".stat-tile--created .stat-n", text: "2"
       assert_text "An existing Loops contact who opted out stays opted out"
+      assert_text "its existing subscriptions follow the new address"
+      assert_text "Departed and Deceased members are unsubscribed from all Loops mail"
+      assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
+      capture_system_screenshot("offline-sync-preview-#{width}")
+      page.execute_script("arguments[0].scrollIntoView({block: 'center'})", find(".whatnext"))
+      capture_system_screenshot("offline-sync-preview-choices-#{width}")
       find("a[href='#{admin_loops_roster_sync_path(sync)}']").click
       assert_selector "h1", text: "Roster sync finished with problems"
     end

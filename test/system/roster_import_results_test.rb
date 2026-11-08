@@ -32,7 +32,8 @@ class RosterImportResultsSystemTest < ApplicationSystemTestCase
     assert_equal "completed", completed.status
     assert_equal [ 1, 1, 0 ], [ completed.created_count, completed.updated_count, completed.removed_count ]
     assert_equal "123 Main St", member.reload.roster_address
-    assert_equal "private-upload-login@example.test", user.reload.email_address
+    assert_equal "john.smith@example.com", user.reload.email_address
+    assert_text "Sign-in emails updated from National: 1"
     assert_not_nil Person.find_by!(member_number: "000204540638").user
     assert_current_path admin_roster_import_path(completed)
     capture_upload_layout("completed")
@@ -83,7 +84,12 @@ class RosterImportResultsSystemTest < ApplicationSystemTestCase
     [ [ 1400, 1400 ], [ 390, 844 ] ].each do |width, height|
       page.current_window.resize_to(width, height)
       assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth"), "Roster #{state} overflow at #{width}px"
+      page.execute_script("window.scrollTo(0, 0)")
       capture_system_screenshot("roster-upload-#{state}-#{width}")
+      if state == "completed"
+        page.execute_script("arguments[0].scrollIntoView({block: 'start'})", find(".card", text: /Sign-in access/i))
+        capture_system_screenshot("roster-updated-sign-in-#{width}")
+      end
     end
   end
 end

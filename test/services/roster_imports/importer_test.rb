@@ -132,7 +132,7 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     assert_equal 1, result.roster_import.access_effects["skipped_manual_disable"]
   end
 
-  test "reimport updates roster fields without changing user login email" do
+  test "reimport updates roster fields and the existing login email from National" do
     person = Person.create!(first_name: "John", last_name: "Smith", member_number: "000204540637", email_address: "login@example.com")
     user = User.create!(person: person, email_address: "login@example.com")
 
@@ -147,9 +147,77 @@ class RosterImports::ImporterTest < ActiveSupport::TestCase
     person.reload
     user.reload
     assert_equal "roster@example.com", person.roster_email_address
-    assert_equal "login@example.com", user.email_address
+    assert_equal "roster@example.com", user.email_address
+    assert_equal 1, result.roster_import.access_effects["login_email_updated"]
     assert_equal "John", person.first_name
     assert_equal "Smith", person.last_name
+  end
+
+  test "unchanged roster repairs login mismatch and invalidates old emailed challenges only once" do
+    person = Person.create!(first_name: "John", last_name: "Smith", member_number: "000204540637")
+    user = User.create!(person: person, email_address: "old@example.test", email_verified_at: Time.current,
+      disabled_at: 1.day.ago, disabled_reason: "manual", login_access_override: true, roster_email_review_decision: "keep_current",
+      roster_email_reviewed_address: "john.smith@example.com")
+    grant = user.permission_grants.create!(capability: "manage_people")
+    session = user.sessions.create!(last_seen_at: Time.current)
+    old_link = MagicLink.create_for!(user)
+    csv = file_fixture("roster_valid.csv").read
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "roster.csv").import
+
+    assert result.success?
+    assert_equal "john.smith@example.com", user.reload.email_address
+    assert_nil user.email_verified_at
+    assert_nil MagicLink.consume!(old_link.token)
+    assert_equal "updated_login", user.roster_email_review_decision
+    assert user.manually_disabled?
+    assert_equal [ grant.id ], user.permission_grants.pluck(:id)
+    assert_equal [ session.id ], user.sessions.pluck(:id)
+    user.update!(email_address: "another-old@example.test")
+
+    reimport = RosterImports::Importer.new(csv_text: csv, filename: "same.csv").import
+    assert reimport.success?
+    assert_equal 2, reimport.unchanged_count
+    assert_equal 1, reimport.roster_import.access_effects["login_email_updated"]
+    assert_equal "john.smith@example.com", user.reload.email_address
+    fresh_link = MagicLink.create_for!(user)
+    user.update!(email_verified_at: Time.current)
+    verified_at = user.email_verified_at
+
+    repeat = RosterImports::Importer.new(csv_text: csv, filename: "same-again.csv").import
+    assert repeat.success?
+    assert_nil repeat.roster_import.access_effects["login_email_updated"]
+    assert_equal verified_at, user.reload.email_verified_at
+    assert MagicLink.exists?(fresh_link.id)
+  end
+
+  test "unusable or occupied roster emails preserve existing login accounts and report each problem" do
+    owner = User.create!(person: Person.create!(first_name: "Other", last_name: "Account"), email_address: "occupied@example.test")
+    inputs = [ [ "BLANK", "", "missing_email" ], [ "INVALID", "broken", "invalid_email" ],
+      [ "SHARED1", "shared@example.test", "shared_email" ], [ "SHARED2", "shared@example.test", "shared_email" ],
+      [ "OCCUPIED", owner.email_address, "email_in_use" ] ]
+    users = inputs.map do |number, _, _|
+      User.create!(person: Person.create!(first_name: "Synthetic", last_name: number, member_number: number),
+        email_address: "old-#{number.downcase}@example.test", email_verified_at: Time.current)
+    end
+    original = users.map { |user| user.attributes.slice("id", "person_id", "email_address", "email_verified_at") }
+    csv = CSV.generate do |output|
+      output << RosterImports::CsvParser::REQUIRED_HEADERS
+      inputs.each do |number, email, _|
+        output << [ number, "Member, Synthetic", 165, "Member", "", "", email, "", "", "", 1, 2026, "Active" ]
+      end
+    end
+
+    result = RosterImports::Importer.new(csv_text: csv, filename: "problems.csv").import
+
+    assert result.success?
+    assert_equal original, users.map { |user| user.reload.attributes.slice("id", "person_id", "email_address", "email_verified_at") }
+    assert_equal "occupied@example.test", owner.reload.email_address
+    assert_equal 5, result.problem_count
+    inputs.each do |_, _, reason|
+      assert_equal(reason == "shared_email" ? 2 : 1, result.roster_import.access_effects["login_email_not_updated_#{reason}"])
+    end
+    assert result.roster_import.problems.all? { |problem| problem["message"].include?("login email was kept") }
   end
 
   test "identical reimport counts existing row as unchanged" do
