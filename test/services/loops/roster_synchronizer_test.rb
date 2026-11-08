@@ -251,6 +251,25 @@ class Loops::RosterSynchronizerTest < ActiveSupport::TestCase
     assert_not client.payloads.any? { |payload| payload[:subscribed] == false }
   end
 
+  test "departed members sharing an already unsubscribed legacy contact need no review or provider write" do
+    client = FakeClient.new
+    2.times do |index|
+      Person.create!(first_name: "Former", last_name: "Member #{index}", member_number: "SHARED-#{index}",
+        roster_removed_at: Time.current, roster_member_status: "Active", roster_email_address: "legacy@example.test")
+    end
+    client.add("legacy@example.test", subscribed: false, mailingLists: { "minutes" => true })
+    original = client.contacts.fetch("legacy@example.test").deep_dup
+
+    2.times do
+      sync = run_sync(client)
+      assert_equal [ "completed", 0 ], [ sync.status, sync.failed_count ]
+      assert_equal 0, sync.list_results.fetch("removal_needs_review", 0)
+      assert_empty sync.failures
+      assert_equal original, client.contacts.fetch("legacy@example.test")
+      assert_not client.payloads.any? { |payload| payload[:email] == "legacy@example.test" }
+    end
+  end
+
   test "interrupted global unsubscribe recovers on retry and retires enrollment only after confirmation" do
     client = FakeClient.new
     run_sync(client)

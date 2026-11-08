@@ -77,13 +77,18 @@ module Loops
       end
       return unless contact
 
+      was_member = contact.fetch("mailingLists", {})[@settings.post_members_list_id] == true
+      if contact["subscribed"] == false && !was_member
+        retire_departed_enrollments(user_id, contact) if contact["userId"] == user_id
+        return
+      end
+
       email = contact.fetch("email").downcase
       if (contact["userId"].present? && contact["userId"] != user_id) ||
           Person.roster_backed.where.not(id: person.id).exists?(roster_email_address: email)
         raise Client::RequestError, "Another roster member uses this contact identity or email. Review before unsubscribing it."
       end
 
-      was_member = contact.fetch("mailingLists", {})[@settings.post_members_list_id] == true
       if contact["subscribed"] != false || was_member
         @client.update_contact(email: email, userId: user_id, subscribed: false,
           mailingLists: { @settings.post_members_list_id => false })
@@ -95,6 +100,10 @@ module Loops
         @results["globally_unsubscribed"] += 1 if contact["subscribed"] != false
         @results["removed"] += 1 if was_member
       end
+      retire_departed_enrollments(user_id, contact)
+    end
+
+    def retire_departed_enrollments(user_id, contact)
       @organization.loops_roster_enrollments.where(member_user_id: user_id, loops_contact_id: contact.fetch("id"), active: true)
         .update_all(active: false, updated_at: Time.current)
     end
