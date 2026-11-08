@@ -7,6 +7,7 @@ module Admin
       @latest_sync = LoopsRosterSync.recent.first
       @loops_configured = Loops::Client.configured? && Organization.first!.minutes_distribution_setting&.groups_configured?
       @managed_removals = managed_removals
+      @departed_members_count = Loops::RosterAudience.departed_members.count
       @roster_stale = RosterImport.roster_stale?
     end
 
@@ -33,7 +34,7 @@ module Admin
       end
 
       audience = Loops::RosterAudience.new
-      if audience.eligible_count.zero? && managed_removals.zero?
+      if audience.eligible_count.zero? && managed_removals.zero? && !Loops::RosterAudience.departed_members.exists?
         redirect_to new_admin_loops_roster_sync_path, alert: "No current members have a unique, usable roster email."
         return
       end

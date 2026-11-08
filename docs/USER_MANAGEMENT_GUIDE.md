@@ -45,8 +45,10 @@ would normally do so.
 
 Automatic account creation is skipped when an Active or Grace member has a blank,
 invalid, shared, or already-used email. The roster import completes, but its result lists
-the member under problems that need review. Imports never replace an existing login
-email, even when the roster email later changes.
+the member under problems that need review. Imports also replace an existing login
+email with National's usable, unique email, preserving the same account and permissions.
+Blank, invalid, shared, or occupied addresses keep the existing login email and produce
+a review problem. A prior member choice to keep another address does not override an import.
 
 The import result lists who received a new roster record and who received a new sign-in
 account. An existing member can receive their first account on a later import. If a
@@ -73,6 +75,7 @@ After every roster import, review **Sign-in access** and any row or account prob
 the result page. It reports:
 
 - new accounts created and enabled;
+- sign-in emails updated from National, or kept because an address needs review;
 - accounts enabled again by an Active or Grace status;
 - accounts disabled by roster status or removal;
 - accounts left off because an administrator disabled them; and
@@ -91,8 +94,9 @@ not assign a Post role or grant administrative powers.
 
 ## Correct a Wrong Email Address
 
-The roster email and login email are separate fields. A roster import updates the roster
-email, but it never silently changes the address used to sign in.
+The roster email and login email are separate fields. Importing National's roster updates
+both when the address is valid, unique, and available. Existing verification and outstanding
+emailed sign-in challenges are cleared when the login email changes; request a fresh email.
 
 ### What to Tell the Member
 
@@ -113,13 +117,16 @@ communications use the right address.
 3. Import the updated National roster through **Admin → Import roster**.
 4. Open **People**, find the member, and confirm that **Roster email** now shows the
    corrected address.
-5. Reconcile the login email:
-   - If the member can still sign in, the website can show them that the two addresses
-     differ. They may select **Use roster email for login**.
-   - If the member cannot receive mail at the old login address, select **Disable
-     sign-in**, enter the corrected address, then select **Save email and enable
-     sign-in**.
+5. Confirm the login email now matches. If it does not, review the import's address
+   problem and resolve the missing, invalid, shared, or already-used address.
 6. Ask the member to request a fresh sign-in email and confirm that it arrives.
+
+After import, run **Sync email audience** to update Loops. Existing email opt-outs
+stay in force. Members missing from the roster or marked Deceased lose sign-in and
+are globally unsubscribed from Loops when the sync runs, across every email list.
+The contact and unsubscribe history are kept, and returning members are not
+automatically resubscribed. The last enabled administrator retains the existing
+sign-in safeguard and is flagged for review.
 
 If access is urgent before a roster import can occur, an administrator may enter a
 verified address while creating or re-enabling the account. The account still follows
@@ -243,7 +250,7 @@ The three private Loops lists have separate purposes:
 
 | List | How to maintain it |
 | --- | --- |
-| **Post members** | After reviewing a National roster import, choose **Sync email audience**. The sync handles eligible roster members and previously managed removals only in this list. Use this list for general campaigns in Loops. |
+| **Post members** | After reviewing a National roster import, choose **Sync email audience**. Current members keep their opt-outs and independent lists. Departed and Deceased members are globally unsubscribed from all Loops mail. Use Post members for general campaigns. |
 | **Minutes recipients** | Maintain office entries under **Officer tools → Minutes distribution** and explicitly enroll their addresses. The same entries receive PEC and monthly minutes. |
 | **Post officers** | Reserved for future use. Assigning a Post role or importing/syncing a roster does not populate it. |
 

@@ -30,7 +30,20 @@ when "archive"
   config = archive_entry(archive, manifest.fetch(0).fetch("Config"))
   image = JSON.parse(config)
   evidence = JSON.parse(File.read(evidence_path))
-  abort "Archive image/configuration mismatch" unless evidence["image_id"] == "sha256:#{Digest::SHA256.hexdigest(config)}"
+  config_digest = "sha256:#{Digest::SHA256.hexdigest(config)}"
+  image_id = evidence["image_id"]
+  unless image_id == config_digest
+    # Containerd image stores identify a single-platform image by its manifest.
+    abort "Invalid archive image identity" unless image_id&.match?(/\Asha256:[a-f0-9]{64}\z/)
+    manifest_bytes = archive_entry(archive, "blobs/sha256/#{image_id.delete_prefix('sha256:')}")
+    image_manifest = JSON.parse(manifest_bytes)
+    unless "sha256:#{Digest::SHA256.hexdigest(manifest_bytes)}" == image_id &&
+        image_manifest["schemaVersion"] == 2 &&
+        %w[application/vnd.oci.image.manifest.v1+json application/vnd.docker.distribution.manifest.v2+json].include?(image_manifest["mediaType"]) &&
+        image_manifest.dig("config", "digest") == config_digest
+      abort "Archive image/configuration mismatch"
+    end
+  end
   abort "Missing successful smoke evidence" unless evidence.values_at("revision", "service", "platform", "runtime_smoke", "startup_smoke") == [ revision, service, "linux/amd64", "passed", "passed" ]
 when "registry"
   image = JSON.parse(STDIN.read)

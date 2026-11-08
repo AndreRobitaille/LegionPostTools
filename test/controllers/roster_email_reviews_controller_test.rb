@@ -5,6 +5,8 @@ class RosterEmailReviewsControllerTest < ActionDispatch::IntegrationTest
     user = member_with_roster_mismatch
     sign_in_as(user)
     original_identity = roster_identity_state(reviewed_user: user)
+    original_identity[1].find { |attributes| attributes["id"] == user.id }["email_verified_at"] = nil
+    old_link = MagicLink.create_for!(user)
 
     freeze_time do
       patch roster_email_review_path, params: { decision: "update_login" }
@@ -12,6 +14,8 @@ class RosterEmailReviewsControllerTest < ActionDispatch::IntegrationTest
       assert_equal "updated_login", user.roster_email_review_decision
       assert_equal Time.current, user.roster_email_reviewed_at
       assert_equal original_identity, roster_identity_state(reviewed_user: user)
+      assert_nil user.email_verified_at
+      assert_not MagicLink.exists?(old_link.id)
     end
 
     assert_redirected_to root_path

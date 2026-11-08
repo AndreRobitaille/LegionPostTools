@@ -25,6 +25,12 @@ module Loops
 
     attr_reader :contacts, :missing_email_count, :invalid_email_count, :shared_email_count
 
+    def self.departed_members
+      Person.roster_backed.where.not(roster_removed_at: nil).or(
+        Person.roster_backed.where("LOWER(TRIM(COALESCE(roster_member_status, ''))) = ?", "deceased")
+      )
+    end
+
     def initialize
       @contacts = []
       @missing_email_count = 0

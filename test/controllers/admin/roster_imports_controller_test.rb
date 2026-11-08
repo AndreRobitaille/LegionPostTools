@@ -85,7 +85,7 @@ class Admin::RosterImportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "completed", completed.status
     assert_equal [ 1, 1, 0 ], [ completed.created_count, completed.updated_count, completed.removed_count ]
     assert_equal "123 Main St", member.reload.roster_address
-    assert_equal "private-login@example.test", user.reload.email_address
+    assert_equal "john.smith@example.com", user.reload.email_address
     assert_equal member.id, Person.find_by!(member_number: "000204540637").id
     assert_not_nil Person.find_by!(member_number: "000204540638").user
     assert_redirected_to admin_roster_import_path(completed)

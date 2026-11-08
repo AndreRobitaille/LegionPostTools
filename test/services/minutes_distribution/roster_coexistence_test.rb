@@ -6,7 +6,7 @@ class MinutesDistribution::RosterCoexistenceTest < ActiveSupport::TestCase
   include MinutesDistributionData
   setup { setup_distribution }
 
-  test "two roster syncs preserve external minutes recipients and other lists then minutes sends" do
+  test "roster sync preserves opt-outs and external recipients but departure stops all member mail" do
     overlap = Person.create!(first_name: "Overlap", last_name: "Member", member_number: "S100",
       roster_member_status: "Active", roster_email_address: recipient.email)
     only_member = Person.create!(first_name: "Only", last_name: "Member", member_number: "S101",
@@ -32,9 +32,11 @@ class MinutesDistribution::RosterCoexistenceTest < ActiveSupport::TestCase
     assert_equal 1, sync.list_results.fetch("removed")
     assert_equal({ "minutes" => true, "unrelated" => true }, provider.contacts[recipient.email]["mailingLists"])
     assert provider.contacts.key?(recipient.email)
+    assert_equal false, provider.contacts[recipient.email]["subscribed"]
+    assert_equal 1, sync.list_results.fetch("globally_unsubscribed")
     dispatch(correct("Balance: $112."))
-    assert_equal 4, provider.messages.size
-    assert provider.messages.last(2).any? { |message| message[:email] == recipient.email }
+    assert_equal 3, provider.messages.size
+    assert_equal outside.email, provider.messages.last[:email]
   end
 
   test "member identity collisions and address moves need review without moving minutes subscriptions" do
@@ -65,6 +67,29 @@ class MinutesDistribution::RosterCoexistenceTest < ActiveSupport::TestCase
     assert_equal "opted_out", recipient.reload.enrollment_status
     assert_equal({}, provider.contacts.fetch(recipient.email).fetch("mailingLists"))
     dispatch(attest)
+    assert_empty provider.messages
+  end
+
+  test "roster email move preserves independent lists without rewriting website office records or delivery destinations" do
+    member = Person.create!(first_name: "Office", last_name: "Member", member_number: "S202",
+      roster_member_status: "Active", roster_email_address: recipient.email)
+    provider.contacts[recipient.email]["mailingLists"]["officers"] = true
+    sync_roster
+    original_contact = provider.contacts.fetch(recipient.email).deep_dup
+    original_office = recipient.reload.attributes
+    member.update!(roster_email_address: "office-new@example.test")
+
+    moved = sync_roster
+
+    assert_equal 0, moved.failed_count
+    assert_equal original_contact.merge("email" => "office-new@example.test"), provider.contacts.fetch("office-new@example.test")
+    assert_equal original_office, recipient.reload.attributes
+    issue = attest
+    original_destinations = issue.deliveries.map(&:email)
+    dispatch(issue)
+    assert_equal [ original_office.fetch("email") ], original_destinations
+    assert_equal original_destinations, issue.reload.deliveries.map(&:email)
+    assert_equal "skipped", issue.deliveries.sole.status
     assert_empty provider.messages
   end
 

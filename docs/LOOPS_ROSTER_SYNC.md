@@ -11,21 +11,25 @@ contact's email choices in Loops.
 
 Use Loops' update-contact endpoint as an upsert, with roster email, parsed first and
 last name, and the stable `american-legion-member:<member_number>` identity. Resolve
-both email and stable identity before writing: reused mailboxes, conflicting identities
-and address moves that could move other subscriptions require review.
+both email and stable identity before writing: reused mailboxes and conflicting
+identities require review. A changed National roster email updates the existing
+contact by stable member identity, including the address used by its independent
+subscriptions. An address already belonging to another contact is never merged.
 
-The request must never include global `subscribed` or `userGroup`. It now patches exactly
-one mailing-list key: the configured private **Post members** list. It must not send a
+Current-member upserts must never include global `subscribed` or `userGroup`. Enrollment updates patch
+one mailing-list key: the configured private **Post members** list. They must not send a
 replacement map of all lists. The separate private **Minutes recipients** list belongs
-to [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md), and roster sync never changes
-it. Distinct valid list IDs are required; there is no All audience fallback.
+to [minutes distribution](MINUTES_EMAIL_DISTRIBUTION.md). Roster sync preserves its
+list assignment, but globally unsubscribes departed and Deceased members as described
+below. Distinct valid list IDs are required; there is no All audience fallback.
 
 The same boundary covers **Post officers** and any other independent list: roster sync
 neither adds nor removes their members. It does not turn website Post roles into mailing
 list assignments. Minutes recipient management belongs to **Officer tools → Minutes
 distribution**, not to the roster import or sync button.
 
-Existing global and list opt-outs remain in effect. Read back effective enrollment and
+Existing global and list opt-outs remain in effect, including after a member returns
+to the roster. Read back effective enrollment and
 report retained opt-outs truthfully. Keep unsubscribed contacts in Loops; never delete,
 recreate or unsuppress them. New contacts use Loops' normal subscription default.
 
@@ -33,8 +37,35 @@ The integration records provenance for its new Post members enrollments. On late
 previously managed addresses that are no longer eligible are checked for removal from
 **Post members only**. Retain their contact and all other memberships. Missing or changed
 identity requires review. Pre-existing list assignments without integration provenance
-are not silently claimed or removed. An address move for a still-eligible member also
-requires review rather than automatically moving independent minutes subscriptions.
+are not silently claimed or removed. An address move preserves the same contact ID,
+global opt-out and all mailing-list choices; the move request contains no subscription
+fields. Read back and verify identity and choices before recording the new address.
+Retire previous managed addresses for that same contact and member identity, including
+on a retry after Loops accepted a move but local confirmation was interrupted. This
+prevents repeated old-address review failures and lets later roster removal target the
+new address. National roster imports also reconcile website login emails; minutes
+office records and saved minutes delivery destinations are never rewritten by roster sync.
+
+### Departed and Deceased members
+
+Members missing from the latest roster or marked Deceased are globally unsubscribed
+(`subscribed: false`) when a sync runs. This stops all campaign/workflow mail, and the
+minutes processor checks the same global choice before sending transactional minutes.
+Remove their Post members assignment and retain their contact, other list assignments
+and email history. This also covers contacts predating enrollment provenance. Resolve
+by stable National identity first, then by a unique National email without a conflicting
+identity; ambiguous/shared identities require review. Never globally unsubscribe a
+current member merely because their roster email is missing or invalid. Expired and
+unsupported statuses retain Post members removal behavior without a global unsubscribe.
+Roster import disables sign-in for removed and Deceased members, subject to the existing
+last-administrator safeguard.
+
+See [National email reconciliation](NATIONAL_ROSTER_EMAIL_RECONCILIATION.md) for the
+November 8 decision, which supersedes older independent-login-email guidance and the
+earlier Post-members-only departure policy.
+
+See [roster reconciliation](ROSTER_MEMBERSHIP_RECONCILIATION.md) for the November 3
+product decision and People status treatment.
 
 ## Membership Selection
 
@@ -57,11 +88,13 @@ one member's name would be misleading.
    **Sync email audience**.
 2. Review the source import date and four counts: ready, no email, invalid
    email, and shared email. Review the count of previously managed addresses that need
-   removal checks, and the statement that only Post members is updated.
+   removal checks, global unsubscription checks for departed/Deceased members,
+   and the statement that current members keep their existing opt-outs.
 3. Start the sync. The work runs in Solid Queue so an officer does not need to
    keep the browser request open.
 4. The result page refreshes while work is active, then reports synced and
-   failed contacts plus additions, removals, unchanged contacts, retained opt-outs and
+   failed contacts plus additions, removals, unchanged contacts, confirmed email
+   changes, global unsubscriptions, retained opt-outs and
    identity/removal review results. Provider errors identify the affected member without
    exposing the API key.
 
@@ -70,8 +103,9 @@ may be queued or running at a time. A job refuses to use its preview if a newer
 roster import has completed in the meantime.
 
 For general mail in Loops, choose **Post members** instead of All audience. The sync does
-not edit campaigns or send email. It also does not delete contacts, clear minutes
-recipients, or replace the entire audience with the roster. Review any identity or
+not edit campaigns or send email. It does not delete contacts or replace the entire
+audience with the roster. Departed and Deceased members stop receiving all Loops mail.
+Review any identity or
 removal problems reported by a completed run before treating the sync as fully successful.
 
 ## Post 165 activation evidence
@@ -99,7 +133,7 @@ that activation, not a permanent audience size.
   continuing.
 
 Upserts make a rerun safe: successful contacts may be updated again without
-creating duplicates, and the subscription property is still absent.
+creating duplicates, and the global subscription property is still absent.
 
 ## Visual Direction
 
@@ -122,6 +156,10 @@ the sync is an accountable administrative operation tied to a dated source.
 
 ## Verification
 
+- Changed-email tests exercise same-contact updates with preserved global and list
+  opt-outs, occupied destination addresses, independent subscriptions, interruption
+  recovery, reruns and subsequent removal at the confirmed new address. The provider
+  substitute follows Loops' documented [stable-ID update semantics](https://loops.so/docs/api-reference/update-contact).
 - Audience selection tests cover current status, removed records, blank,
   malformed, and shared emails.
 - Client tests cover provider errors and rate limiting. The base roster payload omits
@@ -131,6 +169,9 @@ the sync is an accountable administrative operation tied to a dated source.
   Post members before exercising attestation and corrected-copy delivery.
 - Job/service tests cover success, partial failure, superseded rosters, and
   terminal failure state.
+- Departure tests cover stable-ID and legacy-email matches without provenance,
+  global unsubscribe readback, interruption/retry, shared identities, returning
+  members retaining opt-outs, and minutes delivery stopping after global unsubscribe.
 - Controller tests cover authorization, preview copy, configuration, duplicate
   active-run protection, and enqueue behavior.
 - Browser review covers the preview and result pages at desktop and phone

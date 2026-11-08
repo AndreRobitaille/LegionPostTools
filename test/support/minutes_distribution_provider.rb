@@ -35,7 +35,17 @@ class MinutesDistributionProvider
     @payloads << payload.deep_dup
     raise Loops::Client::RequestError.new("Provider rejected contact", status: 400) if payload[:email] == rejected_email
     email = payload.fetch(:email)
-    contact = contacts[email] || add(email)
+    by_user = contacts.values.find { |entry| payload[:userId] && entry["userId"] == payload[:userId] }
+    if contacts[email] && by_user && contacts[email] != by_user
+      raise Loops::Client::RequestError.new("Email already belongs to another contact", status: 409)
+    end
+    contact = contacts[email] || by_user || add(email)
+    old_email = contact.fetch("email")
+    if old_email != email
+      contacts.delete(old_email)
+      contacts[email] = contact
+      list_opt_outs.map! { |address, id| [ address == old_email ? email : address, id ] }
+    end
     contact.merge!(payload.except(:mailingLists).stringify_keys)
     payload.fetch(:mailingLists, {}).each do |id, subscribed|
       next if subscribed && list_opt_outs.include?([ email, id ])

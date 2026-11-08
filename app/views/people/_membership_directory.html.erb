@@ -46,7 +46,7 @@
             path: person_path(person),
             subline: [ person.member_number.present? ? "Member ##{person.member_number}" : nil, person.service_summary.presence ].compact.join(" · "),
             membership: true,
-            status_tag: membership_status_tag(person.roster_member_status),
+            status_tag: membership_status_tag(person.effective_roster_status),
             status_lines: [ person.roster_paid_through_display.presence || "Paid through: —", (@can_manage ? signin_line(person) : nil) ].compact %>
     <% end %>
   </div>
@@ -78,7 +78,7 @@
             path: person_path(person),
             subline: [ person.member_number.present? ? "Member ##{person.member_number}" : nil, person.service_summary.presence ].compact.join(" · "),
             membership: true,
-            status_tag: membership_status_tag(person.roster_member_status),
+            status_tag: membership_status_tag(person.effective_roster_status),
             status_lines: [ person.roster_paid_through_display.presence || "Paid through: —", (@can_manage ? signin_line(person) : nil) ].compact %>
     <% end %>
   </div>

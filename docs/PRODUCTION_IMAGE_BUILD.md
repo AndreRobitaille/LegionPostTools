@@ -54,6 +54,10 @@ Follow [DEPLOYMENT.md](DEPLOYMENT.md#build-publish-deploy). On a clean checkout 
 the reviewed full revision, `bin/publish-image RUN_ID` checks a successful matching
 push/manual workflow, downloads its exact artifact, verifies the required
 checksums and archive configuration/image ID, and refuses missing smoke evidence.
+For classic Docker archives the image ID is the configuration digest. For containerd
+archives it can be a single-platform manifest digest: the verifier checks the manifest
+blob's digest and its reference to the exact exported configuration before accepting it.
+An unbound manifest or configuration mismatch still stops publication.
 It decompresses the outer gzip before `crane push`, uses temporary credentials,
 publishes only the full-SHA tag in the unchanged GHCR repository, verifies the
 published configuration and prints the registry manifest digest. It refuses CI.

@@ -1,4 +1,5 @@
 class Person < ApplicationRecord
+  REMOVED_ROSTER_STATUS = "Removed from roster".freeze
   DIRECTORY_HIDDEN_STATUSES = %w[deceased expired].freeze
   SERVICE_BRANCH_LABELS = {
     "USA" => "Army",
@@ -93,6 +94,10 @@ class Person < ApplicationRecord
 
   def normalized_roster_status
     roster_member_status.to_s.strip.downcase
+  end
+
+  def effective_roster_status
+    roster_removed_at.present? ? REMOVED_ROSTER_STATUS : roster_member_status
   end
 
   def roster_backed?

@@ -35,13 +35,13 @@
   </div>
   <div class="item">
     <span class="who">Names and contact identity</span>
-    <div class="fix">Updates email, first name, last name, and the stable National member ID. Members with blank, invalid, or shared email addresses are left out.</div>
+    <div class="fix">Updates email, first name, last name, and the stable National member ID. A changed roster email updates the same Loops contact; its existing subscriptions follow the new address. Members with blank, invalid, or shared email addresses are left out.</div>
   </div>
   <div class="whatnext">
     <b>Existing email choices stay in Loops.</b>
-    Updates Post members only. Other email groups and opt-outs are preserved. An existing Loops contact who opted out stays opted out. Keep unsubscribed contacts in Loops so that history remains available.
+    Current members keep their other email groups and opt-outs. An existing Loops contact who opted out stays opted out. Departed and Deceased members are unsubscribed from all Loops mail; their contacts and email history are kept.
   </div>
-  <p class="ownernote"><%= @managed_removals %> previously managed addresses will be checked for removal from Post members. Contacts and their Minutes recipients membership remain in Loops. Identity conflicts require review.</p>
+  <p class="ownernote"><%= @managed_removals %> previously managed addresses will be checked for removal from Post members. <%= @departed_members_count %> departed or Deceased members will be checked for global unsubscription, including contacts that predate roster sync. Identity conflicts require review.</p>
 <% end %>
 
 <% if @active_sync %>
@@ -51,7 +51,7 @@
   </div>
 <% elsif !@loops_configured %>
   <p role="alert" class="app-flash app-flash-alert">Configure Loops and its two distinct private email groups before syncing. <%= link_to "Review minutes distribution settings", minutes_distribution_path, class: "lnk" %></p>
-<% elsif @roster_import && (@audience.eligible_count.positive? || @managed_removals.positive?) %>
+<% elsif @roster_import && (@audience.eligible_count.positive? || @managed_removals.positive? || @departed_members_count.positive?) %>
   <%= button_to "Sync #{@audience.eligible_count} members to Loops", admin_loops_roster_syncs_path, method: :post, params: { roster_import_id: @roster_import.id }, class: "btn-primary" %>
 <% end %>
 

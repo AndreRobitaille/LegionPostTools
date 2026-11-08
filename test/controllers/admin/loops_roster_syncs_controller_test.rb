@@ -65,6 +65,23 @@ class Admin::LoopsRosterSyncsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, roster_sync.eligible_count
   end
 
+  test "a removal-only sync can start without any managed enrollment" do
+    Person.roster_backed.update_all(roster_member_status: "Deceased")
+    sign_in_as(@admin)
+
+    with_loops_api_key do
+      get new_admin_loops_roster_sync_path
+      assert_select "form[action=?]", admin_loops_roster_syncs_path
+      assert_select "body", text: /1 departed or Deceased members/
+      assert_enqueued_with(job: LoopsRosterSyncJob) do
+        post admin_loops_roster_syncs_path, params: { roster_import_id: @roster_import.id }
+      end
+    end
+
+    assert_redirected_to admin_loops_roster_sync_path(LoopsRosterSync.last)
+    assert_equal 0, LoopsRosterSync.last.eligible_count
+  end
+
   test "create reports missing Loops configuration" do
     sign_in_as(@admin)
     original = ENV.delete("LOOPS_API_KEY")
