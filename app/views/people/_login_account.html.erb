@@ -46,7 +46,7 @@
       <div class="pk-card-label">&#9888; Roster email doesn't match login email</div>
       <p class="pk-card-lead">
         The roster email (<%= @person.roster_email_address %>) doesn't match this login email (<%= @user.email_address %>).
-        The roster import never changes how someone signs in — this can be updated here if it should match.
+        Imports use National's email when it is valid, unique, and available. Review any address problem in the latest import before changing it here.
       </p>
       <%= button_to "Use roster email for login", roster_email_review_path(decision: "update_login"), method: :patch, class: "btn-primary btn-sm", form: { class: "inline" } %>
       <%= button_to "Keep current login email", roster_email_review_path(decision: "keep_current"), method: :patch, class: "btn-secondary btn-sm", form: { class: "inline" } %>
