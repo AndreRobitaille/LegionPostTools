@@ -98,6 +98,26 @@ class ProductionImageTest < Minitest::Test
     assert_empty calls("docker")
   end
 
+  def test_manifest_identity_from_containerd_binds_the_export_to_its_configuration
+    write_artifact(oci: true)
+
+    output, status = build
+    assert status.success?, output
+    output, status = publish
+    assert status.success?, output
+    assert_includes output, "RELEASE_IMAGE_DIGEST=#{DIGEST}"
+  end
+
+  def test_manifest_identity_cannot_refer_to_another_configuration_or_corrupt_manifest
+    [ :configuration, :manifest ].each do |fault|
+      write_artifact(oci: true, fault: fault)
+      FileUtils.rm_f(@log)
+      output, status = publish
+      refute status.success?, "#{fault}: #{output}"
+      assert_empty calls("crane")
+    end
+  end
+
   def test_unsuccessful_wrong_revision_wrong_workflow_and_pr_runs_cannot_publish
     [ { conclusion: "failure" }, { status: "in_progress" }, { head_sha: "e" * 40 }, { path: "other.yml" }, { event: "pull_request" } ].each do |change|
       FileUtils.rm_f(@log)
@@ -236,12 +256,20 @@ class ProductionImageTest < Minitest::Test
 
   private
 
-  def write_artifact
+  def write_artifact(oci: false, fault: nil)
     config = JSON.generate(@config)
     @image_id = "sha256:#{Digest::SHA256.hexdigest(config)}"
+    config_path = oci ? "blobs/sha256/#{@image_id.delete_prefix('sha256:')}" : "config.json"
+    entries = { "manifest.json" => JSON.generate([ { "Config" => config_path, "Layers" => [] } ]), config_path => config }
+    if oci
+      manifest = JSON.generate({ schemaVersion: 2, mediaType: "application/vnd.oci.image.manifest.v1+json",
+        config: { digest: fault == :configuration ? "sha256:#{'0' * 64}" : @image_id }, layers: [] })
+      @image_id = "sha256:#{Digest::SHA256.hexdigest(manifest)}"
+      entries["blobs/sha256/#{@image_id.delete_prefix('sha256:')}"] = fault == :manifest ? "{}" : manifest
+    end
     File.open("#{@directory}/image.tar", "wb") do |file|
       Gem::Package::TarWriter.new(file) do |tar|
-        { "manifest.json" => JSON.generate([ { "Config" => "config.json", "Layers" => [] } ]), "config.json" => config }.each do |name, contents|
+        entries.each do |name, contents|
           tar.add_file_simple(name, 0o600, contents.bytesize) { |entry| entry.write(contents) }
         end
       end
