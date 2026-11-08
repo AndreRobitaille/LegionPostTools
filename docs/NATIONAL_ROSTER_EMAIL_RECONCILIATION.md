@@ -35,6 +35,11 @@ retain the existing Post members removal policy; they are not departures by
 themselves. A returning member stays globally opted out until independently
 resubscribed. The last-administrator sign-in safeguard remains in effect.
 
+An existing contact that is already globally unsubscribed and absent from Post
+members needs no provider change or identity review, including a legacy address
+shared by departed members. Do not claim or rewrite its identity. Retire matching
+managed enrollments only when the stable member identity and contact ID match.
+
 This supersedes older guidance that imports preserve existing login emails.
 Deployment and live reconciliation are separate operations.
 
