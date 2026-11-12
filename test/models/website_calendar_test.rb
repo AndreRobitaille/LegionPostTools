@@ -6,6 +6,10 @@ class WebsiteCalendarTest < ActiveSupport::TestCase
   setup { setup_publisher }
   teardown { teardown_publisher }
 
+  MEMBERS_ATTENDANCE_NOTICE = "Attendance: Post members and interested veterans. Guests who wish to speak to the Post need to contact us first."
+
+  def members_attendance_notice = MEMBERS_ATTENDANCE_NOTICE
+
   def policy = WebsitePublishing::CalendarPolicy.new(@organization)
   def feed = WebsitePublishing::Feed.new(@organization.reload, origin: "https://publisher.example.test")
   def events = feed.events(from: "2026-10-01", to: "2026-11-01")[:events]
@@ -36,7 +40,8 @@ class WebsiteCalendarTest < ActiveSupport::TestCase
       title: "Post membership meeting", calendar_category: "member_meeting", website_description: "Monthly meeting", location_name: "Post hall")
     activate
     notice = feed.event_detail(meeting.website_public_id)[:event]
-    assert_equal "Attendance: Post members.\n\nMonthly meeting", notice["description"]
+    assert_equal "#{members_attendance_notice}\n\nMonthly meeting", notice["description"]
+    assert_equal "members", notice["attendance"]
     assert_equal "Post hall", notice["location"]
     assert_equal %w[all_day attendance cancelled category description ends_at ends_on_exclusive id location starts_at starts_on title updated_at].sort, notice.keys.sort
     assert_equal 1, events.size
@@ -45,6 +50,30 @@ class WebsiteCalendarTest < ActiveSupport::TestCase
     meeting.update!(website_listing: "hide")
     assert_empty events
     assert_raises(ActiveRecord::RecordNotFound) { feed.event_detail(meeting.website_public_id) }
+  end
+
+  test "members attendance notice is shared by calendar events and meetings" do
+    assert_equal "Post members", WebsiteCalendarEntry::ATTENDANCE.fetch("members")
+    assert_equal "Open to the public", WebsiteCalendarEntry::ATTENDANCE.fetch("public")
+    assert_equal "Invited participants", WebsiteCalendarEntry::ATTENDANCE.fetch("invited")
+    assert_equal %w[invited members public], WebsiteCalendarEntry::ATTENDANCE.keys.sort
+    body = @organization.meeting_bodies.create!(name: "Membership", slug: "membership-notice")
+    meeting = create_meeting!(organization: @organization, meeting_body: body, starts_at: Time.zone.parse("2026-10-13 19:00"),
+      title: "Regular membership meeting", calendar_category: "member_meeting")
+    members_event = event_source(title: "Members gathering", calendar_category: "public_event", attendance: "members")
+    open_event = event_source(title: "Open house", calendar_category: "public_event", attendance: "public", website_description: "Bring a friend")
+    invited_event = event_source(title: "Invited ceremony", calendar_category: "honor_guard", website_listing: "show", attendance: "invited")
+    activate
+    notices = events.index_by { |event| event["title"] }
+    assert_equal members_attendance_notice, notices.fetch("Regular membership meeting")["description"]
+    assert_equal members_attendance_notice, notices.fetch("Members gathering")["description"]
+    assert_equal "Attendance: Open to the public.\n\nBring a friend", notices.fetch("Open house")["description"]
+    assert_equal "Attendance: Invited participants.", notices.fetch("Invited ceremony")["description"]
+    assert_equal %w[public invited members], [ open_event, invited_event, members_event ].map(&:attendance)
+    assert_equal members_attendance_notice, members_event.website_calendar_payload["description"]
+    assert_equal members_attendance_notice, meeting.website_calendar_payload["description"]
+    assert_equal "Attendance: Open to the public.\n\nBring a friend", open_event.website_calendar_payload["description"]
+    assert_equal "Attendance: Invited participants.", invited_event.website_calendar_payload["description"]
   end
 
   test "schedule copy cancellation and removal update the public feed immediately" do

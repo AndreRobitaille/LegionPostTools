@@ -3,6 +3,10 @@ module WebsiteCalendarEntry
 
   LISTINGS = { "default" => "Type default", "show" => "Show", "hide" => "Hide" }.freeze
   ATTENDANCE = { "members" => "Post members", "public" => "Open to the public", "invited" => "Invited participants" }.freeze
+  MEMBERS_PUBLIC_ATTENDANCE_NOTICE = [
+    "Attendance: Post members and interested veterans.",
+    "Guests who wish to speak to the Post need to contact us first."
+  ].join(" ").freeze
   FIELDS = %w[website_listing website_title website_description attendance].freeze
   AUDITED_FIELDS = (FIELDS + %w[calendar_category title starts_at ends_at all_day cancelled location location_name location_address]).freeze
 
@@ -31,7 +35,7 @@ module WebsiteCalendarEntry
     place = is_a?(CalendarEvent) ? location : [ location_name, location_address ].compact_blank.join(", ")
     {
       "id" => website_public_id, "title" => website_title.presence || title,
-      "description" => [ "Attendance: #{ATTENDANCE.fetch(attendance)}.", website_description.presence ].compact.join("\n\n"),
+      "description" => [ public_attendance_notice, website_description.presence ].compact.join("\n\n"),
       "location" => place.presence, "category" => "public_event", "attendance" => attendance,
       "all_day" => date_only, "cancelled" => cancelled?,
       "starts_at" => date_only ? nil : start.iso8601, "ends_at" => date_only ? nil : finish&.iso8601,
@@ -48,6 +52,12 @@ module WebsiteCalendarEntry
   end
 
   private
+
+  def public_attendance_notice
+    return MEMBERS_PUBLIC_ATTENDANCE_NOTICE if attendance == "members"
+
+    "Attendance: #{ATTENDANCE.fetch(attendance)}."
+  end
 
   def website_identity_is_permanent
     errors.add(:website_public_id, "cannot change") if persisted? && will_save_change_to_website_public_id?

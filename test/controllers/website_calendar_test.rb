@@ -72,14 +72,19 @@ class WebsiteCalendarControllerTest < ActionDispatch::IntegrationTest
     source = event_source(calendar_category: "public_event", description: "Private details")
     headers = { "Authorization" => "Bearer #{@website_secret}" }
     path = "/public/v1/events/#{source.website_public_id}"
+    members_notice = "Attendance: Post members and interested veterans. Guests who wish to speak to the Post need to contact us first."
     get path, headers: headers
     assert_response :success
     etag = response.headers["ETag"]
     assert_not_includes response.body, "Private details"
+    assert_equal members_notice, response.parsed_body.dig("event", "description")
+    assert_equal "members", response.parsed_body.dig("event", "attendance")
     sign_in_as(@manager)
     patch api_calendar_event_path(source), params: { lock_version: source.lock_version, website_title: "New title", website_description: "Public copy", attendance: "invited" }, as: :json
     assert_response :success
     assert_equal "listed", response.parsed_body.dig("calendar_event", "website_publication", "status")
+    assert_equal "Attendance: Invited participants.\n\nPublic copy", response.parsed_body.dig("calendar_event", "website_publication", "published_event", "description")
+    assert_equal "invited", response.parsed_body.dig("calendar_event", "website_publication", "published_event", "attendance")
     assert_equal "Public copy", source.reload.website_description
     get path, headers: headers.merge("If-None-Match" => etag)
     assert_response :success

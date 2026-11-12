@@ -18,7 +18,11 @@ normal saves under this standing policy. Defaults require publish_public_content
 Only the title (optionally overridden for the website), schedule, place, attendance,
 cancellation and dedicated website description are public. Never copy private event
 descriptions, Endeavor history, agendas, minutes, transcripts, actors, or audit metadata.
-The attendance label is included in public description text for existing consumers.
+Public description text begins with an attendance notice for existing consumers.
+Members attendance uses: "Attendance: Post members and interested veterans. Guests who
+wish to speak to the Post need to contact us first." Public and invited attendance keep
+"Attendance: Open to the public." and "Attendance: Invited participants." The members-site
+attendance labels are unchanged.
 Source changes update listings immediately; cancellations remain visible as notices.
 Hide and deletion remove detail access as well as collection membership.
 
