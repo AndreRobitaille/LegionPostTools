@@ -9,9 +9,13 @@ Introductions, portraits, authentication, cache limits and interval semantics ar
 
 Event notices retain `category: public_event` for v1 compatibility: this identifies a
 publicly listed notice, not unrestricted attendance. An additive `attendance` value is
-`members`, `public`, or `invited`; the description also includes the attendance label so
-existing consumers display it. Only dedicated website copy and schedule/place fields
-are included. Internal event descriptions and meeting documents never enter the feed.
+`members`, `public`, or `invited`. The description begins with an attendance notice so
+existing consumers display it. For `members` that notice is: "Attendance: Post members
+and interested veterans are welcome. Veterans don't need to check with the Post first."
+`public` and `invited` remain "Attendance: Open to the public." and "Attendance: Invited
+participants." Members-site attendance labels are unchanged. Only dedicated website copy
+and schedule/place fields are included. Internal event descriptions and meeting documents
+never enter the feed.
 Dates, place, cancellation and public copy follow source saves automatically. Hide and
 deletion return 404 for detail reads and remove the notice from collections. Cache age
 still bounds downstream visibility to 300 seconds. Existing publication IDs are retained.
