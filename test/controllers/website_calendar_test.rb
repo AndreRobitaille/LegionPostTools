@@ -72,7 +72,7 @@ class WebsiteCalendarControllerTest < ActionDispatch::IntegrationTest
     source = event_source(calendar_category: "public_event", description: "Private details")
     headers = { "Authorization" => "Bearer #{@website_secret}" }
     path = "/public/v1/events/#{source.website_public_id}"
-    members_notice = "Attendance: Post members and interested veterans. Guests who wish to speak to the Post need to contact us first."
+    members_notice = "Attendance: Post members and interested veterans are welcome. Veterans don't need to check with the Post first."
     get path, headers: headers
     assert_response :success
     etag = response.headers["ETag"]

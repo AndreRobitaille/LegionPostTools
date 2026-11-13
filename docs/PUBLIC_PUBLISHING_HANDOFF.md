@@ -11,7 +11,7 @@ Event notices retain `category: public_event` for v1 compatibility: this identif
 publicly listed notice, not unrestricted attendance. An additive `attendance` value is
 `members`, `public`, or `invited`. The description begins with an attendance notice so
 existing consumers display it. For `members` that notice is: "Attendance: Post members
-and interested veterans. Guests who wish to speak to the Post need to contact us first."
+and interested veterans are welcome. Veterans don't need to check with the Post first."
 `public` and `invited` remain "Attendance: Open to the public." and "Attendance: Invited
 participants." Members-site attendance labels are unchanged. Only dedicated website copy
 and schedule/place fields are included. Internal event descriptions and meeting documents

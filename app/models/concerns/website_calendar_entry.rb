@@ -4,8 +4,8 @@ module WebsiteCalendarEntry
   LISTINGS = { "default" => "Type default", "show" => "Show", "hide" => "Hide" }.freeze
   ATTENDANCE = { "members" => "Post members", "public" => "Open to the public", "invited" => "Invited participants" }.freeze
   MEMBERS_PUBLIC_ATTENDANCE_NOTICE = [
-    "Attendance: Post members and interested veterans.",
-    "Guests who wish to speak to the Post need to contact us first."
+    "Attendance: Post members and interested veterans are welcome.",
+    "Veterans don't need to check with the Post first."
   ].join(" ").freeze
   FIELDS = %w[website_listing website_title website_description attendance].freeze
   AUDITED_FIELDS = (FIELDS + %w[calendar_category title starts_at ends_at all_day cancelled location location_name location_address]).freeze

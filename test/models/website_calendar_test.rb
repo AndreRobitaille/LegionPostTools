@@ -6,7 +6,7 @@ class WebsiteCalendarTest < ActiveSupport::TestCase
   setup { setup_publisher }
   teardown { teardown_publisher }
 
-  MEMBERS_ATTENDANCE_NOTICE = "Attendance: Post members and interested veterans. Guests who wish to speak to the Post need to contact us first."
+  MEMBERS_ATTENDANCE_NOTICE = "Attendance: Post members and interested veterans are welcome. Veterans don't need to check with the Post first."
 
   def members_attendance_notice = MEMBERS_ATTENDANCE_NOTICE
 

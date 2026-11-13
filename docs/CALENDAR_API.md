@@ -23,8 +23,8 @@ After activation `website_designation` writes are rejected; use `website_listing
 Schedule/place/copy edits and cancellation immediately affect active notices.
 Public responses keep existing v1 fields and add attendance. The description begins
 with an attendance notice for existing consumers. Members attendance uses: "Attendance:
-Post members and interested veterans. Guests who wish to speak to the Post need to
-contact us first." Public and invited attendance keep "Attendance: Open to the public."
+Post members and interested veterans are welcome. Veterans don't need to check with the
+Post first." Public and invited attendance keep "Attendance: Open to the public."
 and "Attendance: Invited participants." Members-site attendance labels are unchanged.
 
 Publisher-only policy endpoints:
