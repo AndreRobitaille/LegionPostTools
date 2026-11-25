@@ -27,7 +27,7 @@ class MemberCalendarExport
       dates: [ @start, @finish || @start ].map { |value| calendar_value(value).value_ical }.join("/"),
       stz: @zone.tzinfo.name, etz: @zone.tzinfo.name
     }
-    "https://calendar.google.com/calendar/r/eventedit?#{params.compact.to_query}"
+    "https://calendar.google.com/calendar/render?#{params.compact.to_query}"
   end
 
   def to_ics

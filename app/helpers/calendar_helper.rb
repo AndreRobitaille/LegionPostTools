@@ -10,7 +10,19 @@ module CalendarHelper
     meet\.google\.com|teams\.live\.com)\b|\Ateams\z
   }ix
 
-  def calendar_map_url(entry)
+  # A desktop-class iPad can send exactly the same request as a Mac.
+  # In that case let the browser choose the visible controls using touch support.
+  def calendar_link_devices
+    agent = request.user_agent.to_s
+    platform = request.headers["Sec-CH-UA-Platform"]
+    return [ :android ] if agent.match?(/\bAndroid\b/i) || platform == '"Android"'
+    return [ :ios ] if agent.match?(/\bi(?:Phone|Pad|Pod)\b|Macintosh.*\bMobile\//i) || platform == '"iOS"'
+    return [ :mac, :ipad ] if agent.include?("Macintosh") || platform == '"macOS"'
+
+    [ :desktop ]
+  end
+
+  def calendar_map_query(entry)
     place = calendar_entry_location(entry).to_s.squish
     address = entry.location_address.to_s.squish if entry.is_a?(Meeting)
     return if place.match?(UNKNOWN_PLACE) || place.match?(ONLINE_PLACE) || address&.match?(ONLINE_PLACE)
@@ -18,7 +30,15 @@ module CalendarHelper
     query = address.present? && !address.match?(UNKNOWN_PLACE) ? address : place
     return if query.blank?
 
-    "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode(query)}"
+    ERB::Util.url_encode(query)
+  end
+
+  def calendar_map_url(query, device)
+    case device
+    when :android then "geo:0,0?q=#{query}"
+    when :ios, :ipad then "https://maps.apple.com/?q=#{query}"
+    else "https://www.google.com/maps/search/?api=1&query=#{query}"
+    end
   end
 
   def calendar_entry_title(entry)

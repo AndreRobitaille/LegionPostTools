@@ -6,13 +6,17 @@
     <%= entry.location %>
   <% end %>
 <% end %>
-<% if (url = calendar_map_url(entry)) %>
-  <%= link_to url, class: "member-calendar-place", rel: "noreferrer" do %>
-    <span><%= place %></span>
-    <span class="member-calendar-action">
-      <%= render "shared/activity_icon", kind: "location" %>
-      <span>View on map</span>
-    </span>
+<% if (query = calendar_map_query(entry)) %>
+  <% calendar_link_devices.each do |device| %>
+    <div class="member-calendar-variant-<%= device %>">
+      <%= link_to calendar_map_url(query, device), class: "member-calendar-place", target: "_top", data: { turbo: false }, rel: "noreferrer" do %>
+        <span><%= place %></span>
+        <span class="member-calendar-action">
+          <%= render "shared/activity_icon", kind: "location" %>
+          <span>View on map</span>
+        </span>
+      <% end %>
+    </div>
   <% end %>
 <% else %>
   <%= place %>

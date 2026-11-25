@@ -125,17 +125,48 @@ class MemberCalendarLinksTest < ActionDispatch::IntegrationTest
     assert_no_match(/Default Street/, response.body)
   end
 
+  test "members get direct calendar and map links on phones and calendar choices on desktop" do
+    sign_in_as(@member)
+    { @event => @event.location, @meeting => @meeting.location_address.squish }.each do |entry, place|
+      file_path = polymorphic_path(entry, format: :ics)
+      map_query = ERB::Util.url_encode(place)
+      [
+        [ { "User-Agent" => "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3 like Mac OS X)" }, "https://maps.apple.com/?q=#{map_query}" ],
+        [ { "User-Agent" => "Mozilla/5.0 (iPad; CPU OS 18_3 like Mac OS X)" }, "https://maps.apple.com/?q=#{map_query}" ],
+        [ { "User-Agent" => "Mozilla/5.0 (Linux; Android 15)" }, "geo:0,0?q=#{map_query}" ],
+        [ { "Sec-CH-UA-Platform" => '"Android"' }, "geo:0,0?q=#{map_query}" ]
+      ].each do |headers, map_url|
+        get polymorphic_path(entry), headers: headers
+        assert_includes response.headers.fetch("Cache-Control"), "no-store"
+        assert_select "[data-turbo=false] a[href=?][target=_top][type='text/calendar']:not([download])", file_path, text: /Add to calendar/, count: 1
+        assert_select "a.member-calendar-place[href=?]", map_url, count: 1
+        assert_select "details.member-calendar-choices, a[href*='calendar.google.com']", count: 0
+      end
+
+      get polymorphic_path(entry), headers: { "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+      assert_includes response.headers.fetch("Cache-Control"), "no-store"
+      assert_equal({ "api" => "1", "query" => place }, link_params("View on map", "www.google.com"))
+      assert_select "a.member-calendar-place", count: 1
+      assert_select "summary", text: "Add to calendar", count: 1
+      assert_select "a.member-calendar-direct", count: 0
+      assert_equal file_path, link_href("Apple Calendar")
+      google = URI(link_href("Google Calendar"))
+      assert_equal "/calendar/render", google.path
+      assert_equal "TEMPLATE", URI.decode_www_form(google.query).to_h["action"]
+    end
+  end
+
   test "blank, unknown and online places do not offer a map" do
     sign_in_as(@member)
     [ "", "TBD", "Location not recorded", "To be announced", "Online only", "Zoom", "Teams meeting", "https://meet.example.org/123" ].each do |place|
       @event.update!(location: place)
       get calendar_event_path(@event)
-      assert_select "a[href*='google.com/maps']", count: 0
+      assert_select ".member-calendar-place", count: 0
       assert_select "dd", text: place if place.present?
     end
     @meeting.update!(location_name: "Virtual meeting")
     get meeting_path(@meeting)
-    assert_select "a[href*='google.com/maps']", count: 0
+    assert_select ".member-calendar-place", count: 0
   end
 
   test "cancelled and elapsed records cannot be saved from an old page or file link" do
@@ -190,7 +221,7 @@ class MemberCalendarLinksTest < ActionDispatch::IntegrationTest
   def downloaded_event
     assert_response :success
     assert_equal "text/calendar", response.media_type
-    assert_includes response.headers["Content-Disposition"], "attachment"
+    assert_match(/\Ainline;.*\.ics"/, response.headers.fetch("Content-Disposition"))
     assert_includes response.headers["Cache-Control"], "no-store"
     events = Icalendar::Calendar.parse(response.body).sole.events
     events.sole
@@ -199,7 +230,9 @@ class MemberCalendarLinksTest < ActionDispatch::IntegrationTest
   def assert_unavailable(entry)
     get polymorphic_path(entry)
     assert_response :success
-    assert_select "summary", text: "Add to calendar", count: 0
+    assert_select ".member-calendar-choices, .member-calendar-direct", count: 0
+    get polymorphic_path(entry), headers: { "User-Agent" => "Android" }
+    assert_select ".member-calendar-choices, .member-calendar-direct", count: 0
     get polymorphic_path(entry, format: :ics)
     assert_response :not_found
   end
