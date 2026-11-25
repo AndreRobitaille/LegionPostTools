@@ -3,7 +3,7 @@
   <%= render "shared/meeting_date_plate", meeting: meeting %>
   <div class="member-meeting-card-copy">
     <% if meeting.cancelled? %><p class="calendar-cancelled">Cancelled</p><% end %>
-    <h2<% if local_assigns[:heading_id] %> id="<%= heading_id %>"<% end %>><%= member_meeting_title(meeting) %></h2>
+    <h2<% if local_assigns[:heading_id] %> id="<%= heading_id %>"<% end %>><%= link_to_if(local_assigns[:show_schedule], member_meeting_title(meeting), meeting_path(meeting), class: "member-meeting-title-link") %></h2>
     <% if local_assigns.fetch(:show_schedule, false) %>
       <p class="member-meeting-schedule"><%= legion_time(meeting.starts_at) %><% if meeting.location_name.present? %> &middot; <%= meeting.location_name %><% end %></p>
     <% end %>

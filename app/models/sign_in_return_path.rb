@@ -3,6 +3,7 @@
 class SignInReturnPath
   SESSION_KEY = :navigation_return_to
   TTL = 15.minutes
+  CALENDAR_EVENT_PATH = %r{\A/calendar_events/[1-9]\d*\z}
   NAVIGATION_PATHS = [
     %r{\A/(?:dashboard|profile|officer-tools|contact)?\z},
     %r{\A/meetings(?:/[1-9]\d*(?:/minutes)?)?\z},
@@ -10,7 +11,7 @@ class SignInReturnPath
     %r{\A/people(?:/[1-9]\d*)?\z},
     %r{\A/endeavors(?:/[1-9]\d*)?\z},
     %r{\A/calendar\z},
-    %r{\A/calendar_events/[1-9]\d*\z},
+    CALENDAR_EVENT_PATH,
     %r{\A/admin(?:/meetings(?:/[1-9]\d*(?:/minutes)?)?)?\z},
     %r{\A/admin/dated_agendas/[1-9]\d*/(?:edit|commander)\z}
   ].freeze
@@ -22,13 +23,18 @@ class SignInReturnPath
   def self.capture(request)
     return unless request.get? && request.format.html? && allowed?(request.path)
 
-    { "path" => request.path, "expires_at" => TTL.from_now.to_i }
+    saved = { "path" => request.path, "expires_at" => TTL.from_now.to_i }
+    if CALENDAR_EVENT_PATH.match?(request.path) && request.query_parameters["preview"] == "public"
+      saved["public_event_preview"] = true
+    end
+    saved
   end
 
   def self.destination(saved)
     return unless saved.is_a?(Hash) && allowed?(saved["path"])
     return unless saved["expires_at"].is_a?(Integer) && saved["expires_at"] > Time.current.to_i
 
-    saved["path"]
+    path = saved["path"]
+    saved["public_event_preview"] == true && CALENDAR_EVENT_PATH.match?(path) ? "#{path}?preview=public" : path
   end
 end

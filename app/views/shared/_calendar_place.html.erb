@@ -1,0 +1,19 @@
+<% place = capture do %>
+  <% if entry.is_a?(Meeting) %>
+    <strong><%= entry.location_name %></strong>
+    <% if entry.location_address.present? %><span class="member-calendar-address"><%= entry.location_address %></span><% end %>
+  <% else %>
+    <%= entry.location %>
+  <% end %>
+<% end %>
+<% if (url = calendar_map_url(entry)) %>
+  <%= link_to url, class: "member-calendar-place", rel: "noreferrer" do %>
+    <span><%= place %></span>
+    <span class="member-calendar-action">
+      <%= render "shared/activity_icon", kind: "location" %>
+      <span>View on map</span>
+    </span>
+  <% end %>
+<% else %>
+  <%= place %>
+<% end %>

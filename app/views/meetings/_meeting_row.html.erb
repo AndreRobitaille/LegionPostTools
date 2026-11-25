@@ -2,7 +2,7 @@
 <article class="agenda-docket-row member-meeting-row">
   <%= render "shared/meeting_date_plate", meeting: meeting %>
   <span class="agenda-docket-copy">
-    <span class="agenda-docket-title"><%= member_meeting_title(meeting) %></span>
+    <span class="agenda-docket-title"><%= link_to_if(show_schedule, member_meeting_title(meeting), meeting_path(meeting), class: "member-meeting-title-link") %></span>
     <% if show_schedule %><span class="agenda-docket-meta"><%= legion_time(meeting.starts_at) %><% if meeting.location_name.present? %> &middot; <%= meeting.location_name %><% end %></span><% end %>
     <% if action[:note] %><span class="member-meeting-note member-meeting-note--<%= action[:state] %>"><%= action[:note] %></span><% end %>
   </span>

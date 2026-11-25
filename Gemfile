@@ -18,6 +18,7 @@ gem "stimulus-rails"
 gem "tailwindcss-rails"
 # Server-rendered calendar; application templates own its appearance.
 gem "simple_calendar", "~> 3.1"
+gem "icalendar", "~> 2.14"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"

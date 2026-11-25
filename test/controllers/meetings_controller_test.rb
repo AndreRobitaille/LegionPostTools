@@ -28,8 +28,8 @@ class MeetingsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".meeting-list-section .member-meeting-row", text: /Later Membership Meeting/
     assert_select ".meeting-year#meetings-2025 .member-meeting-row", text: /August 2025 Meeting/
     assert_select ".meeting-year-rail a[href='#meetings-2025']", text: "2025"
-    assert_select "a[href='#{meeting_path(next_meeting)}']", count: 0
-    assert_select "a[href='#{meeting_path(later)}']", count: 0
+    assert_select "a[href='#{meeting_path(next_meeting)}']", text: next_meeting.title
+    assert_select "a[href='#{meeting_path(later)}']", text: later.title
     assert_select "a[href='#{meeting_path(past)}']", count: 0
   end
 

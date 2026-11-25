@@ -8,13 +8,16 @@
     <div>
       <p class="meeting-record-kicker"><%= @meeting.starts_at >= Time.zone.today.beginning_of_day ? "Scheduled meeting" : "Meeting record" %></p>
       <h1 class="page-title"><%= member_meeting_title(@meeting) %></h1>
-      <p class="page-sub"><%= @meeting.meeting_body.name %> &middot; <%= legion_datetime(@meeting.starts_at) %></p>
+    </div>
+    <div class="member-calendar-date">
+      <p class="page-sub"><%= @meeting.meeting_body.name %> &middot; <time datetime="<%= @meeting.starts_at.iso8601 %>"><%= legion_datetime(@meeting.starts_at) %></time></p>
+      <%= render "shared/calendar_choices", entry: @meeting %>
     </div>
   </header>
 
   <dl class="meeting-facts">
     <div><dt>Who can attend</dt><dd><%= WebsiteCalendarEntry::ATTENDANCE.fetch(@meeting.attendance) %></dd></div>
-    <div><dt>Place</dt><dd><strong><%= @meeting.location_name %></strong><%= simple_format(@meeting.location_address, {}, wrapper_tag: "span") if @meeting.location_address.present? %></dd></div>
+    <div><dt>Place</dt><dd><%= render "shared/calendar_place", entry: @meeting %></dd></div>
   </dl>
   <% if @meeting.cancelled? %><p class="calendar-cancelled" role="status">This meeting is cancelled.</p><% end %>
   <% if current_user.mobile_buddy_checks_access? && current_user.full_membership_access? && !@meeting.cancelled? && @meeting.starts_at <= Time.current %>

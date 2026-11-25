@@ -27,7 +27,7 @@ elif [ -n "$RUBY_VERSION_FILE" ]; then
   ruby_version="$(tr -d '[:space:]' < "$RUBY_VERSION_FILE")"
   ruby_version="${ruby_version#ruby-}"
 else
-  ruby_version="4.0.7"
+  ruby_version="4.0.10"
 fi
 
 # ruby-builder bakes this GitHub Actions toolcache path into RUNPATH and shebangs.
