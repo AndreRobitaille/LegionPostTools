@@ -13,16 +13,19 @@
     </header>
     <section class="calendar-event-details" aria-label="Event details">
       <dl class="calendar-event-facts">
-        <div><dt>Attendance</dt><dd><%= WebsiteCalendarEntry::ATTENDANCE.fetch(@event.attendance) %></dd></div>
         <div>
           <dt>When</dt>
-          <dd>
-            <p class="calendar-event-date"><%= @event.starts_at.strftime("%A") %>, <%= legion_date(@event.starts_at) %><% if @event.ends_at && @event.ends_at.to_date != @event.starts_at.to_date %> – <%= @event.ends_at.strftime("%A") %>, <%= legion_date(@event.ends_at) %><% end %></p>
-            <% if (time = calendar_entry_time(@event)).present? %><p class="calendar-event-time"><%= time %></p><% end %>
-            <% unless @event.all_day? %><p class="calendar-event-timezone">Times in <%= Time.zone.name %></p><% end %>
+          <dd class="member-calendar-date">
+            <div>
+              <p class="calendar-event-date"><%= @event.starts_at.strftime("%A") %>, <%= legion_date(@event.starts_at) %><% if @event.ends_at && @event.ends_at.to_date != @event.starts_at.to_date %> – <%= @event.ends_at.strftime("%A") %>, <%= legion_date(@event.ends_at) %><% end %></p>
+              <% if (time = calendar_entry_time(@event)).present? %><p class="calendar-event-time"><%= time %></p><% end %>
+              <% unless @event.all_day? %><p class="calendar-event-timezone">Times in <%= Time.zone.name %></p><% end %>
+            </div>
+            <%= render "shared/calendar_choices", entry: @event %>
           </dd>
         </div>
-        <% if @event.location.present? %><div><dt>Where</dt><dd><%= @event.location %></dd></div><% end %>
+        <% if @event.location.present? %><div><dt>Where</dt><dd><%= render "shared/calendar_place", entry: @event %></dd></div><% end %>
+        <div><dt>Attendance</dt><dd><%= WebsiteCalendarEntry::ATTENDANCE.fetch(@event.attendance) %></dd></div>
       </dl>
       <% if @event.description.present? %><div class="calendar-event-description"><%= simple_format(@event.description) %></div><% end %>
       <% if !@public_preview && @event.endeavor %>

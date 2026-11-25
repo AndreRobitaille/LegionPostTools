@@ -1,4 +1,7 @@
 class MeetingsController < ApplicationController
+  include CalendarTimeZone
+  include MemberCalendarDownload
+
   before_action :require_authentication
   before_action :set_organization
 
@@ -17,6 +20,8 @@ class MeetingsController < ApplicationController
   end
 
   def show
+    raise ActiveRecord::RecordNotFound if params[:preview] == "public"
+
     @meeting = @organization.meetings.includes(
       :meeting_body,
       :meeting_type,
@@ -25,6 +30,7 @@ class MeetingsController < ApplicationController
     ).find(params[:id])
     @published_agenda = @meeting.dated_agenda if @meeting.dated_agenda&.published?
     @member_minutes = @meeting.minutes if @meeting.minutes&.member_visible?
+    respond_with_calendar_entry(@meeting)
   end
 
   private

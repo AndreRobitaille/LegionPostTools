@@ -80,6 +80,34 @@ Upcoming records retain time and place. Past list rows omit time and place. The 
 detail route remains available for record context and deep links, but the member index and
 dashboard do not make "View meeting" the primary action.
 
+## Taking a date or place with you
+
+From the calendar, open an event or meeting to see its attendance details. Upcoming
+meeting titles on the dashboard and Meetings page also lead to the member record.
+Keep the existing agenda and minutes actions. On the detail page, the date and
+venue lead. Pair a small calendar-plus icon with the visible **Add to calendar**
+label, and a small pin with **View on map**. Use quiet navy underlined actions.
+On wider cards the date and place each have a row, with both actions starting
+in the same column. On phones both actions sit below their values and share the
+same left edge. Opening the chooser preserves that alignment. The venue,
+address and map action form one tappable link. Keep 44px targets and visible
+keyboard focus. The disclosure offers **Apple Calendar** with “iPhone or iPad”
+and **Google Calendar** with “Android or Google account”. Put each hint inside
+its link. Keep the controls off the printed page.
+
+- Save one occurrence with its title, scheduled time, place and a link back to the
+  signed-in detail page. A public preview links back to that same preview. Private
+  work, related records and publishing metadata stay in the Post application.
+- Interpret dates in the Post's calendar zone. All-day ranges include the last
+  displayed date. A timed record with no end exports only its start in the .ics
+  file. Google's two-endpoint template repeats the start and explains that the end
+  time is unspecified. Suppress saving after the known end, or after the start
+  when no end was recorded. All-day records remain available through their last day.
+- The .ics response checks current sign-in, record scope, visibility and cancellation
+  on each request. Public preview includes only public calendar events.
+- A physical place opens a keyless Google Maps search. For a meeting, prefer its
+  saved address over its venue name. Keep placeholders and online-only locations as text.
+
 Attested minutes are member-visible but are not accepted, final, or official. Accepted
 minutes become official only after the separately recorded membership act.
 

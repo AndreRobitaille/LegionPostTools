@@ -1,4 +1,26 @@
 module CalendarHelper
+  UNKNOWN_PLACE = /
+    \b(?:t\.?b\.?[dac]|(?:to\ be|will\ be)\ (?:determined|confirmed|announced|decided|advised)|
+         not\ (?:yet\ )?(?:recorded|set|known|confirmed|specified)|unknown|undecided|pending)\b |
+    \A(?:n\/?a|none|not\ applicable|[-?–—]+)\z
+  /ix
+  ONLINE_PLACE = %r{
+    https?://|www\.|@|\b(?:online|virtual|zoom|webex|skype|webinar|teleconference|conference\ call|
+    phone\ (?:call|only)|(?:by|via)\ phone|dial[-\ ]in|google\ meet|teams\ meeting|(?:microsoft|ms)\ teams|
+    meet\.google\.com|teams\.live\.com)\b|\Ateams\z
+  }ix
+
+  def calendar_map_url(entry)
+    place = calendar_entry_location(entry).to_s.squish
+    address = entry.location_address.to_s.squish if entry.is_a?(Meeting)
+    return if place.match?(UNKNOWN_PLACE) || place.match?(ONLINE_PLACE) || address&.match?(ONLINE_PLACE)
+
+    query = address.present? && !address.match?(UNKNOWN_PLACE) ? address : place
+    return if query.blank?
+
+    "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode(query)}"
+  end
+
   def calendar_entry_title(entry)
     return member_meeting_title(entry) if entry.is_a?(Meeting)
 

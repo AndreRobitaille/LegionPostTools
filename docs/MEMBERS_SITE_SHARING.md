@@ -55,8 +55,9 @@ Supported paths are root/dashboard/profile/officer tools, member meeting and age
 lists/details, member minutes details, calendar/event details, people lists/details,
 Endeavor lists/details, and selected officer meeting/agenda viewing pages. The exact
 anchored allowlist is `SignInReturnPath::NAVIGATION_PATHS`. Only canonical paths with
-numeric record IDs are accepted. Query strings and fragments are not retained (including
-filters, revision selectors, codes, and tokens). PDFs, internal renderers, API/JSON,
+numeric record IDs are accepted. The event public-preview restriction survives sign-in
+as a boolean on the saved event path. Query strings and fragments are discarded,
+including filters, revision selectors, codes, and tokens. PDFs, internal renderers, API/JSON,
 authentication/reauthentication, OAuth, token-management, setup, arbitrary edit/action
 paths, external URLs, and protocol-relative URLs are excluded. POST/HEAD requests are
 never recorded or replayed. Sign-in does not accept a user-supplied `return_to` parameter.

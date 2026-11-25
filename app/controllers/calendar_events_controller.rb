@@ -1,5 +1,6 @@
 class CalendarEventsController < ApplicationController
   include CalendarTimeZone
+  include MemberCalendarDownload
   before_action :require_authentication
   before_action :require_calendar_management, except: :show
   before_action :set_organization
@@ -9,6 +10,8 @@ class CalendarEventsController < ApplicationController
   def show
     @public_preview = params[:preview] == "public"
     raise ActiveRecord::RecordNotFound if @public_preview && !@event.public?
+
+    respond_with_calendar_entry(@event, preview: ("public" if @public_preview))
   end
 
   def new

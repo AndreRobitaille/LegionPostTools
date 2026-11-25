@@ -1,0 +1,18 @@
+<% if @calendar_export.available? %>
+  <details class="member-calendar-choices">
+    <summary class="member-calendar-action">
+      <%= render "shared/activity_icon", kind: "calendar_plus" %>
+      <span>Add to calendar</span>
+    </summary>
+    <div class="member-calendar-options">
+      <%= link_to polymorphic_path(entry, format: :ics, preview: ("public" if @public_preview)), data: { turbo: false }, download: true do %>
+        <span>Apple Calendar</span>
+        <small>iPhone or iPad</small>
+      <% end %>
+      <%= link_to @calendar_export.google_url, rel: "noreferrer" do %>
+        <span>Google Calendar</span>
+        <small>Android or Google account</small>
+      <% end %>
+    </div>
+  </details>
+<% end %>
