@@ -89,11 +89,12 @@ venue lead. Pair a small calendar-plus icon with the visible **Add to calendar**
 label, and a small pin with **View on map**. Use quiet navy underlined actions.
 On wider cards the date and place each have a row, with both actions starting
 in the same column. On phones both actions sit below their values and share the
-same left edge. Opening the chooser preserves that alignment. The venue,
-address and map action form one tappable link. Keep 44px targets and visible
-keyboard focus. The disclosure offers **Apple Calendar** with “iPhone or iPad”
-and **Google Calendar** with “Android or Google account”. Put each hint inside
-its link. Keep the controls off the printed page.
+same left edge. Keep 44px targets and visible keyboard focus. On iPhone, iPad
+and Android, **Add to calendar** opens the signed-in inline .ics directly in
+the top-level browser. On desktops it expands in the page to offer **Apple
+Calendar** and **Google Calendar**. If a Mac saves the file, tell the member to
+open it in Calendar. Google Calendar opens its event template directly.
+Keep the controls off the printed page.
 
 - Save one occurrence with its title, scheduled time, place and a link back to the
   signed-in detail page. A public preview links back to that same preview. Private
@@ -105,8 +106,15 @@ its link. Keep the controls off the printed page.
   when no end was recorded. All-day records remain available through their last day.
 - The .ics response checks current sign-in, record scope, visibility and cancellation
   on each request. Public preview includes only public calendar events.
-- A physical place opens a keyless Google Maps search. For a meeting, prefer its
-  saved address over its venue name. Keep placeholders and online-only locations as text.
+- The venue, address and **View on map** form one direct link. Use a package-free
+  geo search on Android, Apple Maps on iPhone and iPad, and Google Maps on desktops,
+  including Macs. Use the meeting's saved address when available. Keep placeholders
+  and online-only locations as text.
+- Select links using the device's reported platform. For a Macintosh identity,
+  use touch capability to distinguish an iPad requesting the desktop site. Native
+  links and disclosures work with scripts off. A browser that reports only desktop
+  capabilities receives the desktop links. Mark the member detail and .ics
+  responses no-store.
 
 Attested minutes are member-visible but are not accepted, final, or official. Accepted
 minutes become official only after the separately recorded membership act.

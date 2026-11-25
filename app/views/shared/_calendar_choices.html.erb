@@ -1,18 +1,31 @@
 <% if @calendar_export.available? %>
-  <details class="member-calendar-choices">
-    <summary class="member-calendar-action">
-      <%= render "shared/activity_icon", kind: "calendar_plus" %>
-      <span>Add to calendar</span>
-    </summary>
-    <div class="member-calendar-options">
-      <%= link_to polymorphic_path(entry, format: :ics, preview: ("public" if @public_preview)), data: { turbo: false }, download: true do %>
-        <span>Apple Calendar</span>
-        <small>iPhone or iPad</small>
-      <% end %>
-      <%= link_to @calendar_export.google_url, rel: "noreferrer" do %>
-        <span>Google Calendar</span>
-        <small>Android or Google account</small>
+  <% file_path = polymorphic_path(entry, format: :ics, preview: ("public" if @public_preview)) %>
+  <% label = capture do %>
+    <%= render "shared/activity_icon", kind: "calendar_plus" %>
+    <span>Add to calendar</span>
+  <% end %>
+  <% calendar_link_devices.each do |device| %>
+    <div class="member-calendar-variant-<%= device %>" data-turbo="false">
+      <% if device.in?([ :desktop, :mac ]) %>
+        <details class="member-calendar-choices">
+          <summary class="member-calendar-action"><%= label %></summary>
+          <div class="member-calendar-options">
+            <%= link_to file_path, target: "_top", type: "text/calendar", aria: { describedby: "calendar-file-hint" } do %>
+              <span>Apple Calendar</span>
+              <small>iPhone or iPad</small>
+            <% end %>
+            <p id="calendar-file-hint" class="member-calendar-file-hint">If your Mac saves the .ics file, open it in Calendar.</p>
+            <%= link_to @calendar_export.google_url, target: "_top", rel: "noreferrer" do %>
+              <span>Google Calendar</span>
+              <small>Android or Google account</small>
+            <% end %>
+          </div>
+        </details>
+      <% else %>
+        <%= link_to file_path, class: "member-calendar-action member-calendar-direct", target: "_top", type: "text/calendar" do %>
+          <%= label %>
+        <% end %>
       <% end %>
     </div>
-  </details>
+  <% end %>
 <% end %>

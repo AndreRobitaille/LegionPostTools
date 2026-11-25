@@ -2558,15 +2558,23 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .member-calendar-choices summary { width: fit-content; max-width: 100%; list-style: none; cursor: pointer; }
 .member-calendar-choices summary::-webkit-details-marker { display: none; }
 .member-calendar-action .activity-icon { width: 17px; height: 17px; }
-.member-calendar-options { display: grid; gap: 4px; padding-left: 11px; border-left: 2px solid var(--color-gold); }
+.member-calendar-options { display: grid; gap: 4px; padding-left: 11px; border-left: 2px solid var(--color-gold); color: var(--color-navy); font-size: 16px; }
 .member-calendar-options a { display: grid; align-content: center; min-height: 44px; padding-block: 5px; line-height: 1.4; }
-.member-calendar-options small { color: #536477; font-size: 14px; }
+.member-calendar-options small, .member-calendar-file-hint { color: #536477; font-size: 14px; }
+.member-calendar-file-hint { line-height: 1.4; }
 .member-calendar-place { min-height: 44px; color: inherit; overflow-wrap: anywhere; }
-.member-calendar-place:hover .member-calendar-action > span, .member-calendar-choices summary:hover > span { text-decoration-thickness: 2px; }
+.member-calendar-place:hover .member-calendar-action > span, .member-calendar-action:hover > span { text-decoration-thickness: 2px; }
 .member-calendar-address { display: block; white-space: pre-line; }
-.member-calendar-choices :focus-visible, .member-calendar-place:focus-visible, .member-meeting-title-link:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+.member-calendar-choices :focus-visible, .member-calendar-direct:focus-visible, .member-calendar-place:focus-visible, .member-meeting-title-link:focus-visible { outline: 3px solid var(--color-gold); outline-offset: 2px; }
+.member-calendar-variant-ipad { display: none; }
+.has-multitouch .member-calendar-variant-ipad { display: block; }
+.has-multitouch .member-calendar-variant-mac { display: none; }
+@media (any-pointer: coarse) {
+  .member-calendar-variant-ipad { display: block; }
+  .member-calendar-variant-mac { display: none; }
+}
 @media print {
-  .member-calendar-choices, .member-calendar-place .member-calendar-action { display: none; }
+  .member-calendar-choices, .member-calendar-direct, .member-calendar-place .member-calendar-action { display: none; }
   .member-calendar-date, .member-calendar-place { grid-template-columns: minmax(0, 1fr); }
   .member-calendar-place { min-height: 0; }
 }
