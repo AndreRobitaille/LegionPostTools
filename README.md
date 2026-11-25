@@ -105,7 +105,7 @@ Most ordinary post members are not expected to log in during early versions. The
 
 Prerequisites:
 
-- Ruby 4.0.7, or the version in `.ruby-version`.
+- Ruby 4.0.10, or the version in `.ruby-version`.
 - PostgreSQL available locally for Rails development and test databases.
 - libvips for Active Storage image processing. On Omarchy/Arch, install it with `omarchy pkg add libvips`.
 - Chromium or Chrome and a matching ChromeDriver for browser checks. Defaults are
