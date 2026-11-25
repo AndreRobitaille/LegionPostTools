@@ -21,6 +21,23 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   Capybara.app_host = "http://localhost"
   Capybara.always_include_port = true
 
+  module ChromeSessionReset
+    def reset!
+      return unless @browser
+      return super if chromedriver_version < 158
+
+      handles = window_handles
+      switch_to_window(handles.first)
+      handles.drop(1).each { |handle| close_window(handle) }
+
+      # Chrome 158 rejects Capybara 3.40's wildcard storage origin. The standard
+      # Selenium reset clears cookies and page storage and handles open dialogs.
+      Capybara::Selenium::Driver.instance_method(:reset!).bind_call(self)
+    end
+  end
+
+  Capybara::Selenium::Driver::ChromeDriver.prepend(ChromeSessionReset)
+
   # Drive headless Chromium using the browser and driver already installed on
   # the box. Pinning both binaries stops Selenium Manager from reaching out to
   # download anything, so the suite runs fully offline.
