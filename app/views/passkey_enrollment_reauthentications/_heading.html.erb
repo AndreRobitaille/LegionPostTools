@@ -1,0 +1,11 @@
+<header class="enrollment-heading">
+  <div class="enrollment-title">
+    <%= content_tag local_assigns.fetch(:heading_tag, :h2), "Add a passkey", id: "enrollment-heading" %>
+    <% if local_assigns[:optional] %>
+      <span>Optional</span>
+    <% else %>
+      <%= render "shared/activity_icon", kind: icon %>
+    <% end %>
+  </div>
+  <%= yield %>
+</header>

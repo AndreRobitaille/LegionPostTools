@@ -152,9 +152,9 @@ class PasskeysControllerTest < ActionDispatch::IntegrationTest
     WebAuthn::Credential.define_singleton_method(:options_for_get) { |**_kwargs| options }
 
     begin
-      get new_agent_access_reauthentication_path
-      post authentication_options_passkeys_path
-      post authentication_passkeys_path, params: { publicKeyCredential: { id: "reauth-credential" } }
+      get new_agent_access_token_path
+      post passkey_options_agent_access_reauthentication_path
+      post passkey_agent_access_reauthentication_path, params: { publicKeyCredential: { id: "reauth-credential" } }, as: :json
 
       assert_response :success
       assert_equal 1, Session.where(user: user).count

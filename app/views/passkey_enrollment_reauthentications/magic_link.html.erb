@@ -1,22 +1,14 @@
-<% content_for :title, "Confirm your identity" %>
-
-<div class="page-lead max-w-[var(--w-form)]">
-  <h1 class="page-title">Confirm your identity</h1>
-  <p class="panel-lead">Confirm it’s you, then return to finish adding your passkey.</p>
-</div>
-
-<section class="profile-section agent-access-section">
-  <%= render "shared/section_header", label: "Email link received" %>
-  <div class="panel">
-    <p class="panel-lead">Use the button below to confirm in this browser. The link works once and expires after 15 minutes.</p>
-    <%= form_with url: magic_link_passkey_enrollment_reauthentication_path, method: :post, data: { turbo: false } do |form| %>
-      <%= hidden_field_tag :token, params[:token] %>
-      <%= form.button "Confirm identity", class: "btn-primary" %>
-    <% end %>
+<% content_for :title, "Add a passkey" %>
+<section class="enrollment-card" aria-labelledby="enrollment-heading" data-turbo="false">
+  <%= render "passkey_enrollment_reauthentications/heading", heading_tag: :h1, icon: "mail" do %>
+    <p>Confirm it’s you to return to device setup.</p>
+  <% end %>
+  <div class="enrollment-body">
+    <div class="enrollment-actions">
+      <div class="enrollment-methods">
+        <%= button_to "Continue setup", magic_link_passkey_enrollment_reauthentication_path, params: { token: params[:token] }, class: "btn-primary", autofocus: true %>
+      </div>
+      <%= button_to "Cancel", passkey_enrollment_reauthentication_path, method: :delete, class: "enrollment-quiet" %>
+    </div>
   </div>
 </section>
-
-<div class="mt-6">
-  <%= button_to "Cancel and return to Profile", passkey_enrollment_reauthentication_path,
-        method: :delete, class: "btn-secondary" %>
-</div>

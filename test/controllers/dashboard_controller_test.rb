@@ -125,11 +125,11 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     signed_in_member
     get root_path
     assert_response :success
-    assert_match "Optional sign-in", response.body
-    assert_select "h2", "Sign in faster with a passkey"
-    assert_select "button", text: "Set up a passkey"
+    assert_select "#add-passkey", text: /Optional/
+    assert_select "h2", "Add a passkey"
+    assert_select "button", text: "Create passkey"
     assert_select "button", text: "Not now"
-    assert_select "body", text: /Email sign-in will still work/
+    assert_select "body", text: /You can still sign in by email/
   end
 
   test "shows the next and most recent meetings with direct document actions" do

@@ -33,11 +33,13 @@ class MagicLink < ApplicationRecord
     end
   end
 
-  def self.consume!(token, purpose: "sign_in", session: nil)
+  def self.consume!(token, purpose: "sign_in", session: nil, browser_challenge_digest: nil)
     return nil if token.blank? || PURPOSES.exclude?(purpose)
 
     transaction do
-      challenge = lock.find_by(token_digest: digest(token), purpose: purpose)
+      scope = where(token_digest: digest(token), purpose: purpose)
+      scope = scope.where(browser_challenge_digest:) if browser_challenge_digest
+      challenge = scope.lock.first
       consume_challenge(challenge, session: session)
     end
   end

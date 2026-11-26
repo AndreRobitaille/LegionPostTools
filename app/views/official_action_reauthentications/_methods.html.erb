@@ -1,0 +1,20 @@
+<%= hidden_field_tag :reviewed_digest, minutes.digest_for(action) %>
+<%= hidden_field_tag :reviewed_version, minutes.lock_version %>
+<div class="minutes-signing-methods">
+  <div class="minutes-signing-copy">
+    <% if local_assigns[:heading] %><h3><%= heading %></h3><% end %>
+    <% if action == "record_membership_approval" %>
+      <p data-minutes-signing-target="decision" aria-live="polite"><%= minutes_signing_consequence(action, minutes) %></p>
+    <% else %>
+      <%= render "official_action_reauthentications/consequence", minutes:, action: %>
+    <% end %>
+  </div>
+  <div class="btnrow">
+    <% if current_user.passkey_credentials.exists? %>
+      <button type="button" hidden class="btn-primary" data-action="minutes-signing#sign" data-minutes-signing-target="passkey"><%= minutes_signing_labels(action, minutes).fetch(:passkey) %></button>
+    <% end %>
+    <button type="submit" class="btn-primary" data-minutes-signing-target="email">Email me a code</button>
+    <% if local_assigns[:cancel_path] %><%= link_to "Cancel", cancel_path, class: "lnk" %><% end %>
+  </div>
+  <p class="pk-card-status" role="status" data-minutes-signing-target="status"></p>
+</div>

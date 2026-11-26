@@ -1,116 +1,122 @@
 class AgentAccessReauthenticationsController < ApplicationController
+  include TokenCreation
+  include PasskeyAssertion
+
   PURPOSE = "create_agent_access_token"
   PENDING_COOKIE = :pending_agent_access_reauthentication
 
   before_action :require_authentication
-  helper_method :website_token_reauthentication?, :token_creation_path
+  before_action -> { require_capability("manage_settings") }, if: :website_connection?
 
-  rate_limit to: 5,
-    within: 5.minutes,
-    only: :create,
-    name: :agent_access_reauthentication_request,
-    by: -> { "#{current_user.id}:#{request.remote_ip}" },
+  rate_limit to: 5, within: 5.minutes, only: :create, name: :agent_access_reauthentication_request,
+    by: -> { "#{current_user.id}:#{request.remote_ip}" }, with: :redirect_after_auth_throttle
+  rate_limit to: 10, within: 5.minutes, only: :verify, name: :agent_access_reauthentication_code,
+    by: -> { "#{current_user.id}:#{request.remote_ip}:#{MagicLink.digest(pending_selector).first(16)}" },
     with: :redirect_after_auth_throttle
-
-  rate_limit to: 10,
-    within: 5.minutes,
-    only: :verify,
-    name: :agent_access_reauthentication_code,
-    by: -> { "#{current_user.id}:#{request.remote_ip}:#{pending_selector_fingerprint}" },
-    with: :redirect_after_auth_throttle
-
-  rate_limit to: 30,
-    within: 5.minutes,
-    only: :magic_link,
-    name: :agent_access_reauthentication_link,
-    by: -> { "#{current_user.id}:#{request.remote_ip}" },
-    if: -> { request.post? },
-    with: :redirect_after_auth_throttle
+  rate_limit to: 30, within: 5.minutes, only: :magic_link, name: :agent_access_reauthentication_link,
+    by: -> { "#{current_user.id}:#{request.remote_ip}" }, if: -> { request.post? }, with: :redirect_after_auth_throttle
+  rate_limit to: 20, within: 5.minutes, only: %i[passkey_options passkey], with: -> { head :too_many_requests }
 
   def new
-    session[:reauthentication_purpose] = PURPOSE
+    redirect_to token_creation_path
   end
 
   def create
-    session[:reauthentication_purpose] = PURPOSE
     challenge = MagicLink.create_for!(current_user, purpose: PURPOSE, session: Current.session)
-    set_pending_cookie(challenge.browser_challenge)
     MailDelivery.deliver_magic_link(
       user: current_user,
-      login_url: magic_link_agent_access_reauthentication_url(token: challenge.token),
+      login_url: magic_link_agent_access_reauthentication_url(token: challenge.token, kind: token_kind),
       login_code: MagicLink.format_code(challenge.login_code)
     )
-    redirect_to new_agent_access_reauthentication_path,
-      notice: "Check your email for the 8-digit code or secure link."
+    retire_pending_email
+    token_setup["email_selector"] = challenge.browser_challenge
+    token_setup["email_expires_at"] = challenge.expires_at.to_i
+    redirect_to token_creation_path, status: :see_other
   rescue MailDelivery::DeliveryError => error
-    Rails.logger.error("Agent access reauthentication email delivery failed status=#{error.status || "unavailable"} message=#{error.message.inspect}")
-    redirect_to new_agent_access_reauthentication_path,
-      alert: "We could not send that email. Try again in a few minutes."
+    Rails.logger.error("Token confirmation email failed status=#{error.status || 'unavailable'}")
+    redirect_to token_creation_path, alert: "We could not send that email. Try again in a few minutes."
   end
 
   def verify
-    user = MagicLink.consume_code!(
-      browser_challenge: cookies.encrypted[PENDING_COOKIE],
-      code: params[:code],
-      purpose: PURPOSE,
-      session: Current.session
-    )
-
+    user = MagicLink.consume_code!(browser_challenge: pending_selector, code: params[:code], purpose: PURPOSE, session: Current.session)
     return complete_reauthentication if user == current_user
 
-    redirect_to new_agent_access_reauthentication_path,
-      alert: "That code is invalid or expired. Request a new email and try again."
+    redirect_to token_creation_path, alert: "Check the code or send a new one."
   end
 
   def magic_link
-    return render :magic_link if request.get? || request.head?
-    return head :method_not_allowed unless request.post?
+    return render_token_setup(email_link: true) if request.get? || request.head?
 
-    user = MagicLink.consume!(
-      params[:token],
-      purpose: PURPOSE,
-      session: Current.session
-    )
+    selector = pending_selector
+    user = MagicLink.consume!(params[:token], purpose: PURPOSE, session: Current.session,
+      browser_challenge_digest: MagicLink.digest(selector)) if selector.present?
     return complete_reauthentication if user == current_user
 
-    redirect_to new_agent_access_reauthentication_path,
-      alert: "That link is invalid or expired. Request a new email and try again."
+    redirect_to token_creation_path, alert: "This link has expired or was replaced. Request a new code."
+  end
+
+  def passkey_options
+    options = WebAuthn::Credential.options_for_get(allow: current_user.passkey_credentials.pluck(:external_id), user_verification: "required")
+    token_setup["passkey"] = { "challenge" => options.challenge, "expires_at" => MagicLink::TOKEN_TTL.from_now.to_i,
+      "session_id" => Current.session.id }
+    render json: options
+  end
+
+  def passkey
+    pending = token_setup.delete("passkey")
+    return head :unprocessable_entity unless pending && pending["session_id"] == Current.session.id && pending["expires_at"] > Time.current.to_i
+
+    credential = WebAuthn::Credential.from_get(public_key_credential_params)
+    stored = current_user.passkey_credentials.find_by(external_id: credential.id)
+    return head :unauthorized unless stored
+
+    verify_passkey_assertion!(credential, stored, pending.fetch("challenge"))
+    complete_reauthentication
+  rescue WebAuthn::Error
+    head :unauthorized
+  end
+
+  def destroy
+    retire_pending_email
+    clear_token_setup
+    redirect_to token_list_path, status: :see_other
   end
 
   private
 
-  def website_token_reauthentication?
-    session[:website_token_reauthentication] && current_user.can?("manage_settings")
+  # Existing email links used the session flag and a separate encrypted cookie.
+  def website_connection?
+    params[:kind].present? ? params[:kind] == "website" : session[:website_token_reauthentication] == true
   end
 
-  def token_creation_path
-    website_token_reauthentication? ? new_admin_website_access_token_path : new_agent_access_token_path
+  def pending_selector
+    token_setup["email_selector"] || (cookies.encrypted[PENDING_COOKIE] if params[:kind].blank?)
   end
 
-  def set_pending_cookie(value)
-    cookies.encrypted[PENDING_COOKIE] = {
-      value: value,
-      expires: MagicLink::TOKEN_TTL.from_now,
-      httponly: true,
-      same_site: :lax,
-      secure: Rails.env.production?
-    }
-  end
-
-  def pending_selector_fingerprint
-    MagicLink.digest(cookies.encrypted[PENDING_COOKIE].presence || "missing").first(16)
+  def retire_pending_email
+    selector = pending_selector
+    if selector.present?
+      Current.session.magic_links.where(purpose: PURPOSE, browser_challenge_digest: MagicLink.digest(selector), used_at: nil)
+        .update_all(expires_at: Time.current)
+    end
+    token_setup.delete("email_selector")
+    token_setup.delete("email_expires_at")
+    cookies.delete(PENDING_COOKIE)
   end
 
   def redirect_after_auth_throttle
-    redirect_to new_agent_access_reauthentication_path, alert: "Please wait a few minutes and try again."
+    redirect_to token_creation_path, alert: "Please wait a few minutes and try again."
   end
 
   def complete_reauthentication
-    destination = token_creation_path
     Current.session.reauthenticate!
-    session.delete(:reauthentication_purpose)
+    retire_pending_email
+    token_setup.delete("passkey")
     session.delete(:website_token_reauthentication)
-    cookies.delete(PENDING_COOKIE)
-    redirect_to destination, notice: "Identity confirmed. You may create a token now."
+    if request.format.json?
+      render json: { redirect_url: token_creation_path }
+    else
+      redirect_to token_creation_path, status: :see_other
+    end
   end
 end

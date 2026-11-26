@@ -12,12 +12,14 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
 
   test "request page describes the consolidated code and link email" do
     get new_passkey_enrollment_reauthentication_path
+    assert_redirected_to profile_path(anchor: "add-passkey")
+    follow_redirect!
 
     assert_response :success
     assert_select "form[action=?] button", passkey_enrollment_reauthentication_path,
-      text: "Email me a code and link"
-    assert_select ".panel-lead", text: /code and secure link/
-    assert_select ".panel-lead", text: /return to finish adding your passkey/
+      text: "Email me a code"
+    assert_select "#add-passkey", text: /First, confirm it’s you/
+    assert_select "#add-passkey button", text: "Use an existing passkey", count: 0
   end
 
   test "email code reauthentication refreshes the same session" do
@@ -39,7 +41,7 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
     assert_equal 1, Session.where(user: @user).count
     get profile_path
     assert_select "input#new-passkey-nickname[value=?]", "Kitchen iPad"
-    assert_select "button", text: "Continue adding your passkey"
+    assert_select "button", text: "Create passkey"
   end
 
   test "provider failure gives a signed-in user an actionable error" do
@@ -52,8 +54,8 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
 
     post passkey_enrollment_reauthentication_path
 
-    assert_redirected_to new_passkey_enrollment_reauthentication_path
-    assert_equal "We could not send that email. Try again in a few minutes.", flash[:alert]
+    assert_redirected_to profile_path(anchor: "add-passkey")
+    assert_equal "We could not send that email. Try again in a few minutes.", flash[:passkey_error]
   ensure
     MailDelivery.backend = original_backend
   end
@@ -78,13 +80,13 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
     authenticated_at = @session_record.reload.authenticated_at
     travel 1.minute do
       post magic_link_passkey_enrollment_reauthentication_path, params: { token: token }
-      assert_redirected_to new_passkey_enrollment_reauthentication_path
+      assert_redirected_to profile_path(anchor: "add-passkey")
       assert_equal authenticated_at, @session_record.reload.authenticated_at
     end
     assert_equal 1, Session.where(user: @user).count
     get profile_path
     assert_select "input#new-passkey-nickname[value=?]", "Kitchen iPad"
-    assert_select "button", text: "Continue adding your passkey"
+    assert_select "button", text: "Create passkey"
   end
 
   test "email link reauthentication rejects a different signed-in session" do
@@ -101,7 +103,7 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
       other_browser.post registration_options_passkeys_path
       other_browser.post magic_link_passkey_enrollment_reauthentication_path, params: { token: token }
       assert_equal 302, other_browser.response.status
-      assert_equal new_passkey_enrollment_reauthentication_url, other_browser.response.location
+      assert_equal profile_url(anchor: "add-passkey"), other_browser.response.location
     end
 
     assert_nil challenge.reload.used_at
@@ -113,7 +115,7 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
 
     post verify_passkey_enrollment_reauthentication_path, params: { code: sign_in_challenge.login_code }
 
-    assert_redirected_to new_passkey_enrollment_reauthentication_path
+    assert_redirected_to profile_path(anchor: "add-passkey")
     assert_operator @session_record.reload.authenticated_at, :<, 10.minutes.ago
   end
 
@@ -128,10 +130,10 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
   end
   test "cancelling clears saved enrollment intent" do
     delete passkey_enrollment_reauthentication_path
-    assert_redirected_to profile_path
+    assert_redirected_to profile_path(anchor: "add-passkey")
     get profile_path
     assert_select "input#new-passkey-nickname[value='']"
-    assert_select "button", text: "Add a passkey"
+    assert_select "button", text: "Email me a code"
   end
 
   test "expired enrollment cannot confirm or restore saved name" do
@@ -169,5 +171,38 @@ class PasskeyEnrollmentReauthenticationsControllerTest < ActionDispatch::Integra
       post passkey_enrollment_reauthentication_path
       assert_redirected_to profile_path
     end
+  end
+
+  test "resend, cancellation and a new attempt cannot reuse an earlier enrollment link" do
+    assert_no_difference "PasskeyCredential.count" do
+      first_link = request_email(source: "dashboard", nickname: "Desk")
+      assert_redirected_to root_path(anchor: "add-passkey")
+      second_link = request_email
+      post first_link
+      assert_not @session_record.reload.recently_authenticated?
+      assert_redirected_to root_path(anchor: "add-passkey")
+
+      delete passkey_enrollment_reauthentication_path
+      assert_redirected_to root_path(anchor: "add-passkey")
+      get root_path
+      assert_select "#new-passkey-nickname[value='']"
+      assert_select "button", text: "Not now"
+      fresh_link = request_email(source: "profile", nickname: "Home")
+      post second_link
+      assert_not @session_record.reload.recently_authenticated?
+      post fresh_link
+      assert @session_record.reload.recently_authenticated?
+      assert_redirected_to profile_path(anchor: "add-passkey")
+      follow_redirect!
+      assert_select "#new-passkey-nickname[value='Home']"
+      assert_select "button[autofocus]", text: "Create passkey"
+    end
+  end
+
+  private
+
+  def request_email(**details)
+    perform_enqueued_jobs { post passkey_enrollment_reauthentication_path, params: details }
+    URI(ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S+}]).request_uri
   end
 end

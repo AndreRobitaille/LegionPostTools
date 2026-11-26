@@ -1,0 +1,71 @@
+<% content_for :head do %><meta name="turbo-cache-control" content="no-cache"><% end %>
+<% title = website_connection? ? "New website connection" : "New agent token" %>
+<% kind = { kind: token_kind } %>
+<% cancel = button_to "Cancel", agent_access_reauthentication_path(kind), method: :delete, class: "lnk" %>
+<section class="card token-setup" aria-labelledby="token-setup-heading">
+  <div class="token-setup-head">
+    <h2 id="token-setup-heading"><%= title %></h2>
+    <p><%= website_connection? ? "Your website will be able to read approved public content." : "Your agent will use your current permissions." %></p>
+  </div>
+  <div class="token-setup-body">
+    <% if @email_link %>
+      <div class="btnrow">
+        <%= button_to website_connection? ? "Continue to connection details" : "Continue to token details",
+              magic_link_agent_access_reauthentication_path, params: { token: params[:token], kind: params[:kind] }.compact, class: "btn-primary" %>
+        <%= cancel %>
+      </div>
+    <% elsif Current.session.recently_authenticated? %>
+      <% draft = @draft || token_setup.fetch("draft", {}) %>
+      <% if @errors.present? %>
+        <div class="error-summary" role="alert"><%= safe_join(@errors, tag.br) %></div>
+      <% end %>
+      <%= form_with url: token_list_path, scope: website_connection? ? :website_access_token : :agent_access_token, id: "token-details" do |form| %>
+        <%= hidden_field_tag :form_id, new_token_form_id %>
+        <div class="token-detail-fields">
+          <div class="fl">
+            <%= form.label :name, website_connection? ? "Connection name" : "Token name" %>
+            <%= form.text_field :name, value: draft["name"], class: "f", maxlength: 80, required: true, autocomplete: "off", autofocus: true %>
+          </div>
+          <% unless website_connection? %>
+            <div class="fl">
+              <%= form.label :expires_in_days, "Expires after" %>
+              <%= form.select :expires_in_days, options_for_select([["30 days", "30"], ["90 days", "90"], ["180 days", "180"]], draft.fetch("expires_in_days", "90")), {}, class: "f" %>
+            </div>
+          <% end %>
+        </div>
+        <p class="token-detail-note"><%= website_connection? ? "Works until an administrator revokes it." : "Bots sharing a computer may be able to use the same token." %></p>
+      <% end %>
+      <div class="btnrow">
+        <button type="submit" form="token-details" class="btn-primary"><%= website_connection? ? "Create connection" : "Create token" %></button>
+        <%= cancel %>
+      </div>
+    <% elsif token_setup["email_expires_at"].to_i > Time.current.to_i %>
+      <p>Check your email for a code or link.</p>
+      <%= form_with url: verify_agent_access_reauthentication_path(kind), class: "token-code-form" do |form| %>
+        <div class="fl">
+          <%= form.label :code, "8-digit code" %>
+          <%= form.text_field :code, class: "f agent-code-input", inputmode: "numeric", autocomplete: "one-time-code", maxlength: 9, required: true, autofocus: true %>
+        </div>
+        <%= form.button "Continue", class: "btn-primary" %>
+      <% end %>
+      <div class="btnrow">
+        <%= button_to "Send a new code", agent_access_reauthentication_path(kind), class: "lnk" %>
+        <%= cancel %>
+      </div>
+    <% else %>
+      <p>Confirm it’s you to continue.</p>
+      <div data-controller="passkey"
+           data-passkey-options-url-value="<%= passkey_options_agent_access_reauthentication_path(kind) %>"
+           data-passkey-verify-url-value="<%= passkey_agent_access_reauthentication_path(kind) %>">
+        <div class="btnrow">
+          <% if current_user.passkey_credentials.exists? %>
+            <button type="button" hidden class="btn-primary" data-passkey-target="submit" data-action="passkey#authenticate">Use my passkey</button>
+          <% end %>
+          <%= button_to "Email me a code", agent_access_reauthentication_path(kind), class: "btn-primary", data: { passkey_target: "email" } %>
+          <%= cancel %>
+        </div>
+        <p class="pk-card-status" data-passkey-target="status" role="status"></p>
+      </div>
+    <% end %>
+  </div>
+</section>

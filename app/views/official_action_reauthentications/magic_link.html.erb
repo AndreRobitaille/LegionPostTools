@@ -1,19 +1,17 @@
-<% content_for :title, "Confirm and complete the minutes action" %>
-
+<% minutes = @confirmation.meeting_minutes %>
+<% labels = minutes_signing_labels(@confirmation.action, minutes) %>
+<% content_for :title, labels.fetch(:heading) %>
 <div class="page-lead">
-  <h1 class="page-title">Confirm and complete</h1>
-  <p class="page-sub">Confirm your identity to complete the action below. You will return to the minutes with their updated status.</p>
+  <h1 class="page-title"><%= labels.fetch(:heading) %></h1>
+  <p class="page-sub"><%= minutes.title %> · <%= legion_date(minutes.starts_at) %></p>
 </div>
-
-<%= render "action_summary", confirmation: @confirmation %>
-
-<section class="profile-section">
-  <%= render "shared/section_header", label: "Email link received" %>
-  <div class="panel">
-    <p class="panel-lead">Use the button below in the same signed-in browser. The link works once and expires after 15 minutes.</p>
-    <%= form_with url: magic_link_official_action_reauthentication_path, method: :post do |form| %>
-      <%= hidden_field_tag :token, params[:token] %>
-      <%= form.button "Confirm and complete", class: "btn-primary" %>
-    <% end %>
+<section class="panel minutes-signing">
+  <%= render "summary", confirmation: @confirmation %>
+  <% if @confirmation.action == "attest" %>
+    <%= render "minutes_distributions/meeting_status", minutes:, manage: false %>
+  <% end %>
+  <div class="btnrow">
+    <%= button_to labels.fetch(:email), magic_link_official_action_reauthentication_path, params: { confirmation_id: @confirmation.id, token: params[:token] }, class: "btn-confirm" %>
+    <%= button_to "Cancel", official_action_reauthentication_path(confirmation_id: @confirmation.id), method: :delete, class: "btn-secondary" %>
   </div>
 </section>

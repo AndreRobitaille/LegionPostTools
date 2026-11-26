@@ -79,14 +79,10 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
 
   test "signing out after completing a minutes approval ends the session and preserves the approval" do
     begin_minutes_approval
-    perform_enqueued_jobs do
-      click_button "Email me a code and link"
-      assert_field "8-digit confirmation code"
-    end
     code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
     assert code
-    fill_in "8-digit confirmation code", with: code
-    click_button "Confirm and complete"
+    fill_in "8-digit code", with: code
+    click_button "Send to Adjutant"
     assert_text "Draft sent to the Adjutant for review."
     revision = @minutes.reload.current_revision
 
@@ -122,8 +118,10 @@ class AccountMenuSystemTest < ApplicationSystemTestCase
     meeting = create_meeting!(organization: @organization, meeting_body: body, starts_at: 1.day.ago, title: "Test membership meeting")
     @minutes = MeetingMinutes.create_from_meeting!(meeting:)
     visit new_admin_meeting_minutes_approval_path(meeting)
-    click_button "Send to Adjutant"
-    assert_selector "h1", text: "Confirm and complete"
+    perform_enqueued_jobs do
+      click_button "Email me a code"
+      assert_field "8-digit code"
+    end
     @confirmation = @user.official_action_confirmations.sole
   end
 

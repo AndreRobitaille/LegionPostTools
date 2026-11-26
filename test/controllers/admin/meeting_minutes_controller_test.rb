@@ -118,18 +118,17 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
 
     get admin_meeting_minutes_path(@meeting)
     assert_response :success
-    assert_select "form[action='#{admin_meeting_minutes_approval_path(@meeting)}'] button", text: "Send to Adjutant"
+    assert_select "form[action='#{admin_meeting_minutes_approval_path(@meeting)}'] button", text: "Email me a code"
     assert_select ".minutes-progress", text: /Draft.*Attested.*Approved and locked/m
 
     get new_admin_meeting_minutes_approval_path(@meeting)
-    assert_response :success
-    assert_select "h1", text: "Send this draft to the Adjutant"
+    assert_redirected_to admin_meeting_minutes_path(@meeting)
 
     assert_difference -> { OfficialActionConfirmation.count }, 1 do
-      post admin_meeting_minutes_approval_path(@meeting)
+      post admin_meeting_minutes_approval_path(@meeting), params: { reviewed_digest: minutes.digest_for("approve"), reviewed_version: minutes.lock_version }
     end
-    assert_redirected_to new_official_action_reauthentication_path
     confirmation = OfficialActionConfirmation.last
+    assert_redirected_to admin_meeting_minutes_path(@meeting, confirmation_id: confirmation.id, anchor: "minutes-signing")
     assert_equal minutes, confirmation.meeting_minutes
     assert_equal @manager, confirmation.user
     assert_equal session_record, confirmation.session
@@ -153,8 +152,8 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal minutes.title, minutes.current_revision.payload.fetch("title")
     get admin_meeting_minutes_path(@meeting)
     assert_select ".minutes-status-card h2", text: "Ready for Adjutant review"
-    assert_select "button", text: "Attest and share with members"
-    assert_select "button", text: "Send to Adjutant", count: 0
+    assert_select "h3", text: "Attest and share with members"
+    assert_select "form[action=?]", admin_meeting_minutes_approval_path(@meeting), count: 0
   end
 
   test "unresolved attendance is explained rather than hiding the next step" do
@@ -168,7 +167,7 @@ class Admin::MeetingMinutesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".minutes-review-needed", text: /Finish review before attestation.*attendance recorded/m
     assert_select "a", text: "Record attendance"
-    assert_select "button", text: "Attest and share with members", count: 0
+    assert_select "h3", text: "Attest and share with members", count: 0
   end
 
   private

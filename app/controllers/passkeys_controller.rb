@@ -1,5 +1,6 @@
 class PasskeysController < ApplicationController
   include PasskeyEnrollment
+  include PasskeyAssertion
 
   skip_before_action :redirect_to_setup_if_needed
   before_action :require_authentication, except: %i[authentication_options authentication]
@@ -32,6 +33,11 @@ class PasskeysController < ApplicationController
   end
 
   def registration_options
+    if SOURCES.include?(params[:source])
+      attempt = pending_passkey_enrollment
+      attempt = start_passkey_enrollment unless attempt && attempt["source"] == params[:source]
+      attempt["nickname"] = params[:nickname].to_s.strip.presence
+    end
     options = WebAuthn::Credential.options_for_create(
       user: {
         id: current_user.webauthn_id,
@@ -65,14 +71,17 @@ class PasskeysController < ApplicationController
     credential = WebAuthn::Credential.from_create(public_key_credential_params)
     credential.verify(enrollment["challenge"], user_verification: true)
 
-    current_user.passkey_credentials.create!(
+    saved = current_user.passkey_credentials.create!(
       external_id: credential.id,
       public_key: credential.public_key,
       sign_count: credential.sign_count,
-      nickname: params[:nickname].presence
+      nickname: params[:nickname].to_s.strip.presence
     )
 
-    session.delete(:pending_passkey_enrollment)
+    clear_passkey_enrollment
+    if SOURCES.include?(params[:source])
+      flash[:notice] = saved.nickname.present? ? "Passkey added: #{saved.nickname}" : "Passkey added"
+    end
     render json: { status: "created" }, status: :created
   rescue WebAuthn::Error
     render json: { error: "invalid passkey registration" }, status: :unprocessable_entity
@@ -94,18 +103,10 @@ class PasskeysController < ApplicationController
       return render json: { error: "invalid passkey authentication" }, status: :unauthorized
     end
 
-    credential.verify(
-      session.delete(:webauthn_authentication_challenge),
-      public_key: stored_credential.public_key,
-      sign_count: stored_credential.sign_count,
-      user_verification: true
-    )
-
-    stored_credential.update!(sign_count: credential.sign_count, last_used_at: Time.current)
+    verify_passkey_assertion!(credential, stored_credential, session.delete(:webauthn_authentication_challenge))
     redirect_url = nil
     if reauthenticating?
       Current.session.reauthenticate!
-      redirect_url = complete_pending_official_action! if session[:reauthentication_purpose] == OfficialActionReauthenticationsController::PURPOSE
       session.delete(:reauthentication_purpose)
     else
       start_new_session_for(stored_credential.user)
@@ -133,59 +134,20 @@ class PasskeysController < ApplicationController
   private
 
   def require_recent_enrollment_authentication
-    return if Current.session&.recently_authenticated?
-
-    session.delete(:webauthn_registration_challenge)
-    nickname = params[:nickname].to_s.strip.presence
-    if nickname && nickname.length > 200
+    if params[:nickname].to_s.strip.length > 200
       return render json: { error: "Use a passkey name of 200 characters or fewer." }, status: :unprocessable_entity
     end
-    session[:pending_passkey_enrollment] = {
-      session_id: Current.session.id,
-      nickname: nickname,
-      expires_at: 30.minutes.from_now.to_i
-    }
-    render json: { error: "recent authentication required", confirmation_url: new_passkey_enrollment_reauthentication_path }, status: :forbidden
+    return if Current.session&.recently_authenticated?
+
+    start_passkey_enrollment
+    render json: { error: "recent authentication required", confirmation_url: passkey_setup_path }, status: :forbidden
   end
 
   def reauthenticating?
     authenticated? && session[:reauthentication_purpose].in?([
       AgentAccessReauthenticationsController::PURPOSE,
-      OfficialActionReauthenticationsController::PURPOSE,
       PasskeyEnrollmentReauthenticationsController::PURPOSE
     ])
-  end
-
-  def complete_pending_official_action!
-    confirmation = current_user.official_action_confirmations.find_by!(
-      id: session[OfficialActionReauthenticationsController::PENDING_SESSION_KEY],
-      session: Current.session
-    )
-    confirmation.confirm!(session: Current.session)
-    flash[:notice] = confirmation.complete_minutes_action!
-    admin_meeting_minutes_path(confirmation.meeting_minutes.meeting)
-  rescue ActiveRecord::RecordInvalid, ActiveRecord::StaleObjectError => error
-    flash[:alert] = error.record.errors.full_messages.to_sentence.presence || "The minutes changed. Review them and start the action again."
-    admin_meeting_minutes_path(confirmation.meeting_minutes.meeting)
-  ensure
-    session.delete(OfficialActionReauthenticationsController::PENDING_SESSION_KEY)
-  end
-
-  def public_key_credential_params
-    params.require(:publicKeyCredential).permit(
-      :id,
-      :rawId,
-      :type,
-      :authenticatorAttachment,
-      response: %i[
-        attestationObject
-        authenticatorData
-        clientDataJSON
-        signature
-        userHandle
-      ],
-      clientExtensionResults: {}
-    ).to_h
   end
 
   def render_auth_throttle

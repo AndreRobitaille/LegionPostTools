@@ -3,19 +3,42 @@
 .minutes-email-groups p { margin: 6px 0; font-size: 16px; line-height: 1.55; }
 .minutes-email-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
 .minutes-email-layout > *, .minutes-email-layout .card { min-width: 0; }
-.minutes-email-layout p, .minutes-email-meeting p, .minutes-email-audit p { font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; margin: 0 0 14px; }
+.minutes-email-layout p, .minutes-email-audit p { font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; margin: 0 0 14px; }
 .minutes-email-layout h2 { font-size: 19px; color: var(--color-navy); margin: 0 0 8px; }
-.minutes-email-layout .minutes-email-secondary, .minutes-email-meeting .minutes-email-secondary { font-size: 14px; color: #526172; }
+.minutes-email-layout .minutes-email-secondary { font-size: 14px; color: #526172; }
 .minutes-email-recipient, .minutes-email-issue { border-top: 1px solid var(--rule); padding: 20px 0; }
-.minutes-email-layout summary, .minutes-email-meeting summary, .minutes-email-audit summary { cursor: pointer; font-size: 16px; line-height: 1.6; color: var(--color-navy); padding: 12px 0; }
-.minutes-email-layout details form, .minutes-email-meeting details form { margin-top: 12px; }
+.minutes-email-layout summary, .minutes-email-audit summary { cursor: pointer; font-size: 16px; line-height: 1.6; color: var(--color-navy); padding: 12px 0; }
+.minutes-email-layout details form { margin-top: 12px; }
 .minutes-email-layout .entry-field { margin-bottom: 16px; }
 .minutes-email-settings fieldset { border: 0; padding: 12px 0; min-width: 0; }
 .minutes-email-settings legend { font-size: 16px; font-weight: 700; color: var(--color-navy); }
 .minutes-email-settings .form-toggle { font-size: 16px; }
 .minutes-email-layout .btnrow { margin-bottom: 8px; }
-.minutes-email-meeting { margin-bottom: 24px; }
-.minutes-email-meeting .card-body > form { margin-top: 14px; }
+.minutes-office-mail { container: office-mail / inline-size; border-top: 1px solid var(--rule); background: #f2f5f5; color: var(--color-navy); }
+.minutes-office-mail-line { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 48px; padding: 6px 20px; font-size: 16px; line-height: 1.4; }
+summary.minutes-office-mail-line { cursor: pointer; list-style: none; }
+summary.minutes-office-mail-line::-webkit-details-marker { display: none; }
+summary.minutes-office-mail-line:hover { background: #eaf0f2; }
+summary.minutes-office-mail-line:focus-visible { outline: 2px solid var(--color-officer-blue); outline-offset: -3px; }
+.minutes-office-mail-line .activity-icon { color: var(--color-officer-blue); }
+.minutes-office-mail-copy { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 14px; }
+.minutes-office-mail-copy span { color: #455768; }
+.minutes-office-mail-toggle { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; }
+.minutes-office-mail-toggle::after { content: ""; width: 8px; height: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); }
+.minutes-office-mail details[open] .minutes-office-mail-toggle::after { transform: translateY(2px) rotate(225deg); }
+.minutes-office-mail-options { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; border-top: 1px solid #d7dfe3; padding: 14px 20px; background: var(--color-paper); }
+.minutes-office-mail .lnk { display: inline-flex; align-items: center; min-height: 44px; }
+.minutes-office-mail-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 12px; }
+.minutes-office-mail-form .entry-field { margin: 0; min-width: 0; }
+.minutes-office-mail-form .entry-field input { min-height: 44px; padding: 8px 12px; }
+@container office-mail (max-width: 32rem) {
+  .minutes-office-mail-line { gap: 10px; padding: 10px 16px; }
+  .minutes-office-mail-copy { display: grid; }
+  .minutes-office-mail-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .minutes-office-mail-options { display: grid; align-items: start; padding: 4px 16px 16px; }
+  .minutes-office-mail-form .entry-field { flex: 1 1 100%; }
+  .minutes-office-mail-line > .lnk { grid-column: 2 / -1; }
+}
 .minutes-email-summary { margin: 0 0 20px; }
 .minutes-email-summary dt { font-size: 14px; font-weight: 700; color: var(--color-navy); margin: 16px 0 6px; }
 .minutes-email-summary dd { margin: 0; font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }

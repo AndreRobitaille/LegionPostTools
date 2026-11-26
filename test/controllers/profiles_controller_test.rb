@@ -32,7 +32,8 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     get profile_path
 
     assert_response :success
-    assert_select ".pk-empty"
+    assert_select "#add-passkey button", text: "Create passkey"
+    assert_select ".saved-passkeys", count: 0
     assert_select "[data-passkey-redirect-value=?]", profile_path
   end
 

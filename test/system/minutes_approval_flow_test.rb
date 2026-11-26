@@ -26,8 +26,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     system_sign_in(@commander)
     visit admin_meeting_path(@meeting)
     assert_selector ".minutes-status-card h2", text: "Draft", exact_text: true
-    click_button "Send to Adjutant"
-    confirm_by_email
+    confirm_by_email("Send to Adjutant")
     assert_current_path admin_meeting_minutes_path(@meeting)
     assert_selector ".minutes-status-card h2", text: "Ready for Adjutant review"
     assert_predicate @minutes.reload, :approved?
@@ -39,8 +38,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     click_button "Save heading"
     assert_selector ".minutes-status-card h2", text: "Ready for Adjutant review"
     assert_no_button "Send to Adjutant"
-    click_button "Attest and share with members"
-    confirm_by_email
+    confirm_by_email("Attest and share")
     assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
     assert_predicate @minutes.reload, :member_visible?
     assert_nil @minutes.current_revision.approved_by_id
@@ -49,22 +47,24 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     click_link "Record meeting approval"
     select "PEC — #{legion_date_for_test(@approving_meeting.starts_at)}", from: "Meeting where these minutes were approved"
     choose "Approved with corrections"
+    assert_selector "[aria-live=polite]", text: "The Adjutant locks the corrected copy"
+    check "The corrections are already in this attested copy"
+    assert_selector "[aria-live=polite]", text: "Recording approval locks this exact copy."
+    uncheck "The corrections are already in this attested copy"
     fill_in "Corrections or procedure note", with: "Correct the record title to Corrected PEC Meeting."
-    click_button "Record meeting approval"
-    confirm_by_email
+    confirm_by_email("Record approval")
     assert_selector ".minutes-status-card h2", text: "Corrections to finish"
     assert_nil @minutes.reload.membership_approval
     assert_equal "Reviewed PEC Meeting", @minutes.member_revision.payload.fetch("title")
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
-    assert_equal 1, page.evaluate_script("getComputedStyle(document.querySelector('.minutes-progress')).gridTemplateColumns.split(' ').length")
+    assert_equal 1, page.evaluate_script("new Set(Array.from(document.querySelectorAll('.minutes-progress li'), step => step.getBoundingClientRect().top)).size")
     capture_system_screenshot("minutes-corrections-mobile")
 
     click_link "Edit heading"
     fill_in "Document title", with: "Corrected PEC Meeting"
     click_button "Save heading"
-    click_button "Confirm corrections and lock minutes"
-    confirm_by_email
+    confirm_by_email("Attest and lock")
     assert_selector ".minutes-status-card h2", text: "Approved and locked"
     assert_no_link "Edit heading"
     assert_no_link "Correct this copy"
@@ -121,12 +121,91 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
     capture_system_screenshot("minutes-draft-mobile")
-    click_button "Attest and share with members"
-    confirm_by_email(via_link: true)
+    confirm_by_email("Attest and share", via_link: true)
     assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
     assert_equal 1, @minutes.reload.revisions.count
     assert_nil @minutes.current_revision.approved_by_id
   ensure
+    page.current_window.resize_to(1400, 1000)
+  end
+
+  test "leaving or cancelling a requested code keeps the minutes editable" do
+    system_sign_in(@adjutant)
+    visit admin_meeting_minutes_path(@meeting)
+    click_button "Email me a code"
+    assert_field "8-digit code"
+    page.go_back
+    assert_button "Email me a code"
+    assert_empty @minutes.reload.revisions
+
+    click_button "Email me a code"
+    assert_field "8-digit code"
+    click_button "Cancel"
+    assert_text "Confirmation cancelled."
+    assert_button "Email me a code"
+    assert_no_field "8-digit code"
+    assert_predicate @minutes.reload, :draft?
+    assert_empty @minutes.revisions
+  end
+
+  test "a device signs the reviewed copy from the minutes card and reopens it for a recorded reason" do
+    previous_protection = ActionController::Base.allow_forgery_protection
+    previous_origins = WebAuthn.configuration.allowed_origins
+    ActionController::Base.allow_forgery_protection = true
+    WebAuthn.configuration.allowed_origins = [ "http://localhost:#{Capybara.current_session.server.port}" ]
+    system_sign_in(@adjutant)
+    browser = page.driver.browser
+    browser.execute_cdp("WebAuthn.enable")
+    device = browser.execute_cdp("WebAuthn.addVirtualAuthenticator", options: {
+      protocol: "ctap2", transport: "internal", hasResidentKey: true,
+      hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true
+    })
+    visit profile_path
+    fill_in "new-passkey-nickname", with: "Test device"
+    click_button "Create passkey"
+    assert_selector ".pk-list input[value='Test device']"
+
+    visit admin_meeting_minutes_path(@meeting)
+    assert_button "Attest with my passkey"
+    assert page.evaluate_script(<<~JS), "The wide card should put status, signing details and signing methods beside each other"
+      (() => {
+        const card = document.querySelector(".minutes-status-card")
+        const state = card.querySelector("h2").getBoundingClientRect()
+        const explanation = card.querySelector(".minutes-signing-methods p").getBoundingClientRect()
+        const button = card.querySelector("[data-minutes-signing-target=passkey]").getBoundingClientRect()
+        return state.right <= explanation.left && explanation.right <= button.left &&
+          button.top < explanation.bottom && button.bottom > state.top
+      })()
+    JS
+    capture_system_screenshot("minutes-sign-passkey-desktop")
+    page.current_window.resize_to(390, 844)
+    assert page.evaluate_script(<<~JS), "The phone card should stack the signing choices and fit the viewport"
+      (() => {
+        const form = document.querySelector("#minutes-signing")
+        const passkey = form.querySelector("[data-minutes-signing-target=passkey]").getBoundingClientRect()
+        const email = form.querySelector("[data-minutes-signing-target=email]").getBoundingClientRect()
+        return email.top >= passkey.bottom && document.documentElement.scrollWidth <= window.innerWidth
+      })()
+    JS
+    capture_system_screenshot("minutes-sign-passkey-mobile")
+    page.current_window.resize_to(1400, 1000)
+    click_button "Attest with my passkey"
+    assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
+    attested = @minutes.reload.member_revision
+
+    page.current_window.resize_to(390, 844)
+    click_link "Correct this copy"
+    fill_in "Why are these minutes being reopened?", with: "Correct the meeting title."
+    assert_button "Reopen with my passkey"
+    capture_system_screenshot("minutes-sign-reopen-phone")
+    click_button "Reopen with my passkey"
+    assert_selector ".minutes-status-card h2", text: "Draft corrections"
+    assert_equal attested, @minutes.reload.member_revision
+    assert_equal "Correct the meeting title.", @minutes.lifecycle_events.last.metadata.fetch("reason")
+  ensure
+    browser&.execute_cdp("WebAuthn.removeVirtualAuthenticator", authenticatorId: device.fetch("authenticatorId")) if device
+    ActionController::Base.allow_forgery_protection = previous_protection
+    WebAuthn.configuration.allowed_origins = previous_origins
     page.current_window.resize_to(1400, 1000)
   end
 
@@ -168,6 +247,7 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     end
     click_button "Menu"
     click_button "Sign out"
+    assert_current_path new_session_path
     assert_no_selector ".app-menu-btn"
     assert_not Session.exists?(session_id)
     visit admin_meeting_minutes_path(@meeting)
@@ -203,27 +283,29 @@ class MinutesApprovalFlowTest < ApplicationSystemTestCase
     ENV["PDF_RENDER_PORT"] = previous_port
   end
 
-  def confirm_by_email(via_link: false)
-    assert_selector "h1", text: "Confirm and complete"
+  def confirm_by_email(label, via_link: false)
+    assert_button "Email me a code"
+    starting_path = page.current_path
     perform_enqueued_jobs do
-      click_button "Email me a code and link"
-      assert_field "8-digit confirmation code"
+      click_button "Email me a code"
+      assert_field "8-digit code"
     end
+    assert_equal starting_path, page.current_path
     email_body = ActionMailer::Base.deliveries.last.text_part.body.to_s
     if via_link
       url = email_body[/https?:\/\/\S+/]
       assert url
       visit URI.parse(url).request_uri
-      assert_selector "h2", text: "Attest and share with members"
+      assert_selector "h1", text: "Attest and share with members"
       assert_predicate @minutes.reload, :draft?
     else
       code = email_body[/\b\d{4} \d{4}\b/]
       assert code
-      fill_in "8-digit confirmation code", with: code
+      fill_in "8-digit code", with: code
     end
     width = page.evaluate_script("window.innerWidth") > 560 ? "desktop" : "mobile"
     capture_system_screenshot("minutes-confirmation-#{width}")
-    click_button "Confirm and complete"
+    click_button label, exact: true
     assert_current_path admin_meeting_minutes_path(@meeting)
   end
 

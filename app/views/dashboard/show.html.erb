@@ -49,15 +49,8 @@
   </main>
 
   <% if @show_passkey_invite %>
-    <aside class="pk-card pk-card--sidebar" aria-labelledby="dashboard-passkey-heading" data-controller="passkey" data-passkey-redirect-value="/">
-      <div class="pk-card-label">&#9670; Optional sign-in</div>
-      <h2 class="pk-card-title" id="dashboard-passkey-heading">Sign in faster with a passkey</h2>
-      <p class="pk-card-lead">Use the fingerprint, face, or PIN already on your device. Email sign-in will still work.</p>
-      <div class="btnrow">
-        <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">Set up a passkey</button>
-        <%= button_to "Not now", passkey_invitation_path, method: :delete, class: "btn-secondary" %>
-      </div>
-      <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
+    <aside class="pk-card--sidebar" aria-labelledby="enrollment-heading">
+      <%= render "passkey_enrollment_reauthentications/setup", source: "dashboard" %>
     </aside>
   <% end %>
 </div>

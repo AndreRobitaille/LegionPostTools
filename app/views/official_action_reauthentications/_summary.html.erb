@@ -1,0 +1,12 @@
+<% minutes = confirmation.meeting_minutes %>
+<% payload = confirmation.action_payload %>
+<% if confirmation.action == "record_membership_approval" %>
+  <% meeting = minutes.eligible_membership_approval_meetings.find_by(id: payload["approving_meeting_id"]) %>
+  <p><strong><%= MinutesMembershipApproval.new(disposition: payload["disposition"]).disposition_label %></strong> · <%= meeting ? "#{meeting.title} · #{legion_date(meeting.starts_at)}" : "Approving meeting no longer available" %></p>
+  <%= simple_format(payload["factual_note"]) if payload["factual_note"].present? %>
+<% elsif confirmation.action == "reopen" %>
+  <%= simple_format(payload["reason"]) %>
+<% elsif confirmation.action == "attest" && (decision = minutes.pending_correction_approval) %>
+  <%= simple_format(decision.metadata.fetch("membership_approval").fetch("factual_note")) %>
+<% end %>
+<%= render "official_action_reauthentications/consequence", action: confirmation.action, minutes:, payload: %>

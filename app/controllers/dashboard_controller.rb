@@ -1,5 +1,6 @@
 class DashboardController < ApplicationController
   include CalendarTimeZone
+  include PasskeyEnrollment
 
   before_action :require_authentication
 
@@ -14,6 +15,7 @@ class DashboardController < ApplicationController
     @next_meeting = meetings.upcoming.detect { |meeting| CalendarCategories.for(meeting) == "member_meeting" }
     @recent_meeting = meetings.past.detect { |meeting| CalendarCategories.for(meeting) == "member_meeting" }
     @upcoming_activities = upcoming_activities
+    @pending_passkey_enrollment = pending_passkey_enrollment
     @show_passkey_invite =
       current_user.passkey_credentials.empty? && !session[:passkey_invite_dismissed]
     @show_roster_email_review = current_user.needs_roster_email_review? && !roster_email_review_suppressed?

@@ -11,6 +11,41 @@ class MinutesDistributionSystemTest < ApplicationSystemTestCase
     Installation.singleton.update!(setup_completed_at: Time.current)
   end
 
+  test "an officer can see who gets a PDF and pause only this meeting's mailing" do
+    system_sign_in(officer)
+    [ 1400, 768, 390, 320 ].each do |width|
+      page.current_window.resize_to(width, 1000)
+      visit admin_meeting_minutes_path(minutes.meeting)
+      within ".minutes-status-card .minutes-office-mail" do
+        assert_text "PDF to outside offices"
+        assert_text "Emailed to 1 eligible address after signing."
+        assert_no_field "Reason for pausing"
+        capture_system_screenshot("outside-office-mail-#{width}")
+        options = find("summary")
+        position = options.native.rect
+        options.send_keys(:return)
+        assert_link "View recipients", href: minutes_distribution_path(anchor: "recipient-offices")
+        assert_field "Reason for pausing"
+        assert_in_delta position.x, options.native.rect.x, 1
+        assert_in_delta position.y, options.native.rect.y, 1
+        assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+        capture_system_screenshot("outside-office-mail-options-#{width}")
+        fill_in "Reason for pausing", with: "Review this copy."
+        click_button "Pause mailing"
+      end
+      assert_text "Mailing paused for this meeting."
+      assert MinutesDistributionEvent.held?(minutes)
+      find(".minutes-office-mail summary").click
+      click_button "Resume this mailing"
+      assert_text "Emailed to 1 eligible address after signing."
+      assert_not MinutesDistributionEvent.held?(minutes)
+      assert_predicate minutes.reload, :draft?
+      assert_empty minutes.email_distributions
+    end
+  ensure
+    page.current_window.resize_to(1400, 1400)
+  end
+
   test "office register remains readable and officers can pause and resume at desktop and narrow widths" do
     add_recipient("district@example.test", office: "District Vice Commander", name: recipient.name)
     system_sign_in(officer)
@@ -77,7 +112,7 @@ class MinutesDistributionSystemTest < ApplicationSystemTestCase
     MinutesDistribution::Processor.new(corrected, client: provider, renderer:).call
     assert_equal 2, provider.messages.size
     visit admin_meeting_minutes_path(minutes.meeting)
-    assert_selector "section[aria-label='Minutes email']", text: /No new email needed for unchanged approval/
+    assert_selector ".minutes-office-mail", text: /Approval alone sends no new email/
     page.current_window.resize_to(390, 844)
     assert_not page.evaluate_script("document.documentElement.scrollWidth > window.innerWidth")
     capture_system_screenshot("minutes-distribution-approved-390")

@@ -39,8 +39,10 @@ class OfficialActionPrefetchTest < ApplicationSystemTestCase
     # Turbo debounces hover by 100ms. A bounded wait arms the delayed real response
     # on the original client; the corrected client makes no speculative request.
     prefetched = @prefetch_started.pop(timeout: 1)
-    click_button "Attest and share with members"
-    assert_selector "h1", text: "Confirm and complete"
+    perform_enqueued_jobs do
+      click_button "Email me a code"
+      assert_field "8-digit code"
+    end
     confirmation = officer.official_action_confirmations.sole
     assert_equal "attest", confirmation.action
     assert_equal minutes.id, confirmation.meeting_minutes_id
@@ -61,14 +63,10 @@ class OfficialActionPrefetchTest < ApplicationSystemTestCase
       assert completed, "the delayed speculative response must finish before requesting confirmation"
     end
 
-    perform_enqueued_jobs do
-      click_button "Email me a code and link"
-      assert_field "8-digit confirmation code"
-    end
     code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
     assert code
-    fill_in "8-digit confirmation code", with: code
-    click_button "Confirm and complete"
+    fill_in "8-digit code", with: code
+    click_button "Attest and share"
     assert_current_path admin_meeting_minutes_path(meeting)
     assert_selector ".minutes-status-card h2", text: "Attested — awaiting meeting approval"
     capture_system_screenshot("confirmed-attestation-prefetch-disabled")

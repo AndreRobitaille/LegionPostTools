@@ -71,8 +71,8 @@ email that you did not request, ignore it.
 
 ## The “Add a Passkey” Message After You Sign In
 
-The first time you sign in, you may see a box at the top of the page that says **A
-passkey is not a password**.
+After you sign in, you may see an optional **Add a passkey** card on the dashboard.
+You can also find it in **Your profile** under **How you sign in**.
 
 A passkey really is **not another password**:
 
@@ -85,7 +85,9 @@ A passkey really is **not another password**:
 Most current phones, computers, and browsers support passkeys. Set one up only on a
 personal or trusted device.
 
-To use one, select **Set up a passkey** and follow the message from your device. The exact
+In **Add a passkey**, you can give it a name, such as “My phone.” If asked, confirm
+your identity by email or an existing passkey. Select **Create passkey** and follow
+the message from your device. Look for **Passkey added** to know it is saved. The exact
 screen looks different on an iPhone, Android phone, Windows computer, Mac, or password
 manager. If the device asks where to save the passkey, its built-in choice is usually
 free and works well.

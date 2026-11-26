@@ -1,20 +1,50 @@
-<% if current_user.can_manage_minutes_distribution? %>
-  <section class="card minutes-email-meeting" aria-label="Minutes email">
-    <div class="card-head"><span class="card-dia" aria-hidden="true">◆</span><h2 class="card-head-label">Minutes email</h2></div>
-    <div class="card-body">
-      <p><strong><%= minutes_email_status(minutes) %></strong></p>
-      <p class="minutes-email-secondary">Recipients' current email choices are checked before each delivery.</p>
-      <%= link_to "Review minutes distribution", minutes_distribution_path, class: "lnk" %>
-      <% if MinutesDistributionEvent.held?(minutes) %>
-        <%= button_to "Release mailing hold", release_minutes_distribution_path(minutes_id: minutes.id), class: "btn-secondary" %>
-      <% else %>
-        <details><summary>Hold this meeting's email</summary>
-          <%= form_with url: hold_minutes_distribution_path(minutes_id: minutes.id) do |form| %>
-            <div class="entry-field"><%= form.label :reason, "Reason for holding email" %><%= form.text_field :reason, required: true %></div>
-            <%= form.submit "Hold mailing", class: "btn-secondary" %>
-          <% end %>
+<% settings = minutes.organization.minutes_distribution_setting %>
+<% if manage || settings&.includes_minutes?(minutes) %>
+  <% issue = minutes.email_distributions.order(:id).last %>
+  <% meeting_held = MinutesDistributionEvent.held?(minutes) %>
+  <% status = minutes_email_status(minutes, settings:, issue:, meeting_held:) %>
+  <% if status %>
+    <% held = meeting_held || issue&.state == "held" %>
+    <% description = capture do %>
+      <%= render "shared/activity_icon", kind: "mail" %>
+      <span class="minutes-office-mail-copy"><strong>PDF to outside offices</strong><span><%= status %></span></span>
+    <% end %>
+    <% if current_user.can_manage_minutes_distribution? %>
+      <% review = if issue && !minutes.editable?
+        link_to "Recent mailings", minutes_distribution_path(anchor: "recent-mailings"), class: "lnk"
+      else
+        link_to "View recipients", minutes_distribution_path(anchor: "recipient-offices"), class: "lnk"
+      end %>
+    <% end %>
+    <section class="minutes-office-mail" aria-label="PDF to outside offices">
+      <% if manage && (held || !minutes.membership_approved? || issue&.state.in?(%w[pending ready needs_attention])) %>
+        <details>
+          <summary class="minutes-office-mail-line">
+            <%= description %>
+            <span class="minutes-office-mail-toggle"><span>Mailing options</span></span>
+          </summary>
+          <div class="minutes-office-mail-options">
+            <%= review %>
+            <% if held %>
+              <% if settings&.enabled? %>
+                <%= button_to "Resume this mailing", release_minutes_distribution_path(minutes_id: minutes.id), class: "btn-secondary" %>
+              <% else %>
+                <%= link_to "Enable automatic email to resume", minutes_distribution_path(edit: "delivery", anchor: "delivery-settings"), class: "lnk" %>
+              <% end %>
+            <% else %>
+              <%= form_with url: hold_minutes_distribution_path(minutes_id: minutes.id), class: "minutes-office-mail-form" do |form| %>
+                <div class="entry-field">
+                  <%= form.label :reason, "Reason for pausing" %>
+                  <%= form.text_field :reason, required: true %>
+                </div>
+                <%= form.submit issue&.state == "completed" ? "Pause future copies" : "Pause mailing", class: "btn-secondary" %>
+              <% end %>
+            <% end %>
+          </div>
         </details>
+      <% else %>
+        <div class="minutes-office-mail-line"><%= description %><%= review %></div>
       <% end %>
-    </div>
-  </section>
+    </section>
+  <% end %>
 <% end %>

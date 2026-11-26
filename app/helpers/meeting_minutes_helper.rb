@@ -65,13 +65,13 @@ module MeetingMinutesHelper
 
   def minutes_workflow_explanation(minutes)
     if minutes.membership_approved?
-      "The meeting's approval is recorded. This official copy cannot be edited."
+      "Members can read the final record."
     elsif minutes.pending_correction_approval
       "The meeting approved these minutes with corrections. Members can still read the last attested copy while the final copy is prepared."
     elsif minutes.attested?
-      "The Adjutant has attested this copy. Members can read it; the meeting's approval still needs to be recorded."
+      "Members can read the attested copy."
     elsif minutes.approved?
-      "The Commander has handed this draft to the Adjutant. The Adjutant can review and edit it, then attest the finished copy."
+      "The Commander sent this draft to the Adjutant for review."
     elsif minutes.reopened?
       if minutes.member_visible?
         "Either officer can correct the draft. The last attested copy remains available to members."
@@ -79,7 +79,7 @@ module MeetingMinutesHelper
         "Either officer can correct the draft. It remains officer-only until the Adjutant attests it."
       end
     else
-      "This working copy is editable. Members cannot read it until the Adjutant attests it."
+      "Visible only to officers."
     end
   end
 
@@ -87,10 +87,9 @@ module MeetingMinutesHelper
     meeting = minutes.meeting
     if minutes.editable? && minutes.approval_ready?
       if current_user.can?("attest_minutes")
-        label = minutes.pending_correction_approval ? "Confirm corrections and lock minutes" : "Attest and share with members"
-        { label:, path: admin_meeting_minutes_attestation_path(meeting), method: :post }
+        { signing: "attest", path: admin_meeting_minutes_attestation_path(meeting) }
       elsif minutes.draft? && current_user.can?("approve_minutes")
-        { label: "Send to Adjutant", path: admin_meeting_minutes_approval_path(meeting), method: :post }
+        { signing: "approve", path: admin_meeting_minutes_approval_path(meeting) }
       end
     elsif minutes.attested? && current_user.can?("record_minutes_approval")
       { label: "Record meeting approval", path: new_admin_meeting_minutes_membership_approval_path(meeting) }

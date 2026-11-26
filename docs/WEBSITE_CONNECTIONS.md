@@ -42,6 +42,18 @@ Connections last until revoked to avoid an unattended website outage. Replacemen
 uses create, install/test on the website server, then revoke the old token; the
 overlap makes rotation possible without downtime. Revoked rows are retained.
 
+## Creating a credential
+
+Agent access and Website connections each open a creation panel beside the
+existing list. The panel keeps its heading and purpose through confirmation
+and entry of the details. On phones the panel comes first and buttons stack.
+Use a navy primary action, a quieter alternative, and visible keyboard focus.
+
+A recent sign-in opens the details immediately. Otherwise the person chooses
+a registered passkey or email. Confirmation opens the details form. Only
+**Create token** or **Create connection** issues the credential. If the sign-in
+expires during entry, carry the name and selected expiry through confirmation.
+
 ## Website contract and rollout
 
 Payloads and publication/consent restrictions stay the same. The token selects
