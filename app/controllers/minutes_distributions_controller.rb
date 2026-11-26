@@ -69,7 +69,7 @@ class MinutesDistributionsController < ApplicationController
       audit!("hold", meeting_minutes: minutes, details: { reason: reason })
       minutes.email_distributions.recoverable.update_all(state: "held", error_message: reason)
     end
-    redirect_to admin_meeting_minutes_path(minutes.meeting), notice: "Minutes email held. The meeting record is unchanged."
+    redirect_to admin_meeting_minutes_path(minutes.meeting), notice: "Mailing paused for this meeting."
   end
 
   def release
@@ -85,7 +85,7 @@ class MinutesDistributionsController < ApplicationController
         latest.enqueue_delivery
       end
     end
-    redirect_to admin_meeting_minutes_path(minutes.meeting), notice: "Mailing hold released. Only the current recorded copy can proceed."
+    redirect_to admin_meeting_minutes_path(minutes.meeting), notice: "Mailing resumed for this meeting."
   end
 
   def retry_delivery

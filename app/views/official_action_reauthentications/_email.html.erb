@@ -1,0 +1,29 @@
+<% minutes = confirmation.meeting_minutes %>
+<% labels = minutes_signing_labels(confirmation.action, minutes) %>
+<div class="minutes-signing minutes-signing-email" id="minutes-signing">
+  <div class="minutes-signing-copy">
+    <h3><%= labels.fetch(:heading) %></h3>
+    <%= render "official_action_reauthentications/summary", confirmation: %>
+  </div>
+  <div class="minutes-email-entry">
+    <% if confirmation.expires_at.past? %>
+      <p>This request has expired. Review the minutes and start again.</p>
+      <%= link_to "Review minutes", admin_meeting_minutes_path(minutes.meeting), class: "btn-secondary" %>
+    <% else %>
+      <% if session.dig(MinutesActionIdentity::SESSION_KEY, "email_selector").present? %>
+        <%= form_with url: verify_official_action_reauthentication_path(confirmation_id: confirmation.id), class: "stacked-form", data: { turbo: false } do |form| %>
+          <p><strong>Check your email</strong> for the code or link.</p>
+          <div class="fl">
+            <%= form.label :code, "8-digit code" %>
+            <%= form.text_field :code, class: "f agent-code-input", inputmode: "numeric", autocomplete: "one-time-code", maxlength: 9, required: true, autofocus: true %>
+          </div>
+          <%= form.button labels.fetch(:email), class: "btn-confirm" %>
+        <% end %>
+      <% end %>
+      <div class="btnrow">
+        <%= button_to "Send a new code", official_action_reauthentication_path(confirmation_id: confirmation.id), class: "lnk" %>
+        <%= button_to "Cancel", official_action_reauthentication_path(confirmation_id: confirmation.id), method: :delete, class: "lnk" %>
+      </div>
+    <% end %>
+  </div>
+</div>

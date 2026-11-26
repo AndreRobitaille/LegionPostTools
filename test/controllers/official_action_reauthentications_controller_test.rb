@@ -21,21 +21,20 @@ class OfficialActionReauthenticationsControllerTest < ActionDispatch::Integratio
     @user.permission_grants.create!(capability: "approve_minutes")
     @session_record = sign_in_as(@user, authenticated_at: 1.hour.ago)
 
-    post admin_meeting_minutes_approval_path(@meeting)
+    perform_enqueued_jobs { post admin_meeting_minutes_approval_path(@meeting), params: { reviewed_digest: @minutes.digest_for("approve"), reviewed_version: @minutes.lock_version } }
     @confirmation = OfficialActionConfirmation.last
   end
 
   test "email code confirms and completes the exact pending approval" do
-    assert_redirected_to new_official_action_reauthentication_path
+    assert_redirected_to admin_meeting_minutes_path(@meeting, confirmation_id: @confirmation.id, anchor: "minutes-signing")
 
-    perform_enqueued_jobs { post official_action_reauthentication_path }
     challenge = MagicLink.order(:created_at).last
     assert_equal "official_minutes_action", challenge.purpose
     assert_equal @session_record, challenge.session
 
     delivered_email = ActionMailer::Base.deliveries.last
     code = delivered_email.text_part.body.to_s[/\b\d{4} \d{4}\b/]
-    post verify_official_action_reauthentication_path, params: { code: }
+    post verify_official_action_reauthentication_path(confirmation_id: @confirmation.id), params: { code: }
 
     assert_redirected_to admin_meeting_minutes_path(@meeting)
     assert @confirmation.reload.confirmed_at
@@ -46,42 +45,40 @@ class OfficialActionReauthenticationsControllerTest < ActionDispatch::Integratio
   end
 
   test "email link GET explains the action and only its confirmation POST completes it" do
-    challenge = MagicLink.create_for!(@user, purpose: "official_minutes_action", session: @session_record)
-
-    get magic_link_official_action_reauthentication_path(token: challenge.token)
-
+    url = URI(ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S+}])
+    challenge = MagicLink.last
+    get url.request_uri
     assert_response :success
-    assert_select "h2", text: "Send to Adjutant"
-    assert_select "form button", text: "Confirm and complete"
+    assert_select "h1", text: "Send to Adjutant"
+    assert_select "form button", text: "Send to Adjutant"
     assert_predicate @minutes.reload, :draft?
     assert_nil @confirmation.reload.confirmed_at
     assert_nil challenge.reload.used_at
 
-    post magic_link_official_action_reauthentication_path, params: { token: challenge.token }
+    post url.request_uri
 
     assert_redirected_to admin_meeting_minutes_path(@meeting)
     assert_predicate @minutes.reload, :approved?
     assert @confirmation.reload.consumed_at
     assert challenge.reload.used_at
+    assert_no_difference [ "MinutesRevision.count", "@minutes.lifecycle_events.count" ] do
+      post url.request_uri
+    end
   end
 
   test "the confirmation page names the action that authentication will complete" do
-    get new_official_action_reauthentication_path
-
+    follow_redirect!
     assert_response :success
-    assert_select "h2", text: "Send to Adjutant"
-    assert_select ".page-sub", text: /complete the action/
-    assert_select "code", count: 0
-    assert_select "form[action=?] button", official_action_reauthentication_path,
-      text: "Email me a code and link"
+    assert_select "#minutes-signing", text: /Send to Adjutant.*Only officers.*Check your email/m
+    assert_select "input[autocomplete='one-time-code']"
+    assert_select "form button", text: "Send to Adjutant"
   end
 
   test "identity confirmation rejects changed minutes instead of completing a stale handoff" do
-    perform_enqueued_jobs { post official_action_reauthentication_path }
     code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
     @minutes.sections.first.items.create!(title: "Changed during confirmation", behavior_type: "report_slot", position: 1)
 
-    post verify_official_action_reauthentication_path, params: { code: }
+    post verify_official_action_reauthentication_path(confirmation_id: @confirmation.id), params: { code: }
 
     assert_redirected_to admin_meeting_minutes_path(@meeting)
     assert_match(/changed/, flash[:alert])
@@ -91,13 +88,16 @@ class OfficialActionReauthenticationsControllerTest < ActionDispatch::Integratio
   end
 
   test "passkey confirmation completes the exact handoff and returns its workspace" do
-    get new_official_action_reauthentication_path
     credential = Struct.new(:id, :sign_count) do
       def verify(*) = true
     end.new("synthetic-official-passkey", 1)
     stored = @user.passkey_credentials.create!(external_id: credential.id, public_key: "synthetic-key", sign_count: 0)
+    post admin_meeting_minutes_approval_path(@meeting), params: {
+      identity_method: "passkey", reviewed_digest: @minutes.digest_for("approve"), reviewed_version: @minutes.lock_version
+    }
+    @confirmation = OfficialActionConfirmation.last
     with_stubbed_class_method(WebAuthn::Credential, :from_get, ->(*) { credential }) do
-      post authentication_passkeys_path, params: { publicKeyCredential: { id: credential.id } }, as: :json
+      post passkey_official_action_reauthentication_path(confirmation_id: @confirmation.id), params: { publicKeyCredential: { id: credential.id } }, as: :json
     end
 
     assert_response :success
@@ -110,18 +110,60 @@ class OfficialActionReauthenticationsControllerTest < ActionDispatch::Integratio
 
   test "Adjutant email confirmation attests a draft without Commander handoff or another click" do
     @user.permission_grants.create!(capability: "attest_minutes")
-    post admin_meeting_minutes_attestation_path(@meeting)
+    perform_enqueued_jobs { post admin_meeting_minutes_attestation_path(@meeting), params: { reviewed_digest: @minutes.digest_for("attest"), reviewed_version: @minutes.lock_version } }
     attestation_confirmation = OfficialActionConfirmation.last
     assert_equal "attest", attestation_confirmation.action
-    perform_enqueued_jobs { post official_action_reauthentication_path }
     code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
 
-    post verify_official_action_reauthentication_path, params: { code: }
+    post verify_official_action_reauthentication_path(confirmation_id: attestation_confirmation.id), params: { code: }
 
     assert_redirected_to admin_meeting_minutes_path(@meeting)
     assert_predicate @minutes.reload, :attested?
     assert_nil @minutes.current_revision.approved_by_id
     assert attestation_confirmation.reload.consumed_at
+  end
+
+  test "resending keeps the same action and cancellation ends the request" do
+    original_url = URI(ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S+}])
+    perform_enqueued_jobs { post official_action_reauthentication_path(confirmation_id: @confirmation.id) }
+    replacement_url = URI(ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S+}])
+    assert_not_equal original_url, replacement_url
+    post original_url.request_uri
+    assert_match(/replaced/, flash[:alert])
+    follow_redirect!
+    assert_select "input[autocomplete=one-time-code]"
+
+    delete official_action_reauthentication_path(confirmation_id: @confirmation.id)
+    assert_redirected_to admin_meeting_minutes_path(@meeting)
+    post replacement_url.request_uri
+    assert_match(/start again/, flash[:alert])
+    assert_predicate @minutes.reload, :draft?
+    assert_empty @minutes.revisions
+  end
+
+  test "expiry and ended officer duties leave the draft intact" do
+    url = URI(ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S+}])
+    travel 11.minutes do
+      post url.request_uri
+      assert_match(/start again/, flash[:alert])
+      assert_empty @minutes.reload.revisions
+    end
+    @user.permission_grants.find_by!(capability: "approve_minutes").destroy!
+    post url.request_uri
+    assert_match(/permission changed/, flash[:alert])
+    assert_predicate @minutes.reload, :draft?
+    assert_nil @confirmation.reload.confirmed_at
+    assert_empty @minutes.revisions
+  end
+
+  test "a change since the review page asks the officer to review the new copy" do
+    reviewed = { reviewed_version: @minutes.lock_version, reviewed_digest: @minutes.digest_for("approve") }
+    @minutes.sections.first.items.create!(title: "Updated report", behavior_type: "report_slot", position: 1)
+    assert_no_difference [ "OfficialActionConfirmation.count", "MagicLink.count" ] do
+      post admin_meeting_minutes_approval_path(@meeting), params: reviewed
+    end
+    assert_redirected_to admin_meeting_minutes_path(@meeting)
+    assert_match(/Review the current copy/, flash[:alert])
   end
 
   test "signing out with a pending official action clears authentication and preserves the confirmation" do

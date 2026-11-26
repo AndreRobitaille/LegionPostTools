@@ -21,29 +21,34 @@ module MinutesDistributionsHelper
     MinutesDistribution::EmailTemplate.render(text, values)
   end
 
-  def minutes_email_status(minutes)
-    settings = minutes.organization.minutes_distribution_setting
-    issue = minutes.email_distributions.order(:id).last
-    return "Mailing held for officer review" if MinutesDistributionEvent.held?(minutes) || issue&.state == "held"
-    if minutes.editable? && issue
-      return "The earlier copy was queued or sent; corrected text will be emailed after attestation."
+  def minutes_email_status(minutes, settings:, issue:, meeting_held:)
+    return "Mailing paused for this meeting." if meeting_held
+    if minutes.editable? && settings&.includes_minutes?(minutes)
+      count = minutes_email_recipient_count(minutes)
+      return "No office addresses are eligible for this copy." if count.zero?
+      addresses = pluralize(count, "eligible address")
+      next_mailing = issue ? "Changed copies go to #{addresses} after signing." : "Emailed to #{addresses} after signing."
+      return issue&.state == "held" ? "Earlier mailing paused. #{next_mailing}" : next_mailing
     end
-    if issue
-      return "No new email needed — the text is unchanged" if issue.deliveries.exists? && issue.deliveries.all? { |delivery| delivery.status == "unchanged" }
-      if issue.state == "completed"
-        count = issue.deliveries.where(status: "sent").count
-        text = "Sent to Loops for #{pluralize(count, 'address')}"
-        text += ". No new email needed for unchanged approval." if minutes.membership_approved?
-        return text
-      end
-      return "Needs attention" if issue.state == "needs_attention" || issue.error_message.present?
-      return "Preparing PDF and checking recipients" if issue.state == "pending"
-      return "Queued for delivery" if issue.state == "ready"
-      return "Replaced by a newer attested copy" if issue.state == "superseded"
-    end
-    return "Automatic minutes email is paused" unless settings&.includes_minutes?(minutes)
 
-    "After attestation: up to #{pluralize(minutes_email_recipient_count(minutes), 'email address')}"
+    return "This mailing is paused." if issue&.state == "held"
+    return "Delivery needs review." if issue&.state == "needs_attention" || issue&.error_message.present?
+
+    case issue&.state
+    when "pending" then "Preparing the PDF and checking recipients."
+    when "ready" then "PDF queued for delivery."
+    when "superseded" then "A newer copy replaced this mailing."
+    when "completed"
+      results = issue.deliveries.group(:status).count
+      return "Text unchanged. No repeat email." if results.keys == [ "unchanged" ]
+      return "No email sent." if results.fetch("sent", 0).zero?
+
+      status = "Email service accepted the PDF for #{pluralize(results.fetch('sent'), 'address')}."
+      status += " Approval alone sends no new email." if minutes.membership_approved?
+      status
+    else
+      "Automatic email is off for the Post." if minutes.editable? && settings&.meeting_type_ids&.include?(minutes.meeting_type_id)
+    end
   end
 
   def minutes_email_recipient_count(minutes)

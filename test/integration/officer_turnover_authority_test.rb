@@ -233,17 +233,18 @@ class OfficerTurnoverAuthorityTest < ActionDispatch::IntegrationTest
       get new_admin_meeting_minutes_membership_approval_path(@meeting)
       assert_response :success
       post admin_meeting_minutes_membership_approval_path(@meeting), params: {
+        reviewed_digest: @minutes.digest_for("record_membership_approval"), reviewed_version: @minutes.lock_version,
         minutes_membership_approval: { approving_meeting_id: later.id, disposition: "approved_as_presented" }
       }
-      assert_redirected_to new_official_action_reauthentication_path
       confirmation = actor.official_action_confirmations.order(:id).last
+      assert_redirected_to new_admin_meeting_minutes_membership_approval_path(@meeting, confirmation_id: confirmation.id, anchor: "minutes-signing")
       assert_equal "record_membership_approval", confirmation.action
       assert_equal browser_session.id, confirmation.session_id
       assert_nil confirmation.agent_access_token_id
-      perform_enqueued_jobs { post official_action_reauthentication_path }
+      perform_enqueued_jobs
       code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
       assert code.present?
-      post verify_official_action_reauthentication_path, params: { code: }
+      post verify_official_action_reauthentication_path(confirmation_id: confirmation.id), params: { code: }
       assert_redirected_to admin_meeting_minutes_path(@meeting)
       assert_predicate @minutes.reload, :membership_approved?
       approval = @minutes.membership_approval

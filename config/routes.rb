@@ -51,7 +51,8 @@ Rails.application.routes.draw do
     get :magic_link, on: :collection
     post :magic_link, on: :collection
   end
-  resource :official_action_reauthentication, only: %i[new create] do
+  resource :official_action_reauthentication, only: %i[new create destroy] do
+    post :passkey, on: :collection
     post :verify, on: :collection
     get :magic_link, on: :collection
     post :magic_link, on: :collection

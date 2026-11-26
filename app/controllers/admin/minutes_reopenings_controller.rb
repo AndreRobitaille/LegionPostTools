@@ -4,38 +4,17 @@ module Admin
     before_action :require_reopening_capability
     before_action :ensure_reopenable
 
-    def new
-      @confirmation = confirmation_from_params
-      @reason = @confirmation&.action_payload&.fetch("reason", nil)
-    end
+    include MinutesActionIdentity
+
+    def new; end
 
     def create
-      confirmation = confirmation_from_params
-      if confirmation&.confirmed_at?
-        @minutes.reopen_with_confirmation!(confirmation:)
-        clear_pending_confirmation
-        redirect_to admin_meeting_minutes_path(@meeting),
-          notice: "Minutes reopened. Enter the corrections, then the Adjutant attests the finished copy."
-      else
-        reason = params.require(:minutes_reopening).fetch(:reason).to_s.strip
-        if reason.blank?
-          return redirect_to new_admin_meeting_minutes_reopening_path(@meeting),
-            alert: "Explain why these minutes need to be reopened."
-        end
-
-        confirmation = OfficialActionConfirmation.prepare!(
-          minutes: @minutes,
-          user: current_user,
-          session: Current.session,
-          action: "reopen",
-          action_payload: { reason: }
-        )
-        session[OfficialActionReauthenticationsController::PENDING_SESSION_KEY] = confirmation.id
-        redirect_to new_official_action_reauthentication_path
+      reason = params.require(:minutes_reopening).fetch(:reason, "").to_s.strip
+      if reason.blank?
+        return redirect_to new_admin_meeting_minutes_reopening_path(@meeting), alert: "Enter a reason for reopening these minutes."
       end
-    rescue ActiveRecord::RecordInvalid, ActiveRecord::StaleObjectError => error
-      redirect_to admin_meeting_minutes_path(@meeting),
-        alert: error.record&.errors&.full_messages&.to_sentence.presence || "The minutes could not be reopened."
+
+      begin_minutes_confirmation("reopen", { reason: })
     end
 
     private
@@ -54,21 +33,6 @@ module Admin
 
       redirect_to admin_meeting_minutes_path(@meeting),
         alert: "Only a draft handed to the Adjutant or an attested copy can be reopened."
-    end
-
-    def confirmation_from_params
-      return if params[:confirmation_id].blank?
-
-      current_user.official_action_confirmations.find_by!(
-        id: params[:confirmation_id],
-        meeting_minutes: @minutes,
-        action: "reopen",
-        session: Current.session
-      )
-    end
-
-    def clear_pending_confirmation
-      session.delete(OfficialActionReauthenticationsController::PENDING_SESSION_KEY)
     end
   end
 end

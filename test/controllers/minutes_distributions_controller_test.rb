@@ -62,6 +62,8 @@ class MinutesDistributionsControllerTest < ActionDispatch::IntegrationTest
 
   test "a draft editing grant alone cannot view or manage external recipients" do
     officer.permission_grants.where.not(capability: "manage_minutes").destroy_all
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail", count: 0
     get minutes_distribution_path
     assert_redirected_to root_path
     assert_no_difference "MinutesRecipient.count" do
@@ -73,46 +75,76 @@ class MinutesDistributionsControllerTest < ActionDispatch::IntegrationTest
     issue = attest
     patch minutes_distribution_path, params: { minutes_distribution_setting: settings_params.merge(enabled: false) }
     assert_equal "held", issue.reload.state
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail a", text: "Enable automatic email to resume"
     patch minutes_distribution_path, params: { minutes_distribution_setting: settings_params.merge(enabled: true) }
     dispatch(issue)
     assert_empty provider.messages
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail button", text: "Resume this mailing"
     post release_minutes_distribution_path(minutes_id: minutes.id)
     assert_redirected_to admin_meeting_minutes_path(minutes.meeting)
     dispatch(issue)
     assert_equal 1, provider.messages.size
   end
 
+  test "only applicable meetings show mailing status and attesters without recipient access see the consequence" do
+    settings = organization.minutes_distribution_setting
+    settings.update!(enabled: false, meeting_type_ids: [])
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail", count: 0
+
+    settings.update!(meeting_type_ids: [ type.id ])
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail", text: /Automatic email is off for the Post/
+
+    settings.update!(enabled: true)
+    officer.permission_grants.where(capability: "manage_settings").destroy_all
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail", text: /1 eligible address/ do
+      assert_select "a, form", count: 0
+    end
+    recipient.update!(active: false)
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-office-mail", text: /No office addresses are eligible/
+  end
+
   test "meeting hold applies before attestation and preserves the record" do
     post hold_minutes_distribution_path(minutes_id: minutes.id), params: { reason: "Check restricted business" }
     assert MinutesDistributionEvent.held?(minutes)
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-status-card .minutes-office-mail", text: /PDF to outside offices.*Mailing paused for this meeting/m
     issue = attest
     assert_equal "held", issue.state
     assert_equal "attested", minutes.reload.status
     dispatch(issue)
     assert_empty provider.messages
     get admin_meeting_minutes_path(minutes.meeting)
-    assert_select "section[aria-label='Minutes email']", text: /Mailing held for officer review/
+    assert_select ".minutes-status-card .minutes-office-mail", text: /Mailing paused for this meeting/
     post release_minutes_distribution_path(minutes_id: minutes.id)
     dispatch(issue)
     assert_equal 1, provider.messages.size
   end
 
   test "existing attestation confirmation discloses outside distribution and completing it saves email intent" do
-    post admin_meeting_minutes_attestation_path(minutes.meeting)
-    assert_redirected_to new_official_action_reauthentication_path
-    get new_official_action_reauthentication_path
+    get admin_meeting_minutes_path(minutes.meeting)
+    assert_select ".minutes-status-card .minutes-office-mail", text: /PDF to outside offices.*1 eligible address/m
+    perform_enqueued_jobs do
+      post admin_meeting_minutes_attestation_path(minutes.meeting), params: { reviewed_digest: minutes.digest_for("attest"), reviewed_version: minutes.lock_version }
+    end
+    url = URI(ActionMailer::Base.deliveries.last.text_part.body.to_s[%r{https?://\S+}])
+    get url.request_uri
     assert_response :success
-    assert_select ".official-confirmation-summary", text: /Minutes email:.*1 email address.*designated outside offices/m
-    challenge = MagicLink.create_for!(officer, purpose: "official_minutes_action", session: @session_record)
+    assert_select ".minutes-signing", text: /PDF to outside offices.*1 eligible address/m
     assert_difference "MinutesDistribution.count", 1 do
-      post magic_link_official_action_reauthentication_path, params: { token: challenge.token }
+      post url.request_uri
     end
     assert_redirected_to admin_meeting_minutes_path(minutes.meeting)
     assert_equal "attested", minutes.reload.status
     issue = minutes.email_distributions.sole
     dispatch(issue)
     get admin_meeting_minutes_path(minutes.meeting)
-    assert_select "section[aria-label='Minutes email']", text: /Sent to Loops for 1 address/
+    assert_select ".minutes-office-mail", text: /Email service accepted the PDF for 1 address/
     assert_equal "sent", issue.deliveries.sole.reload.status
     assert_equal 1, provider.messages.size
   end

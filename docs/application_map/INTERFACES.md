@@ -21,7 +21,7 @@ an entry is not a statement that a runtime request succeeded.
 | Enrollment confirmation `/passkey_enrollment_reauthentication` | Email code/link, passkey confirmation, cancel pending enrollment | Current session and pending enrollment bound together | AUTH-06, AUTH-09 |
 | Personal Agent access `/agent_access_tokens` | List, creation form, one-time token reveal/copy, revoke consequence screen | Own token; recent authentication for issuance; 30/90/180-day expiry | AUTH-08 |
 | Token identity confirmation `/agent_access_reauthentication` | Email code/link or passkey; returns to agent/website token creation as appropriate | Current session, purpose-specific identity | AUTH-08–09, PUB-01 |
-| Official identity confirmation `/official_action_reauthentication` | Consequence/identity page, email code/link or passkey; successful confirmation completes prepared act | Exact minutes/action/payload/version/digest, live authority, one-use session-bound record | AUTH-09, MIN-07–10 |
+| Official identity confirmation `/official_action_reauthentication` | In-place email code or passkey, with a separate review for an emailed link. Successful confirmation completes the selected act | Exact minutes/action/payload/version/digest, live authority, one-use session-bound record | AUTH-09, MIN-07–10 |
 
 Source families: [sessions](../../app/controllers/sessions_controller.rb),
 [passkeys](../../app/controllers/passkeys_controller.rb),
@@ -67,8 +67,8 @@ Scoped controllers inherit their own guards; technical screens use Admin::BaseCo
 | Restricted transcript | New pasted/plain-text source, retention selection, restricted detail | Write: `manage_minutes`; read: that capability or `view_internal_records`; one source per Meeting | MIN-04 |
 | AI draft run | Request form, progress/status polling, successful review page, error category, source lines, suggestions and attendance sheet | `manage_minutes`, editable minutes, available source; paid request distinct from viewing | MIN-05–06 |
 | Suggestion review | Use, edit-and-use, discard; attendance choices, counters; explicit Endeavor confirm/create/reuse | Human review; creating Endeavor additionally needs `manage_agendas`; no automatic official-record action | MIN-06, AGN-04 |
-| Commander handoff | Consequence/confirmation pages; Send to Adjutant | `approve_minutes`; editable handoff copy remains private and editable | MIN-07, AUTH-09 |
-| Adjutant attestation | Consequence/confirmation pages; Attest and share / Confirm corrections and lock | `attest_minutes`, resolved attendance/latest AI review, exact text binding | MIN-08, MIN-10 |
+| Commander handoff | Meeting or minutes card with signing controls for Send to Adjutant | `approve_minutes`; editable handoff copy remains private and editable | MIN-07, AUTH-09 |
+| Adjutant attestation | Meeting or minutes card with signing controls for attestation and corrected-copy locking | `attest_minutes`, resolved attendance/latest AI review, exact text binding | MIN-08, MIN-10 |
 | Reopening | Reason form, identity confirmation, return to editable copy | `manage_minutes`; handoff/attested only; final official minutes never reopen | MIN-10–11 |
 | Meeting approval | Later same-body Meeting selector, actual disposition/note, corrections pending flag, identity confirmation | `record_minutes_approval`; attested copy; eligible meeting already occurred and later than recorded occurrence | MIN-09–11 |
 | Jobs `/admin/jobs` | Queue/worker heartbeat, ledger, attention/discarded filters; linked run/sync/history; minutes retry/discard/restore | Minutes runs: `manage_minutes`; history: `manage_agendas`; Loops: `manage_settings`; actions retain separate guards | MIN-12, ADMIN-06, END-04 |

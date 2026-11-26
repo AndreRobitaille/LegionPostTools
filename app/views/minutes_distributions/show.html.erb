@@ -11,7 +11,7 @@
 </div>
 <div class="minutes-email-layout">
   <div>
-    <%= render "shared/section_panel", label: "Recipient offices" do %>
+    <%= render "shared/section_panel", label: "Recipient offices", id: "recipient-offices" do %>
       <p>Both meeting types use this list. Separate offices may receive copies at separate addresses, even when held by the same person.</p>
       <% if @recipients.empty? %><p>No outside offices have been added yet.</p><% end %>
       <% @recipients.each do |recipient| %>
@@ -44,7 +44,7 @@
         <% end %>
       </details>
     <% end %>
-    <%= render "shared/section_panel", label: "Recent mailings" do %>
+    <%= render "shared/section_panel", label: "Recent mailings", id: "recent-mailings" do %>
       <% if @issues.empty? %><p>Future attestations will appear here. Existing minutes are not emailed automatically.</p><% end %>
       <% @issues.each do |issue| %>
         <article class="minutes-email-issue">

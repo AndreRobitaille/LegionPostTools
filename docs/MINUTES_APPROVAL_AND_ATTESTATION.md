@@ -28,11 +28,19 @@ reopen; later amendments remain planned.
 
 ## Confirmation behavior
 
-The status-card action opens one consequence and identity-confirmation page. Meeting
-approval first collects the real approving meeting and decision. Identity is confirmed
-by email or passkey. Successful identity confirmation completes the
-specific action and returns to the minutes with the new status. There is no extra
-approval button after authentication. GET requests never execute an official action.
+On the Meeting page and in the minutes workspace, the paper status card pairs the
+action heading with its consequence and signing choices. Use a navy action button
+and an outlined email alternative, stacked on phones. Email is primary when the
+officer has no usable passkey. Reopening and meeting approval put the same choices
+under the officer's reason or decision. Disclose applicable outside distribution
+and mailing holds before the officer signs.
+
+One click starts the device prompt or sends the code and link. Email entry stays
+in the originating card or form and its final button names the action. Opening
+an emailed link displays the meeting and the consequence before the officer
+submits. Successful verification completes the action and shows the new status.
+Cancellation, expiry and changed records require a fresh request. Opening or
+revisiting a page never signs minutes.
 
 Each confirmation remains one-use, session-bound, short-lived, and bound to the action,
 record lock version, content digest, and supplied meeting/correction details. Changes
@@ -45,14 +53,26 @@ The audience is infrequent Commander and Adjutant users. Both the Meeting page a
 minutes workspace lead with the same plain status, what that status means, and who acts
 next. A bounded paper card holds the status and its action together. The signature
 element is a three-stage record progression: **Draft → Attested → Approved and locked**.
-A Commander handoff and corrections are explanations within that progression, rather
-than competing kinds of approval.
+A Commander handoff and corrections are explained within those stages.
+
+A wide minutes card reads across one row. The current state is on the left, the
+signing consequence sits beside it, and the signing buttons are grouped on the
+right. A slim three-stage strip leads the card. Document links sit with the
+meeting title. Use the width
+of the card to choose the layout, since the Meeting page shares space with
+the agenda. In a narrow card the same content follows its reading order,
+with the signing choices directly below the consequence. When the Post emails
+this kind of minutes or a mailing is on record, a quiet row in the same card
+names the outside offices as the audience and explains what happens to the PDF.
+Keep that status visible when mailing options are closed. Expand the row in
+place for recipient review and meeting-specific controls. A meeting with no
+applicable mailing needs no separate card.
 
 Follow The 1919 system: navy #0A2240, gold #C6A15B, paper #FBF7EC, cream #F4EEDD,
 officer blue #2F5F87, and completion green #3F6B3F. Working UI uses system sans; serif is
 reserved for the document. Reuse existing cards, buttons, and shared section headings.
 Body and interactive text are at least 16px; secondary text at least 14px; labels at
-least 13px. At 390px the progression stacks, actions wrap, and the page never scrolls
+least 13px. At 390px the three stages share one row, actions wrap, and the page never scrolls
 horizontally. Digests and full provenance belong in expandable history, not primary
 instructions.
 

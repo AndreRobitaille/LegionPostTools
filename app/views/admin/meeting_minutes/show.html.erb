@@ -18,10 +18,13 @@
     <h1 class="page-title"><%= @minutes.title %></h1>
     <p class="page-sub"><%= @minutes.meeting_body.name %> &middot; <%= legion_datetime(@minutes.starts_at) %></p>
   </div>
+  <div class="minutes-record-links">
+    <%= link_to minutes_pdf_action_label(@minutes), print_admin_meeting_minutes_path(@meeting), class: "lnk", data: { turbo: false } %>
+    <% if @minutes.attested? && current_user.can?("manage_minutes") %><%= link_to "Correct this copy", new_admin_meeting_minutes_reopening_path(@meeting), class: "lnk" %><% end %>
+  </div>
 </div>
 
 <%= render "workflow", minutes: @minutes %>
-<%= render "minutes_distributions/meeting_status", minutes: @minutes %>
 
 <% if editable %>
   <div class="btnrow minutes-editor-actions">

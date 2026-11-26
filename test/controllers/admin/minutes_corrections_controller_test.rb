@@ -33,22 +33,23 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
 
     get new_admin_meeting_minutes_reopening_path(@minutes_meeting)
     assert_response :success
-    assert_select "h1", text: "Reopen this exact revision"
-    assert_select ".official-confirmation-summary", text: /does not record or repeat a membership vote/i
+    assert_select "h1", text: "Reopen minutes for correction"
+    assert_select ".official-action-form", text: /Your reason stays in the record.*Members can still read the last attested copy/m
 
     assert_difference -> { OfficialActionConfirmation.count }, 1 do
       post admin_meeting_minutes_reopening_path(@minutes_meeting), params: {
+        reviewed_digest: @minutes.digest_for("reopen"), reviewed_version: @minutes.lock_version,
         minutes_reopening: { reason: "Incorporate the correction adopted during membership approval." }
       }
     end
 
     confirmation = OfficialActionConfirmation.last
-    assert_redirected_to new_official_action_reauthentication_path
+    assert_redirected_to new_admin_meeting_minutes_reopening_path(@minutes_meeting, confirmation_id: confirmation.id, anchor: "minutes-signing")
     assert_equal "reopen", confirmation.action
     assert_equal "Incorporate the correction adopted during membership approval.", confirmation.action_payload.fetch("reason")
-    confirmation.update!(confirmed_at: Time.current)
-
-    post admin_meeting_minutes_reopening_path(@minutes_meeting), params: { confirmation_id: confirmation.id }
+    perform_enqueued_jobs
+    code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
+    post verify_official_action_reauthentication_path(confirmation_id: confirmation.id), params: { code: }
 
     assert_redirected_to admin_meeting_minutes_path(@minutes_meeting)
     assert_predicate @minutes.reload, :reopened?
@@ -78,17 +79,18 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "label", text: /Approved with corrections/
 
     post admin_meeting_minutes_membership_approval_path(@minutes_meeting), params: {
+      reviewed_digest: @minutes.digest_for("record_membership_approval"), reviewed_version: @minutes.lock_version,
       minutes_membership_approval: {
         approving_meeting_id: @approving_meeting.id,
         disposition: "approved_as_corrected"
       }
     }
     confirmation = OfficialActionConfirmation.last
-    assert_redirected_to new_official_action_reauthentication_path
+    assert_redirected_to new_admin_meeting_minutes_membership_approval_path(@minutes_meeting, confirmation_id: confirmation.id, anchor: "minutes-signing")
     assert_equal "record_membership_approval", confirmation.action
-    confirmation.update!(confirmed_at: Time.current)
-
-    post admin_meeting_minutes_membership_approval_path(@minutes_meeting), params: { confirmation_id: confirmation.id }
+    perform_enqueued_jobs
+    code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
+    post verify_official_action_reauthentication_path(confirmation_id: confirmation.id), params: { code: }
 
     assert_redirected_to admin_meeting_minutes_path(@minutes_meeting)
     assert_predicate @minutes.reload, :membership_approved?
@@ -103,7 +105,7 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
     get admin_meeting_minutes_path(@approving_meeting)
 
     assert_response :success
-    assert_select "button", text: "Send to Adjutant"
+    assert_select "h3", text: "Send to Adjutant"
     assert_select "a", text: "Record meeting approval", count: 0
     assert_predicate september_minutes, :draft?
   end
@@ -119,7 +121,8 @@ class Admin::MinutesCorrectionsControllerTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    assert_redirected_to new_admin_meeting_minutes_membership_approval_path(@minutes_meeting)
+    assert_response :unprocessable_entity
+    assert_select "input[value=approved_as_corrected][checked]"
     assert_equal "Describe the corrections approved at the meeting.", flash[:alert]
     assert_predicate @minutes.reload, :attested?
     assert_nil @minutes.pending_correction_approval
