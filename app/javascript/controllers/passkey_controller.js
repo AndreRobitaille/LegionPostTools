@@ -5,10 +5,18 @@ import { create, get, supported } from "@github/webauthn-json"
 // Register: options -> navigator.credentials.create -> POST /passkeys/registration
 // Authenticate: options -> navigator.credentials.get -> POST /passkeys/authentication
 export default class extends Controller {
-  static targets = ["status", "submit"]
-  static values = { redirect: { type: String, default: "/" } }
+  static targets = ["status", "submit", "email"]
+  static values = {
+    redirect: { type: String, default: "/" },
+    optionsUrl: { type: String, default: "/passkeys/authentication_options" },
+    verifyUrl: { type: String, default: "/passkeys/authentication" }
+  }
 
   connect() {
+    if (this.hasSubmitTarget && this.hasEmailTarget && supported()) {
+      this.submitTarget.hidden = false
+      this.emailTarget.classList.replace("btn-primary", "btn-secondary")
+    }
     if (!supported()) {
       // No WebAuthn in this browser: disable the trigger, leave the email link as the path.
       if (this.hasSubmitTarget) {
@@ -42,12 +50,12 @@ export default class extends Controller {
     if (!supported()) return
     this.#busy("Waiting for your device…")
     try {
-      const options = await this.#postJSON("/passkeys/authentication_options")
+      const options = await this.#postJSON(this.optionsUrlValue)
       const assertion = await get({ publicKey: options })
-      const res = await this.#postJSON("/passkeys/authentication", { publicKeyCredential: assertion })
+      const res = await this.#postJSON(this.verifyUrlValue, { publicKeyCredential: assertion })
       if (res) window.location.assign(res.redirect_url || this.redirectValue)
     } catch (error) {
-      this.#fail("That didn't work — try the email link instead.")
+      this.#fail(this.hasEmailTarget ? "Try your passkey again or use email." : "That didn't work — try the email link instead.")
     }
   }
 
@@ -79,11 +87,13 @@ export default class extends Controller {
 
   #busy(message) {
     if (this.hasSubmitTarget) this.submitTarget.disabled = true
+    if (this.hasEmailTarget) this.emailTarget.disabled = true
     this.#status(message, false)
   }
 
   #fail(message) {
     if (this.hasSubmitTarget) this.submitTarget.disabled = false
+    if (this.hasEmailTarget) this.emailTarget.disabled = false
     this.#status(message, true)
   }
 

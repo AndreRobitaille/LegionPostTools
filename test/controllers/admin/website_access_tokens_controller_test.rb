@@ -61,15 +61,17 @@ class Admin::WebsiteAccessTokensControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference "WebsiteAccessToken.count" do
       post admin_website_access_tokens_path, params: { website_access_token: { name: "Website" } }
     end
-    assert_redirected_to new_agent_access_reauthentication_path
+    assert_redirected_to new_admin_website_access_token_path
     follow_redirect!
-    assert_select ".page-sub", text: /website token/
-    perform_enqueued_jobs { post agent_access_reauthentication_path }
+    assert_select ".token-setup h2", text: "New website connection"
+    perform_enqueued_jobs { post agent_access_reauthentication_path(kind: "website") }
     code = ActionMailer::Base.deliveries.last.text_part.body.to_s[/\b\d{4} \d{4}\b/]
-    post verify_agent_access_reauthentication_path, params: { code: code }
+    post verify_agent_access_reauthentication_path, params: { code: code, kind: "website" }
     assert_redirected_to new_admin_website_access_token_path
     follow_redirect!
     assert_response :success
+    assert_select "input[name='website_access_token[name]'][value=Website]"
+    assert_equal 0, WebsiteAccessToken.count
   end
 
   test "invalid names retain the form and other Post tokens cannot be managed" do

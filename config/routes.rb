@@ -46,7 +46,9 @@ Rails.application.routes.draw do
     post :magic_link, on: :collection
   end
   resource :profile, only: %i[show]
-  resource :agent_access_reauthentication, only: %i[new create] do
+  resource :agent_access_reauthentication, only: %i[new create destroy] do
+    post :passkey_options, on: :collection
+    post :passkey, on: :collection
     post :verify, on: :collection
     get :magic_link, on: :collection
     post :magic_link, on: :collection

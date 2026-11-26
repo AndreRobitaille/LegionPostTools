@@ -20,7 +20,7 @@ an entry is not a statement that a runtime request succeeded.
 | Passkey endpoints `/passkeys` | Credential list, registration/authentication options/submission, rename/removal | Own credential scope; fresh identity for enrollment; user-verified WebAuthn | AUTH-03, AUTH-06 |
 | Enrollment confirmation `/passkey_enrollment_reauthentication` | Email code/link, passkey confirmation, cancel pending enrollment | Current session and pending enrollment bound together | AUTH-06, AUTH-09 |
 | Personal Agent access `/agent_access_tokens` | List, creation form, one-time token reveal/copy, revoke consequence screen | Own token; recent authentication for issuance; 30/90/180-day expiry | AUTH-08 |
-| Token identity confirmation `/agent_access_reauthentication` | Email code/link or passkey; returns to agent/website token creation as appropriate | Current session, purpose-specific identity | AUTH-08–09, PUB-01 |
+| Token identity confirmation `/agent_access_reauthentication` | In-panel code or passkey and same-browser email link, returning to the personal or website details form | Current session, purpose-specific identity | AUTH-08–09, PUB-01 |
 | Official identity confirmation `/official_action_reauthentication` | In-place email code or passkey, with a separate review for an emailed link. Successful confirmation completes the selected act | Exact minutes/action/payload/version/digest, live authority, one-use session-bound record | AUTH-09, MIN-07–10 |
 
 Source families: [sessions](../../app/controllers/sessions_controller.rb),

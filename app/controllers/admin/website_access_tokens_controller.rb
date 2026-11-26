@@ -1,27 +1,30 @@
 module Admin
   class WebsiteAccessTokensController < BaseController
-    before_action :prevent_credential_caching
-    before_action :require_recent_authentication, only: %i[new create]
+    include TokenCreation
+
+    before_action :require_recent_token_authentication, only: :create
     before_action :set_website_access_token, only: %i[revoke destroy]
 
     def index
-      @organization = Organization.first!
-      @website_access_tokens = @organization.website_access_tokens.includes(created_by: :person, revoked_by: :person).newest_first
+      load_token_workspace
     end
 
     def new
-      @website_access_token = Organization.first!.website_access_tokens.new
+      render_token_setup
     end
 
     def create
-      @website_access_token, @plaintext_token = WebsiteAccessToken.issue!(
+      @draft = creation_params.to_h
+      @website_access_token, @plaintext_token = issue_from_token_form(WebsiteAccessToken,
         organization: Organization.first!, actor: current_user,
-        name: params.require(:website_access_token).permit(:name)[:name].to_s
+        name: @draft["name"]
       )
+      return redirect_to token_list_path, status: :see_other unless @plaintext_token
+      clear_token_setup
       render :created, status: :created
     rescue ActiveRecord::RecordInvalid => error
-      @website_access_token = error.record
-      render :new, status: :unprocessable_entity
+      @errors = error.record.errors.full_messages
+      render_token_setup(status: :unprocessable_entity)
     end
 
     def revoke
@@ -34,23 +37,10 @@ module Admin
 
     private
 
-    def require_recent_authentication
-      if Current.session&.recently_authenticated?
-        session.delete(:website_token_reauthentication)
-        return
-      end
-
-      session[:website_token_reauthentication] = true
-      redirect_to new_agent_access_reauthentication_path,
-        alert: "Confirm your identity before creating a website token."
-    end
+    def website_connection? = true
 
     def set_website_access_token
       @website_access_token = Organization.first!.website_access_tokens.find(params[:id])
-    end
-
-    def prevent_credential_caching
-      response.headers["Cache-Control"] = "no-store"
     end
   end
 end

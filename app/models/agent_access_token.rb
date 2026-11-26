@@ -15,8 +15,7 @@ class AgentAccessToken < ApplicationRecord
 
   scope :newest_first, -> { order(created_at: :desc) }
 
-  def self.issue!(user:, name:, expires_in:)
-    public_id = SecureRandom.hex(PUBLIC_ID_BYTES)
+  def self.issue!(user:, name:, expires_in:, public_id: SecureRandom.hex(PUBLIC_ID_BYTES))
     secret = SecureRandom.hex(SECRET_BYTES)
     plaintext = [ TOKEN_PREFIX, public_id, secret ].join("_")
     token = create!(

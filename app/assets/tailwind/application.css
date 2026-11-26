@@ -2821,3 +2821,32 @@ a.mrow-id:hover .mrow-name { text-decoration: underline; }
 .buddy-coverage-summary dd { margin: 8px 0 0; font-size: 20px; font-weight: 700; color: var(--color-navy); }
 @media (max-width: 900px) { .buddy-coverage-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .buddy-coverage-summary { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+
+.token-workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 24px; align-items: start; max-width: var(--w-main); margin: 20px 0 24px; }
+.token-workspace .profile-section, .token-workspace .token-setup { min-width: 0; margin: 0; }
+.token-setup { max-width: var(--w-form); border-top: 3px solid var(--color-gold); }
+.token-setup-head { padding: 16px 20px; background: var(--color-cream); border-bottom: 1px solid var(--rule); }
+.token-setup-head h2 { color: var(--color-navy); font-size: 22px; font-weight: 700; line-height: 1.25; }
+.token-setup-head p, .token-setup-body p { margin: 4px 0 0; font-size: 16px; line-height: 1.5; }
+.token-setup-body { padding: 16px 20px; }
+.token-setup-body > p:first-child, .token-setup-body > .btnrow:first-child { margin-top: 0; }
+.token-setup-body .btnrow { gap: 8px 16px; margin-top: 12px; }
+.token-setup-body .btn-primary, .token-setup-body .btn-secondary { min-height: 44px; padding: 8px 16px; }
+.token-setup-body .lnk { min-height: 44px; }
+.token-setup-body .pk-card-status:empty, .token-setup [hidden] { display: none; }
+.token-detail-fields, .token-code-form { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.token-detail-fields .fl { flex: 1 1 10rem; margin: 0; }
+.token-detail-fields .fl:has(select) { flex: 0 1 auto; }
+.token-setup .fl .f { min-width: 0; width: 100%; min-height: 44px; font-size: 16px; }
+.token-setup-body .token-detail-note { margin-top: 10px; font-size: 14px; color: var(--color-muted); }
+.token-code-form { margin-top: 12px; }
+.token-code-form .fl { width: 11rem; margin: 0; }
+@media (max-width: 800px) {
+  .token-workspace { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .token-setup-head, .token-setup-body { padding: 14px 16px; }
+  .token-setup .btnrow, .token-detail-fields, .token-code-form { flex-direction: column; align-items: stretch; }
+  .token-setup .btnrow button, .token-code-form .fl { width: 100%; }
+  .token-detail-fields .fl { flex: auto; }
+}

@@ -13,8 +13,7 @@ class WebsiteAccessToken < ApplicationRecord
 
   scope :newest_first, -> { order(created_at: :desc, id: :desc) }
 
-  def self.issue!(organization:, actor:, name:)
-    public_id = SecureRandom.hex(12)
+  def self.issue!(organization:, actor:, name:, public_id: SecureRandom.hex(12))
     secret = SecureRandom.hex(32)
     token = create!(organization: organization, created_by: actor, name: name,
       public_id: public_id, secret_digest: digest(secret), display_hint: secret.last(4))

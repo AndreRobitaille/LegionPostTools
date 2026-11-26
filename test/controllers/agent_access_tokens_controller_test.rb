@@ -31,7 +31,7 @@ class AgentAccessTokensControllerTest < ActionDispatch::IntegrationTest
       post agent_access_tokens_path, params: { agent_access_token: { name: "Grok", expires_in_days: "90" } }
     end
 
-    assert_redirected_to new_agent_access_reauthentication_path
+    assert_redirected_to new_agent_access_token_path
   end
 
   test "recently authenticated user creates own expiring token and sees plaintext once" do
@@ -51,6 +51,27 @@ class AgentAccessTokensControllerTest < ActionDispatch::IntegrationTest
 
     get agent_access_tokens_path
     assert_not_includes response.body, plaintext
+  end
+
+  test "resubmitting either completed browser form returns to its list without a second credential" do
+    @user.permission_grants.create!(capability: "manage_settings")
+    sign_in_as(@user)
+    [ [ new_agent_access_token_path, agent_access_tokens_path, { agent_access_token: { name: "Agent", expires_in_days: "30" } }, AgentAccessToken ],
+      [ new_admin_website_access_token_path, admin_website_access_tokens_path, { website_access_token: { name: "Website" } }, WebsiteAccessToken ] ].each do |form, list, fields, model|
+      get form
+      submission = fields.merge(form_id: css_select("input[name=form_id]").sole["value"])
+      assert_difference -> { model.count }, 1 do
+        post list, params: submission
+      end
+      assert_response :created
+      plaintext = css_select(".agent-token-value").sole.text
+      assert_no_difference -> { model.count } do
+        post list, params: submission
+      end
+      assert_redirected_to list
+      follow_redirect!
+      assert_not_includes response.body, plaintext
+    end
   end
 
   test "expiry choice is allowlisted" do
