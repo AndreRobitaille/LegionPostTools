@@ -81,7 +81,7 @@ class SharedLinkSignInSystemTest < ApplicationSystemTestCase
     system_sign_in(@user)
     visit profile_path
     fill_in "new-passkey-nickname", with: "Synthetic test device"
-    click_button "Add a passkey"
+    click_button "Create passkey"
     assert_selector "input.pk-name-field[value='Synthetic test device']"
     assert_equal 1, @user.passkey_credentials.count
     credential = @user.passkey_credentials.sole

@@ -18,7 +18,7 @@ class PasskeyEnrollmentSecurityTest < ActionDispatch::IntegrationTest
       assert_no_difference "PasskeyCredential.count" do
         post registration_options_passkeys_path
         assert_response :forbidden
-        assert_equal new_passkey_enrollment_reauthentication_path, response.parsed_body["confirmation_url"]
+        assert_equal profile_path(anchor: "add-passkey"), response.parsed_body["confirmation_url"]
         post registration_passkeys_path, params: { publicKeyCredential: @client.create(user_verified: true) }
         assert_response :forbidden
       end
@@ -113,7 +113,7 @@ class PasskeyEnrollmentSecurityTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
     get response.parsed_body["confirmation_url"]
     assert_response :success
-    assert_select ".panel-lead", text: /Before adding a new passkey/
+    assert_select "#add-passkey", text: /First, confirm it’s you/
 
     perform_enqueued_jobs { post passkey_enrollment_reauthentication_path }
     token = ActionMailer::Base.deliveries.last.html_part.body.to_s[/token=([^"&]+)/, 1]
@@ -195,17 +195,16 @@ class PasskeyEnrollmentSecurityTest < ActionDispatch::IntegrationTest
     assert_response :created
     session_record = sign_in_as(@user, authenticated_at: 1.hour.ago)
     post registration_options_passkeys_path, params: { nickname: "Second device" }
-    get new_passkey_enrollment_reauthentication_path
-    post authentication_options_passkeys_path
+    post passkey_options_passkey_enrollment_reauthentication_path
     assertion = @client.get(challenge: response.parsed_body["challenge"], user_verified: true)
     assert_no_difference "Session.count" do
-      post authentication_passkeys_path, params: { publicKeyCredential: assertion }
+      post passkey_passkey_enrollment_reauthentication_path, params: { publicKeyCredential: assertion }, as: :json
       assert_response :success
     end
     assert session_record.reload.recently_authenticated?
     get profile_path
     assert_select "input#new-passkey-nickname[value=?]", "Second device"
-    assert_select "button", text: "Continue adding your passkey"
+    assert_select "button", text: "Create passkey"
     post registration_passkeys_path, params: { publicKeyCredential: enrollment_credential, nickname: "Second device" }
     assert_response :created
     get profile_path
@@ -218,12 +217,26 @@ class PasskeyEnrollmentSecurityTest < ActionDispatch::IntegrationTest
     another_user = User.create!(person: Person.create!(first_name: "Other", last_name: "Member"), email_address: "other@example.com")
     session_record = sign_in_as(another_user, authenticated_at: 1.hour.ago)
     post registration_options_passkeys_path
-    get new_passkey_enrollment_reauthentication_path
-    post authentication_options_passkeys_path
+    post passkey_options_passkey_enrollment_reauthentication_path
     assertion = @client.get(challenge: response.parsed_body["challenge"], user_verified: true)
-    post authentication_passkeys_path, params: { publicKeyCredential: assertion }
+    post passkey_passkey_enrollment_reauthentication_path, params: { publicKeyCredential: assertion }, as: :json
     assert_response :unauthorized
     assert_not session_record.reload.recently_authenticated?
+  end
+
+  test "cancelling fresh device setup removes its name and outstanding registration challenge" do
+    sign_in_as(@user)
+    post registration_options_passkeys_path, params: { nickname: "My tablet", source: "profile" }
+    assert_response :success
+    pending = @client.create(challenge: response.parsed_body.fetch("challenge"), user_verified: true)
+    delete passkey_enrollment_reauthentication_path
+    assert_redirected_to profile_path(anchor: "add-passkey")
+    follow_redirect!
+    assert_select "#new-passkey-nickname[value='']"
+    assert_no_difference "PasskeyCredential.count" do
+      post registration_passkeys_path, params: { publicKeyCredential: pending }
+      assert_response :unprocessable_entity
+    end
   end
 
   private

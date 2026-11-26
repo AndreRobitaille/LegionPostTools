@@ -106,7 +106,7 @@ class AgentAccessTokensSystemTest < ApplicationSystemTestCase
     })
     visit profile_path
     fill_in "new-passkey-nickname", with: "Test device"
-    click_button "Add a passkey"
+    click_button "Create passkey"
     assert_selector ".pk-list input[value='Test device']"
     current_session = @user.sessions.sole
 

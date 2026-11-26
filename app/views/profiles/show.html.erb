@@ -14,14 +14,10 @@
 <section class="profile-section">
   <%= render "shared/section_header", label: "How you sign in" %>
 
-  <div class="panel">
-    <p class="panel-lead">
-      You always have the email link. A passkey is a faster second way in: it uses your
-      fingerprint, face, or device PIN instead of waiting for an email. Give each one a name
-      so you can tell your devices apart.
-    </p>
-
-    <% if @passkey_credentials.any? %>
+  <%= render "passkey_enrollment_reauthentications/setup", source: "profile" %>
+  <% if @passkey_credentials.any? %>
+    <div class="panel saved-passkeys">
+      <h2>Your passkeys</h2>
       <ul class="pk-list">
         <% @passkey_credentials.each do |credential| %>
           <li class="pk-row" data-controller="rename">
@@ -45,26 +41,8 @@
           </li>
         <% end %>
       </ul>
-    <% else %>
-      <p class="pk-empty">You have no passkeys yet. Add one below to sign in faster next time.</p>
-    <% end %>
-
-    <div id="add-passkey" class="pk-add-block" data-controller="passkey" data-passkey-redirect-value="<%= profile_path %>">
-      <div class="panel-head panel-head--add">&#9670; Add a passkey</div>
-      <p class="panel-lead pk-add-lead">
-        <% if @pending_passkey_enrollment %>Continue when you’re ready.<% end %>
-        Register the device you're using right now — you'll be asked for your fingerprint, face, or device PIN.
-      </p>
-      <label class="pk-add-label" for="new-passkey-nickname">Name for this passkey (optional)</label>
-      <input class="pk-add-input" id="new-passkey-nickname" type="text" data-passkey-nickname
-             placeholder="e.g. My iPhone or Office laptop" autocomplete="off" maxlength="200"
-             value="<%= @pending_passkey_enrollment&.fetch("nickname") %>">
-      <button type="button" class="btn-primary" data-action="passkey#register" data-passkey-target="submit">
-        <%= @pending_passkey_enrollment ? "Continue adding your passkey" : "Add a passkey" %>
-      </button>
-      <p class="pk-card-status" data-passkey-target="status" role="status" aria-live="polite"></p>
     </div>
-  </div>
+  <% end %>
 </section>
 
 <% if current_user.mobile_buddy_checks_access? %>

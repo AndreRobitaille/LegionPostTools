@@ -1,0 +1,78 @@
+<% content_for :head do %><meta name="turbo-cache-control" content="no-cache"><% end %>
+<% pending = @pending_passkey_enrollment if @pending_passkey_enrollment&.fetch("source", "profile") == source %>
+<% ready = Current.session.recently_authenticated? %>
+<% confirmed = ready && pending&.dig("confirmed") %>
+<% waiting = !ready && pending&.fetch("email_expires_at", 0).to_i > Time.current.to_i %>
+<% invitation = source == "dashboard" && !pending %>
+<% cancel = button_to "Cancel", passkey_enrollment_reauthentication_path, method: :delete, class: "enrollment-quiet" %>
+<% dismiss = cancel if pending %>
+<% dismiss = button_to("Not now", passkey_invitation_path, method: :delete, class: "enrollment-quiet") if invitation %>
+<section id="add-passkey" class="enrollment-card" aria-labelledby="enrollment-heading" data-controller="passkey" data-turbo="false"
+         data-passkey-source-value="<%= source %>" data-passkey-redirect-value="<%= source == "dashboard" ? root_path : profile_path %>"
+         data-passkey-options-url-value="<%= passkey_options_passkey_enrollment_reauthentication_path %>"
+         data-passkey-verify-url-value="<%= passkey_passkey_enrollment_reauthentication_path %>">
+  <%= render "passkey_enrollment_reauthentications/heading", icon: waiting ? "mail" : "key", optional: invitation do %>
+    <p class="enrollment-instruction" data-passkey-target="controls" hidden>
+      <% if waiting %>
+        <% if pending["nickname"].present? %>Check your email for a code to add “<%= pending["nickname"] %>”.<% else %>Check your email for a code.<% end %>
+      <% elsif confirmed %>
+        You’re ready to add your passkey.
+      <% elsif ready %>
+        Use your face, fingerprint or device PIN. You can still sign in by email.
+      <% else %>
+        First, confirm it’s you.
+      <% end %>
+    </p>
+    <div data-passkey-target="unsupported" hidden>
+      <p>This browser can’t add a passkey. You can still sign in by email.</p>
+      <%= dismiss %>
+    </div>
+    <noscript><p>Turn on JavaScript to add a passkey. You can still sign in by email.</p><%= dismiss %></noscript>
+  <% end %>
+
+  <div class="enrollment-body" data-passkey-target="controls" hidden>
+    <% if flash[:passkey_error] %><p role="alert" class="enrollment-error"><%= flash[:passkey_error] %></p><% end %>
+    <div class="enrollment-row">
+      <% if waiting %>
+        <%= form_with url: verify_passkey_enrollment_reauthentication_path, id: "enrollment-method", class: "fl" do |form| %>
+          <%= form.label :code, "8-digit code" %>
+          <%= form.text_field :code, class: "f enrollment-code", inputmode: "numeric", autocomplete: "one-time-code", maxlength: 9, required: true, autofocus: true %>
+        <% end %>
+      <% else %>
+        <div class="fl">
+          <label for="new-passkey-nickname">Passkey name <span>(optional)</span></label>
+          <input id="new-passkey-nickname" class="f" type="text" name="nickname" form="enrollment-method" maxlength="200"
+                 placeholder="e.g. My phone" autocomplete="off" data-passkey-nickname value="<%= pending&.dig("nickname") %>">
+        </div>
+      <% end %>
+      <div class="enrollment-actions">
+        <div class="enrollment-methods">
+          <% if waiting %>
+            <button type="submit" form="enrollment-method" class="btn-primary">Continue</button>
+          <% elsif ready %>
+            <form id="enrollment-method" method="post" data-action="submit->passkey#register">
+              <button type="submit" class="btn-primary" data-passkey-target="submit" <%= "autofocus" if confirmed %>>Create passkey</button>
+            </form>
+          <% else %>
+            <% if current_user.passkey_credentials.exists? %>
+              <button type="button" class="btn-primary" data-passkey-target="submit" data-action="passkey#authenticate">Use an existing passkey</button>
+            <% end %>
+            <%= form_with url: passkey_enrollment_reauthentication_path, id: "enrollment-method" do |form| %>
+              <%= hidden_field_tag :source, source %>
+              <%= form.button "Email me a code", class: "btn-primary", data: { passkey_target: "email" } %>
+            <% end %>
+          <% end %>
+        </div>
+        <% if dismiss %>
+          <div class="enrollment-alternates">
+            <% if waiting %><%= button_to "Send a new code", passkey_enrollment_reauthentication_path, class: "enrollment-quiet" %><% end %>
+            <%= dismiss %>
+          </div>
+        <% elsif ready %>
+          <div data-passkey-target="retryCancel" hidden><%= cancel %></div>
+        <% end %>
+      </div>
+    </div>
+    <p class="pk-card-status" data-passkey-target="status" role="status"></p>
+  </div>
+</section>

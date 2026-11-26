@@ -5,19 +5,31 @@ import { create, get, supported } from "@github/webauthn-json"
 // Register: options -> navigator.credentials.create -> POST /passkeys/registration
 // Authenticate: options -> navigator.credentials.get -> POST /passkeys/authentication
 export default class extends Controller {
-  static targets = ["status", "submit", "email"]
+  static targets = ["status", "submit", "email", "controls", "unsupported", "retryCancel"]
   static values = {
+    source: String,
     redirect: { type: String, default: "/" },
     optionsUrl: { type: String, default: "/passkeys/authentication_options" },
     verifyUrl: { type: String, default: "/passkeys/authentication" }
   }
 
   connect() {
-    if (this.hasSubmitTarget && this.hasEmailTarget && supported()) {
+    const available = supported()
+    if (this.hasUnsupportedTarget) {
+      this.unsupportedTarget.hidden = available
+      this.controlsTargets.forEach(section => { section.hidden = !available })
+      if (available && window.location.hash === "#add-passkey") {
+        requestAnimationFrame(() => {
+          this.element.querySelector("[autofocus]")?.focus({ preventScroll: true })
+          this.element.scrollIntoView({ block: "nearest" })
+        })
+      }
+    }
+    if (this.hasSubmitTarget && this.hasEmailTarget && available) {
       this.submitTarget.hidden = false
       this.emailTarget.classList.replace("btn-primary", "btn-secondary")
     }
-    if (!supported()) {
+    if (!available) {
       // No WebAuthn in this browser: disable the trigger, leave the email link as the path.
       if (this.hasSubmitTarget) {
         this.submitTarget.disabled = true
@@ -30,18 +42,23 @@ export default class extends Controller {
     event.preventDefault()
     if (!supported()) return
     this.#busy("Waiting for your device…")
+    const details = this.#enrollmentDetails()
     try {
-      const options = await this.#postJSON("/passkeys/registration_options", { nickname: this.#nickname() })
+      const options = await this.#postJSON("/passkeys/registration_options", details)
       const credential = await create({ publicKey: options })
-      const nickname = this.#nickname()
-      const res = await this.#postJSON("/passkeys/registration", { publicKeyCredential: credential, nickname })
-      if (res) window.location.assign(this.redirectValue)
+      await this.#postJSON("/passkeys/registration", { publicKeyCredential: credential, ...details })
+      this.#visit(this.redirectValue)
     } catch (error) {
       if (error.confirmationUrl) {
-        window.location.assign(error.confirmationUrl)
+        this.#visit(error.confirmationUrl)
         return
       }
-      this.#fail("We couldn't add that passkey. You can try again, or keep using the email link.")
+      this.submitTarget.textContent = "Try again"
+      if (this.hasRetryCancelTarget) this.retryCancelTarget.hidden = false
+      this.#fail(["NotAllowedError", "AbortError"].includes(error.name)
+        ? "Passkey setup was cancelled."
+        : "Couldn’t add this passkey. Try again or sign in by email.")
+      this.submitTarget.focus()
     }
   }
 
@@ -50,18 +67,32 @@ export default class extends Controller {
     if (!supported()) return
     this.#busy("Waiting for your device…")
     try {
-      const options = await this.#postJSON(this.optionsUrlValue)
+      const options = await this.#postJSON(this.optionsUrlValue, this.#enrollmentDetails())
       const assertion = await get({ publicKey: options })
       const res = await this.#postJSON(this.verifyUrlValue, { publicKeyCredential: assertion })
-      if (res) window.location.assign(res.redirect_url || this.redirectValue)
+      if (res) this.#visit(res.redirect_url || this.redirectValue)
     } catch (error) {
       this.#fail(this.hasEmailTarget ? "Try your passkey again or use email." : "That didn't work — try the email link instead.")
     }
   }
 
-  #nickname() {
+  #visit(url) {
+    // A fragment change alone would leave the old setup step on screen.
+    const target = new URL(url, window.location.href)
+    if (target.pathname === window.location.pathname && target.search === window.location.search) {
+      window.history.replaceState(window.history.state, "", target)
+      if (!target.hash) window.scrollTo(0, 0)
+      window.location.reload()
+    } else {
+      window.location.assign(target)
+    }
+  }
+
+  #enrollmentDetails() {
+    if (!this.hasSourceValue) return
+
     const field = this.element.querySelector("[data-passkey-nickname]")
-    return field && field.value.trim() ? field.value.trim() : null
+    return { nickname: field?.value.trim(), source: this.sourceValue }
   }
 
   async #postJSON(url, body) {

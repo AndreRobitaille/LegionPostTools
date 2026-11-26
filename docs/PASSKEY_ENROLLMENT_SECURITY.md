@@ -12,27 +12,28 @@ A later reauthentication requires new enrollment options.
 
 ## Confirmation and return
 
-When identity is stale, keep the member signed in and preserve their passkey name
-in a short-lived session-bound enrollment intent. Show a dedicated “Confirm your
-identity” page explaining that this protects the new sign-in method. Use the
-existing session-bound, single-use email code/link mechanism with the distinct
-`enroll_passkey` purpose, or verify an already registered passkey for that same user.
-Sending an email or viewing its link does not confirm identity.
+Profile and the optional dashboard invitation share an **Add a passkey** card.
+A recent sign-in goes straight to **Create passkey**. Otherwise show **Email me
+a code**, and offer **Use an existing passkey** to members who have one. Each
+method starts from this card. The email code and link are single use, bound to
+the current browser session and enrollment attempt, and use the `enroll_passkey`
+purpose. The email link has a deliberate **Continue setup** action.
 
-Successful confirmation returns to Profile's enrollment section with the name
-preserved and a “Continue adding your passkey” button. Do not automatically invoke
-the device prompt. Clear the intent after successful enrollment or cancellation;
-expire it after 30 minutes, and never carry it into another login/session/account.
-Neither return destinations nor identity are taken from client URL parameters.
+Keep the optional name and originating screen in a session-bound attempt for
+up to 30 minutes. Return to that screen after confirmation and focus **Create
+passkey**. Only that click opens device setup. Show **Passkey added** with the
+saved name after registration succeeds. Device cancellation offers **Try again**.
+Explicit cancellation, expiry and a new login discard the pending attempt.
 
 ## Visual direction
 
-Keep The 1919 compact signed-in header, bounded Profile column, cream panels, navy
-buttons and gold section dividers. Reuse the existing reauthentication controls.
-Put the reason and next step in 16px panel-lead text, with labeled email-code input,
-visible keyboard focus, and an explicit “Cancel and return to Profile” action.
-Keep the saved name and continuation action together. Verify the full flow at
-1400px, 390px and 320px, including keyboard access and failure/retry states.
+Use one 1919 paper panel. Group the title, current instruction and key or mail
+icon in a cream header. Align the labeled field and its actions on one baseline
+in the paper body. In the dashboard rail and on phones, give the field and
+primary action the same width and center the quieter actions underneath. Keep email available and offer
+**Not now** on the optional invitation. Use a navy primary action, quiet
+alternatives, a live status, and visible keyboard focus. Review at 1400px, 390px
+and 320px.
 
 Token issuance, official-action confirmation, passkey renaming/removal, and account
 capabilities retain their own policies. This prevents stale session access from

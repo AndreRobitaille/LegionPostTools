@@ -33,6 +33,11 @@ class PasskeysController < ApplicationController
   end
 
   def registration_options
+    if SOURCES.include?(params[:source])
+      attempt = pending_passkey_enrollment
+      attempt = start_passkey_enrollment unless attempt && attempt["source"] == params[:source]
+      attempt["nickname"] = params[:nickname].to_s.strip.presence
+    end
     options = WebAuthn::Credential.options_for_create(
       user: {
         id: current_user.webauthn_id,
@@ -66,14 +71,17 @@ class PasskeysController < ApplicationController
     credential = WebAuthn::Credential.from_create(public_key_credential_params)
     credential.verify(enrollment["challenge"], user_verification: true)
 
-    current_user.passkey_credentials.create!(
+    saved = current_user.passkey_credentials.create!(
       external_id: credential.id,
       public_key: credential.public_key,
       sign_count: credential.sign_count,
-      nickname: params[:nickname].presence
+      nickname: params[:nickname].to_s.strip.presence
     )
 
-    session.delete(:pending_passkey_enrollment)
+    clear_passkey_enrollment
+    if SOURCES.include?(params[:source])
+      flash[:notice] = saved.nickname.present? ? "Passkey added: #{saved.nickname}" : "Passkey added"
+    end
     render json: { status: "created" }, status: :created
   rescue WebAuthn::Error
     render json: { error: "invalid passkey registration" }, status: :unprocessable_entity
@@ -126,19 +134,13 @@ class PasskeysController < ApplicationController
   private
 
   def require_recent_enrollment_authentication
-    return if Current.session&.recently_authenticated?
-
-    session.delete(:webauthn_registration_challenge)
-    nickname = params[:nickname].to_s.strip.presence
-    if nickname && nickname.length > 200
+    if params[:nickname].to_s.strip.length > 200
       return render json: { error: "Use a passkey name of 200 characters or fewer." }, status: :unprocessable_entity
     end
-    session[:pending_passkey_enrollment] = {
-      session_id: Current.session.id,
-      nickname: nickname,
-      expires_at: 30.minutes.from_now.to_i
-    }
-    render json: { error: "recent authentication required", confirmation_url: new_passkey_enrollment_reauthentication_path }, status: :forbidden
+    return if Current.session&.recently_authenticated?
+
+    start_passkey_enrollment
+    render json: { error: "recent authentication required", confirmation_url: passkey_setup_path }, status: :forbidden
   end
 
   def reauthenticating?

@@ -14,7 +14,7 @@ class PasskeyInvitationSystemTest < ApplicationSystemTestCase
   test "Not now preserves account access and a fresh sign-in offers the optional invitation again" do
     freeze_time
     system_sign_in(@user)
-    assert_selector ".pk-card--sidebar", text: "Sign in faster with a passkey"
+    assert_selector ".pk-card--sidebar", text: "Add a passkey"
     original = identity_records
     original_sessions = Session.order(:id).map(&:attributes)
     [ 1400, 390 ].each do |width|
@@ -56,7 +56,7 @@ class PasskeyInvitationSystemTest < ApplicationSystemTestCase
     assert_equal original, identity_records
 
     system_sign_in(@user)
-    assert_selector ".pk-card--sidebar", text: "Sign in faster with a passkey"
+    assert_selector ".pk-card--sidebar", text: "Add a passkey"
     assert_equal original, identity_records
     assert_equal 1, @user.sessions.count
     assert_not_equal current_session.id, @user.sessions.sole.id
