@@ -45,7 +45,7 @@ gem "lexxy", "~> 1.0.2"
 gem "csv"
 gem "webauthn"
 # Human native-app authorization code + PKCE; separate from agent credentials.
-gem "doorkeeper", "~> 5.8"
+gem "doorkeeper", "~> 5.9"
 
 # Official OpenAI SDK for the transcript-assisted minutes drafting boundary.
 gem "openai", "~> 0.114.0"
